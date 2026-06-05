@@ -1,5313 +1,1094 @@
-<!-- ============================================================
-     === SCHEDULE TABLE MODULE — Qatar Luxury Edition ===========
-     ------------------------------------------------------------
-     Version: FINAL v1.5 | Date: 27 NOV 2025
-     ============================================================ -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Schedule Table - Aviation Capital Simulator</title>
 
-  <!-- ======== ACS Styles ======== -->
-  <link rel="stylesheet" href="styles.css?v=3.1" />
-
-  <!-- ======== ACS Favicons ======== -->
+  <link rel="stylesheet" href="styles.css?v=3.1">
   <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
   <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
   <link rel="apple-touch-icon" href="acs_logo_180.png">
 
   <style>
-/* ============================================================
-   === GLOBAL PAGE STYLE =======================================
-   ============================================================ */
-body {
-  margin: 0;
-  background-color: #081530;
-  color: white;
-  font-family: "Poppins", sans-serif;
-}
-
-/* ============================================================
-   === QATAR LUXURY HEADER =====================================
-   ============================================================ */
-.acs-header {
-  position: fixed;
-  top: 0;
-  width: 100%;
-  backdrop-filter: blur(9px);
-  background: rgba(12,23,50,0.45);
-  padding: 0.8rem 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 2px solid #ffb300;
-  z-index: 5000;
-}
-
-.acs-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.acs-left img {
-  height: 46px;
-}
-
-.acs-left h1 {
-  font-size: 1.15rem;
-  margin: 0;
-  color: #ffb300;
-  letter-spacing: 0.5px;
-}
-
-.acs-nav {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-}
-
-.acs-nav a {
-  position: relative;
-  font-size: 1rem;
-  letter-spacing: 0.4px;
-  color: #dbe4ff;
-  text-decoration: none;
-  transition: 0.25s ease;
-  padding-bottom: 6px;
-}
-
-.acs-nav a:hover,
-.acs-nav a.active {
-  color: #ffb300;
-  text-shadow: 0 0 6px rgba(255,179,0,0.6);
-}
-
-.acs-nav a.active::after,
-.acs-nav a:hover::after {
-  content: "";
-  position: absolute;
-  bottom: -8px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(to right, #ffb300, #ffe7a0);
-  border-radius: 2px;
-  box-shadow: 0 0 8px rgba(255,200,60,0.45);
-}
-
-.acs-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.support-btn {
-  padding: 0.45rem 1.1rem;
-  border-radius: 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  color: #8AB4FF;
-  border: 1px solid rgba(138,180,255,0.45);
-  background: rgba(138,180,255,0.08);
-}
-
-.logout-btn {
-  padding: 0.45rem 1.1rem;
-  border: 1px solid #ffb300;
-  border-radius: 12px;
-  background: rgba(255,179,0,0.05);
-  color: #ffb300;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-/* ============================================================
-   🟦 ACS GLOBAL CLOCK — STABLE HEADER FIX (NO LAYOUT SHIFT)
-   Use in ALL ACS modules
-   ============================================================ */
-
-.acs-clock-header{
-
-  font-family:"Orbitron",monospace;
-  font-size:.95rem;
-  color:#00ff80;
-
-  background:rgba(0,255,128,.08);
-  border-radius:10px;
-
-  padding:.45rem .8rem;
-
-  width:260px;                 /* ancho fijo absoluto */
-  flex:0 0 260px;             /* evita expansión o compresión */
-
-  display:flex;
-  justify-content:center;
-  align-items:center;
-
-  white-space:nowrap;
-
-  font-variant-numeric:tabular-nums;
-
-  border:1px solid rgba(0,255,128,.18);
-
-  overflow:hidden;            /* protección extra */
-}
-
-/* ============================================================
-   === MAIN ====================================================
-   ============================================================ */
-.acs-main {
-  padding: 110px 2rem 70px;
-  text-align: center;
-}
-
-.sub {
-  margin-top: -0.4rem;
-  color: #cbd6ff;
-  font-size: 1rem;
-}
-/* ============================================================
-   === SCHEDULE TABLE (Qatar Luxury) ===========================
-   ============================================================ */
-
-table {
-  width: 90%;
-  margin: 0 auto;
-  border-collapse: collapse;
-  background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
-  border-radius: 18px;
-  overflow: hidden;
-  box-shadow: 0 0 20px rgba(255,179,0,0.1);
-  border: 1px solid rgba(255,179,0,0.15);
-}
-
-th {
-  background: rgba(255,179,0,0.15);
-  color: #ffca3a;
-  padding: 1rem;
-  font-size: 1rem;
-  text-shadow: 0 0 6px rgba(255,200,80,0.4);
-}
-
-td {
-  background: rgba(10,20,45,0.8);
-  border: 1px solid rgba(255,255,255,0.05);
-  padding: 0.8rem;
-  color: #dbe4ff;
-  text-align: center;
-  font-size: 0.92rem;
-}
-
-/* ============================================================
-   === FLIGHT CHIPS ============================================
-   ============================================================ */
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: #0c2b52;
-  padding: 5px 10px;
-  margin: 2px 0;
-  border-radius: 8px;
-  color: #ffca3a;
-  font-weight: 700;
-  font-size: 0.85rem;
-  box-shadow: 0 0 8px rgba(255,200,60,0.25);
-  cursor: pointer;
-  position: relative;
-}
-
-/* Tooltip */
-.chip .tooltip {
-  position: absolute;
-  bottom: 125%;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 6px 10px;
-  background: #ffca3a;
-  color: #0c1f3c;
-  border-radius: 6px;
-  display: none;
-  font-size: 0.75rem;
-  white-space: nowrap;
-  font-weight: 700;
-  z-index: 99999;
-}
-
-.chip:hover .tooltip {
-  display: block;
-}
-
-/* ============================================================
-   === BUTTONS =================================================
-   ============================================================ */
-
-.btn {
-  border-radius: 14px;
-  padding: 7px 12px;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-}
-
-.btn-assign {
-  background: #00a86b;
-  color: #fff;
-}
-
-.btn-assign:hover {
-  background: #00945f;
-}
-
-.btn-maint {
-  background: #ffb300;
-  color: #0d1b34;
-}
-
-.btn-maint:hover {
-  background: #e6a100;
-}
-
-.back-btn {
-  margin-top: 2rem;
-  padding: 0.6rem 1.6rem;
-  border-radius: 10px;
-  border: 1px solid #ffb300;
-  background: rgba(255,179,0,0.05);
-  color: #ffb300;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.back-btn:hover {
-  background: #ffb300;
-  color: #0c1f3c;
-}
-
-/* ============================================================
-   === FOOTER ================================================
-   ============================================================ */
-
-footer {
-  text-align: center;
-  color: #7c8bb8;
-  padding: 2rem 0;
-  margin-top: 2rem;
-}
-
-/* ============================================================
-   === AIRCRAFT HOVER CARD — Qatar Luxury ======================
-   ============================================================ */
-
-.aircraft-hover-card {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -115%);
-  background: rgba(14, 27, 60, 0.95);
-  padding: 1rem 1.2rem;
-  border-radius: 14px;
-  border: 1px solid #ffb300;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.45);
-  color: #ffe9b3;
-  z-index: 9999;
-  width: 260px;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.20s ease-in-out;
-}
-
-.aircraft-hover-card.visible {
-  opacity: 1;
-}
-
-.aircraft-hover-card h4 {
-  margin: 0 0 0.4rem 0;
-  font-size: 1rem;
-  color: #ffb300;
-  text-shadow: 0 0 6px rgba(255,179,0,0.5);
-}
-
-.progress-bar {
-  width: 100%;
-  height: 10px;
-  background: rgba(255,255,255,0.15);
-  border-radius: 6px;
-  margin-top: 0.5rem;
-  overflow: hidden;
-  border: 1px solid rgba(255,200,60,0.35);
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #ffb300, #ffdd80);
-  width: 0%;
-  transition: width 0.5s ease;
-}
-
-.progress-label {
-  display: block;
-  text-align: right;
-  font-size: 0.8rem;
-  margin-top: 4px;
-  color: #ffdd80;
-}
-
-/* ============================================================
-   === BASE MODAL STYLE ========================================
-   ============================================================ */
-
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(5, 10, 25, 0.65);
-  backdrop-filter: blur(4px);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 6000;
-}
-
-.modal-content {
-  background: #0d1b34;
-  border: 1px solid rgba(255,179,0,0.35);
-  padding: 1.5rem;
-  border-radius: 16px;
-  box-shadow: 0 0 18px rgba(255,179,0,0.25);
-  color: #dbe4ff;
-  width: 300px;
-  text-align: center;
-}
-
-/* ============================================================
-   === ACTION PLAN COLUMN (SMALLER) ============================
-   ============================================================ */
-
-.plan-actions {
-  display: flex;
-  gap: 6px;
-  justify-content: center;
-}
-
-.plan-actions .btn {
-  padding: 4px 10px;
-  font-size: 0.75rem;
-  border-radius: 10px;
-  white-space: nowrap;
-}
-
-#scheduleTable td:last-child,
-#scheduleTable th:last-child {
-  width: 170px;
-}
-       
-/* ============================================================
-   🟦 PASO 2 — TOP ALIGN + CHRONO STACK (FINAL)
-   ============================================================ */
-
-#scheduleTable td {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-
-  padding-top: 6px;
-  gap: 4px;
-}
-       
-/* HOTFIX — revertir flex global y proteger columna Aircraft */
-#scheduleTable td { 
-  display: table-cell; 
-  vertical-align: middle; 
-}
-
-#scheduleTable td:not(:first-child) {
-  vertical-align: top;
-}
-       
-/* ============================================================
-   🟦 FIX — KEEP ACTION PLAN CENTERED
-   ============================================================ */
-
-#scheduleTable td:last-child,
-#scheduleTable th:last-child {
-  vertical-align: middle !important;
-}
-.row-maint td {
-  opacity: 0.45;
-  background-color: rgba(200,80,0,0.15) !important;
-}
-
-.row-pending td {
-  opacity: 0.35;
-  background-color: rgba(150,150,150,0.12) !important;
-}
-
-/* ============================================================
-   MINI CHIP QATAR — ULTRA COMPACTO + CENTRADO
-   ============================================================ */
-       
-.flightChip {
-  display: block;                 /* uno debajo del otro */
-  margin: 2px auto;               /* centrado */
-  padding: 1px 5px;               /* ultra compacto */
-  font-size: 10px;                /* tamaño mini */
-  font-weight: 600;
-  color: #FFD54F;                 /* oro brillante */
-  background: rgba(255, 204, 0, 0.15); 
-  border: 1px solid rgba(255, 204, 0, 0.35);
-  border-radius: 6px;             /* óvalo pequeño */
-  width: fit-content;             /* ajustado al texto */
-  white-space: nowrap;            /* no dividir */
-}
-
-/* ============================================================
-   === B-CHECK DAY BACKGROUND — Qatar Luxury A2 Premium ========
-   ============================================================ */
-.bcheck-day {
-  background: rgba(135, 145, 165, 0.26) !important;
-  border: 1px solid rgba(135, 145, 165, 0.38) !important;
-  border-radius: 10px;
-}
-       
-/* === MODAL ERROR — Qatar Luxury Style === */
-
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0, 0, 0, 0.55);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
-
-.error-modal {
-  background: linear-gradient(180deg, #0a1c33 0%, #162b45 100%);
-  padding: 25px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 0 18px rgba(0,0,0,0.45);
-  width: 340px;
-  text-align: center;
-}
-
-.modal-title {
-  color: #ffb300;
-  font-size: 20px;
-  margin-bottom: 10px;
-  font-weight: 600;
-}
-
-.modal-text {
-  color: #d1d9e6;
-  margin-bottom: 20px;
-  font-size: 16px;
-}
-
-.modal-button {
-  background: #ffb300;
-  color: #000;
-  border: none;
-  padding: 12px 26px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 15px;
-}
-
-.modal-button:hover {
-  background: #ffca47;
-}
-
-/* ============================================================
-   🟡 FLIGHT TOOLTIP (FIX CLIPPING)
-   ============================================================ */
-
-.flight-tooltip {
-  max-width: 280px;
-  white-space: normal;
-  overflow: visible;
-  line-height: 1.35;
-}
-       
-/* ============================================================
-   ✈️ FLIGHT CHIP — COMPACT (ONE LINE)
-   ============================================================ */
-
-.flight-chip {
-  padding: 4px 10px;
-  font-size: 12px;
-  border-radius: 14px;
-  white-space: nowrap;
-  line-height: 1.2;
-}
-
-.flight-chip strong {
-  font-weight: 600;
-}
-       
-/* ============================================================
-   ✨ ACS MODAL — QATAR LUXURY
-   ============================================================ */
-
-.acs-action-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.65);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
-
-.acs-action-box {
-  background: linear-gradient(180deg, #0b132b, #020617);
-  border: 2px solid #ffcc33;
-  border-radius: 20px;
-  padding: 22px;
-  display: flex;
-  gap: 14px;
-  box-shadow: 0 0 40px rgba(255,204,51,0.25);
-}
-
-.acs-action-btn {
-  min-width: 90px;
-  padding: 10px 0;
-  border-radius: 12px;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.acs-action-btn.gold { background: #ffcc33; color: #000; }
-.acs-action-btn.amber { background: #f59e0b; color: #000; }
-.acs-action-btn.red   { background: #dc2626; color: #fff; }
-
-.acs-action-btn.ghost {
-  background: transparent;
-  color: #fff;
-  border: 1px solid #334155;
-}
-
-/* ============================================================
-   🦄 ACS MODAL — VISIBILITY FIX (SINGLE SOURCE)
-   ============================================================ */
-
-.acs-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.66);
-  backdrop-filter: blur(6px);
-  display: flex;                /* 🔑 SIEMPRE FLEX */
-  align-items: center;
-  justify-content: center;
-  z-index: 99999;
-}
-
-.acs-modal.hidden {
-  display: none;                /* 🔑 ÚNICO control de ocultación */
-}
-
-
-.acs-modal-card.qatar {
-  width: min(520px, 92vw);
-  border-radius: 20px;
-  overflow: hidden;
-  background: linear-gradient(180deg, #0b132b 0%, #020617 100%);
-  border: 2px solid rgba(255, 204, 51, 0.70);
-  box-shadow: 0 0 42px rgba(255,204,51,0.20);
-}
-
-.acs-modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px;
-  background: rgba(255,179,0,0.10);
-  border-bottom: 1px solid rgba(255, 204, 51, 0.35);
-}
-
-.acs-modal-header h3 {
-  margin: 0;
-  font-size: 1.05rem;
-  color: #ffcc33;
-  letter-spacing: 0.4px;
-  text-shadow: 0 0 10px rgba(255,204,51,0.25);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.btn-close {
-  border: 1px solid rgba(255,204,51,0.45);
-  background: rgba(255,204,51,0.06);
-  color: #ffcc33;
-  width: 40px;
-  height: 36px;
-  border-radius: 12px;
-  cursor: pointer;
-  font-weight: 800;
-}
-
-.btn-close:hover {
-  background: rgba(255,204,51,0.14);
-}
-
-.acs-modal-body {
-  padding: 14px 16px 6px;
-  color: #dbe4ff;
-  text-align: left;
-}
-
-.flight-kicker {
-  font-size: 0.85rem;
-  color: #cbd6ff;
-  opacity: 0.95;
-  margin-bottom: 10px;
-}
-
-.flight-hero {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,204,51,0.25);
-  background: rgba(16,43,77,0.35);
-  box-shadow: inset 0 0 18px rgba(0,0,0,0.35);
-  margin-bottom: 10px;
-}
-
-.flight-hero .route {
-  font-weight: 800;
-  color: #ffe7a0;
-  letter-spacing: 0.2px;
-}
-
-.flight-hero .times {
-  font-family: "Orbitron", monospace;
-  color: #00ff80;
-  font-size: 0.92rem;
-  white-space: nowrap;
-}
-
-.flight-meta {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.meta-card {
-  border-radius: 14px;
-  padding: 10px 12px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-}
-
-.meta-card .label {
-  display: block;
-  font-size: 0.78rem;
-  color: #cbd6ff;
-  opacity: 0.9;
-  margin-bottom: 4px;
-}
-
-.meta-card .value {
-  font-weight: 700;
-  color: #ffdd80;
-}
-
-.acs-modal-footer {
-  padding: 12px 16px 16px;
-  border-top: 1px solid rgba(255, 204, 51, 0.20);
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.acs-modal-footer .btn-modal {
-  padding: 10px 12px;
-  border-radius: 14px;
-  border: none;
-  cursor: pointer;
-  font-weight: 800;
-  letter-spacing: 0.2px;
-  white-space: nowrap;
-}
-
-.btn-modal.gold { background: #ffcc33; color: #000; }
-.btn-modal.amber { background: #f59e0b; color: #000; }
-.btn-modal.red { background: #dc2626; color: #fff; }
-
-.btn-modal.ghost {
-  background: rgba(255,255,255,0.05);
-  color: #dbe4ff;
-  border: 1px solid rgba(255,255,255,0.14);
-}
-
-.btn-modal:hover { filter: brightness(1.06); transform: translateY(-1px); }
-
-/* ============================================================
-   🦄 M1 — MAINTENANCE MODAL (Qatar Luxury Unicorn) — 17DEC25
-   ============================================================ */
-
-.acs-maint-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.65);
-  backdrop-filter: blur(6px);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 99999;
-}
-
-.acs-maint-card {
-  width: min(420px, 92vw);
-  border-radius: 20px;
-  overflow: hidden;
-  background: linear-gradient(180deg, #0b132b 0%, #020617 100%);
-  border: 2px solid rgba(255, 204, 51, 0.65);
-  box-shadow: 0 0 42px rgba(255,204,51,0.22);
-}
-
-.acs-maint-header {
-  padding: 14px 18px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(255,179,0,0.12);
-  border-bottom: 1px solid rgba(255,204,51,0.35);
-}
-
-.acs-maint-header h3 {
-  margin: 0;
-  font-size: 1.1rem;
-  color: #ffcc33;
-  letter-spacing: 0.4px;
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.acs-maint-body {
-  padding: 18px;
-  color: #dbe4ff;
-}
-
-.maint-field {
-  margin-bottom: 14px;
-}
-
-.maint-field label {
-  display: block;
-  font-size: 0.8rem;
-  color: #cbd6ff;
-  margin-bottom: 6px;
-}
-
-.maint-field select,
-.maint-field input[type="time"] {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,204,51,0.25);
-  background: rgba(16,43,77,0.45);
-  color: #fff;
-  font-size: 0.95rem;
-}
-
-.maint-field input[type="time"] {
-  font-family: "Orbitron", monospace;
-}
-
-.acs-maint-footer {
-  padding: 14px 18px 18px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  border-top: 1px solid rgba(255,204,51,0.25);
-}
-
-.maint-btn {
-  padding: 10px;
-  border-radius: 14px;
-  border: none;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.maint-btn.apply {
-  background: #ffcc33;
-  color: #000;
-}
-
-.maint-btn.cancel {
-  background: rgba(255,255,255,0.05);
-  color: #fff;
-  border: 1px solid rgba(255,255,255,0.18);
-}
-
-.maint-btn:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
-}
-       
-/* ============================================================
-   🛠 SERVICE CHIP — TECH GRAY (QATAR LUXURY + INTERACTIVE)
-   ============================================================ */
-
-.service-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-
-  padding: 3px 12px;
-  font-size: 11px;
-  font-weight: 700;
-  border-radius: 999px;
-  white-space: nowrap;
-
-  background: rgba(160, 170, 185, 0.22);
-  border: 1px solid rgba(255, 179, 0, 0.55);
-  color: #E5E7EB;
-
-  box-shadow:
-    0 0 6px rgba(0,0,0,0.25),
-    inset 0 0 6px rgba(255,255,255,0.08);
-
-  /* 🔥 INTERACTIVO */
-  cursor: pointer;
-  pointer-events: auto;
-  position: relative;
-  z-index: 5;
-}
-
-.service-chip:hover {
-  filter: brightness(1.15);
-  box-shadow:
-    0 0 0 2px rgba(255, 200, 60, 0.35),
-    0 0 10px rgba(255, 179, 0, 0.25);
-}
-
-/* ============================================================
-   🟫 PASO 2 — B-CHECK DAY STYLE (GRAY CELL) — 17DEC25
-   ============================================================ */
-
-.bcheck-day {
-  background: rgba(120, 120, 120, 0.35) !important;
-  box-shadow: inset 0 0 0 1px rgba(160, 160, 160, 0.45);
-}
-
-.bcheck-day .chip,
-.bcheck-day .service-chip {
-  opacity: 0.85;
-}
-       
-/* ============================================================
-   🟦 PASO 3 — FLIGHT ACTIVE VISUAL (SAFE)
-   ============================================================ */
-
-.flying-now {
-  border: 2px solid #00ffcc;
-  box-shadow: 0 0 6px rgba(0, 255, 204, 0.8);
-  animation: flyingPulse 1.4s ease-in-out infinite;
-}
-
-@keyframes flyingPulse {
-  0%   { box-shadow: 0 0 4px rgba(0, 255, 204, 0.6); }
-  50%  { box-shadow: 0 0 10px rgba(0, 255, 204, 1); }
-  100% { box-shadow: 0 0 4px rgba(0, 255, 204, 0.6); }
-}
-
-/* === A17.3 — Maintenance Due Badge === */
-       
-.maintenance-dot{
-  color:#d32f2f;
-  font-size:12px;
-  margin-top:2px;
-  display:inline-block;
-  cursor:default;
-}
-
-@keyframes shake {
-  0% { transform: translateX(0); }
-  25% { transform: translateX(-6px); }
-  50% { transform: translateX(6px); }
-  75% { transform: translateX(-4px); }
-  100% { transform: translateX(0); }
-}
-
-/* ============================================================
-   🟦 ACS STATUS BADGES — QATAR LUXURY
-   ============================================================ */
-
-.acs-status-badge{
-  margin-top:4px;
-  display:inline-block;
-  padding:2px 10px;
-  font-size:10px;
-  font-weight:800;
-  border-radius:999px;
-  letter-spacing:0.4px;
-}
-
-/* 🟢 ACTIVE */
-.badge-active{
-  background:rgba(0,255,128,0.18);
-  border:1px solid rgba(0,255,128,0.45);
-  color:#00ff80;
-}
-
-/* 🟡 A / B */
-.badge-acheck,
-.badge-bcheck{
-  background:rgba(255,204,0,0.18);
-  border:1px solid rgba(255,204,0,0.45);
-  color:#ffd54f;
-}
-
-/* 🟠 C */
-.badge-ccheck{
-  background:rgba(255,152,0,0.22);
-  border:1px solid rgba(255,152,0,0.55);
-  color:#ffb74d;
-}
-
-/* 🔴 D */
-.badge-dcheck{
-  background:rgba(211,47,47,0.25);
-  border:1px solid rgba(211,47,47,0.6);
-  color:#ff5252;
-}
-
-/* 🔴 OVERDUE */
-.badge-overdue{
-  background:rgba(183,28,28,0.35);
-  border:1px solid rgba(255,0,0,0.75);
-  color:#ff1744;
-}
-
-/* 🟡 MAINTENANCE (Qatar Luxury Yellow) */
-       
-.badge-unknown{
-  background: rgba(242, 201, 76, 0.18);
-  border: 1px solid rgba(242, 201, 76, 0.55);
-  color: #F2C94C;
-}
-
-       
-/* ============================================================
-   🟦 B-CHECK CYCLE BAR — AIRBUS OCC STYLE
-   ------------------------------------------------------------
-   • 30-day monthly cycle
-   • Color transitions: Green → Yellow → Orange → Red
-   • Purely visual (read-only)
-   ============================================================ */
-
-.bcycle-box {
-  margin-top: 14px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,204,51,0.18);
-}
-
-.bcycle-header {
-  font-size: 0.75rem;
-  letter-spacing: 0.8px;
-  color: #cbd6ff;
-  margin-bottom: 6px;
-}
-
-.bcycle-bar {
-  width: 100%;
-  height: 10px;
-  border-radius: 6px;
-  background: rgba(255,255,255,0.12);
-  overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.18);
-}
-
-.bcycle-fill {
-  height: 100%;
-  width: 0%;
-  transition: width 0.4s ease;
-}
-
-.bcycle-info {
-  margin-top: 6px;
-  font-size: 0.8rem;
-  display: flex;
-  justify-content: space-between;
-  color: #dbe4ff;
-}
-
-/* ============================================================
-   🧭 ASSIGN ROUTE MODAL — FIXED SIZE + INTERNAL SCROLL
-   ------------------------------------------------------------
-   • No cambia tamaño del modal
-   • Body scrollea internamente
-   • Footer siempre visible
-   • Solo afecta assignFlightsModal
-   ============================================================ */
-
-#assignFlightsModal .acs-modal-card.qatar {
-  max-height: 85vh;          /* Altura estable */
-  height: 85vh;              /* Fija el tamaño */
-  display: flex;
-  flex-direction: column;
-}
-
-#assignFlightsModal .acs-modal-body {
-  flex: 1 1 auto;
-  overflow-y: auto;
-  padding-right: 6px;
-}
-
-#assignFlightsModal .acs-modal-footer {
-  flex: 0 0 auto;
-  position: sticky;
-  bottom: 0;
-  background: #0b1a35; /* mismo fondo oscuro */
-  padding-top: 10px;
-  z-index: 2;
-}
-       
-</style>
-
-</head>
-<body>
-
-<!-- ============================================================
-     === HEADER QATAR LUXURY (IDÉNTICO A DASHBOARD) =============
-     ============================================================ -->
-<header class="acs-header">
-
-  <div class="acs-left">
-    <img src="acs_logo.png" alt="ACS Logo">
-    <h1>Aviation Capital Simulator</h1>
-  </div>
-
-  <nav class="acs-nav">
-    <a href="dashboard.html">Main</a>
-    <a href="bank.html">Bank</a>
-    <a href="aircraft.html">Aircraft</a>
-    <a href="routes.html" class="active">Routes</a>
-    <a href="hr.html">HR</a>
-  </nav>
-
-  <div class="acs-right">
-    <a href="support.html" class="support-btn">Support</a>
-    <a class="logout-btn" onclick="handleLogout()">Logout</a>
-    <div id="acs-clock" class="acs-clock-header">00:00 — 01 JAN 1940</div>
-  </div>
-
-</header>
-
-<!-- ============================================================
-     === MAIN CONTENT ===========================================
-     ============================================================ -->
-     
-<main class="acs-main">
-
-  <h2
-    style="
-      font-size:1.9rem;
-      font-weight:700;
-      color:#ffca3a;
-      text-shadow:0 0 10px rgba(255,200,60,0.55);
-      letter-spacing:0.4px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:10px;
-    "
-  >
-      📅 Weekly Flight Schedule
-  </h2>
-
-  <p class="sub" style="font-size:1rem; color:#cbd6ff;">
-    Automatic schedule monitor with real-time route integration.
-  </p>
-
-  <table id="scheduleTable">
-    <thead>
-      <tr>
-        <th>Aircraft</th>
-        <th>Mon</th>
-        <th>Tue</th>
-        <th>Wed</th>
-        <th>Thu</th>
-        <th>Fri</th>
-        <th>Sat</th>
-        <th>Sun</th>
-        <th>Action Plan</th>
-      </tr>
-    </thead>
-    <tbody id="scheduleBody"></tbody>
-  </table>
-</div>
-
-  <div class="summary">
-    <p id="updateTime">Last update: --</p>
-  </div>
-
-  <button class="back-btn" onclick="window.location.href='routes.html'">
-    ⬅ Back to Routes
-  </button>
-
-</main>
-
-<!-- ============================================================
-     🦄 B2 — FLIGHT MODAL (Qatar Luxury Unicorn) — 17DEC25
-     REEMPLAZA COMPLETO el bloque #flightModal anterior
-     ============================================================ -->
-
-<div id="flightModal" class="acs-modal hidden">
-  <div class="acs-modal-card qatar">
-
-    <div class="acs-modal-header">
-      <h3 id="flightModalTitle">✈️ Flight</h3>
-      <button class="btn-close" onclick="closeFlightModal()">✕</button>
-    </div>
-
-    <div id="flightModalContent" class="acs-modal-body">
-      <!-- contenido dinámico por JS -->
-    </div>
-
-    <div class="acs-modal-footer">
-     <button class="btn-modal gold" onclick="editSelectedFlight()">✏️ EDIT</button>
-     <button class="btn-modal amber" onclick="ACS_removeSelectedFlights()">🧹 REMOVE FLIGHTS</button>
-     <button class="btn-modal red" onclick="ACS_openDeleteFlightsModal(getCurrentAircraftFromFlight())">🗑 DELETE FLIGHTS</button>
-     <button class="btn-modal ghost" onclick="closeFlightModal()">Close</button>
-   </div>
-
-  </div>
-</div>
-
-<!-- ============================================================
-     🦄 M2 — MAINTENANCE MODAL (Qatar Luxury Unicorn) — 17DEC25
-     REEMPLAZA COMPLETO #maintModal
-     ============================================================ -->
-
-<div id="maintModal" class="acs-maint-modal">
-  <div class="acs-maint-card">
-
-    <div class="acs-maint-header">
-      <h3>🛠 Plan Maintenance</h3>
-      <button class="btn-close" onclick="closeMaintModal()">✕</button>
-    </div>
-
-    <div class="acs-maint-body">
-
-      <div class="maint-field">
-        <label>Maintenance Type</label>
-        <select id="maintType">
-          <option value="A">🔧 A-Check (5 hours)</option>
-          <option value="B">⚙️ B-Check (24 hours)</option>
-        </select>
-      </div>
-
-      <div class="maint-field">
-        <label>Day</label>
-        <select id="maintDay">
-          <option value="mon">Monday</option>
-          <option value="tue">Tuesday</option>
-          <option value="wed">Wednesday</option>
-          <option value="thu">Thursday</option>
-          <option value="fri">Friday</option>
-          <option value="sat">Saturday</option>
-          <option value="sun">Sunday</option>
-        </select>
-      </div>
-
-      <div class="maint-field">
-  <label>Start Time</label>
-  <select id="maintStart">
-    <!-- opciones generadas por JS -->
-  </select>
-</div>
-
-    </div>
-
-    <div class="acs-maint-footer">
-      <button class="maint-btn apply" onclick="applyMaintenance()">Apply</button>
-      <button class="maint-btn cancel" onclick="closeMaintModal()">Cancel</button>
-    </div>
-
-  </div>
-</div>
-
-<!-- ============================================================
-     🦄 M3 — MAINTENANCE INFO MODAL (Qatar Luxury)
-     ------------------------------------------------------------
-     • Se abre al tocar un service-chip
-     • Permite EDITAR o REMOVER el servicio
-     ============================================================ -->
-
-<div id="maintenanceInfoModal" class="acs-modal hidden">
-  <div class="acs-modal-card qatar">
-
-    <div class="acs-modal-header">
-      <h3 id="maintInfoTitle">🛠 Maintenance</h3>
-      <button class="btn-close" onclick="closeMaintenanceInfoModal()">✕</button>
-    </div>
-
-    <div id="maintenanceInfoBody" class="acs-modal-body">
-      <!-- contenido dinámico -->
-    </div>
-
-    <div class="acs-modal-footer">
-      <button class="btn-modal gold" onclick="editMaintenanceFromInfo()">✏️ EDIT</button>
-      <button class="btn-modal red"  onclick="removeMaintenanceFromInfo()">🗑 REMOVE</button>
-      <button class="btn-modal ghost" onclick="closeMaintenanceInfoModal()">Close</button>
-    </div>
-
-  </div>
-</div>
-     
-<!-- ============================================================
-     === FLIGHT INFO MODAL — Qatar Luxury Edition ================
-     ============================================================ -->
-     
-<!-- === MODAL ERROR — MAINTENANCE A (Qatar Luxury) === -->
-<div id="maintenanceErrorModal" class="modal-overlay">
-  <div class="modal-content error-modal">
-    <h2 class="modal-title">❌ Invalid Maintenance Time</h2>
-    <p id="maintenanceErrorText" class="modal-text"></p>
-    <button class="modal-button" onclick="closeMaintenanceErrorModal()">OK</button>
-  </div>
-</div>
-
-<!-- ============================================================
-     🟦 PASO 4.2 — ASSIGN FLIGHTS MODAL (Qatar Luxury Premium)
-     ------------------------------------------------------------
-     ✅ Modal NUEVO (NO reutiliza #flightModal)
-     ============================================================ -->
-
-<div id="assignFlightsModal" class="acs-modal hidden">
-  <div class="acs-modal-card qatar">
-
-    <div class="acs-modal-header">
-      <h3 id="assignFlightsTitle">✈️ Assign Flights</h3>
-      <button class="btn-close" onclick="ACS_closeAssignFlightsModal()">✕</button>
-    </div>
-
-    <div id="assignFlightsBody" class="acs-modal-body">
-      <!-- contenido dinámico -->
-    </div>
-
-    <div class="acs-modal-footer">
-      <button class="btn-modal gold" onclick="ACS_confirmAssignFlights()">✅ Assign Selected</button>
-      <button class="btn-modal ghost" onclick="ACS_closeAssignFlightsModal()">Cancel</button>
-    </div>
-
-  </div>
-</div>
-     
-<footer>
-  © 2026 Aviation Capital Simulator. All rights reserved.
-</footer>
-
-<!-- ============================================================
-     ⏱ ACS TIME ENGINE — REQUIRED FOR SCHEDULE TABLE
-     ============================================================ -->
-
-<!-- ============================================================
-     ⏳ ACS TIME ENGINE V12 — 24/7 RECOVERY LAYER
-     ============================================================ -->
-<script src="acs_time_recovery.js"></script>
-<script src="time_engine.js"></script>
-
-<!-- 🌍 WORLD / AIRPORT ENGINE -->
-<script src="engine/acs_world_engine.js"></script>
-     
-<script>
-
-/* ============================================================
-   ⏱ PASO 1 — SCHEDULE TABLE TIME LISTENER (FINAL)
-   Conecta Schedule Table al Time Engine ACS
-   ============================================================ */
-
-// ⏱ Tiempo local del módulo (NO global)
-let ACS_TABLE_TIME = {
-  minute: 0,
-  day: null,
-  date: null
-};
-
-// 🔌 Conexión oficial al Time Engine
-if (typeof registerTimeListener === "function") {
-  registerTimeListener((currentTime) => {
-
-    // currentTime es Date del simulador
-    ACS_TABLE_TIME.minute =
-      currentTime.getHours() * 60 + currentTime.getMinutes();
-
-    ACS_TABLE_TIME.day = currentTime.getDay(); // 0–6
-    ACS_TABLE_TIME.date = currentTime;
-
-    // 🔄 Re-render seguro (solo si la tabla ya existe)
-    if (typeof renderSchedule === "function") {
-      renderSchedule();
-    }
-  });
-} else {
-  console.warn("⛔ Time Engine not available for Schedule Table");
-}
-     
-// ============================================================
-// 🔧 B3 — normalizeModel EXTENDIDO
-// Unifica nombres: mayúsculas, sin espacios, sin guiones,
-// sin diagonales, sin puntos, sin paréntesis.
-// ============================================================
-     
-function normalizeModel(m){
-  if(!m) return "";
-
-  return String(m)
-    .toUpperCase()
-    .replace(/[\s\-\/\.\(\)\_]/g, "")  // quitar espacios, guiones, barras, puntos, paréntesis, guion bajo
-    .replace(/AIRBUS/g, "")           // limpiar prefijos redundantes si vienen
-    .replace(/BOEING/g, "")           // igual
-    .trim();
-}
-
-/* ============================================================
-   🟦 A3.1 — AIRCRAFT STATUS RESOLVER (SCHEDULE · READ ONLY)
-   ------------------------------------------------------------
-   Source of truth: ACS_MyAircraft
-   Schedule Table NO ejecuta lógica, solo refleja estado
-   ============================================================ */
-
-function ACS_getAircraftStatusBadge(ac){
-
-  if (!ac) {
-    return { label: "UNKNOWN", class: "badge-unknown" };
-  }
-
-  // 🔴 OVERDUE — prioridad absoluta
-if (
-  ac.maintenanceOverdue === true ||
-  ac?.maintenance?.bOverdue === true
-) {
-  return { label: "OVERDUE", class: "badge-overdue" };
-}
-
-  // 🔧 SERVICIOS MAYORES
-  if (ac.status === "In D-Check") {
-    return { label: "D-Check", class: "badge-dcheck" };
-  }
-
-  if (ac.status === "In C-Check") {
-    return { label: "C-Check", class: "badge-ccheck" };
-  }
-
-  // ⚙️ B-CHECK
-  if (ac.status === "B-Check") {
-    return { label: "B-Check", class: "badge-bcheck" };
-  }
-
-  // 🔧 A-CHECK
-  if (ac.status === "A-Check") {
-    return { label: "A-Check", class: "badge-acheck" };
-  }
-
-  // 🟢 OPERATIVO
-  if (ac.status === "Active") {
-    return { label: "ACTIVE", class: "badge-active" };
-  }
-
-  // ⚪ FALLBACK
-  return {
-    label: (ac.status || "UNKNOWN").toUpperCase(),
-    class: "badge-unknown"
-  };
-}
-
-/* ============================================================
-   🟧 A3.2 — READ OPERATIONAL STATE (MyAircraft → Schedule)
-   ------------------------------------------------------------
-   - Lee C/D y grounded REAL desde MyAircraft
-   - READ ONLY (Schedule NO modifica nada real)
-   ============================================================ */
-function ACS_ReadOperationalState(ac) {
-
-  const ops = {
-    grounded: false,
-    reason: null,      // "C-check" | "D-check" | "grounded"
-    level: null,       // "C" | "D" | null
-    source: "MyAircraft"
-  };
-
-  if (!ac) {
-    ac = {};
-  }
-
-  // Grounded real
-  if (ac.canFly === false) {
-    ops.grounded = true;
-    ops.reason = ac.groundReason || "grounded";
-  }
-
-  // C/D real (acepta formatos comunes)
-  const st = String(ac.status || "").trim();
-
-  if (st === "C" || st === "D") {
-    ops.grounded = true;
-    ops.level = st;
-    ops.reason = (st === "C") ? "C-check" : "D-check";
-  }
-
-  if (st === "In C-Check") {
-    ops.grounded = true;
-    ops.level = "C";
-    ops.reason = "C-check";
-  }
-
-  if (st === "In D-Check") {
-    ops.grounded = true;
-    ops.level = "D";
-    ops.reason = "D-check";
-  }
-
-  // Estado local SOLO para render
-  ac.__ops = ops;
-
-  return ac;
-}
-
-/* ============================================================
-   🟧 A3.7 — ACTIVE SERVICE FILTER (OPS AUTHORITY)
-   ------------------------------------------------------------
-   • Mantiene TODOS los services para planificación visual
-   • SOLO expone services ACTIVOS a SkyTrack / runtime
-   • SkyTrack NO se toca
-   ============================================================ */
-
-function ACS_isServiceActiveNow(service) {
-  if (!service || service.type !== "service") return false;
-  if (!service.assigned) return false;
-
-  // Día actual (mon..sun)
-  const today = ACS_TABLE_TIME?.day;
-  if (!today || service.day !== today) return false;
-
-  // Hora actual en minutos
-  const nowMin = ACS_TABLE_TIME.minute;
-
-  const toMin = (hhmm) => {
-    if (!hhmm || typeof hhmm !== "string") return NaN;
-    const [h, m] = hhmm.split(":").map(Number);
-    if (!Number.isFinite(h) || !Number.isFinite(m)) return NaN;
-    return h * 60 + m;
-  };
-
-  const startMin = toMin(service.start);
-  const endMin   = toMin(service.end);
-
-  if (!Number.isFinite(startMin) || !Number.isFinite(endMin)) return false;
-
-  return nowMin >= startMin && nowMin < endMin;
-}
-     
-/* ============================================================
-   🟧 A3.1 — SCHEDULE VISUAL SERVICE STATE (ACS)
-   ------------------------------------------------------------
-   - Schedule decide SOLO A/B como servicio planificado (visual)
-   - NO modifica estado real (canFly/status/groundReason)
-   - NO persiste en ACS_MyAircraft
-   ============================================================ */
-function ACS_EvaluateScheduleServiceState(ac, scheduleItems) {
-
-  // Estado visual local (NO persistente)
-  ac.__schedule = {
-    hasService: false,
-    type: null,        // "A" | "B"
-    reason: null,      // "A-check" | "B-check"
-    visualOnly: true
-  };
-
-  if (!ac || !ac.id) return ac;
-  if (!Array.isArray(scheduleItems)) return ac;
-
-  // Busca A/B ACTIVO para este avión (en scheduleItems)
-  const svc = scheduleItems.find(it =>
-    it &&
-    it.type === "service" &&
-    String(it.aircraftId || "").trim() === String(ac.id || "").trim() &&
-    (it.serviceType === "A" || it.serviceType === "B") &&
-    it.assigned === true
-  );
-
-  if (svc) {
-    ac.__schedule.hasService = true;
-    ac.__schedule.type = svc.serviceType;
-    ac.__schedule.reason = (svc.serviceType === "A") ? "A-check" : "B-check";
-  }
-
-  return ac;
-}
-     
-/* ============================================================
-   🟦 PASO 4.2-A — FLIGHT COMPATIBILITY HELPERS (MODEL EXACT)
-   ============================================================ */
-
-function ACS_isFlightCompatibleWithAircraft(flight, aircraft) {
-
-  // Normalizador seguro
-  const norm = (v) => String(v || "")
-    .normalize("NFKC")
-    .replace(/\s+/g, " ")
-    .replace(/\u00A0/g, " ")
-    .trim()
-    .toUpperCase();
-
-  if (!flight || !aircraft) return false;
-
-  // ✅ Vuelo: usar SIEMPRE modelKey (o aircraft) como fuente real
-  const fKey = norm(flight.modelKey || flight.aircraft || flight.model || flight.aircraftModel);
-
-  // ✅ Avión: usar model real del fleet
-  const aKey = norm(aircraft.model || aircraft.modelKey || aircraft.aircraft || aircraft.name);
-
-  if (!fKey || !aKey) return false;
-
-  // Compatibilidad estricta por modelo
-  return fKey === aKey;
-}
-
-function ACS_isFlightAlreadyAssigned(flight){
-  return !!(flight && flight.aircraftId);
-}
-     
-// ============================================================
-// === REAL FLEET — Unified with My Aircraft ==================
-// === Source: ACS_MyAircraft (official fleet key) ============
-// ============================================================
-     
-function getRealFleet() {
-  return JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-}
-
-function getCurrentAircraftFromFlight() {
-  if (!window.ACS_selectedFlightItem) return null;
-
-  const acId = window.ACS_selectedFlightItem.aircraftId;
-  if (!acId) return null;
-
-  const fleet = getRealFleet();
-  return fleet.find(ac => String(ac.id) === String(acId)) || null;
-}
-     
-const TURNAROUND_MIN = 45;
-
-
-/* ============================================================
-   ⏱ SAFE toMin — prevents undefined hh:mm crashes
-   ============================================================ */
-const toMin = hhmm => {
-  if (!hhmm || typeof hhmm !== "string" || !hhmm.includes(":")) {
-    return null;
-  }
-  const [h, m] = hhmm.split(":").map(Number);
-  return h * 60 + m;
-};
-
-const toHHMM = min => {
-  const h = Math.floor(min/60)%24;
-  const m = min%60;
-  return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
-};
-     
-/* ============================================================
-   🔧 B1 — DÍAS DEL SCHEDULE (OBLIGATORIO)
-   ============================================================ */
-
-const days = ["mon","tue","wed","thu","fri","sat","sun"];
-
-/* ============================================================
-   ⏱ SAFE SIM TIME — SCHEDULE ONLY
-   ============================================================ */
-
-function ACS_getSimTimeSafe(){
-
-  if (typeof ACS_TIME === "undefined") return null;
-
-  const t = ACS_TIME.currentTime;
-
-  if (t instanceof Date) {
-    const ts = t.getTime();
-    return Number.isFinite(ts) ? ts : null;
-  }
-
-  if (typeof t === "number" && Number.isFinite(t)) {
-    return t;
-  }
-
-  if (typeof t === "string") {
-    const parsed = new Date(t).getTime();
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-
-  return null;
-}
-     
-/* ============================================================
-   🔧 B2 — RESTAURAR STORE KEYS (OBLIGATORIO)
-   ============================================================ */
-     
-const STORE_KEY = "scheduleItems";
-const ROUTE_KEY = "confirmedRoute";
-
-const getItems = () => JSON.parse(localStorage.getItem(STORE_KEY) || "[]");
-const setItems = list => localStorage.setItem(STORE_KEY, JSON.stringify(list));
-
-const getRoute = () => {
-  const r = localStorage.getItem(ROUTE_KEY);
-  return r ? JSON.parse(r) : null;
-};
-
-
-// ============================================================
-// FLEET — Helper wrappers (compatibilidad legacy) =============
-// ============================================================
-     
-const getFleet = () => getRealFleet();
-const setFleet = f => localStorage.setItem("ACS_MyAircraft", JSON.stringify(f));
-
-(function initFleet(){
-  const current = getRealFleet();
-
-  // Si por alguna razón la clave no es un array, la normalizamos
-  if (!Array.isArray(current)) {
-    localStorage.setItem("ACS_MyAircraft", "[]");
-  }
-})();
-
-/* ============================================================
-   🟦 A-CHECK — WEEKLY VISUAL ENGINE
-   ------------------------------------------------------------
-   • NO usa lastCheck
-   • Basado en día + hora programada
-   • Devuelve remaining en días + horas
-   ============================================================ */
-
-function ACS_getWeeklyACheckVisual(dayStr, hourStart){
-
-  const DAYS = ["sun","mon","tue","wed","thu","fri","sat"];
-
-  const nowRaw = ACS_TIME?.currentTime;
-  const now =
-    nowRaw instanceof Date ? nowRaw.getTime() :
-    typeof nowRaw === "number" ? nowRaw :
-    new Date(nowRaw).getTime();
-
-  if (!Number.isFinite(now)) {
-    return { label: "—", days: 0, hours: 0 };
-  }
-
-  const nowDate = new Date(now);
-
-  const currentDay = nowDate.getUTCDay();
-  const targetDay = DAYS.indexOf((dayStr || "").toLowerCase());
-
-  if (targetDay === -1) {
-    return { label: "—", days: 0, hours: 0 };
-  }
-
-  // 🔹 días hasta próximo día elegido
-  let deltaDays = targetDay - currentDay;
-  if (deltaDays < 0) deltaDays += 7;
-
-  const next = new Date(now);
-
-  next.setUTCDate(nowDate.getUTCDate() + deltaDays);
-
-  // 🔹 usar EXACTAMENTE la hora elegida por el usuario
-  let hh = 0, mm = 0;
-
-  if (typeof hourStart === "string" && hourStart.includes(":")) {
-    [hh, mm] = hourStart.split(":").map(Number);
-  }
-
-  next.setUTCHours(hh || 0, mm || 0, 0, 0);
-
-  // 🔹 si es hoy y ya pasó → próxima semana
-  if (deltaDays === 0 && next.getTime() <= now) {
-    next.setUTCDate(next.getUTCDate() + 7);
-  }
-
-  const diff = next.getTime() - now;
-
-  const totalHours = Math.floor(diff / (1000 * 60 * 60));
-  const days = Math.floor(totalHours / 24);
-  const hours = totalHours % 24;
-
-  return {
-    label: `${days}d ${hours}h`,
-    days,
-    hours
-  };
-}
-     
-/* ============================================================
-   🟦 B-CHECK CYCLE — CAMO REAL (INTERVAL DRIVEN)
-   ------------------------------------------------------------
-   • Intervalo fijo 30 días
-   • Barra depende SOLO del dueDate técnico
-   • Ventana semanal NO afecta barra
-   • Estilo KLM / CAMO real
-   ============================================================ */
-
-function ACS_getMonthlyBCycleVisual(ac) {
-
-  const DEFAULT = {
-    remainingDays: 30,
-    percent: 100,
-    color: "#00c853"
-  };
-
-  if (!ac) return DEFAULT;
-  if (!ACS_TIME || !ACS_TIME.currentTime) return DEFAULT;
-
-  const now = ACS_getSimTimeSafe();
-  if (!Number.isFinite(now)) return DEFAULT;
-
-  const MS_DAY = 24 * 60 * 60 * 1000;
-  const INTERVAL = 30 * MS_DAY;
-
-  let last = ac.lastBCheckAt;
-
-// 🔹 FIX REAL: soportar number, string ISO y string numérico
-if (typeof last === "string") {
-  const trimmed = last.trim();
-
-  // Caso 1: string numérico puro
-  if (/^\d+$/.test(trimmed)) {
-    last = Number(trimmed);
-  } else {
-    // Caso 2: ISO date string
-    const parsed = new Date(trimmed).getTime();
-    last = Number.isFinite(parsed) ? parsed : now;
-  }
-}
-
-// 🔹 Fallback final seguro
-if (!Number.isFinite(last)) {
-  last = now;
-}
-
-  const dueDate = last + INTERVAL;
-  const remainingMs = Math.max(0, dueDate - now);
-  const remainingDays = Math.ceil(remainingMs / MS_DAY);
-
-  const percent = Math.min(
-    100,
-    Math.max(0, (remainingMs / INTERVAL) * 100)
-  );
-
-  let color = "#00c853";
-
-  if (remainingDays <= 2) {
-    color = "#d50000";
-  } else if (remainingDays <= 7) {
-    color = "#ff9100";
-  } else if (remainingDays <= 15) {
-    color = "#ffd600";
-  }
-
-  return {
-    remainingDays,
-    percent,
-    color,
-    dueDate
-  };
-}
-     
-/* ============================================================
-   🟢 CAMO B-CHECK ENGINE — FINAL STABLE VERSION
-   ============================================================ */
-
-function ACS_handleMonthlyBIntegration(ac) {
-
-  const now = ACS_getSimTimeSafe();
-  if (!Number.isFinite(now)) return ac;
-  const DAY_MS = 24 * 60 * 60 * 1000;
-  const CYCLE_MS = 30 * DAY_MS;
-
-  /* ============================================================
-   🔒 MAJOR CHECK OVERRIDE — RESET & FREEZE B
-   Date: 2026-03-02
-   Purpose:
-   - If aircraft enters C/D:
-       • Reset B cycle
-       • Freeze B completely
-       • Prevent overdue
-       • Prevent activation
-   ============================================================ */
-
-if (
-  ac.status === "Maintenance" &&
-  (ac.maintenanceType === "C" || ac.maintenanceType === "D")
-) {
-
-  // 🔹 Reset B cycle to NOW (C kills B)
-  ac.lastBCheckAt = now;
-
-  // 🔹 Clear any B flags
-  ac.bOverdue = false;
-  ac.bInProgress = false;
-  ac.bStartTime = null;
-
-  return ac; // Freeze while C/D active
-}
-     
-  if (!ac.lastBCheckAt) return ac;
-
-  const dueDate = ac.lastBCheckAt + CYCLE_MS;
-
-  // 🔹 1️⃣ Aún no vence → limpiar flags
-  if (now < dueDate) {
-    ac.bOverdue = false;
-    ac.maintenanceOverdue = false;
-    return ac;
-  }
-
-  // 🔹 2️⃣ Leer programación real
-  let scheduleItems = [];
-  try {
-    scheduleItems = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-  } catch (e) {}
-
-  const service = scheduleItems.find(e =>
-    e.aircraftId === ac.id &&
-    e.type === "service" &&
-    e.serviceType === "B"
-  );
-
-  // 🔹 3️⃣ Si no hay programación → overdue
-  if (!service) {
-    ac.bOverdue = true;
-    ac.maintenanceOverdue = true;
-    return ac;
-  }
-
-  // 🔹 4️⃣ Activación automática (DÍA + HORA REAL)
-
-const daysMap = ["sun","mon","tue","wed","thu","fri","sat"];
-const nowDate = new Date(now);
-
-const todaySim = daysMap[nowDate.getDay()];
-const currentMinutes = nowDate.getHours() * 60 + nowDate.getMinutes();
-
-// Convertir ventana "01:00" → minutos
-function toMinutes(hhmm) {
-  if (!hhmm || !hhmm.includes(":")) return null;
-  const [h, m] = hhmm.split(":").map(Number);
-  return (h * 60) + m;
-}
-
-const startMin = toMinutes(service.start);
-const endMin   = toMinutes(service.end);
-
-// Validaciones
-const isScheduledToday = service.day === todaySim;
-const isWithinWindow =
-  startMin !== null &&
-  endMin !== null &&
-  currentMinutes >= startMin &&
-  currentMinutes <= endMin;
-
-// 👉 ENTRADA REAL AL B
-if (
-  isScheduledToday &&
-  isWithinWindow &&
-  ac.status !== "B-Check"
-) {
-  ac.status = "B-Check";
-  ac.bInProgress = true;
-  ac.bStartTime = now;
-
-  console.log("🟡 B-CHECK START:", {
-    aircraft: ac.id,
-    simTime: nowDate.toISOString(),
-    window: service.start + " → " + service.end
-  });
-}
-
-  // 🔹 5️⃣ Completar después de 24h — FIX ROBUSTO
-
-if (ac.bInProgress) {
-
-  // 🛡️ Validar bStartTime correctamente
-  if (!Number.isFinite(ac.bStartTime)) {
-    console.warn("⚠️ B-CHECK: bStartTime inválido — reiniciando");
-    ac.bStartTime = now;
-    return ac;
-  }
-
-  const endTime = ac.bStartTime + DAY_MS;
-
-  if (now >= endTime) {
-
-    // ✅ Cierre correcto del B
-    ac.lastBCheckAt = now;
-    ac.status = "Active";
-    ac.bInProgress = false;
-    ac.bStartTime = null;
-
-    ac.bOverdue = false;
-    ac.maintenanceOverdue = false;
-
-    console.log("🟢 B-CHECK COMPLETED:", ac.id);
-  }
-}
-
-  // 🔹 6️⃣ Si ya venció pero no es su día todavía → mantener due (sin overdue)
-  ac.bOverdue = false;
-  ac.maintenanceOverdue = false;
-
-  return ac;
-}
-     
-// ============================================================
-// === AIRCRAFT HOVER CARD — Qatar Luxury v3 ==================
-// ============================================================
-function showAircraftHover(ac, cell) {
-
-  // Remover card anterior si existe
-  const old = document.querySelector(".aircraft-hover-card");
-  if (old) old.remove();
-
-  // Ocultar hover si el avión no está en servicio especial
-  const st = ac.status || "";
-  const activeStatuses = [
-    "In C-Check",
-    "In D-Check",
-    "Pending Delivery",
-    "B-Check"
-  ];
-  if (!activeStatuses.includes(st)) return;
-
-  // Crear card
-  const card = document.createElement("div");
-  card.className = "aircraft-hover-card";
-
-  // Fechas para progreso
-  const start = ac.lastC || ac.lastD || ac.deliveryStart || null;
-  const end   = ac.deliveryDate || ac.nextC || ac.nextD || null;
-
-  let pct = 0;
-  if (start && end) {
-    const now = new Date();
-    const s = new Date(start);
-    const e = new Date(end);
-    pct = Math.min(100, Math.max(0, ((now - s) / (e - s)) * 100));
-  }
-
-  // Icono según servicio
-  const icon =
-    st === "In C-Check"       ? "🛠" :
-    st === "In D-Check"       ? "⚙️" :
-    st === "Pending Delivery" ? "⏳" :
-    st === "B-Check"          ? "🔧" : "";
-
-  // Construcción del contenido
-  card.innerHTML = `
-    <h4>${ac.registration}</h4>
-    <p style="margin-top:-4px; font-size:0.85rem; color:#ffdd80;">
-      ${ac.model || "—"} — ${icon}
-    </p>
-
-    <p style="margin:6px 0 10px; color:#cbd6ff;">
-      Started: ${start ? new Date(start).toDateString() : "—"}<br>
-      Ends: ${end ? new Date(end).toDateString() : "—"}
-    </p>
-
-    <div class="progress-bar">
-      <div class="progress-fill" style="width:${pct.toFixed(0)}%"></div>
-    </div>
-    <span class="progress-label">${pct.toFixed(0)}%</span>
-  `;
-
-  // Mostrar en la celda
-  cell.style.position = "relative";
-  cell.appendChild(card);
-  setTimeout(() => card.classList.add("visible"), 10);
-}
-
-function hideAircraftHover(){
-  const c = document.querySelector(".aircraft-hover-card");
-  if (c) c.remove();
-}
-     
-/* ============================================================
-   🟧 A6 — MIGRATE LEGACY SCHEDULE ITEMS (ONE-TIME)
-   ------------------------------------------------------------
-   - Detecta vuelos sin aircraftId
-   - Resuelve aircraftId desde ACS_MyAircraft
-   - Preserva todos los demás campos
-   - Ejecuta una sola vez (flag protegido)
-   ============================================================ */
-
-(function migrateLegacyScheduleItems(){
-
-  const FLAG_KEY = "ACS_schedule_migrated_v1";
-  if (localStorage.getItem(FLAG_KEY)) return;
-
-  let items = [];
-  let fleet = [];
-
-  try {
-    items = JSON.parse(localStorage.getItem("scheduleItems")) || [];
-  } catch {
-    items = [];
-  }
-
-  try {
-    fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft")) || [];
-  } catch {
-    fleet = [];
-  }
-
-  if (!Array.isArray(items) || items.length === 0) {
-    localStorage.setItem(FLAG_KEY, "1");
-    return;
-  }
-
-  if (!Array.isArray(fleet) || fleet.length === 0) {
-    console.warn("🟧 A6: Fleet empty — migration skipped");
-    return;
-  }
-
-  let migratedCount = 0;
-
-  items.forEach(it => {
-
-    if (!it || it.type !== "flight") return;
-
-    // Ya está normalizado
-    if (it.aircraftId) return;
-
-     // =====================================
-    // ⏱ NORMALIZE LEGACY TIME (CRITICAL)
-    // =====================================
-
-    const timeToAbsMin = (hhmm) => {
-      if (!hhmm || typeof hhmm !== "string") return null;
-      const p = hhmm.split(":");
-      if (p.length !== 2) return null;
-      const h = parseInt(p[0], 10);
-      const m = parseInt(p[1], 10);
-      if (isNaN(h) || isNaN(m)) return null;
-      return (h * 60) + m;
-    };
-
-    // Departure
-    if (typeof it.depAbsMin !== "number") {
-      const depSrc =
-        it.depTime ||
-        it.dep ||
-        it.blockOut ||
-        null;
-
-      const depMin = timeToAbsMin(depSrc);
-      if (typeof depMin === "number") {
-        it.depAbsMin = depMin;
-      }
+    :root {
+      color-scheme: dark;
+      --acs-bg: #081530;
+      --acs-panel: rgba(10, 20, 45, 0.88);
+      --acs-panel-2: rgba(20, 35, 70, 0.78);
+      --acs-gold: #ffca3a;
+      --acs-gold-2: #ffb300;
+      --acs-text: #dbe4ff;
+      --acs-muted: #9dadd5;
+      --acs-green: #00d88a;
+      --acs-red: #ff5263;
+      --acs-border: rgba(255, 179, 0, 0.20);
     }
 
-    // Arrival
-    if (typeof it.arrAbsMin !== "number") {
-      const arrSrc =
-        it.arrTime ||
-        it.arr ||
-        it.blockIn ||
-        null;
-
-      const arrMin = timeToAbsMin(arrSrc);
-      if (typeof arrMin === "number") {
-        it.arrAbsMin = arrMin;
-      }
-    }
-       
-    // Intentar resolver por modelo / tipo
-    const modelKey =
-      it.acType ||
-      it.aircraftModel ||
-      it.modelKey ||
-      it.aircraft ||
-      "";
-
-    if (!modelKey) return;
-
-    const match = fleet.find(ac =>
-      ac &&
-      ac.model === modelKey &&
-      ac.status === "Active"
-    );
-
-    if (!match || !match.id) return;
-
-    it.aircraftId = match.id;
-    it.acType = match.model || it.acType || "";
-    migratedCount++;
-  });
-
-  if (migratedCount > 0) {
-    localStorage.setItem("scheduleItems", JSON.stringify(items));
-    console.log(`🟧 A6: Migrated ${migratedCount} legacy flight(s)`);
-  }
-
-  localStorage.setItem(FLAG_KEY, "1");
-
-})();
-
-/* ============================================================
-   🧠 ST-MA LINK — DOMINANT MAINTENANCE OVERRIDE (C/D > B)
-   Date: 2026-03-02
-   Purpose:
-   - If My Aircraft says C/D, Schedule Table MUST ignore B status
-   - B time is frozen while in C/D
-   - When released from C/D, B timer restarts from release moment
-   ============================================================ */
-
-function ACS_isMajorCheckStatus(status){
-  const st = String(status || "").trim();
-  return (
-    st === "In C-Check" || st === "C-Check" || st === "C" ||
-    st === "In D-Check" || st === "D-Check" || st === "D"
-  );
-}
-
-function ACS_applyDominantMaintenanceFromMyAircraft(fleetAircraft, myAircraft){
-  // fleetAircraft = objeto que usa Schedule Table (tu "real fleet")
-  // myAircraft = objeto del array ACS_MyAircraft (source of truth para status)
-
-  if (!fleetAircraft || !myAircraft) return fleetAircraft;
-
-  const now = (window.ACS_TIME && ACS_TIME.currentTime) ? +ACS_TIME.currentTime : Date.now();
-
-  const myStatus = String(myAircraft.status || "").trim();
-
-  // 1) Si My Aircraft está en C/D → domina y bloquea B
-  if (ACS_isMajorCheckStatus(myStatus)) {
-
-    // domina el status en la tabla
-    fleetAircraft.status = myStatus;
-
-    // bloquea B mientras esté en C/D
-    fleetAircraft.__bcheckLockedByMajor = true;
-    if (!fleetAircraft.__bcheckLockSince) fleetAircraft.__bcheckLockSince = now;
-
-    // IMPORTANTÍSIMO: mientras esté bloqueado, NO debe quedar B overdue.
-    // (tu cálculo de overdue debe respetar __bcheckLockedByMajor)
-    return fleetAircraft;
-  }
-
-  // 2) Si ya NO está en C/D pero antes lo estuvo → liberar y reiniciar reloj B
-  if (fleetAircraft.__bcheckLockedByMajor) {
-
-    // salir del lock
-    fleetAircraft.__bcheckLockedByMajor = false;
-    fleetAircraft.__bcheckLockSince = null;
-
-    // reset del reloj B al momento de liberación
-    // (esto cumple tu regla: “esperar lo libere my aircraft para que empiece a rodar el tiempo de B check”)
-    fleetAircraft.lastBCheckAt = now;
-  }
-
-  return fleetAircraft;
-}     
-
-// ============================================================
-// === RENDER PRINCIPAL DEL SCHEDULE ==========================
-// ============================================================
-     
-function renderSchedule() {
-
-  const tbody = document.getElementById("scheduleBody");
-  tbody.innerHTML = "";
-
-  const items = getItems();
-  const fleet = getRealFleet();
-  const nowTs = ACS_TABLE_TIME?.date?.getTime?.() || Date.now();
-
-// 🟥 CAMO MONTHLY AUTHORITY (INTERVAL + WINDOW)
-
-fleet.forEach(ac => {
-
-  // Integración CAMO real (ventana + overdue + activación)
-     
-  ACS_handleMonthlyBIntegration(ac);
-
-  // ============================================================
-// 🔒 PERSISTIR CAMBIOS DEL B-CHECK (CRÍTICO)
-// ============================================================
-localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
-     
-});
-
-// 🔒 OPS FILTER — SkyTrack authority
-const operationalItems = items.filter(it => {
-  if (it.type === "flight") return true;
-  if (it.type === "service") return ACS_isServiceActiveNow(it);
-  return false;
-});
-     
-// ============================================================
-// 🟧 A3.3 — APPLY STATES (READ ONLY + VISUAL ONLY)
-// ============================================================
-
-fleet.forEach(ac => {
-  ACS_ReadOperationalState(ac);
-  ACS_EvaluateScheduleServiceState(ac, operationalItems);
-});
-    
-// ============================================================
-// 🟦 3A.1 — INDEXAR ITEMS POR AIRCRAFT ID (FLIGHTS + SERVICES)
-// ============================================================
-
-const byAircraftId = {};
-
-items.forEach(it => {
-
-  if (!it) return;
-  if (it.__edited === true) return;
-
-  const key = String(it.aircraftId || "").trim();
-  if (!key) return;
-
-  const day = String(it.day || "").toLowerCase();
-  if (!["mon","tue","wed","thu","fri","sat","sun"].includes(day)) return;
-
-  if (it.type !== "flight" && it.type !== "service") return;
-
-  if (!byAircraftId[key]) byAircraftId[key] = [];
-  byAircraftId[key].push(it);
-});
-
-if (!fleet.length) {
-
-  for (let i = 0; i < 5; i++) {
-
-    const tr = document.createElement("tr");
-
-    const tdTail = document.createElement("td");
-    tdTail.textContent = "(empty)";
-    tr.appendChild(tdTail);
-
-    days.forEach(() => {
-      const td = document.createElement("td");
-      td.textContent = "—";
-      tr.appendChild(td);
-    });
-
-    const planTd = document.createElement("td");
-    const wrap = document.createElement("div");
-    wrap.className = "plan-actions";
-
-    const assignBtn = document.createElement("button");
-    assignBtn.className = "btn btn-assign";
-    assignBtn.textContent = "Assign Route";
-    assignBtn.onclick = () =>
-      alert("⚠ No aircraft available. Buy one first.");
-
-    const maintBtn = document.createElement("button");
-    maintBtn.className = "btn btn-maint";
-    maintBtn.textContent = "Plan Maintenance";
-    maintBtn.onclick = () =>
-      alert("⚠ No aircraft available. Buy one first.");
-
-    wrap.appendChild(assignBtn);
-    wrap.appendChild(maintBtn);
-    planTd.appendChild(wrap);
-    tr.appendChild(planTd);
-
-    tbody.appendChild(tr);
-  }
-
-  document.getElementById("updateTime").textContent =
-    "Last update: " + new Date().toLocaleTimeString();
-
-  return;
-}
-
-// ============================================================
-// CON FLOTA
-// ============================================================
-
-fleet.forEach(ac => {
-
-  const tr = document.createElement("tr");
-  tr.dataset.aircraftId = ac.id || "";
-
-  const realModel = ac.model || ac.type || ac.data?.model || "";
-  const modelKey  = normalizeModel(realModel);
-  tr.dataset.model = modelKey;
-
-  const tdTail = document.createElement("td");
-  tdTail.classList.add("col-aircraft");
-  tdTail.dataset.model = modelKey;
-
-  const reg = ac.registration && ac.registration.trim()
-    ? ac.registration
-    : "—";
-
-  const manu = ac.manufacturer || "—";
-  const status = ACS_getAircraftStatusBadge(ac);
-
-  const wrapInfo = document.createElement("div");
-  wrapInfo.style.lineHeight = "1.25";
-  wrapInfo.style.textAlign = "left";
-
-  wrapInfo.innerHTML = `
-    <strong>${reg}</strong><br>
-    <span>${realModel}</span><br>
-    <span style="color:#ffca3a;font-weight:600;">
-      ${manu.toUpperCase()}
-    </span>
-    <div class="acs-status-badge ${status.class}">
-      ${status.label}
-    </div>
-  `;
-
-  tdTail.appendChild(wrapInfo);
-  tdTail.onmouseenter = () => showAircraftHover(ac, tdTail);
-  tdTail.onmouseleave = hideAircraftHover;
-
-  tr.appendChild(tdTail);
-
-  days.forEach(day => {
-
-    const td = document.createElement("td");
-    const aircraftId = String(ac.id || "").trim();
-
-    const rawDayItems = (byAircraftId[aircraftId] || []).filter(x => {
-      if (!x) return false;
-      if (String(x.day || "").toLowerCase() !== day) return false;
-      if (x.__edited === true) return false;
-
-      if (x.type === "service") return true;
-
-      if (x.type === "flight") {
-        if (x.assigned !== true) return false;
-        return ACS_isFlightCompatibleWithAircraft(x, ac);
-      }
-
-      return false;
-    });
-     
-    const dayItems = ACS_sortDayEvents(rawDayItems);
-
-    const nowMin = ACS_TABLE_TIME.minute;
-
-    const hasActiveBCheck = dayItems.some(it => {
-      if (it.type !== "service" || it.serviceType !== "B") return false;
-      return nowMin >= it.startMinute && nowMin < it.endMinute;
-    });
-
-    if (hasActiveBCheck) td.classList.add("bcheck-day");
-
-    dayItems.forEach(it => {
-
-      const depMin = toMin(it.departure) ?? -1;
-      const arrMin = toMin(it.arrival) ?? -1;
-
-      const isFlying =
-        depMin >= 0 &&
-        arrMin >= 0 &&
-        nowMin >= depMin &&
-        nowMin < arrMin;
-
-      if (it.type === "flight") {
-
-        const chip = document.createElement("span");
-        chip.className = "chip flight-chip";
-        chip.dataset.id = it.id;
-        chip.dataset.blockId = it.blockId || "";
-        chip.dataset.type = "flight";
-
-        const labelOut = it.labelOut || it.flightLabelOut || it.flightNumberOut || "—";
-        const labelIn  = it.labelIn  || it.flightLabelIn  || it.flightNumberIn  || "—";
-
-        chip.textContent = `${labelOut} / ${labelIn}`;
-
-        if (isFlying) {
-          chip.classList.add("flying-now");
-          chip.title = "✈️ Flight in progress";
-        }
-
-        chip.onclick = () => {
-          window.selectedFlight = {
-            data: it,
-            element: chip
-          };
-          openFlightModal(it, chip);
-        };
-
-        td.appendChild(chip);
-      }
-
-      if (it.type === "service") {
-
-        const chip = document.createElement("span");
-        chip.className = "service-chip";
-        chip.dataset.id = it.id;
-        chip.dataset.type = "service";
-
-        chip.textContent =
-          it.serviceType === "A"
-            ? "🔧 A-Check"
-            : "⚙️ B-Check";
-
-        chip.onclick = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          window.ACS_SELECTED_SERVICE = it;
-          openMaintenanceInfoModal(it, ac);
-        };
-
-        td.appendChild(chip);
-      }
-
-    });
-
-    tr.appendChild(td);
-
-  });
-
-    // ============================================================
-    // ACTION PLAN
-    // ============================================================
-    const planTd = document.createElement("td");
-    const wrap = document.createElement("div");
-    wrap.className = "plan-actions";
-
-    const assignBtn = document.createElement("button");
-    assignBtn.className = "btn btn-assign";
-    assignBtn.textContent = "Assign Route";
-    assignBtn.onclick = () => assignRouteToTail(ac);
-
-    const maintBtn = document.createElement("button");
-    maintBtn.className = "btn btn-maint";
-    maintBtn.textContent = "Plan Maintenance";
-    maintBtn.onclick = () => openMaintModal(realModel, null, ac.id);
-
-    wrap.appendChild(assignBtn);
-    wrap.appendChild(maintBtn);
-    planTd.appendChild(wrap);
-    tr.appendChild(planTd);
-
-    tbody.appendChild(tr);
-  });
-     
-/* ============================================================
-   🟢 B4 — EMPTY BUFFER ROWS (3 ALWAYS)
-   Se renderizan siempre, con o sin flota
-   ============================================================ */
-
-const EMPTY_ROWS = 3;
-
-for (let i = 0; i < EMPTY_ROWS; i++) {
-
-  const tr = document.createElement("tr");
-  tr.classList.add("row-pending");
-
-  // Aircraft
-  const tdTail = document.createElement("td");
-  tdTail.textContent = "(empty)";
-  tdTail.style.opacity = "0.6";
-  tr.appendChild(tdTail);
-
-  // Days
-  days.forEach(() => {
-    const td = document.createElement("td");
-    td.textContent = "—";
-    tr.appendChild(td);
-  });
-
-  // Action Plan
-  const planTd = document.createElement("td");
-  const wrap = document.createElement("div");
-  wrap.className = "plan-actions";
-
-  const assignBtn = document.createElement("button");
-  assignBtn.className = "btn btn-assign";
-  assignBtn.textContent = "Assign Route";
-  assignBtn.onclick = () =>
-    alert("⚠ This slot is reserved for a future aircraft.");
-
-  const maintBtn = document.createElement("button");
-  maintBtn.className = "btn btn-maint";
-  maintBtn.textContent = "Plan Maintenance";
-  maintBtn.onclick = () =>
-    alert("⚠ No aircraft assigned to this slot.");
-
-  wrap.appendChild(assignBtn);
-  wrap.appendChild(maintBtn);
-  planTd.appendChild(wrap);
-  tr.appendChild(planTd);
-
-  tbody.appendChild(tr);
-}
-     
-  // ============================================================
-  // UPDATE TIME (NO TOCAR)
-  // ============================================================
-     
-  document.getElementById("updateTime").textContent =
-    "Last update: " + new Date().toLocaleTimeString();
-}
-
-/* ============================================================
-   🟦 PASO 4.1 — ASSIGN FLIGHTS TO AIRCRAFT (QATAR LUXURY) — FIX
-   ------------------------------------------------------------
-   ✅ Usa MODAL NUEVO (#assignFlightsModal)
-   ✅ NO toca #flightModal (Edit/Delete/Remove)
-   ✅ SOLO asigna aircraftId en ACS_FLIGHTS
-   ============================================================ */
-
-/* ============================================================
-   🟦 PASO 2.2-A — ASSIGN ROUTE (SOURCE = scheduleItems)
-   ------------------------------------------------------------
-   • SOLO abre el modal
-   • NO asigna nada aquí
-   • NO valida compatibilidad aquí
-   ============================================================ */
-
-function assignRouteToTail(ac){
-
-  if (!ac || !ac.id) {
-    alert("⚠ Invalid aircraft.");
-    return;
-  }
-
-  // 🔑 FUENTE ÚNICA: scheduleItems
-  let items = [];
-  try {
-    items = JSON.parse(localStorage.getItem("scheduleItems")) || [];
-  } catch {
-    items = [];
-  }
-
-  if (!Array.isArray(items) || !items.length) {
-    alert("⚠ No scheduled flights found.");
-    return;
-  }
-
-    // 👉 Vuelos disponibles para asignar:
-  // - NO asignados (sin aircraftId)
-  // - O editados (__edited === true) aunque tengan aircraftId (para que pasen por Assign Route)
-  const unassignedFlights = items
-    .filter(it => it && it.type === "flight" && (!it.aircraftId || it.__edited === true))
-    .filter(it => {
-      if (typeof ACS_isFlightCompatibleWithAircraft !== "function") return true;
-      return ACS_isFlightCompatibleWithAircraft(it, ac);
-    });
-
-  if (!unassignedFlights.length) {
-    alert("⚠ All scheduled flights are already assigned.");
-    return;
-  }
-
-  // ✅ CONTEXTO DEL MODAL (canónico)
-  ACS_ASSIGN_CTX.aircraft = ac;
-  ACS_ASSIGN_CTX.flightIds = [];
-
-  // ✅ Abrir modal con DATOS REALES DEL SCHEDULE
-  ACS_openAssignFlightsModal(ac, unassignedFlights);
-}
-
-/* ============================================================
-   🟦 ASSIGN FLIGHTS MODAL CONTEXT (CANÓNICO)
-   ------------------------------------------------------------
-   • Estado temporal del modal
-   • NO persiste
-   ============================================================ */
-
-let ACS_ASSIGN_CTX = {
-  aircraft: null,
-  flightIds: []
-};
-
-/* ============================================================
-   🟦 ACS ASSIGN FLIGHTS MODAL — MODEL AWARE + UX CLEAN
-   ------------------------------------------------------------
-   • Título por MODELO (no matrícula)
-   • Chip informativo de compatibilidad
-   • Select all GLOBAL
-   • Sin Select all por día
-   ============================================================ */
-
-function ACS_openAssignFlightsModal(ac, unassignedFlights){
-
-  ACS_ASSIGN_CTX.aircraft = ac;
-  ACS_ASSIGN_CTX.flightIds = [];
-
-  const modal = document.getElementById("assignFlightsModal");
-  const title = document.getElementById("assignFlightsTitle");
-  const body  = document.getElementById("assignFlightsBody");
-
-  if (!modal || !title || !body) {
-    alert("⛔ Assign modal missing in HTML.");
-    return;
-  }
-
-  // ===== MODELO DE LA RUTA (fuente real)
-  const firstFlight = Array.isArray(unassignedFlights) && unassignedFlights.length
-    ? unassignedFlights[0]
-    : null;
-
-  const routeModelLabel =
-    firstFlight?.acType ||
-    firstFlight?.model ||
-    firstFlight?.aircraft ||
-    "Aircraft Model";
-
-  title.textContent = `✈️ Assign Flights — ${routeModelLabel}`;
-
-  /* ============================================================
-   🟧 PASO 4.1 — MODEL COMPATIBILITY WARNING (CONTEXTUAL)
-   ------------------------------------------------------------
-   • SOLO aparece si el avión NO coincide con el modelo de ruta
-   • NO aparece en casos correctos
-   ============================================================ */
-
-const acModelRaw =
-  ac?.model ||
-  ac?.type ||
-  ac?.aircraft ||
-  "";
-
-const routeModelRaw =
-  firstFlight?.acType ||
-  firstFlight?.model ||
-  firstFlight?.aircraft ||
-  "";
-
-const acModelKey    = normalizeModel(acModelRaw);
-const routeModelKey = normalizeModel(routeModelRaw);
-
-let warningHTML = "";
-
-if (acModelKey && routeModelKey && acModelKey !== routeModelKey) {
-  warningHTML = `
-    <div class="meta-card" style="
-      margin-bottom:12px;
-      border:1px solid rgba(255,179,0,0.55);
-      background:rgba(255,179,0,0.10);
-    ">
-      ⚠️ This route is restricted to <strong>${routeModelRaw}</strong> aircraft
-    </div>
-  `;
-}
-     
-  // ===== Agrupar vuelos por día
-     
-  const byDay = {};
-  unassignedFlights.forEach(f => {
-    const d = (f.day || "").toString().trim().toLowerCase();
-    if (!d) return;
-    if (!byDay[d]) byDay[d] = [];
-    byDay[d].push(f);
-  });
-
-  const dayOrder = ["mon","tue","wed","thu","fri","sat","sun"];
-  const dayLabel = { mon:"MON", tue:"TUE", wed:"WED", thu:"THU", fri:"FRI", sat:"SAT", sun:"SUN" };
-  const daysSorted = Object.keys(byDay).sort(
-    (a,b)=> dayOrder.indexOf(a)-dayOrder.indexOf(b)
-  );
-
-  // ===== CHIP INFORMATIVO + SELECT ALL GLOBAL
-     
-  body.innerHTML = `
-  
-  ${warningHTML}
-
-    <div class="flight-kicker" style="
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-">
-  <span>Select the flights you want to assign to this aircraft.</span>
-
-  <button
-    class="btn-modal ghost"
-    style="padding:6px 14px;border-radius:12px;font-weight:800;"
-    onclick="ACS_toggleSelectAllGlobal()"
-  >
-    Select all
-  </button>
-</div>
-
-    ${daysSorted.map(d => `
-      <div class="meta-card" style="margin-bottom:10px;">
-        <strong style="color:#ffdd80;">${dayLabel[d] || d.toUpperCase()}</strong>
-
-        <div style="margin-top:8px;display:grid;gap:8px;">
-          ${byDay[d].map(f => `
-            <label style="display:flex;gap:10px;align-items:center;">
-              <input class="acs-assign-check" type="checkbox" data-flight-id="${f.id}">
-              <span style="font-weight:800;color:#ffe7a0;">
-                ${f.origin || "—"} → ${f.destination || "—"}
-              </span>
-              <span style="margin-left:auto;font-family:Orbitron,monospace;color:#00ff80;">
-                ${(f.departure || "—")}–${(f.arrival || "—")}
-              </span>
-            </label>
-          `).join("")}
-        </div>
-      </div>
-    `).join("")}
-
-    ${!daysSorted.length
-      ? `<div class="meta-card"><strong>No unassigned flights found.</strong></div>`
-      : ``}
-  `;
-
-  modal.classList.remove("hidden");
-}
-
-function ACS_toggleDayAssign(day, on){
-  const modal = document.getElementById("assignFlightsModal");
-  if (!modal) return;
-
-  const checks = modal.querySelectorAll(`input.acs-assign-check`);
-  checks.forEach(ch => {
-    // solo los del día buscado: subimos al meta-card y leemos el título
-    const card = ch.closest(".meta-card");
-    if (!card) return;
-
-    const head = card.querySelector("strong");
-    const label = (head?.textContent || "").toLowerCase();
-
-    const map = { mon:"mon", tue:"tue", wed:"wed", thu:"thu", fri:"fri", sat:"sat", sun:"sun" };
-    const want = (map[day] || day).toLowerCase();
-
-    // label viene "MON" etc; convertimos
-    const labelDay =
-      label.includes("mon") ? "mon" :
-      label.includes("tue") ? "tue" :
-      label.includes("wed") ? "wed" :
-      label.includes("thu") ? "thu" :
-      label.includes("fri") ? "fri" :
-      label.includes("sat") ? "sat" :
-      label.includes("sun") ? "sun" : "";
-
-    if (labelDay === want) ch.checked = !!on;
-  });
-}
-
-/* ============================================================
-   🟦 PASO 4.2 — SELECT ALL GLOBAL (TOGGLE)
-   ============================================================ */
-
-function ACS_toggleSelectAllGlobal(){
-
-  const modal = document.getElementById("assignFlightsModal");
-  if (!modal) return;
-
-  const checks = [...modal.querySelectorAll("input.acs-assign-check")];
-  if (!checks.length) return;
-
-  const allChecked = checks.every(ch => ch.checked === true);
-
-  checks.forEach(ch => {
-    ch.checked = !allChecked;
-  });
-
-}
-     
-/* ============================================================
-   🟧 PASO 4.3 — GLOBAL SELECT ALL (VISIBLE CHECKS)
-   ============================================================ */
-
-function ACS_toggleAllVisibleAssign(on){
-  const modal = document.getElementById("assignFlightsModal");
-  if (!modal) return;
-
-  const checks = modal.querySelectorAll("input.acs-assign-check");
-  checks.forEach(ch => {
-    if (!ch.disabled) ch.checked = !!on;
-  });
-}
-     
-/* ============================================================
-   🟦 PASO 6 — CONFIRM ASSIGN (UX SAFE + MODEL ENFORCED)
-   ============================================================ */
-
-function ACS_confirmAssignFlights(){
-
-  const ac = ACS_ASSIGN_CTX.aircraft;
-  if (!ac || !ac.id) return;
-
-  const modal = document.getElementById("assignFlightsModal");
-  if (!modal) return;
-
-  const selectedIds = Array.from(
-    modal.querySelectorAll("input.acs-assign-check:checked")
-  ).map(x => x.getAttribute("data-flight-id")).filter(Boolean);
-
-  if (!selectedIds.length) {
-    alert("⚠ Select at least one flight.");
-    return;
-  }
-
-  let items = [];
-  try {
-    items = JSON.parse(localStorage.getItem("scheduleItems")) || [];
-  } catch {
-    items = [];
-  }
-
-  const acModelKey = normalizeModel(ac?.model || ac?.type || "");
-  let changed = 0;
-  let blocked = false;
-
-  items.forEach(it => {
-
-    // ✅ Permitir asignar:
-    // - vuelos sin aircraftId
-    // - vuelos editados (__edited === true) aunque tengan aircraftId (porque deben volver a Assign Route)
-    if (
-      it.type !== "flight" ||
-      !selectedIds.includes(it.id) ||
-      (it.aircraftId && it.__edited !== true)
-    ) return;
-
-    // 🔒 BLOQUEO DE SOLAPAMIENTO (MISMO AVIÓN · MISMO DÍA)
-    const conflict = items.some(other =>
-      other.type === "flight" &&
-      other.aircraftId === ac.id &&
-      other.day === it.day &&
-      other.id !== it.id &&
-      (
-        toMin(it.departure) < toMin(other.arrival) &&
-        toMin(it.arrival)   > toMin(other.departure)
-      )
-    );
-
-    if (conflict) {
-      alert(
-        `⛔ Schedule conflict\n\n` +
-        `Aircraft: ${ac.registration}\n` +
-        `Day: ${it.day.toUpperCase()}\n` +
-        `Time: ${it.departure}–${it.arrival}\n\n` +
-        `Another flight already occupies this slot.`
-      );
-      blocked = true;
-      return;
+    * {
+      box-sizing: border-box;
     }
 
-    // ✅ ASIGNACIÓN MANUAL (aquí SÍ se permite tocar aircraftId porque es Assign Route)
-    it.aircraftId = ac.id;
-    it.assigned = true;
-
-    // ✅ Limpiar bandera de editado SOLO al asignar manualmente
-    if (it.__edited === true) {
-      delete it.__edited;
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--acs-bg);
+      color: #fff;
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    changed++;
-  });
-
-
-  // ⛔ BLOQUEO UX — NO CERRAR MODAL
-  if (blocked && changed === 0) {
-
-    const warn = modal.querySelector(".meta-card");
-    if (warn) {
-      warn.style.animation = "shake 0.4s ease";
-      warn.style.borderColor = "#ff3b3b";
-      warn.style.background = "rgba(255,59,59,0.15)";
-      setTimeout(() => warn.style.animation = "", 450);
+    button,
+    select,
+    input {
+      font: inherit;
     }
 
-    return; // 🔴 CLAVE: NO cerrar modal
-  }
-
-  // ✅ ÉXITO REAL
-  if (changed > 0) {
-    localStorage.setItem("scheduleItems", JSON.stringify(items));
-    ACS_closeAssignFlightsModal();
-    renderSchedule();
-    console.log(`🟢 Assigned ${changed} flight(s) to ${ac.id}`);
-  }
-}
-
-function ACS_closeAssignFlightsModal(){
-  const modal = document.getElementById("assignFlightsModal");
-  if (modal) {
-    
-    modal.classList.add("hidden");
-  }
-  ACS_ASSIGN_CTX.aircraft = null;
-  ACS_ASSIGN_CTX.flightIds = [];
-}
-
-/* ============================================================
-   🟥 D1.0 — OPEN DELETE FLIGHTS MODAL (CTX SAFE) — 11FEB26
-   ------------------------------------------------------------
-   Fix:
-   ✅ Elimina referencia a ctx (ReferenceError)
-   ✅ Acepta 2 formatos de entrada:
-      1) ACS_openDeleteFlightsModal(ac)
-      2) ACS_openDeleteFlightsModal({ aircraft: ac, flightNumber, flightNumbers })
-   ✅ Permite filtrar SOLO el vuelo seleccionado (por flightNumberOut)
-   ============================================================ */
-
-let ACS_DELETE_FLIGHTS_CTX = {
-  aircraftId: null,
-  flights: []
-};
-     
-function ACS_openDeleteFlightsModal(input) {
-
-  // 🔑 Normalizar entrada (acepta aircraft directo o ctx)
-  let ac = null;
-  let flightNumbers = [];
-
-  if (input && typeof input === "object" && input.aircraft) {
-    ac = input.aircraft;
-
-    if (Array.isArray(input.flightNumbers)) {
-      flightNumbers = input.flightNumbers.filter(Boolean).map(String);
-    } else if (input.flightNumber) {
-      flightNumbers = [String(input.flightNumber)];
+    button {
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
 
-  } else {
-    ac = input;
-  }
-
-  if (!ac || !ac.id) return;
-
-  ACS_DELETE_FLIGHTS_CTX.aircraftId = ac.id;
-
-  const items = getItems();
-
-  /* ============================================================
-   🟥 D5.1 — DELETE FLIGHTS FILTER (ROUTE LOGIC)
-   ------------------------------------------------------------
-   Scope:
-   aircraftId + flightNumberOut + flightNumberIn
-   ============================================================ */
-
- const flights = items.filter(it => {
-  if (!it || it.type !== "flight") return false;
-  if (String(it.aircraftId) !== String(ac.id)) return false;
-
-  // 🔑 SI HAY VUELO ACTIVO (desde Flight Modal)
-  if (window.ACS_selectedFlightItem) {
-    return (
-      String(it.flightNumberOut) === String(window.ACS_selectedFlightItem.flightNumberOut) &&
-      String(it.flightNumberIn)  === String(window.ACS_selectedFlightItem.flightNumberIn)
-    );
-  }
-
-  // 🔑 CASO DELETE MASIVO (si se usa en otro flujo)
-  if (flightNumbers && flightNumbers.length === 2) {
-    return (
-      String(it.flightNumberOut) === String(flightNumbers[0]) &&
-      String(it.flightNumberIn)  === String(flightNumbers[1])
-    );
-  }
-
-  return false;
-});
-
-
-  ACS_DELETE_FLIGHTS_CTX.flights = flights;
-
-  if (!flights.length) {
-    alert("ℹ️ No flights found to delete for this selection.");
-    ACS_DELETE_FLIGHTS_CTX = { aircraftId: null, flights: [] };
-    return;
-  }
-
-  const modal = document.getElementById("deleteFlightsModal");
-  const title = document.getElementById("deleteFlightsTitle");
-  const body  = document.getElementById("deleteFlightsBody");
-
-  if (!modal || !title || !body) {
-    alert("⛔ Delete modal missing in HTML.");
-    return;
-  }
-
-  const regLabel = ac.registration || ac.id;
-  title.textContent = `🗑 Delete Flights — ${regLabel}`;
-
-  // ===== Agrupar por día (igual que Assign)
-  const byDay = {};
-  flights.forEach(f => {
-    const d = String(f.day || "").trim().toLowerCase();
-    if (!d) return;
-    if (!byDay[d]) byDay[d] = [];
-    byDay[d].push(f);
-  });
-
-  const dayOrder = ["mon","tue","wed","thu","fri","sat","sun"];
-  const dayLabel = { mon:"MON", tue:"TUE", wed:"WED", thu:"THU", fri:"FRI", sat:"SAT", sun:"SUN" };
-  const daysSorted = Object.keys(byDay).sort(
-    (a,b)=> dayOrder.indexOf(a)-dayOrder.indexOf(b)
-  );
-
-  // Orden por hora dentro del día
-  daysSorted.forEach(d => {
-    byDay[d].sort((a,b) => (toMin(a.departure) ?? 0) - (toMin(b.departure) ?? 0));
-  });
-
-  // Helpers label
-  const flightNoText = (f) => {
-    const out = f.labelOut || f.flightLabelOut || f.flightNumberOut || "—";
-    const inn = f.labelIn  || f.flightLabelIn  || f.flightNumberIn  || "—";
-    return `${out}/${inn}`;
-  };
-
-  // ===== UI (idéntica estructura Assign Route)
-  body.innerHTML = `
-    <div class="flight-kicker" style="
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    ">
-      <span>Select the flights you want to permanently delete.</span>
-
-      <button
-        class="btn-modal ghost"
-        style="padding:6px 14px;border-radius:12px;font-weight:800;"
-        onclick="ACS_toggleSelectAllDelete()"
-      >
-        Select all
-      </button>
-    </div>
-
-    ${daysSorted.map(d => `
-      <div class="meta-card" style="margin-bottom:10px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-          <strong style="color:#ffdd80;">${dayLabel[d] || d.toUpperCase()}</strong>
-        </div>
-
-        <div style="margin-top:8px;display:grid;gap:8px;">
-          ${byDay[d].map(f => `
-            <label style="display:flex;gap:10px;align-items:center;">
-              <input
-                class="acs-delete-check"
-                type="checkbox"
-                data-flight-id="${f.id}"
-              >
-              <span style="font-weight:900;color:#ffcc33;">
-                ${flightNoText(f)}
-              </span>
-
-              <span style="font-weight:800;color:#ffe7a0;">
-                ${f.origin || "—"} → ${f.destination || "—"}
-              </span>
-
-              <span style="margin-left:auto;font-family:Orbitron,monospace;color:#00ff80;">
-                ${(f.departure || "—")}–${(f.arrival || "—")}
-              </span>
-            </label>
-          `).join("")}
-        </div>
-      </div>
-    `).join("")}
-  `;
-
-  modal.classList.remove("hidden");
-}
-
-function ACS_toggleSelectAllDelete(){
-
-  const modal = document.getElementById("deleteFlightsModal");
-  if (!modal) return;
-
-  const checks = [...modal.querySelectorAll("input.acs-delete-check")];
-  if (!checks.length) return;
-
-  const allChecked = checks.every(ch => ch.checked === true);
-  checks.forEach(ch => { ch.checked = !allChecked; });
-}
-
-function ACS_closeDeleteFlightsModal() {
-  const modal = document.getElementById("deleteFlightsModal");
-  if (modal) {
-    modal.classList.add("hidden");
-  }
-  ACS_DELETE_FLIGHTS_CTX = { aircraftId: null, flights: [] };
-}
-
-function ACS_closeDeleteFlightsModal() {
-  const modal = document.getElementById("deleteFlightsModal");
-  if (modal) {
-    modal.classList.add("hidden");
-    modal.style.display = ""; // limpiar override
-  }
-  ACS_DELETE_FLIGHTS_CTX = { aircraftId: null, flights: [] };
-}
-
-/* ============================================================
-   🟥 D2.1 — DELETE ENGINE (LOCAL) — scheduleItems authority
-   ------------------------------------------------------------
-   - Borra por ID en scheduleItems
-   - No toca SkyTrack directamente (Schedule Table manda)
-   ============================================================ */
-function ACS_deleteFlight(id) {
-
-  if (!id) return;
-
-  const items = getItems();
-  const before = items.length;
-
-  const afterItems = items.filter(it => !(it && it.type === "flight" && String(it.id) === String(id)));
-
-  if (afterItems.length !== before) {
-    setItems(afterItems);
-  }
-
-  // limpiar selección si coincide
-  if (window.ACS_selectedFlightItem && String(window.ACS_selectedFlightItem.id) === String(id)) {
-    window.ACS_selectedFlightItem = null;
-  }
-  if (window.selectedFlight && window.selectedFlight.data && String(window.selectedFlight.data.id) === String(id)) {
-    window.selectedFlight = null;
-  }
-}
-
-function ACS_confirmDeleteFlightsBulk() {
-
-  const list = document.getElementById("deleteFlightsList");
-  if (!list) return;
-
-  const checked = [...list.querySelectorAll("input[type=checkbox]:checked")];
-
-  if (!checked.length) {
-    alert("⚠ No flights selected.");
-    return;
-  }
-
-  const ok = confirm(
-    `⛔ DELETE ${checked.length} flight(s)?\nThis action cannot be undone.`
-  );
-  if (!ok) return;
-
-  // ✅ DELETE REAL (scheduleItems)
-  checked.forEach(cb => {
-    const id = cb.dataset.flightId;
-    ACS_deleteFlight(id);
-  });
-
-  ACS_closeDeleteFlightsModal();
-  renderSchedule();
-}
-     
-/* ============================================================
-   === B3-A — COSTOS INICIALES AL ASIGNAR RUTA (OPERACIÓN) ====
-   ============================================================ */
-     
-function ACS_applyInitialFlightCosts(route, ac){
-  try {
-    if (!route || !ac) return;
-
-    // 1) Obtener aeropuerto de origen desde el JS correcto (EU/AF/ASIA según corresponda)
-    const origin = route.origin;
-    let airport = null;
-
-    if (origin?.startsWith("E")) airport = getAirportsEuropeSafe()?.find(a => a.icao === origin);
-    if (origin?.startsWith("D") || origin?.startsWith("G")) airport = getAirportsAfricaSafe()?.find(a => a.icao === origin);
-    if (origin?.startsWith("V") || origin?.startsWith("R")) airport = getAirportsAsiaSafe()?.find(a => a.icao === origin);
-
-    if (!airport) return;
-
-    const slot = airport.slot_cost_usd || 0;
-    const fee  = airport.landing_fee_usd || 0;
-    const fuel = airport.fuel_usd_gal || 0;
-
-    // 2) Sumar al Finance Engine (si existe)
-    let F = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-    if (!F || typeof F.capital !== "number") return;
-
-    const totalCost = slot + fee + (fuel * 120); // TEMPORAL
-    F.capital -= totalCost;
-
-    F.expenses = (F.expenses || 0) + totalCost;
-
-    F.log = F.log || [];
-    F.log.push({
-      type: "ROUTE_ASSIGN_COST",
-      route: `${route.origin}-${route.destination}`,
-      aircraft: ac.registration || ac.tail || ac.model,
-      amount: totalCost,
-      date: new Date().toISOString()
-    });
-
-    localStorage.setItem("ACS_Finance", JSON.stringify(F));
-    console.log("💰 B3-A aplicado:", totalCost);
-
-  } catch(err){
-    console.warn("❗ Error B3-A:", err);
-  }
-}
-     
-// ============================================================
-// 🛠 MAINTENANCE (FIX EDIT vs APPLY) — 07 FEB 2026
-// REEMPLAZA COMPLETO el bloque actual "MAINTENANCE"
-// (desde: // ============================================================
-//         // MAINTENANCE
-//  hasta el final de applyMaintenance())
-// ============================================================
-
-let maintTail = null;          // legacy (model string)
-let maintAircraftId = null;    // ✅ ID real del avión (source of truth)
-
-function openMaintModal(realModel, service = null, aircraftId = null) {
-
-  // ============================================================
-  // 🔑 PASO 1 — SETEAR CONTEXTO (CRÍTICO)
-  // ============================================================
-  maintTail = realModel || null;
-  maintAircraftId = aircraftId || null;
-
-  // Guardar service activo si existe (modo EDIT)
-  window.__EDITING_SERVICE__ = (service && service.type === "service") ? service : null;
-
-  // ============================================================
-  // 🕒 START TIME OPTIONS (30 MIN STEPS)
-  // ============================================================
-  const startSel = document.getElementById("maintStart");
-  if (startSel) {
-    startSel.innerHTML = "";
-    for (let h = 0; h < 24; h++) {
-      for (let m = 0; m < 60; m += 30) {
-        const hh = String(h).padStart(2, "0");
-        const mm = String(m).padStart(2, "0");
-        const opt = document.createElement("option");
-        opt.value = `${hh}:${mm}`;
-        opt.textContent = `${hh}:${mm}`;
-        startSel.appendChild(opt);
-      }
-    }
-  }
-
-  // ============================================================
-  // 🟣 UI MODE: PLAN vs EDIT (MISMO MODAL, distinto modo)
-  // ============================================================
-  const modal = document.getElementById("maintModal");
-  if (!modal) return;
-
-  // Cambiar título y botón según modo
-  const headerTitle = modal.querySelector(".acs-maint-header h3");
-  const btnApply = modal.querySelector(".maint-btn.apply");
-
-  if (window.__EDITING_SERVICE__) {
-    if (headerTitle) headerTitle.textContent = "🛠 Edit Maintenance";
-    if (btnApply) btnApply.textContent = "Save";
-  } else {
-    if (headerTitle) headerTitle.textContent = "🛠 Plan Maintenance";
-    if (btnApply) btnApply.textContent = "Apply";
-  }
-
-  modal.style.display = "flex";
-
-  // ============================================================
-  // 🟡 MODO EDICIÓN — PRECARGAR DATOS
-  // ============================================================
-  if (window.__EDITING_SERVICE__) {
-    const svc = window.__EDITING_SERVICE__;
-    const typeEl = document.getElementById("maintType");
-    const dayEl  = document.getElementById("maintDay");
-    const stEl   = document.getElementById("maintStart");
-
-    if (typeEl) typeEl.value = svc.serviceType || "A";
-    if (dayEl)  dayEl.value  = svc.day || "mon";
-    if (stEl)   stEl.value   = svc.start || "00:00";
-  }
-}
-
-function closeMaintModal(){
-  maintTail = null;
-  maintAircraftId = null;
-  window.__EDITING_SERVICE__ = null;
-
-  const modal = document.getElementById("maintModal");
-  if (modal) modal.style.display = "none";
-}
-
-/* ============================================================
-   ✅ VALIDATE A-CHECK — overlap vs flights SAME aircraft/day
-   ============================================================ */
-function validateACheck(ac, day, startHHMM, endHHMM) {
-
-  if (!ac || !ac.id) return false;
-
-  const items = getItems();
-
-  const startMin = toMin(startHHMM);
-  const endMin   = toMin(endHHMM);
-
-  if (startMin === null || endMin === null) return false;
-
-  // Solo vuelos asignados a ESTE avión y MISMO día
-  const flights = items.filter(x =>
-    x &&
-    x.type === "flight" &&
-    x.assigned === true &&
-    String(x.aircraftId || "").trim() === String(ac.id || "").trim() &&
-    String(x.day || "").toLowerCase() === String(day || "").toLowerCase()
-  );
-
-  for (const f of flights) {
-    const fStart = toMin(f.departure);
-    const fEnd   = toMin(f.arrival);
-    if (fStart === null || fEnd === null) continue;
-
-    const overlap =
-      (startMin >= fStart && startMin < fEnd) ||
-      (endMin > fStart && endMin <= fEnd) ||
-      (startMin <= fStart && endMin >= fEnd);
-
-    if (overlap) {
-      const msg =
-        `The selected A-Check conflicts with a scheduled flight.<br>` +
-        `Flight: ${f.departure} → ${f.arrival}<br>` +
-        `A-Check: ${startHHMM} → ${endHHMM}`;
-
-      showMaintenanceErrorModal(msg);
-      return false;
-    }
-  }
-
-  return true;
-}
-
-function applyMaintenance(){
-
-  // ============================================================
-  // 0) GUARDIA
-  // ============================================================
-     
-  if (!maintTail && !maintAircraftId) {
-    closeMaintModal();
-    return;
-  }
-
-  const t = document.getElementById("maintType")?.value || "A";
-  const d = document.getElementById("maintDay")?.value || "mon";
-  const start = document.getElementById("maintStart")?.value || "06:00";
-  const dur = (t === "A") ? 300 : 1440;
-
-  const startMin = toMin(start);
-  if (startMin === null) {
-    alert("⚠ Invalid start time.");
-    return;
-  }
-
-  const end = toHHMM(startMin + dur);
-
-  const items = getItems();
-  const fleet = getRealFleet();
-
-  // ============================================================
-  // 1) IDENTIFICAR AVIÓN (PRIORIDAD: aircraftId)
-  // ============================================================
-  let ac = null;
-
-  if (maintAircraftId) {
-    ac = fleet.find(x => String(x.id || "").trim() === String(maintAircraftId).trim()) || null;
-  }
-
-  // fallback legacy por modelo
-  if (!ac && maintTail) {
-    ac = fleet.find(x =>
-      normalizeModel(x.model || x.type || "") === normalizeModel(maintTail)
-    ) || null;
-  }
-
-  if (!ac) {
-    alert("⚠ Aircraft not found for maintenance.");
-    closeMaintModal();
-    return;
-  }
-
-  const editingService = window.__EDITING_SERVICE__;
-  const isEditing = !!(editingService && editingService.id);
-
-  // ============================================================
-  // 2) VALIDACIÓN A-CHECK (en ambos modos)
-  // ============================================================
-  if (t === "A") {
-    const ok = validateACheck(ac, d, start, end);
-    if (!ok) return; // NO cerrar: dejar corregir
-  }
-
-  // ============================================================
-  // 3) CREATE: bloquear duplicados (EDIT: NO bloquearse a sí mismo)
-  // ============================================================
-  if (!isEditing) {
-
-    const serviceSameDay = items.some(it =>
-      it &&
-      it.type === "service" &&
-      it.aircraftId === ac.id &&
-      String(it.day || "").toLowerCase() === String(d || "").toLowerCase()
-    );
-
-    if (serviceSameDay) {
-      alert("⚠ A maintenance service is already scheduled for this aircraft on this day.");
-      closeMaintModal();
-      return;
+    .acs-header {
+      position: fixed;
+      inset: 0 0 auto 0;
+      min-height: 74px;
+      padding: 0.8rem max(1rem, env(safe-area-inset-right)) 0.8rem max(1rem, env(safe-area-inset-left));
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 1rem;
+      border-bottom: 2px solid var(--acs-gold-2);
+      background: rgba(12, 23, 50, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 5000;
     }
 
-    const sameTypeAlready = items.some(it =>
-      it &&
-      it.type === "service" &&
-      it.aircraftId === ac.id &&
-      it.serviceType === t
-    );
-
-    if (sameTypeAlready) {
-      alert(t === "A"
-        ? "This aircraft already has an A-Check scheduled."
-        : "This aircraft already has a B-Check scheduled."
-      );
-      closeMaintModal();
-      return;
-    }
-  }
-
-  // ============================================================
-  // 4) COSTO B-CHECK (solo si se crea o si cambias a B en EDIT)
-  // ============================================================
-  const shouldChargeB =
-    (t === "B") && (
-      !isEditing || (editingService.serviceType !== "B")
-    );
-
-  if (shouldChargeB) {
-    try {
-      let F = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-      if (typeof F.capital === "number") {
-        const costB = 18000;
-        F.capital -= costB;
-        F.expenses = (F.expenses || 0) + costB;
-        F.log = F.log || [];
-        F.log.push({
-          type: "B_CHECK",
-          aircraft: ac.registration || ac.tail || ac.model,
-          day: String(d || "").toUpperCase(),
-          amount: costB,
-          date: new Date().toISOString()
-        });
-        localStorage.setItem("ACS_Finance", JSON.stringify(F));
-      }
-    } catch (e) {
-      console.warn("Finance B error:", e);
-    }
-  }
-
-  // ============================================================
-  // 5) ESCRITURA: EDIT → UPDATE / CREATE → PUSH
-  // ============================================================
-  if (isEditing) {
-
-    const targetId = String(editingService.id).trim();
-    const idx = items.findIndex(x =>
-      x && x.type === "service" && String(x.id || "").trim() === targetId
-    );
-
-    if (idx === -1) {
-      alert("⛔ Service not found to edit.");
-      closeMaintModal();
-      return;
+    .acs-left,
+    .acs-right,
+    .acs-nav {
+      display: flex;
+      align-items: center;
     }
 
-    const old = items[idx];
-
-    items[idx] = {
-      ...old,
-      serviceType: t,
-      aircraftId: ac.id,
-
-      day: String(d || "").toLowerCase(),
-      assigned: true,
-
-      start,
-      end,
-
-      startMinute: toMin(start) ?? 0,
-      endMinute:   (toMin(end) ?? (t === "B" ? 1440 : 300)),
-
-      tail: normalizeModel(ac.model || ac.type),
-      acType: ac.type || "",
-
-      durationMin: (t === "B" ? 1440 : 300)
-    };
-
-  } else {
-
-    items.push({
-      id: "svc-" + Math.random().toString(36).slice(2, 8),
-      type: "service",
-      serviceType: t,
-
-      aircraftId: ac.id,
-
-      day: String(d || "").toLowerCase(),
-      assigned: true,
-
-      start,
-      end,
-
-      startMinute: toMin(start) ?? 0,
-      endMinute:   (toMin(end) ?? (t === "B" ? 1440 : 300)),
-
-      tail: normalizeModel(ac.model || ac.type),
-      acType: ac.type || "",
-
-      durationMin: (t === "B" ? 1440 : 300)
-    });
-
-  }
-
-  // ============================================================
-  // 6) FINAL
-  // ============================================================
-  setItems(items);
-
-// 🟢 RESET B-CYCLE si es B-Check
-if (t === "B") {
-
-  const fleetNow = getRealFleet();
-  const idx = fleetNow.findIndex(x =>
-    String(x.id) === String(ac.id)
-  );
-
-  if (idx !== -1) {
-    const simNow = ACS_getSimTimeSafe();
-
-  if (!Number.isFinite(simNow)) {
-  alert("⚠ Time Engine not ready");
-  return;
-  }
-
-    fleetNow[idx].lastBCheckAt = simNow;
-    fleetNow[idx].maintenanceOverdue = false;
-    if (!fleetNow[idx].maintenance) {
-      fleetNow[idx].maintenance = {};
+    .acs-left {
+      gap: 0.75rem;
+      min-width: 0;
     }
-    fleetNow[idx].maintenance.bOverdue = false;
 
-    localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleetNow));
-  }
-}
-     
-  closeMaintModal();
-  renderSchedule();
-}
-
-function removeItem(){
-  if(!selectedChip){ closeActionModal(); return; }
-
-  const id = selectedChip.dataset.id;
-  const block = selectedChip.dataset.blockId || "";
-  const type = selectedChip.dataset.type;
-  const items = getItems();
-
-  let filtered;
-
-  if (type==="flight" && block){
-    filtered = items.filter(x => x.blockId !== block);
-  } else {
-    filtered = items.filter(x => x.id !== id);
-  }
-
-  setItems(filtered);
-  closeActionModal();
-  renderSchedule();
-}
-
-
-/* ============================================================
-   🟦 ROUTE ROTATION SOURCE (SINGLE SOURCE OF TRUTH)
-   ============================================================ */
-
-function ACS_getRouteRotationMin(){
-  try {
-    const r = JSON.parse(localStorage.getItem("confirmedRoute"));
-    if (r && Number.isFinite(r.totalRotationMin)) {
-      return r.totalRotationMin;
+    .acs-left img {
+      width: 44px;
+      height: 44px;
+      object-fit: contain;
+      flex: 0 0 auto;
     }
-  } catch(e){}
-  return null;
-}
-     
-/* ============================================================
-   🟦 ROTATION / NEXT FLIGHT — MODAL (ROUTE BASED)
-   ============================================================ */
 
-function ACS_calcRotationEnd(departure){
-  const rotMin = ACS_getRouteRotationMin();
-  if (!departure || !Number.isFinite(rotMin)) return "—";
-
-  const [h,m] = departure.split(":").map(Number);
-  let min = h*60 + m + rotMin;
-  min = min % 1440;
-
-  return `${String(Math.floor(min/60)).padStart(2,"0")}:${String(min%60).padStart(2,"0")}`;
-}
-     
-function ACS_calcNextFlight(it) {
-  if (!it || !it.departure || !Number.isFinite(it.totalRotationMin)) return "—";
-
-  const [h, m] = it.departure.split(":").map(Number);
-  let min = h * 60 + m + it.totalRotationMin;
-
-  if (it.maintenance === "A") min += 300;
-  if (it.maintenance === "B") min += 1440;
-
-  min = min % 1440;
-
-  return (
-    String(Math.floor(min / 60)).padStart(2, "0") +
-    ":" +
-    String(min % 60).padStart(2, "0")
-  );
-}
-     
-/* ============================================================
-   🦄 B3 — FLIGHT MODAL ENGINE (Unicorn) — 17DEC25
-   REEMPLAZA COMPLETO: openFlightModal(it) + closeFlightModal()
-   ============================================================ */
-
-let ACS_selectedFlightItem = null;   // el item (it)
-let ACS_selectedChipEl = null;       // el chip HTML real (para ids/blockId/type)
-
-function openFlightModal(it, chipEl){
-
-// 🔑 CONTEXTO GLOBAL DEL VUELO ACTIVO (FIX)
-window.ACS_selectedFlightItem = it || null;
-
-ACS_selectedFlightItem = it || null;
-ACS_selectedChipEl = chipEl || null;
-
-// 🔑 Compatibilidad con lógica DELETE
-window.selectedFlight = {
-  data: it || null,
-  element: chipEl || null
-};
-     
-
-/* ============================================================
-   🛠 PASO 4 — SERVICE CONTEXT (MODAL) — 17DEC25
-   ============================================================ */
-
-if (it && it.type === "service") {
-
-  const modal = document.getElementById("flightModal");
-  const box   = document.getElementById("flightModalContent");
-  const title = document.getElementById("flightModalTitle");
-
-  const dayName = it.day ? it.day.toUpperCase() : "—";
-  const start   = it.start || "—";
-  const end     = it.end || "—";
-
-  const isB = it.serviceType === "B";
-  const serviceLabel = isB ? "⚙️ B-Check" : "🔧 A-Check";
-  const durationText = isB
-  ? "24 hours (full day)"
-  : "5 hours";
-
-  title.textContent = serviceLabel;
-
-/* ============================================================
-   🟧 PASO 4.1 — ROUTE MODEL INFO CHIP (UX)
-   ------------------------------------------------------------
-   • Informa la restricción por modelo (antes de asignar)
-   ============================================================ */
-
-// Modelo de la ruta (fuente real: vuelos mostrados)
-const routeModelKey = normalizeModel(
-  firstFlight?.acType || firstFlight?.model || firstFlight?.aircraft || ""
-);
-const routeModelLabelChip =
-  (firstFlight?.acType || firstFlight?.model || firstFlight?.aircraft || "Unknown Model");
-
-// Prepara chip informativo
-const routeInfoChipHTML = `
-  <div class="meta-card" style="
-    margin-bottom:10px;
-    display:flex;
-    align-items:center;
-    gap:8px;
-    background:rgba(245,158,11,0.12);
-    border:1px solid rgba(245,158,11,0.35);
-  ">
-    <span style="font-weight:900;color:#f59e0b;">⚠</span>
-    <span style="font-weight:700;color:#ffe7a0;">
-      Route restricted to model:
-    </span>
-    <span class="service-chip" style="margin-left:auto;">
-      ${routeModelLabelChip}
-    </span>
-  </div>
-`;
-     
- /* ============================================================
-   🟧 PASO 4.2 — ASSIGN MODAL BODY (GLOBAL SELECT ALL)
-   ============================================================ */
-
-body.innerHTML = `
-  ${routeInfoChipHTML}
-
-  <div class="flight-kicker" style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-    <span>Select the flights you want to assign to this aircraft.</span>
-    <button
-      class="btn-modal ghost"
-      style="padding:6px 10px;border-radius:12px;font-weight:800;"
-      onclick="ACS_toggleAllVisibleAssign(true)"
-    >
-      Select all
-    </button>
-  </div>
-
-  ${daysSorted.map(d => `
-    <div class="meta-card" style="margin-bottom:10px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-        <strong style="color:#ffdd80;">${dayLabel[d] || d.toUpperCase()}</strong>
-      </div>
-
-      <div style="margin-top:8px;display:grid;gap:8px;">
-        ${byDay[d].map(f => `
-          <label style="display:flex;gap:10px;align-items:center;">
-            <input class="acs-assign-check" type="checkbox" data-flight-id="${f.id}">
-            <span style="font-weight:800;color:#ffe7a0;">${f.origin || "—"} → ${f.destination || "—"}</span>
-            <span style="margin-left:auto;font-family:Orbitron,monospace;color:#00ff80;">
-              ${(f.departure || "—")}–${(f.arrival || "—")}
-            </span>
-          </label>
-        `).join("")}
-      </div>
-    </div>
-  `).join("")}
-
-  ${!daysSorted.length ? `<div class="meta-card"><strong>No unassigned flights found.</strong></div>` : ``}
-`;
-
-  const footer = modal.querySelector(".acs-modal-footer");
-  if (footer) {
-    footer.innerHTML = `
-      <button class="btn-modal red" onclick="cancelSelectedService()">❌ Cancel Service</button>
-      <button class="btn-modal ghost" onclick="closeFlightModal()">Close</button>
-    `;
-  }
-
-  modal.classList.remove("hidden");
-
-  return;
-}
-
-  if (chipEl) {
-    selectedChip = chipEl;
-  }
-
-  const modal = document.getElementById("flightModal");
-  const box   = document.getElementById("flightModalContent");
-  const title = document.getElementById("flightModalTitle");
-
-  if (!modal || !box || !title) {
-    console.warn("⚠ flightModal elements missing.");
-    return;
-  }
-
-  const items = getItems();
-
-  const modelKey = it?.tail || it?.acType || "";
-  const day      = it?.day || "";
-
-  const flights = items.filter(x =>
-    x.type === "flight" &&
-    (x.tail === modelKey || x.acType === modelKey) &&
-    x.day === day
-  ).sort((a,b)=> toMin(a.departure)-toMin(b.departure));
-
-  const services = items.filter(x =>
-    x.type === "service" &&
-    (x.tail === modelKey || x.acType === modelKey) &&
-    x.day === day
-  );
-
-  const iataCode = localStorage.getItem("userIATA") || "IT";
-  const fnOutRaw = it?.flightNumberOut || "";
-  const fnInRaw  = it?.flightNumberIn  || "";
-
-  const normFlight = (v) => {
-    const s = String(v || "").trim().toUpperCase();
-    if (!s) return "";
-    const code = String(iataCode || "").trim().toUpperCase();
-    if (code && s.startsWith(code)) return s.slice(code.length);
-    return s;
-  };
-
-  const fnOut = normFlight(fnOutRaw);
-  const fnIn  = normFlight(fnInRaw);
-
-  const flightLabel = (fnOut && fnIn)
-    ? `${iataCode}${fnOut} / ${iataCode}${fnIn}`
-    : `${iataCode}— / ${iataCode}—`;
-
-  const origin = it?.origin || "—";
-  const dest   = it?.destination || "—";
-  const dep    = it?.departure || "—";
-  const arr    = it?.arrival || "—";
-
-  // ============================================================
-  // 🔧 FLIGHT PANEL — ÚNICA CORRECCIÓN
-  // ============================================================
-
-  let route = null;
-  try { route = JSON.parse(localStorage.getItem("confirmedRoute")); } catch(e){}
-
-  const oneWayMin = route && Number.isFinite(route.blockTimeMin)
-    ? route.blockTimeMin
-    : (dep !== "—" && arr !== "—" ? Math.max(0, toMin(arr) - toMin(dep)) : 0);
-
-  const blockTotalMin = oneWayMin * 2;
-
-  const turnBase = route && Number.isFinite(route.turnaroundMin)
-    ? route.turnaroundMin
-    : TURNAROUND_MIN;
-
-  let rotEnd = dep !== "—"
-    ? toHHMM(toMin(dep) + oneWayMin + turnBase + oneWayMin)
-    : arr;
-
-  let nextFlightText = dep !== "—"
-    ? toHHMM(toMin(dep) + oneWayMin + turnBase + oneWayMin + turnBase)
-    : "—";
-
-  const blockText =
-    `${Math.floor(blockTotalMin / 60)}h${String(blockTotalMin % 60).padStart(2,"0")}`;
-
-  const turnText = `${turnBase} min`;
-
-  title.textContent = `✈️ ${flightLabel}`;
-
-  box.innerHTML = `
-    <div class="flight-kicker">
-      <strong>${origin}</strong> ⇄ <strong>${dest}</strong>
-      ${day ? `<span style="opacity:.85;"> · ${day.toUpperCase()}</span>` : ""}
-    </div>
-
-    <div class="flight-hero">
-      <div class="route">Route Panel</div>
-      <div class="times">DEP ${dep} · END ${rotEnd}</div>
-    </div>
-
-    <div class="flight-meta">
-      <div class="meta-card">
-        <span class="label">Block Total Time</span>
-        <span class="value">${blockText}</span>
-      </div>
-      <div class="meta-card">
-        <span class="label">Turnaround</span>
-        <span class="value">${turnText}</span>
-      </div>
-      <div class="meta-card">
-        <span class="label">Maintenance</span>
-        <span class="value">None</span>
-      </div>
-      <div class="meta-card">
-        <span class="label">Next Flight</span>
-        <span class="value">${nextFlightText}</span>
-      </div>
-    </div>
-  `;
-
-  modal.classList.remove("hidden");
- 
-}
-
-/* ============================================================
-   🟦 B3 — CLOSE FLIGHT MODAL (GLOBAL) — 11FEB26
-   ------------------------------------------------------------
-   ✅ Cierra modal (X y Close)
-   ✅ Limpia selección
-   ✅ No toca delete logic
-   ============================================================ */
-function closeFlightModal(){
-
-  const modal = document.getElementById("flightModal");
-  if (modal) modal.classList.add("hidden");
-
-  // limpiar selección canonical
-  window.ACS_selectedFlightItem = null;
-  ACS_selectedFlightItem = null;
-  ACS_selectedChipEl = null;
-
-  // limpiar selección usada por chips
-  if (window.selectedFlight) window.selectedFlight = null;
-
-  // si el footer fue cambiado por modo service, restaurarlo
-  if (typeof ACS_restoreFlightModalFooterDefault === "function") {
-    try { ACS_restoreFlightModalFooterDefault(); } catch(e){}
-  }
-}
-     
-/* ============================================================
-   ❌ PASO 4 — CANCEL SERVICE — 17DEC25
-   ============================================================ */
-
-function cancelSelectedService(){
-
-  if (!ACS_selectedChipEl) {
-    closeFlightModal();
-    return;
-  }
-
-  const id = ACS_selectedChipEl.dataset.id || "";
-  if (!id) {
-    closeFlightModal();
-    return;
-  }
-
-  const items = getItems();
-  const filtered = items.filter(it => it.id !== id);
-
-  setItems(filtered);
-  closeFlightModal();
-  renderSchedule();
-}
-     
-/* ============================================================
-   🟥 HOTFIX — RESTORE flightModal FOOTER (Edit/Remove/Delete)
-   ------------------------------------------------------------
-   ✅ Usa window.selectedFlight (source of truth real)
-   ✅ Delete llama redirect con (aircraft + flight)
-   ============================================================ */
-
-function ACS_restoreFlightModalFooterDefault(){
-
-  const modal = document.getElementById("flightModal");
-  if (!modal) return;
-
-  const footer = modal.querySelector(".acs-modal-footer");
-  if (!footer) return;
-
-  // ✅ Source of truth real en tu tabla:
-  // window.selectedFlight = { data: it, element: chip }
-  const canEdit = !!(window.selectedFlight && window.selectedFlight.data);
-
-  footer.innerHTML = `
-    ${canEdit
-      ? `<button class="btn-modal gold" onclick="editSelectedFlight()">✏️ EDIT</button>`
-      : `<button class="btn-modal gold disabled" disabled>✏️ EDIT</button>`
+    .acs-left h1 {
+      margin: 0;
+      color: var(--acs-gold-2);
+      font-size: 1.02rem;
+      white-space: nowrap;
     }
-    <button class="btn-modal amber" onclick="ACS_removeSelectedFlights()">🧹 REMOVE FLIGHTS</button>
-    <button class="btn-modal red" onclick="ACS_redirectToDeleteFlights(getCurrentAircraftFromFlight(), window.selectedFlight?.data || window.ACS_selectedFlightItem)">🗑 DELETE FLIGHTS</button>
-    <button class="btn-modal ghost" onclick="closeFlightModal()">Close</button>
-  `;
-}
 
-     
-/* ============================================================
-   🟥 D3.1 — DELETE FLIGHTS REDIRECT (SINGLE FLIGHT SCOPE)
-   ------------------------------------------------------------
-   Fix:
-   ✅ Pasa aircraft + flightNumberOut
-   ✅ Delete Modal muestra SOLO ese vuelo
-   ✅ No toca la tabla
-   ============================================================ */
-
-function ACS_redirectToDeleteFlights(ac, flight) {
-
-  if (!ac || !flight) {
-    console.warn("Delete redirect aborted: missing aircraft or flight");
-    return;
-  }
-
-  // Cerrar Flight Modal (si aplica)
-  const fm = document.getElementById("flightModal");
-  if (fm) fm.classList.add("hidden");
-
-  // 🔑 ENVIAR AMBOS flightNumbers (OUT + IN)
-  ACS_openDeleteFlightsModal({
-    aircraft: ac,
-    flightNumbers: [
-      String(
-        flight.flightNumberOut ||
-        flight.labelOut ||
-        flight.flightLabelOut ||
-        ""
-      ),
-      String(
-        flight.flightNumberIn ||
-        flight.labelIn ||
-        flight.flightLabelIn ||
-        ""
-      )
-    ]
-  });
-}
-
-/* ============================================================
-   🟦 PASO 7 — REMOVE FLIGHTS (UNASSIGN SINGLE FLIGHT ONLY)
-   ------------------------------------------------------------
-   • SOLO remueve el vuelo seleccionado
-   • NO usa blockId
-   • NO afecta otros vuelos
-   ============================================================ */
-
-function ACS_removeSelectedFlights(){
-
-  if (!window.ACS_selectedFlightItem) {
-    alert("⚠ No flight selected.");
-    return;
-  }
-
-  const sel = window.ACS_selectedFlightItem;
-
-  let items = [];
-  try {
-    items = JSON.parse(localStorage.getItem("scheduleItems")) || [];
-  } catch {
-    items = [];
-  }
-
-  if (!Array.isArray(items) || !items.length) {
-    alert("⚠ No scheduled flights found.");
-    return;
-  }
-
-  let removed = 0;
-
-  items.forEach(it => {
-    if (
-      it.type === "flight" &&
-      it.id === sel.id &&
-      it.aircraftId
-    ) {
-      it.aircraftId = null;
-      removed++;
+    .acs-nav {
+      justify-content: center;
+      gap: clamp(0.8rem, 2.5vw, 2rem);
     }
-  });
 
-  if (removed === 0) {
-    alert("⚠ This flight was not assigned.");
-    return;
-  }
-
-  localStorage.setItem("scheduleItems", JSON.stringify(items));
-
-  closeFlightModal();
-  renderSchedule();
-
-  console.log(`🟢 Removed (unassigned) flight ${sel.id}`);
-}
-
-/* ============================================================
-   🟥 B3-D.3 — DELETE SINGLE FLIGHT (SAFE — FINAL)
-   ------------------------------------------------------------
-   ✔ Elimina SOLO el vuelo seleccionado
-   ✔ Fuente única: localStorage.scheduleItems
-   ✔ NO usa blockId
-   ✔ NO usa aircraftId kill-switch
-   ✔ Limpia flightNumbers asociados
-   ✔ NO toca SkyTrack (READ ONLY)
-   ============================================================ */
-
-function deleteSelectedFlights() {
-
-  // 0) Guardias
-  if (!ACS_selectedFlightItem || !ACS_selectedChipEl) {
-    console.warn("🟥 DELETE: no selection (item/chip missing)");
-    closeFlightModal();
-    return;
-  }
-
-  const selItem = ACS_selectedFlightItem;
-  const selChip = ACS_selectedChipEl;
-
-  // 1) ID canónico del vuelo
-  const selId = (selChip.dataset.id || selItem.id || "").trim();
-  if (!selId) {
-    console.warn("🟥 DELETE: missing flight id");
-    closeFlightModal();
-    return;
-  }
-
-  // 2) Confirmación (destructiva)
-  const ok = window.confirm(
-    "⛔ This will permanently delete this flight.\n\nThis action cannot be undone."
-  );
-  if (!ok) return;
-
-  // 3) Source of truth
-  let items = [];
-  try {
-    items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-  } catch {
-    items = [];
-  }
-
-  if (!Array.isArray(items) || !items.length) {
-    localStorage.removeItem("scheduleItems");
-    closeFlightModal();
-    renderSchedule();
-    return;
-  }
-
-  // 4) Localizar vuelo objetivo
-  const target = items.find(it =>
-    it &&
-    it.type === "flight" &&
-    String(it.id || "").trim() === selId
-  );
-
-  if (!target) {
-    console.warn("🟥 DELETE: target not found", selId);
-    closeFlightModal();
-    return;
-  }
-
-  // 5) Liberar flightNumbers (si aplica)
-  try {
-    let used = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
-    if (Array.isArray(used)) {
-      if (target.flightNumberOut) {
-        used = used.filter(n => n !== target.flightNumberOut);
-      }
-      if (target.flightNumberIn) {
-        used = used.filter(n => n !== target.flightNumberIn);
-      }
-      localStorage.setItem("flightNumbers", JSON.stringify(used));
+    .acs-nav a {
+      color: var(--acs-text);
+      text-decoration: none;
+      font-size: 0.95rem;
+      padding: 0.45rem 0;
     }
-  } catch (e) {}
 
-  // 6) HARD DELETE — SOLO este vuelo
-  const remaining = items.filter(it =>
-    !(it &&
-      it.type === "flight" &&
-      String(it.id || "").trim() === selId)
-  );
-
-// ============================================================
-// 7️⃣ PERSISTENCIA
-// ============================================================
-if (!remaining.length) {
-  localStorage.removeItem("scheduleItems");
-} else {
-  localStorage.setItem("scheduleItems", JSON.stringify(remaining));
-}
-
-// ============================================================
-// 🟢 FASE A1 — OPS LIVE NOTIFY (ROUTE CHANGE → OPS)
-// ------------------------------------------------------------
-// Purpose:
-// • Notify OPS that scheduleItems changed
-// • Trigger HR recalculation if OPS engine is available
-// ------------------------------------------------------------
-// Safety:
-// • Does NOT modify scheduleItems
-// • Does NOT affect delete logic
-// • Safe if OPS engine not loaded
-// ============================================================
-if (typeof window.ACS_OPS_recalculateAllRequired === "function") {
-  console.log("🟢 OPS NOTIFY: scheduleItems changed (from Schedule Table)");
-  window.ACS_OPS_recalculateAllRequired();
-} else {
-  console.warn("⚠️ OPS engine not loaded — live recalculation skipped");
-}
-     
-// ============================================================
-// 8️⃣ LOG DELETE (DEBUG)
-// ============================================================
-console.log("🟥 DELETE SINGLE OK", {
-  deletedId: selId,
-  remaining: remaining.length
-});
-
-// ============================================================
-// 🟢 FASE 2.1 — OPS LIVE RECALC TRIGGER (DELETE ROUTE → HR)
-// ============================================================
-try {
-  if (typeof ACS_OPS_recalculateAllRequired === "function") {
-    ACS_OPS_recalculateAllRequired();
-    console.log(
-      "%c🟢 OPS LIVE RECALC TRIGGERED AFTER ROUTE DELETE",
-      "color:#00ffcc;font-weight:700"
-    );
-  } else {
-    console.warn("⚠️ OPS engine not loaded");
-  }
-} catch (e) {
-  console.warn("⚠️ OPS LIVE RECALC FAILED:", e);
-}
-
-// ============================================================
-// 9️⃣ UI
-// ============================================================
-closeFlightModal();
-renderSchedule();
-}
-     
-/* ============================================================
-   🟩 B2 — EDIT SELECTED FLIGHT (EACH DAY FIX)
-   ------------------------------------------------------------
-   RULES:
-   - Every Day  → preserve full days block
-   - Each Day  → send ONLY the single day being edited
-   ============================================================ */
-
-function editSelectedFlight() {
-
-  if (!window.selectedFlight || !window.selectedFlight.data) {
-    alert("⚠ No flight selected for edit.");
-    return;
-  }
-
-  const it = window.selectedFlight.data;
-
-  const isEachDay = !it.blockId || it.blockId === "";
-
-  const editCtx = {
-    mode: "EDIT",
-
-    // ✅ FIX CRÍTICO — ESTE ERA EL PROBLEMA
-    flightId: it.id,
-
-    origin: it.origin,
-    destination: it.destination,
-
-    aircraftId: it.aircraftId || "",
-    aircraft: it.acType || "",
-
-    departure: it.departure,
-    arrival: it.arrival,
-
-    flightNumberOut: it.flightNumberOut || "",
-    flightNumberIn:  it.flightNumberIn  || "",
-
-    blockTimeMin: it.blockTimeMin || null,
-
-    separateDays: isEachDay
-  };
-
-  if (isEachDay) {
-    editCtx.day  = it.day;
-    editCtx.days = [it.day];
-  } else {
-    editCtx.days = Array.isArray(it.days) && it.days.length
-      ? it.days
-      : ["mon","tue","wed","thu","fri","sat","sun"];
-  }
-
-  localStorage.setItem("ACS_ROUTE_EDIT", JSON.stringify(editCtx));
-  window.location.href = "route_schedule.html";
-}
-
-// ============================================================
-// LOGOUT
-// ============================================================
-function handleLogout(){
-  alert("👋 Session closed. See you soon, Captain!");
-  window.location.href="login.html";
-}
-     
-</script>
-<!-- ============================================================
-     === SCHEDULE ENGINE — FINAL SETUP (PART 5 / 5) ============
-     ============================================================ -->
-<script>
-
-/* ============================================================
-   1) VALIDACIÓN FINAL DE MODALES EXISTENTES
-   ============================================================ */
-
-(function validateModals(){
-  const required = [
-  "maintModal",
-  "flightModal",
-  "scheduleTable",
-  "scheduleBody"
-];
-
-  required.forEach(id=>{
-    if(!document.getElementById(id)){
-      console.warn(`⚠ Missing element: #${id}`);
+    .acs-nav a.active,
+    .acs-nav a:hover {
+      color: var(--acs-gold);
     }
-  });
-})();
 
-/* ============================================================
-   2) CLASES FINALES PARA OVALOS (CHIPS) — CRUZAR DÍAS
-   ============================================================ */
+    .acs-right {
+      justify-content: flex-end;
+      gap: 0.65rem;
+    }
 
-(function addChipStyles(){
+    .support-btn,
+    .logout-btn {
+      min-height: 40px;
+      padding: 0.45rem 0.9rem;
+      border-radius: 12px;
+      text-decoration: none;
+      cursor: pointer;
+      background: rgba(255, 179, 0, 0.05);
+    }
 
-  const style = document.createElement("style");
-  style.innerHTML = `
-    .chip {
-      position: relative;
-      display: inline-flex;
-      flex-wrap: nowrap;
+    .support-btn {
+      color: #8ab4ff;
+      border: 1px solid rgba(138, 180, 255, 0.45);
+    }
+
+    .logout-btn {
+      color: var(--acs-gold-2);
+      border: 1px solid var(--acs-gold-2);
+    }
+
+    .acs-clock-header {
+      width: 248px;
+      min-height: 40px;
+      display: flex;
       align-items: center;
       justify-content: center;
+      padding: 0.45rem 0.7rem;
+      border: 1px solid rgba(0, 255, 128, 0.18);
+      border-radius: 10px;
+      background: rgba(0, 255, 128, 0.08);
+      color: #00ff80;
+      font-family: "Orbitron", ui-monospace, monospace;
+      font-size: 0.86rem;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .acs-main {
+      width: min(1600px, 100%);
+      margin: 0 auto;
+      padding: 112px max(1rem, env(safe-area-inset-right)) 54px max(1rem, env(safe-area-inset-left));
+      text-align: center;
+    }
+
+    .acs-main h2 {
+      margin: 0;
+      color: var(--acs-gold);
+      font-size: clamp(1.45rem, 3vw, 1.95rem);
+      text-shadow: 0 0 10px rgba(255, 200, 60, 0.45);
+    }
+
+    .sub {
+      margin: 0.35rem 0 1.2rem;
+      color: #cbd6ff;
+    }
+
+    .status-line {
+      width: min(94%, 1520px);
+      min-height: 42px;
+      margin: 0 auto 0.85rem;
+      padding: 0.65rem 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.035);
+      color: var(--acs-muted);
+      font-size: 0.84rem;
+      text-align: left;
+    }
+
+    .status-line[data-state="error"] {
+      border-color: rgba(255, 82, 99, 0.45);
+      color: #ff8a97;
+    }
+
+    .status-line[data-state="success"] {
+      border-color: rgba(0, 216, 138, 0.35);
+      color: #7bf0bd;
+    }
+
+    .table-shell {
+      width: min(94%, 1520px);
+      margin: 0 auto;
+      overflow-x: auto;
+      border: 1px solid var(--acs-border);
       border-radius: 18px;
-      padding: 3px 12px;
+      background: linear-gradient(180deg, var(--acs-panel-2), var(--acs-panel));
+      box-shadow: 0 0 20px rgba(255, 179, 0, 0.1);
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+      width: 100%;
+      min-width: 1080px;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    th,
+    td {
+      border: 1px solid rgba(255, 255, 255, 0.055);
+      padding: 0.72rem 0.55rem;
+      text-align: center;
+      vertical-align: top;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: #28345b;
+      color: var(--acs-gold);
+      font-size: 0.88rem;
+    }
+
+    td {
+      background: rgba(10, 20, 45, 0.78);
+      color: var(--acs-text);
+      font-size: 0.84rem;
+    }
+
+    th:first-child,
+    td:first-child {
+      width: 205px;
+      position: sticky;
+      left: 0;
+      z-index: 3;
+    }
+
+    td:first-child {
+      background: #101f42;
+    }
+
+    th:last-child,
+    td:last-child {
+      width: 170px;
+      vertical-align: middle;
+    }
+
+    .aircraft-title {
+      display: block;
+      color: #ffe7a0;
+      font-weight: 800;
+      font-size: 0.9rem;
+    }
+
+    .aircraft-model {
+      display: block;
+      margin-top: 0.25rem;
+      color: var(--acs-muted);
+      font-size: 0.75rem;
+      line-height: 1.25;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 0.45rem;
+      padding: 0.18rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 255, 128, 0.38);
+      background: rgba(0, 255, 128, 0.12);
+      color: #00ff80;
+      font-size: 0.67rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+
+    .status-badge.blocked {
+      border-color: rgba(255, 82, 99, 0.45);
+      background: rgba(255, 82, 99, 0.13);
+      color: #ff8390;
+    }
+
+    .flight-chip {
+      width: 100%;
+      margin: 0 0 0.36rem;
+      padding: 0.42rem 0.45rem;
+      border: 1px solid rgba(255, 204, 51, 0.28);
+      border-radius: 10px;
+      background: rgba(12, 43, 82, 0.86);
+      color: #ffdf78;
+      cursor: pointer;
+      font-size: 0.72rem;
+      line-height: 1.3;
+      white-space: normal;
+    }
+
+    .flight-chip:hover,
+    .flight-chip:focus-visible {
+      border-color: rgba(255, 204, 51, 0.75);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(255, 204, 51, 0.12);
+    }
+
+    .flight-chip .fn {
+      display: block;
+      font-weight: 800;
+      color: var(--acs-gold);
+    }
+
+    .flight-chip .route,
+    .flight-chip .time {
+      display: block;
+    }
+
+    .cell-empty {
+      color: rgba(219, 228, 255, 0.32);
+    }
+
+    .plan-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      align-items: stretch;
+    }
+
+    .btn {
+      min-height: 38px;
+      border: 0;
+      border-radius: 11px;
+      padding: 0.5rem 0.65rem;
       font-weight: 700;
-      background: #102b4d;
-      border: 1px solid rgba(255,200,60,0.30);
-      box-shadow: 0 0 10px rgba(255,200,60,0.30);
-      backdrop-filter: blur(4px);
-      transition: 0.15s ease;
-      margin-bottom: 4px;
+      cursor: pointer;
     }
 
-    .chip:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 0 14px rgba(255,200,60,0.55);
-    }
-  `;
-  document.head.appendChild(style);
-
-})();
-
-/* === DISABLED MULTI-DAY CHIP SUPPORT PER NEW RULES === */
-     
-(function multiDayChipSupport(){})();
-
-
-function applyLongChipBehavior(){
-  /* disabled per new Qatar rules */
-}
-
-/* === DISABLED CHIP-LONG MONITOR === */
-     
-(function monitorSchedule(){
-
-  if (typeof window.renderSchedule !== "function") {
-    console.warn("⚠ renderSchedule not found, monitor skipped");
-    return;
-  }
-
-  const orig = window.renderSchedule;
-
-  window.renderSchedule = function(){
-    orig();
-    // chip-long disabled
-  };
-
-})();
-
-
-/* ============================================================
-   🟦 B3-C — OPERATING COST ENGINE (por vuelo) — Qatar Luxury v1.0
-   ------------------------------------------------------------
-   - Cobra combustible, handling y mantenimiento
-   - Solo cuando el vuelo "arranca"
-   - Se ejecuta según ACS_TIME (motor global)
-   ============================================================ */
-
-(function(){
-
-    // Registro para no cobrar dos veces el mismo vuelo en el mismo día sim
-    function hasFlightBeenChargedToday(flightID, simDate){
-        const key = `ACS_FlightCharge_${flightID}_${simDate}`;
-        return localStorage.getItem(key) === "YES";
+    .btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
     }
 
-    function markFlightCharged(flightID, simDate){
-        const key = `ACS_FlightCharge_${flightID}_${simDate}`;
-        localStorage.setItem(key, "YES");
+    .btn-assign {
+      background: #00a86b;
+      color: #fff;
     }
 
-    // 🔥 EVENTO: cada vez que ACS_TIME avanza
-    if (typeof registerTimeListener === "function") {
-
-        registerTimeListener(function(){
-
-            const items  = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-            const fleet  = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-
-/* ============================================================
-   🟦 A10.17.2 — APPLY MAINTENANCE DUE FLAGS
-   ============================================================ */
-const nowTs = ACS_TIME?.currentTime?.getTime?.() || 0;
-
-fleet.forEach(ac => {
-  ACS_calculateMaintenanceDue(ac, nowTs);
-});
-             
-/* ============================================================
-   🟦 A10.17.2 — MAINTENANCE DUE CALCULATOR
-   ------------------------------------------------------------
-   • NO inserta servicios
-   • NO bloquea vuelos
-   • SOLO marca aDue / bDue
-   ============================================================ */
-
-function ACS_calculateMaintenanceDue(aircraft, nowTs) {
-
-  if (!aircraft) return aircraft;
-
-  const WEEK_MS  = 7  * 24 * 60 * 60 * 1000;
-  const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
-
-  const refA = aircraft.lastACheckAt || aircraft.enteredFleetAt;
-  const refB = aircraft.lastBCheckAt || aircraft.enteredFleetAt;
-
-  if (!aircraft.maintenance) {
-    aircraft.maintenance = {};
-  }
-
-  aircraft.maintenance.aDue = false;
-  aircraft.maintenance.bDue = false;
-
-  if (refA && (nowTs - refA) >= WEEK_MS) {
-    aircraft.maintenance.aDue = true;
-  }
-
-  if (refB && (nowTs - refB) >= MONTH_MS) {
-    aircraft.maintenance.bDue = true;
-  }
-
-  return aircraft;
-}
-             
-            // Fecha simulada YYYY-MM-DD
-            const simDate = (typeof ACS_TIME !== "undefined" && ACS_TIME.simDate)
-                           ? ACS_TIME.simDate
-                           : new Date().toISOString().slice(0,10);
-
-            // Hora simulada HH:MM
-            const simTime = (typeof ACS_TIME !== "undefined" && ACS_TIME.simClock)
-                           ? ACS_TIME.simClock
-                           : "00:00";
-
-            const toMin = t => {
-                const [h,m] = t.split(":").map(Number);
-                return h*60 + m;
-            };
-
-            const simMin = toMin(simTime);
-
-            items.forEach(f => {
-
-                if (f.type !== "flight") return;
-
-                // ¿FANTASMA?
-                const ac = fleet.find(a => a.tail === f.tail || a.registration === f.tail);
-                if (!ac) return;  // sin avión → no se opera
-
-                // ¿Mantenimiento?
-                if (ac.status === "In C-Check" || ac.status === "In D-Check" || ac.status === "B-Check"){
-                    return;
-                }
-
-                // ¿Coincide hora de salida?
-                const depMin = toMin(f.departure);
-                if (depMin !== simMin) return;
-
-                // ¿Ya cobrado hoy?
-                if (hasFlightBeenChargedToday(f.id, simDate)) return;
-
-                // =============== COSTOS DE OPERACIÓN ===============
-                const dist   = Number(f.distanceNM || 0);
-                const block  = Number(f.blockTime || 0);
-                const acType = f.acType || "";
-
-                // Buscar categoría/modelo para fuel burn
-                const acOpt = fleet.find(a => a.tail === f.tail || a.registration === f.tail);
-                const category = acOpt?.category || "JET";
-
-                // Fuel burn ~ optimizado (kg por hora)
-                const fuelBurnPerHour =
-                      category.includes("ATR")     ? 900 :
-                      category.includes("REGIONAL")? 1800 :
-                      2500;
-
-                const flightHours = block / 60;
-                const fuelKG = fuelBurnPerHour * flightHours;
-                const fuelUSD = fuelKG * 0.85;
-
-                const handlingUSD     = 350;
-                const maintenanceUSD  = 180;
-
-                const totalUSD = Math.round(fuelUSD + handlingUSD + maintenanceUSD);
-
-                // Registrar en Finance Engine
-                if (typeof ACS_Finance === "object" &&
-                    typeof ACS_Finance.registerExpense === "function") {
-
-                    ACS_Finance.registerExpense({
-                        amount: totalUSD,
-                        category: "Operational Cost",
-                        description: `Flight ${f.flightNumberOut} — Fuel/Handling/Maint @ ${f.origin}`,
-                        timestamp: new Date().toISOString()
-                    });
-                }
-
-/* ============================================================
-   🟧 A18.1 — PASSENGERS & REVENUE (REALISTIC GROWTH)
-   ------------------------------------------------------------
-   • Growth in 14-day steps
-   • No classes yet
-   • Revenue registered per flight
-   ============================================================ */
-
-// --- Aircraft capacity ---
-const seats = acOpt?.seats || 0;
-if (seats <= 0) return;
-
-// --- Route age (days since first flight on this route) ---
-const routeKey = `${f.origin}-${f.destination}`;
-const routeStartKey = `ACS_ROUTE_START_${routeKey}`;
-
-let routeStartTs = localStorage.getItem(routeStartKey);
-if (!routeStartTs) {
-  routeStartTs = Date.now();
-  localStorage.setItem(routeStartKey, routeStartTs);
-}
-
-const daysActive = Math.floor(
-  (Date.now() - Number(routeStartTs)) / (24 * 60 * 60 * 1000)
-);
-
-// --- Growth factor (14-day steps) ---
-let growthFactor = 0.20;
-if (daysActive >= 56) growthFactor = 0.90;
-else if (daysActive >= 42) growthFactor = 0.75;
-else if (daysActive >= 28) growthFactor = 0.55;
-else if (daysActive >= 14) growthFactor = 0.35;
-
-// --- Daily demand (already realistic engine) ---
-let dailyDemand = 0;
-if (typeof ACS_PAX === "object" &&
-    typeof ACS_PAX.getDailyDemand === "function") {
-
-  dailyDemand = ACS_PAX.getDailyDemand(
-    f.originData,
-    f.destinationData,
-    Number(f.distanceNM || 0),
-    Number(ACS_TIME?.year || new Date().getFullYear())
-  );
-}
-
-// --- Passengers on this flight ---
-let pax = Math.floor(Math.min(seats, dailyDemand * growthFactor));
-if (pax < 0) pax = 0;
-
-// --- Ticket price (simple & distance-based) ---
-let ticketPrice = 120;
-if (f.distanceNM > 3000) ticketPrice = 220;
-else if (f.distanceNM > 1200) ticketPrice = 140;
-
-// --- Revenue ---
-const revenueUSD = pax * ticketPrice;
-
-// --- Register income ---
-if (revenueUSD > 0 &&
-    typeof ACS_Finance === "object" &&
-    typeof ACS_Finance.registerIncome === "function") {
-
-  ACS_Finance.registerIncome({
-    amount: revenueUSD,
-    category: "Flight Revenue",
-    description: `Flight ${f.flightNumberOut} — ${pax} pax`,
-    timestamp: new Date().toISOString()
-  });
-}
-
-console.log(
-  `💰 A18.1 Revenue: $${revenueUSD} | Pax: ${pax}/${seats} | Growth ${(growthFactor*100).toFixed(0)}%`
-);
-                 
-                console.log(`✈️💰 B3-C charged: $${totalUSD} (flight ${f.flightNumberOut})`);
-
-                // Marcar cobrado
-                markFlightCharged(f.id, simDate);
-            });
-        });
+    .btn-secondary {
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--acs-text);
     }
 
-})();
-     
-/* ============================================================
-   🟦 B-CYCLE ENGINE v1.0 — MONTHLY AUTHORITY (SCHEDULE)
-   ------------------------------------------------------------
-   • Autoridad mensual del B-Check
-   • 30 días por ciclo
-   • Si vence y NO hay B programado → OVERDUE
-   • NO inserta servicios automáticamente
-   ============================================================ */
-
-function ACS_evaluateMonthlyBCycle(aircraft, scheduleItems, nowTs){
-
-  if (!aircraft) return aircraft;
-
-  const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
-
-  if (!aircraft.maintenance) {
-    aircraft.maintenance = {};
-  }
-
-  const lastB = aircraft.lastBCheckAt || aircraft.enteredFleetAt;
-
-  if (!lastB) return aircraft;
-
-  const elapsed = nowTs - Number(lastB);
-
-  // 🔴 Si no ha pasado 1 mes → todo bien
-  if (elapsed < MONTH_MS) {
-    aircraft.maintenance.bOverdue = false;
-    return aircraft;
-  }
-
-  // 🔍 Verificar si hay B-Check programado
-  const hasScheduledB = (scheduleItems || []).some(it =>
-    it &&
-    it.type === "service" &&
-    it.serviceType === "B" &&
-    String(it.aircraftId) === String(aircraft.id)
-  );
-
-  if (!hasScheduledB) {
-    aircraft.maintenance.bOverdue = true;
-    aircraft.maintenanceOverdue = true;
-  } else {
-    aircraft.maintenance.bOverdue = false;
-  }
-
-  return aircraft;
-}
-     
-/* ============================================================
-   7) LOG
-   ============================================================ */
-
-console.log("🟦 ACS Schedule Module — FINALIZED (PART 5 / 5) — Qatar Luxury Edition");
-
-/* ============================================================
-   🟦 STEP A — LOAD ROUTES (14 DEC 2025)
-   ============================================================ */
-     
-function ACS_loadRoutesStepA() {
-
-  console.log("🟦 STEP A — Loading routes...");
-
-  const routes = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-
-  if (!Array.isArray(routes)) {
-    console.warn("⚠ scheduleItems no es un array. Valor:", routes);
-    window.ACS_Routes_Stored = [];
-    return;
-  }
-
-  console.log(`🔍 Encontradas ${routes.length} rutas guardadas:`);
-  routes.forEach((rt, i) => console.log(`— Ruta #${i+1}:`, rt));
-
-  window.ACS_Routes_Stored = routes;
-}
-
-/* ============================================================
-   🟦 STEP B — MAP AICRAFT
-   ============================================================ */ 
-     
-function ACS_mapAircraftRows() {
-
-  console.log("🟦 STEP B — Mapping aircraft rows...");
-
-  const map = {};
-  const rows = document.querySelectorAll("#scheduleTable tbody tr");
-
-  rows.forEach(tr => {
-
-    // Preferimos el TD con clase .col-aircraft (tu estándar)
-    const col = tr.querySelector(".col-aircraft");
-
-    // 🔥 Tomar modelo desde TODOS los sitios posibles
-    const rawModel =
-      (col?.dataset.modelRaw || "") ||
-      (col?.dataset.model || "") ||
-      (tr.dataset.modelRaw || "") ||
-      (tr.dataset.model || "");
-
-    const cleanedRaw = String(rawModel || "").trim();
-
-    // Evitar filas vacías
-    if (!cleanedRaw || cleanedRaw === "(empty)") return;
-
-    const key = normalizeModel(cleanedRaw);
-
-    if (key) {
-      map[key] = tr;
+    .back-btn {
+      margin-top: 1.4rem;
+      min-height: 44px;
+      padding: 0.65rem 1.25rem;
+      border: 1px solid var(--acs-gold-2);
+      border-radius: 11px;
+      background: rgba(255, 179, 0, 0.05);
+      color: var(--acs-gold-2);
+      cursor: pointer;
+      font-weight: 700;
     }
-  });
 
-  window.ACS_RowMap = map;
-  console.log("🟦 Mapped rows (MODEL KEYS):", map);
-}
+    .empty-state {
+      padding: 2rem 1rem;
+      color: var(--acs-muted);
+    }
 
-// -----------------------------------------------------------
-// 🟦 PAINT FLIGHT OVAL — v2.0 (REAL ROUTE NUMBERS)
-// -----------------------------------------------------------
-function buildFlightOval(route) {
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+      background: rgba(0, 0, 0, 0.68);
+      backdrop-filter: blur(7px);
+      -webkit-backdrop-filter: blur(7px);
+    }
 
-  const fnOut = route.flightNumberOut || "";
-  const fnIn  = route.flightNumberIn  || "";
+    .modal.hidden {
+      display: none;
+    }
 
-  const fnText = (fnOut && fnIn) ? `${fnOut} - ${fnIn}` : "—";
+    .modal-card {
+      width: min(560px, 100%);
+      max-height: min(86vh, 760px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 2px solid rgba(255, 204, 51, 0.68);
+      border-radius: 20px;
+      background: linear-gradient(180deg, #0b132b, #020617);
+      box-shadow: 0 0 42px rgba(255, 204, 51, 0.20);
+    }
 
-  return `
-      <div class="flightChip" onclick="openFlightModal('${route.id}')">
-         ${fnText}
+    .modal-header,
+    .modal-footer {
+      flex: 0 0 auto;
+      padding: 0.9rem 1rem;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      border-bottom: 1px solid rgba(255, 204, 51, 0.30);
+      background: rgba(255, 179, 0, 0.09);
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      color: var(--acs-gold);
+      font-size: 1.02rem;
+    }
+
+    .modal-close {
+      width: 40px;
+      height: 38px;
+      border: 1px solid rgba(255, 204, 51, 0.42);
+      border-radius: 11px;
+      background: rgba(255, 204, 51, 0.06);
+      color: var(--acs-gold);
+      cursor: pointer;
+    }
+
+    .modal-body {
+      flex: 1 1 auto;
+      overflow: auto;
+      padding: 1rem;
+      text-align: left;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .modal-footer {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem;
+      border-top: 1px solid rgba(255, 204, 51, 0.20);
+    }
+
+    .route-option {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.8rem;
+      align-items: start;
+      margin-bottom: 0.65rem;
+      padding: 0.8rem;
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      border-radius: 13px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .route-option strong,
+    .detail-grid strong {
+      color: #ffe7a0;
+    }
+
+    .route-option small {
+      display: block;
+      margin-top: 0.2rem;
+      color: var(--acs-muted);
+      line-height: 1.35;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.7rem;
+    }
+
+    .detail-card {
+      padding: 0.75rem;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .detail-card span {
+      display: block;
+      margin-bottom: 0.25rem;
+      color: var(--acs-muted);
+      font-size: 0.72rem;
+    }
+
+    footer {
+      padding: 1.8rem 1rem calc(1.8rem + env(safe-area-inset-bottom));
+      text-align: center;
+      color: #7c8bb8;
+    }
+
+    @media (max-width: 1080px) {
+      .acs-header {
+        grid-template-columns: 1fr auto;
+      }
+
+      .acs-nav {
+        grid-column: 1 / -1;
+        order: 3;
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding-bottom: 0.2rem;
+      }
+
+      .acs-main {
+        padding-top: 142px;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .acs-header {
+        position: sticky;
+        grid-template-columns: 1fr;
+        gap: 0.55rem;
+      }
+
+      .acs-left,
+      .acs-right {
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .acs-nav {
+        width: 100%;
+        grid-column: auto;
+        justify-content: flex-start;
+      }
+
+      .acs-clock-header {
+        width: min(100%, 290px);
+      }
+
+      .acs-main {
+        padding-top: 28px;
+      }
+
+      .status-line {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .detail-grid,
+      .modal-footer {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="acs-header">
+    <div class="acs-left">
+      <img src="acs_logo.png" alt="ACS Logo">
+      <h1>Aviation Capital Simulator</h1>
+    </div>
+
+    <nav class="acs-nav" aria-label="Primary">
+      <a href="dashboard.html">Main</a>
+      <a href="bank.html">Bank</a>
+      <a href="aircraft.html">Aircraft</a>
+      <a href="routes.html" class="active">Routes</a>
+      <a href="hr.html">HR</a>
+    </nav>
+
+    <div class="acs-right">
+      <a href="support.html" class="support-btn">Support</a>
+      <button class="logout-btn" id="logoutBtn" type="button">Logout</button>
+      <div id="acs-clock" class="acs-clock-header">--:-- — -- --- ----</div>
+    </div>
+  </header>
+
+  <main class="acs-main">
+    <h2>Weekly Flight Schedule</h2>
+    <p class="sub">Automatic schedule monitor with backend-authoritative route integration.</p>
+
+    <div id="statusLine" class="status-line" data-state="info" role="status" aria-live="polite">
+      <span id="statusMessage">Loading operational schedule…</span>
+      <span id="updateTime">Last update: --</span>
+    </div>
+
+    <div class="table-shell">
+      <table id="scheduleTable">
+        <thead>
+          <tr>
+            <th>Aircraft</th>
+            <th>Mon</th>
+            <th>Tue</th>
+            <th>Wed</th>
+            <th>Thu</th>
+            <th>Fri</th>
+            <th>Sat</th>
+            <th>Sun</th>
+            <th>Action Plan</th>
+          </tr>
+        </thead>
+        <tbody id="scheduleBody"></tbody>
+      </table>
+    </div>
+
+    <button class="back-btn" type="button" id="backBtn">Back to Routes</button>
+  </main>
+
+  <div id="assignModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="assignTitle">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="assignTitle">Assign Route</h3>
+        <button class="modal-close" type="button" data-close-modal="assignModal" aria-label="Close">✕</button>
       </div>
-  `;
-}
-     
-/* ============================================================
-   🟢 STEP C — PAINT ROUTES (AIRCRAFT ID ARCHITECTURE)
-   ============================================================ */
-     
-function ACS_paintRoutesStepC() {
+      <div id="assignBody" class="modal-body"></div>
+      <div class="modal-footer">
+        <button id="confirmAssignBtn" class="btn btn-assign" type="button">Assign Selected</button>
+        <button class="btn btn-secondary" type="button" data-close-modal="assignModal">Cancel</button>
+      </div>
+    </div>
+  </div>
 
-  console.log("🟢 STEP C — Painting routes by aircraftId...");
+  <div id="flightModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="flightTitle">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="flightTitle">Flight</h3>
+        <button class="modal-close" type="button" data-close-modal="flightModal" aria-label="Close">✕</button>
+      </div>
+      <div id="flightBody" class="modal-body"></div>
+      <div class="modal-footer">
+        <button id="unassignRouteBtn" class="btn btn-secondary" type="button">Unassign Route</button>
+        <button class="btn btn-secondary" type="button" data-close-modal="flightModal">Close</button>
+      </div>
+    </div>
+  </div>
 
-  const routes = window.ACS_Routes_Stored || [];
-  const rowMap = window.ACS_RowMap || {};
+  <footer>© 2026 Aviation Capital Simulator. All rights reserved.</footer>
 
-  if (!routes.length) {
-    console.log("⚠ No hay rutas para pintar.");
-    return;
-  }
+  <script>
+    "use strict";
 
-  routes.forEach(route => {
+    const ACS_API_BASE = "https://api.aviationcapitalsim.com/v1";
+    const ACS_DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
-    // (opcional) solo vuelos
-    // if (route.type && route.type !== "flight") return;
-
-    const aircraftId = route.aircraftId || "";
-
-    if (!aircraftId) return; // aún no asignado → no pintar
-
-    const tr = rowMap[aircraftId];
-
-    if (!tr) {
-      console.warn(`⚠ No row found for aircraftId: ${aircraftId}`);
-      return;
-    }
-
-    // MAPA DE CELDAS POR DÍA (MISMO ORDEN QUE YA TIENES)
-    const cells = tr.querySelectorAll("td");
-    const map = {
-      mon: cells[1],
-      tue: cells[2],
-      wed: cells[3],
-      thu: cells[4],
-      fri: cells[5],
-      sat: cells[6],
-      sun: cells[7]
+    const ACS_SCHEDULE_STATE = {
+      airline: null,
+      fleet: [],
+      routePlans: [],
+      scheduleItems: [],
+      selectedAircraftId: null,
+      selectedRoutePlanId: null,
+      selectedFlightId: null,
+      currentSimTime: null,
+      loading: false,
+      assigning: false
     };
 
-    // OVALO (CHIP) DEL VUELO
-    const flightOval = buildFlightOval(route);
+    function ACS_text(value) {
+      return String(value ?? "").trim();
+    }
 
-    // Pintar en días
-    (route.days || []).forEach(dayID => {
-      const td = map[dayID];
-      if (td) td.insertAdjacentHTML("beforeend", flightOval);
+    function ACS_upper(value) {
+      return ACS_text(value).toUpperCase();
+    }
+
+    function ACS_modelKey(value) {
+      return ACS_text(value).toLowerCase();
+    }
+
+    function ACS_escape(value) {
+      return ACS_text(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function ACS_setStatus(message, state = "info") {
+      const statusLine = document.getElementById("statusLine");
+      const statusMessage = document.getElementById("statusMessage");
+
+      statusLine.dataset.state = state;
+      statusMessage.textContent = message;
+    }
+
+    async function ACS_fetchJson(path, options = {}) {
+      const response = await fetch(`${ACS_API_BASE}${path}`, {
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          Accept: "application/json",
+          ...(options.body ? { "Content-Type": "application/json" } : {}),
+          ...(options.headers || {})
+        },
+        ...options
+      });
+
+      let payload = null;
+
+      try {
+        payload = await response.json();
+      } catch {
+        payload = null;
+      }
+
+      if (!response.ok || !payload || payload.ok !== true) {
+        const error = new Error(
+          payload?.details || payload?.error || `HTTP_${response.status}`
+        );
+        error.status = response.status;
+        error.payload = payload;
+        throw error;
+      }
+
+      return payload;
+    }
+
+    function ACS_renderClock(value) {
+      const clock = document.getElementById("acs-clock");
+      const date = new Date(value);
+
+      if (!clock || Number.isNaN(date.getTime())) {
+        return;
+      }
+
+      ACS_SCHEDULE_STATE.currentSimTime = date;
+
+      const time = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "UTC",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+      }).format(date);
+
+      const day = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "UTC",
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+      }).format(date).toUpperCase();
+
+      clock.textContent = `${time} — ${day}`;
+    }
+
+    function ACS_statusBadge(aircraft) {
+      const dispatchable =
+        ACS_upper(aircraft.status) === "ACTIVE" &&
+        ACS_upper(aircraft.operational_status) === "AVAILABLE" &&
+        ACS_upper(aircraft.maintenance_status) === "SERVICEABLE";
+
+      return {
+        dispatchable,
+        className: dispatchable ? "status-badge" : "status-badge blocked",
+        label: dispatchable ? "AVAILABLE" : ACS_upper(
+          aircraft.operational_status || aircraft.maintenance_status || aircraft.status || "BLOCKED"
+        )
+      };
+    }
+
+    function ACS_itemsForAircraft(aircraftId) {
+      return ACS_SCHEDULE_STATE.scheduleItems.filter(
+        item => String(item.aircraft_id || "") === String(aircraftId)
+      );
+    }
+
+    function ACS_routesAssignableToAircraft(aircraft) {
+      return ACS_SCHEDULE_STATE.routePlans.filter(route => {
+        const routeAssigned = Number(route.aircraft_id || 0) > 0;
+        const compatible = ACS_modelKey(route.model_key) === ACS_modelKey(aircraft.model_key);
+        return !routeAssigned && compatible;
+      });
+    }
+
+    function ACS_renderFlightChip(item) {
+      const flightNumber = ACS_escape(item.flight_number || "—");
+      const route = `${ACS_escape(item.origin)}-${ACS_escape(item.destination)}`;
+      const time = `${ACS_escape(item.departure || "--:--")}–${ACS_escape(item.arrival || "--:--")}`;
+
+      return `
+        <button class="flight-chip" type="button" data-flight-id="${Number(item.id)}">
+          <span class="fn">${flightNumber}</span>
+          <span class="route">${route}</span>
+          <span class="time">${time}</span>
+        </button>
+      `;
+    }
+
+    function ACS_renderSchedule() {
+      const body = document.getElementById("scheduleBody");
+      body.textContent = "";
+
+      if (!ACS_SCHEDULE_STATE.fleet.length) {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = 9;
+        cell.className = "empty-state";
+        cell.textContent = "No aircraft are available in the authenticated airline fleet.";
+        row.appendChild(cell);
+        body.appendChild(row);
+        return;
+      }
+
+      for (const aircraft of ACS_SCHEDULE_STATE.fleet) {
+        const row = document.createElement("tr");
+        const badge = ACS_statusBadge(aircraft);
+        const aircraftItems = ACS_itemsForAircraft(aircraft.id);
+
+        const aircraftCell = document.createElement("td");
+        aircraftCell.innerHTML = `
+          <span class="aircraft-title">${ACS_escape(aircraft.registration || `Aircraft ${aircraft.id}`)}</span>
+          <span class="aircraft-model">${ACS_escape(aircraft.aircraft_name || aircraft.model_key || "—")}</span>
+          <span class="${badge.className}">${ACS_escape(badge.label)}</span>
+        `;
+        row.appendChild(aircraftCell);
+
+        for (const day of ACS_DAYS) {
+          const dayCell = document.createElement("td");
+          const dayItems = aircraftItems
+            .filter(item => ACS_text(item.selected_day).toLowerCase() === day)
+            .sort((a, b) => Number(a.dep_abs_min || 0) - Number(b.dep_abs_min || 0));
+
+          if (!dayItems.length) {
+            dayCell.innerHTML = '<span class="cell-empty">—</span>';
+          } else {
+            dayCell.innerHTML = dayItems.map(ACS_renderFlightChip).join("");
+          }
+
+          row.appendChild(dayCell);
+        }
+
+        const actionsCell = document.createElement("td");
+        const assignableCount = ACS_routesAssignableToAircraft(aircraft).length;
+        actionsCell.innerHTML = `
+          <div class="plan-actions">
+            <button
+              class="btn btn-assign"
+              type="button"
+              data-assign-aircraft="${Number(aircraft.id)}"
+              ${!badge.dispatchable || assignableCount === 0 ? "disabled" : ""}
+            >Assign Route</button>
+            <button class="btn btn-secondary" type="button" disabled>Maintenance</button>
+          </div>
+        `;
+        row.appendChild(actionsCell);
+
+        body.appendChild(row);
+      }
+    }
+
+    async function ACS_loadContext() {
+      if (ACS_SCHEDULE_STATE.loading) {
+        return;
+      }
+
+      ACS_SCHEDULE_STATE.loading = true;
+      ACS_setStatus("Loading operational schedule…", "info");
+
+      try {
+        const payload = await ACS_fetchJson("/schedule/context");
+
+        ACS_SCHEDULE_STATE.airline = payload.airline || null;
+        ACS_SCHEDULE_STATE.fleet = Array.isArray(payload.fleet) ? payload.fleet : [];
+        ACS_SCHEDULE_STATE.routePlans = Array.isArray(payload.route_plans) ? payload.route_plans : [];
+        ACS_SCHEDULE_STATE.scheduleItems = Array.isArray(payload.schedule_items) ? payload.schedule_items : [];
+
+        ACS_renderClock(payload.current_sim_time);
+        ACS_renderSchedule();
+
+        const updateTime = document.getElementById("updateTime");
+        updateTime.textContent = `Last update: ${new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit"
+        })}`;
+
+        ACS_setStatus(
+          `${ACS_SCHEDULE_STATE.fleet.length} aircraft · ${ACS_SCHEDULE_STATE.routePlans.length} route plans · ${ACS_SCHEDULE_STATE.scheduleItems.length} schedule items`,
+          "success"
+        );
+      } catch (error) {
+        console.error("ACS SCHEDULE LOAD ERROR:", error);
+        ACS_setStatus(error.message || "Schedule context could not be loaded.", "error");
+        ACS_SCHEDULE_STATE.fleet = [];
+        ACS_SCHEDULE_STATE.routePlans = [];
+        ACS_SCHEDULE_STATE.scheduleItems = [];
+        ACS_renderSchedule();
+      } finally {
+        ACS_SCHEDULE_STATE.loading = false;
+      }
+    }
+
+    function ACS_openAssignModal(aircraftId) {
+      const aircraft = ACS_SCHEDULE_STATE.fleet.find(
+        item => String(item.id) === String(aircraftId)
+      );
+
+      if (!aircraft) {
+        return;
+      }
+
+      ACS_SCHEDULE_STATE.selectedAircraftId = Number(aircraft.id);
+      ACS_SCHEDULE_STATE.selectedRoutePlanId = null;
+
+      const routes = ACS_routesAssignableToAircraft(aircraft);
+      const title = document.getElementById("assignTitle");
+      const body = document.getElementById("assignBody");
+      const confirm = document.getElementById("confirmAssignBtn");
+
+      title.textContent = `Assign Route — ${aircraft.registration || aircraft.id}`;
+      confirm.disabled = true;
+
+      if (!routes.length) {
+        body.innerHTML = '<div class="empty-state">No compatible unassigned route plans are available.</div>';
+      } else {
+        body.innerHTML = routes.map(route => `
+          <label class="route-option">
+            <input type="radio" name="routePlan" value="${Number(route.id)}">
+            <span>
+              <strong>${ACS_escape(route.flight_number_out || "—")} / ${ACS_escape(route.flight_number_in || "—")}</strong>
+              <small>${ACS_escape(route.origin)}–${ACS_escape(route.destination)} · ${ACS_escape(route.departure)} · ${ACS_escape(route.aircraft || route.model_key)}</small>
+            </span>
+          </label>
+        `).join("");
+      }
+
+      document.getElementById("assignModal").classList.remove("hidden");
+    }
+
+    function ACS_openFlightModal(flightId) {
+      const item = ACS_SCHEDULE_STATE.scheduleItems.find(
+        flight => String(flight.id) === String(flightId)
+      );
+
+      if (!item) {
+        return;
+      }
+
+      ACS_SCHEDULE_STATE.selectedFlightId = Number(item.id);
+      ACS_SCHEDULE_STATE.selectedRoutePlanId = Number(item.route_plan_id);
+
+      const routePlan = ACS_SCHEDULE_STATE.routePlans.find(
+        route => String(route.id) === String(item.route_plan_id)
+      );
+
+      document.getElementById("flightTitle").textContent = item.flight_number || "Flight";
+      document.getElementById("flightBody").innerHTML = `
+        <div class="detail-grid">
+          <div class="detail-card"><span>Route</span><strong>${ACS_escape(item.origin)}–${ACS_escape(item.destination)}</strong></div>
+          <div class="detail-card"><span>Schedule</span><strong>${ACS_escape(item.selected_day)} ${ACS_escape(item.departure)}–${ACS_escape(item.arrival || "—")}</strong></div>
+          <div class="detail-card"><span>Aircraft</span><strong>${ACS_escape(item.aircraft_registration || "Unassigned")}</strong></div>
+          <div class="detail-card"><span>Status</span><strong>${ACS_escape(item.status || "planned")}</strong></div>
+          <div class="detail-card"><span>Direction</span><strong>${ACS_escape(item.flight_direction || "—")}</strong></div>
+          <div class="detail-card"><span>Paired flight</span><strong>${ACS_escape(item.paired_flight_number || routePlan?.flight_number_in || "—")}</strong></div>
+        </div>
+      `;
+
+      document.getElementById("unassignRouteBtn").disabled = !item.aircraft_id;
+      document.getElementById("flightModal").classList.remove("hidden");
+    }
+
+    function ACS_closeModal(id) {
+      document.getElementById(id)?.classList.add("hidden");
+    }
+
+    async function ACS_confirmAssignment() {
+      if (ACS_SCHEDULE_STATE.assigning) {
+        return;
+      }
+
+      const routePlanId = ACS_SCHEDULE_STATE.selectedRoutePlanId;
+      const aircraftId = ACS_SCHEDULE_STATE.selectedAircraftId;
+
+      if (!routePlanId || !aircraftId) {
+        return;
+      }
+
+      ACS_SCHEDULE_STATE.assigning = true;
+      const button = document.getElementById("confirmAssignBtn");
+      button.disabled = true;
+
+      try {
+        await ACS_fetchJson("/schedule/assign-aircraft", {
+          method: "POST",
+          body: JSON.stringify({
+            route_plan_id: routePlanId,
+            aircraft_id: aircraftId
+          })
+        });
+
+        ACS_closeModal("assignModal");
+        await ACS_loadContext();
+        ACS_setStatus("Route assigned successfully.", "success");
+      } catch (error) {
+        console.error("ACS ASSIGN ERROR:", error);
+        ACS_setStatus(error.message || "The route could not be assigned.", "error");
+        button.disabled = false;
+      } finally {
+        ACS_SCHEDULE_STATE.assigning = false;
+      }
+    }
+
+    async function ACS_unassignSelectedRoute() {
+      const routePlanId = ACS_SCHEDULE_STATE.selectedRoutePlanId;
+
+      if (!routePlanId) {
+        return;
+      }
+
+      const button = document.getElementById("unassignRouteBtn");
+      button.disabled = true;
+
+      try {
+        await ACS_fetchJson("/schedule/unassign-aircraft", {
+          method: "POST",
+          body: JSON.stringify({ route_plan_id: routePlanId })
+        });
+
+        ACS_closeModal("flightModal");
+        await ACS_loadContext();
+        ACS_setStatus("Route unassigned successfully.", "success");
+      } catch (error) {
+        console.error("ACS UNASSIGN ERROR:", error);
+        ACS_setStatus(error.message || "The route could not be unassigned.", "error");
+        button.disabled = false;
+      }
+    }
+
+    async function ACS_logout() {
+      try {
+        await fetch(`${ACS_API_BASE}/auth/logout`, {
+          method: "POST",
+          credentials: "include",
+          cache: "no-store"
+        });
+      } finally {
+        window.location.href = "login.html";
+      }
+    }
+
+    document.addEventListener("click", event => {
+      const assignButton = event.target.closest("[data-assign-aircraft]");
+      const flightButton = event.target.closest("[data-flight-id]");
+      const closeButton = event.target.closest("[data-close-modal]");
+
+      if (assignButton) {
+        ACS_openAssignModal(assignButton.dataset.assignAircraft);
+        return;
+      }
+
+      if (flightButton) {
+        ACS_openFlightModal(flightButton.dataset.flightId);
+        return;
+      }
+
+      if (closeButton) {
+        ACS_closeModal(closeButton.dataset.closeModal);
+      }
     });
 
-  });
-
-}
-
-// ============================================================
-// 🟦 3D.2 — DOM READY (Schedule Table — aircraftId ONLY)
-// ============================================================
-     
-document.addEventListener("DOMContentLoaded", () => {
-
-  // Render principal de la tabla
-  if (typeof renderSchedule === "function") {
-    renderSchedule();
-  } else {
-    console.warn("⚠ renderSchedule no está disponible.");
-  }
-
-  // ❌ LEGACY DISABLED (modelKey architecture)
-  // ACS_loadRoutesStepA();
-  // ACS_mapAircraftRows();
-  // ACS_paintRoutesStepC();
-
-});
-
-/* === MODAL ERROR FUNCTIONS — Qatar Luxury === */
-
-function showMaintenanceErrorModal(message) {
-  document.getElementById("maintenanceErrorText").textContent = message;
-  document.getElementById("maintenanceErrorModal").style.display = "flex";
-}
-
-function closeMaintenanceErrorModal() {
-  document.getElementById("maintenanceErrorModal").style.display = "none";
-}
-     
-let selectedChip = null;
-
-function openActionModal(chip){
-  selectedChip = chip;
-  document.getElementById("actionModal").style.display = "flex";
-}
-
-function closeActionModal(){
-  selectedChip = null;
-  document.getElementById("actionModal").style.display = "none";
-}
-     
-/* ============================================================
-   ⏱ PASO 3 — SORT DAY EVENTS BY START TIME — 17DEC25
-   ============================================================ */
-
-function ACS_sortDayEvents(events) {
-  return events.slice().sort((a, b) => {
-    const aMin = a.start ? toMin(a.start) : 0;
-    const bMin = b.start ? toMin(b.start) : 0;
-    return aMin - bMin;
-  });
-}
-
-/* ============================================================
-   🟢 B-CYCLE STATUS (SIM TIME SAFE)
-   ------------------------------------------------------------
-   • Calcula días restantes correctamente
-   • Corrige valores legacy Date.now()
-   • Nunca muestra números absurdos
-   ============================================================ */
-
-function ACS_getBCycleStatus(aircraft){
-
-  const DAY_MS = 24 * 60 * 60 * 1000;
-  const now = ACS_TABLE_TIME?.date?.getTime?.() || 0;
-
-  if (!aircraft.lastBCheckAt || aircraft.lastBCheckAt > now) {
-    aircraft.lastBCheckAt = now;
-  }
-
-  const daysPassed = Math.floor((now - aircraft.lastBCheckAt) / DAY_MS);
-  const safeDaysPassed = Math.max(0, daysPassed);
-
-  const remaining = Math.max(0, 30 - safeDaysPassed);
-  const percent = Math.min(100, (safeDaysPassed / 30) * 100);
-
-  return {
-    remainingDays: remaining,
-    percentUsed: percent,
-    overdue: safeDaysPassed >= 30
-  };
-}
-     
-/* ============================================================
-   🦄 M3 — MAINTENANCE INFO MODAL ENGINE
-   ============================================================ */
-
-let ACS_SELECTED_SERVICE = null;
-
-function openMaintenanceInfoModal(service, aircraft){
-
-  if (!service || service.type !== "service") return;
-
-  ACS_SELECTED_SERVICE = service;
-
-  const modal = document.getElementById("maintenanceInfoModal");
-  const body  = document.getElementById("maintenanceInfoBody");
-  const title = document.getElementById("maintInfoTitle");
-
-  const typeLabel = service.serviceType === "B" ? "⚙️ B-Check" : "🔧 A-Check";
-
-  title.textContent = typeLabel;
-
-const visual = ACS_getWeeklyACheckVisual(service.day, service.start);
-     
-let barHTML = "";
-
-if (service.serviceType?.toUpperCase().includes("A")) {
-
-const visual = ACS_getWeeklyACheckVisual(service.day, service.start);
-
-const remainingHours = (visual.days * 24) + visual.hours;
-
-const totalWeek = 7 * 24;
-const percent = (remainingHours / totalWeek) * 100;
-
-// 🎯 COLOR
-let color;
-
-if (percent > 75) {
-  color = "#00c853"; // verde
-} else if (percent > 50) {
-  color = "#ffd600"; // amarillo
-} else if (percent > 25) {
-  color = "#ff9100"; // naranja
-} else {
-  color = "#d50000"; // rojo
-}
-
-const progress = percent;
-     
-  barHTML = `
-  <div class="bcycle-box">
-    <div class="bcycle-header">A-CHECK CYCLE</div>
-
-    <div class="bcycle-bar">
-      <div class="bcycle-fill"
-           style="width:${progress}%; background:${color};">
-      </div>
-    </div>
-
-    <div class="bcycle-info">
-      <span>Next</span>
-      <span>${visual.label}</span>
-    </div>
-
-    <div class="bcycle-info">
-      <span>Cycle</span>
-      <span>7 days</span>
-    </div>
-  </div>
-`;
-     
-} else {
-
-  const bCycle = ACS_getMonthlyBCycleVisual(aircraft);
-
-  if (bCycle) {
-
-    let color;
-
-    if (bCycle.remainingDays > 15) {
-      color = "#00c853";
-    } else if (bCycle.remainingDays > 7) {
-      color = "#ffd600";
-    } else if (bCycle.remainingDays > 3) {
-      color = "#ff9100";
-    } else {
-      color = "#d50000";
-    }
-
-    barHTML = `
-      <div class="bcycle-box">
-        <div class="bcycle-header">B-CHECK CYCLE</div>
-
-        <div class="bcycle-bar">
-          <div class="bcycle-fill"
-               style="width:${bCycle.percent}%; background:${color};">
-          </div>
-        </div>
-
-        <div class="bcycle-info">
-          <span>Remaining</span>
-          <span>${bCycle.remainingDays > 0 ? bCycle.remainingDays + " days" : "0 days"}</span>
-        </div>
-      </div>
-    `;
-  }
-}
-     
-body.innerHTML = `
-  <div class="flight-kicker">
-    <strong>${aircraft.registration || "—"}</strong>
-    · ${aircraft.model || "—"}
-  </div>
-
-  <div class="flight-hero">
-    <div class="route">Maintenance Window</div>
-    <div class="times">
-      ${service.start} → ${service.end}
-    </div>
-  </div>
-
-  ${barHTML}
-
-  <div class="flight-meta">
-    <div class="meta-card">
-      <span class="label">Day</span>
-      <span class="value">${service.day.toUpperCase()}</span>
-    </div>
-
-    <div class="meta-card">
-      <span class="label">Duration</span>
-      <span class="value">
-        ${service.serviceType === "B" ? "24 hours" : "5 hours"}
-      </span>
-    </div>
-
-    <div class="meta-card">
-      <span class="label">Status</span>
-      <span class="value">Scheduled</span>
-    </div>
-
-    <div class="meta-card">
-      <span class="label">Type</span>
-      <span class="value">${typeLabel}</span>
-    </div>
-  </div>
-`;
-
-  modal.classList.remove("hidden");
-}
-
-function closeMaintenanceInfoModal(){
-  const modal = document.getElementById("maintenanceInfoModal");
-  if (modal) modal.classList.add("hidden");
-  ACS_SELECTED_SERVICE = null;
-}
-
-function editMaintenanceFromInfo(){
-  if (!ACS_SELECTED_SERVICE) return;
-
-  // Reutilizamos el modal de planificación en modo EDIT
-  openMaintModal(
-    null,
-    ACS_SELECTED_SERVICE,
-    ACS_SELECTED_SERVICE.aircraftId
-  );
-
-  closeMaintenanceInfoModal();
-}
-
-function removeMaintenanceFromInfo(){
-
-  if (!ACS_SELECTED_SERVICE) return;
-
-  const ok = confirm("⛔ Remove this maintenance service?");
-  if (!ok) return;
-
-  const items = getItems().filter(it =>
-    !(it.type === "service" && it.id === ACS_SELECTED_SERVICE.id)
-  );
-
-  setItems(items);
-  closeMaintenanceInfoModal();
-  renderSchedule();
-}
-
-/* ============================================================
-   🟥 D1.2 — DELETE SELECTED BUTTON (NEW MODAL) — FINAL BIND
-   ------------------------------------------------------------
-   ✅ Hace que el botón "🗑 DELETE SELECTED" ejecute de verdad
-   ✅ Usa el NUEVO modal (#deleteFlightsModal)
-   ✅ Lee checks .acs-delete-check (el HTML actual)
-   ✅ NO toca ACS_deleteFlight()
-   ============================================================ */
-
-function ACS_confirmDeleteFlightsBulk() {
-
-  const modal = document.getElementById("deleteFlightsModal");
-  if (!modal) {
-    console.warn("⛔ Delete modal not found (#deleteFlightsModal).");
-    return;
-  }
-
-  const checked = [...modal.querySelectorAll("input.acs-delete-check:checked")];
-
-  if (!checked.length) {
-    alert("⚠ No flights selected.");
-    return;
-  }
-
-  const ok = confirm(
-    `⛔ DELETE ${checked.length} flight(s)?\nThis action cannot be undone.`
-  );
-  if (!ok) return;
-
-  if (typeof ACS_deleteFlight !== "function") {
-    console.warn("⛔ ACS_deleteFlight() is not available.");
-    return;
-  }
-
-  checked.forEach(cb => {
-    const id = (cb.dataset.flightId || "").trim();
-    if (id) ACS_deleteFlight(id);
-  });
-
-  if (typeof ACS_closeDeleteFlightsModal === "function") {
-    ACS_closeDeleteFlightsModal();
-  } else {
-    modal.classList.add("hidden");
-  }
-
-  if (typeof renderSchedule === "function") {
-    renderSchedule();
-  }
-}
-     
-</script>
-
-<script>
-/* ============================================================
-   🟦 ACS SLOT ENGINE — SIMPLE v1.0 (PASO 3)
-   ------------------------------------------------------------
-   • Reserva slots por VUELO
-   • Sin optimización
-   • Sin edición
-   • Sin EveryDay
-   ============================================================ */
-
-function ACS_reserveSlotSimple(flight) {
-
-  if (!flight || !flight.origin || !flight.destination || !flight.day) {
-    console.error("⛔ Invalid flight for slot reservation", flight);
-    return false;
-  }
-
-  let slots = [];
-  try {
-    slots = JSON.parse(localStorage.getItem("ACS_SLOTS_SIMPLE")) || [];
-  } catch {
-    slots = [];
-  }
-
-  const depSlot = {
-    airport: flight.origin,
-    day: flight.day,
-    time: flight.departure,
-    flightId: flight.id,
-    type: "DEP"
-  };
-
-  const arrSlot = {
-    airport: flight.destination,
-    day: flight.day,
-    time: flight.arrival,
-    flightId: flight.id,
-    type: "ARR"
-  };
-
-  const conflict = slots.find(s =>
-    s.airport === depSlot.airport &&
-    s.day === depSlot.day &&
-    s.time === depSlot.time
-  );
-
-  if (conflict) {
-    console.warn("⛔ Slot conflict detected:", conflict);
-    return false;
-  }
-
-  slots.push(depSlot, arrSlot);
-  localStorage.setItem("ACS_SLOTS_SIMPLE", JSON.stringify(slots));
-
-  console.log("🟢 Slots reserved:", depSlot, arrSlot);
-  return true;
-}
-</script>
-
-<script>
-/* ============================================================
-   ✈️ ACS — CREATE FLIGHTS FROM ROUTE (PASO 3)
-   ------------------------------------------------------------
-   • 1 flight = 1 day
-   • Slot simple incluido
-   • NO EveryDay
-   ============================================================ */
-
-function ACS_createFlightsFromRoute(route) {
-
-  if (!route || !Array.isArray(route.days)) {
-    console.error("⛔ Invalid route", route);
-    return;
-  }
-
-  let flights = [];
-  try {
-    flights = JSON.parse(localStorage.getItem("ACS_FLIGHTS")) || [];
-  } catch {
-    flights = [];
-  }
-
-  route.days.forEach(day => {
-
-    const flightId = "FL_" + Math.floor(100000 + Math.random() * 900000);
-
-    const flight = {
-      id: flightId,
-      routeId: route.id,
-      model: route.model,
-      origin: route.origin,
-      destination: route.destination,
-      day: day,
-      departure: route.departure,
-      arrival: route.arrival,
-      status: "PLANNED"
-    };
-
-    const slotOK = ACS_reserveSlotSimple(flight);
-    if (!slotOK) {
-      alert(`❌ Slot conflict on ${day} ${flight.origin}`);
-      return;
-    }
-
-    flights.push(flight);
-  });
-
-  localStorage.setItem("ACS_FLIGHTS", JSON.stringify(flights));
-  console.log("🟢 Flights created from route:", flights);
-}
-</script>
-
-<!-- ============================================================
-     🟥 D1 — DELETE FLIGHTS MODAL (QATAR UNICORN) — 10FEB26
-     UI: IDÉNTICA A ASSIGN ROUTE (estructura)
-     ============================================================ -->
-
-<div id="deleteFlightsModal" class="acs-modal hidden">
-  <div class="acs-modal-card qatar">
-
-    <div class="acs-modal-header">
-      <h3 id="deleteFlightsTitle">🗑 Delete Flights</h3>
-      <button class="btn-close" onclick="ACS_closeDeleteFlightsModal()">✕</button>
-    </div>
-
-    <div id="deleteFlightsBody" class="acs-modal-body">
-      <!-- contenido dinámico por JS -->
-    </div>
-
-    <div class="acs-modal-footer">
-      <button class="btn-modal red" onclick="ACS_confirmDeleteFlightsBulk()">
-        🗑 DELETE SELECTED
-      </button>
-      <button class="btn-modal ghost" onclick="ACS_closeDeleteFlightsModal()">
-        Cancel
-      </button>
-    </div>
-
-  </div>
-</div>
-
-
-<script src="engine/acs_security_core.js?v=1"></script>
-     
+    document.getElementById("assignBody").addEventListener("change", event => {
+      if (event.target.name !== "routePlan") {
+        return;
+      }
+
+      ACS_SCHEDULE_STATE.selectedRoutePlanId = Number(event.target.value);
+      document.getElementById("confirmAssignBtn").disabled = false;
+    });
+
+    document.getElementById("confirmAssignBtn").addEventListener("click", ACS_confirmAssignment);
+    document.getElementById("unassignRouteBtn").addEventListener("click", ACS_unassignSelectedRoute);
+    document.getElementById("logoutBtn").addEventListener("click", ACS_logout);
+    document.getElementById("backBtn").addEventListener("click", () => {
+      window.location.href = "routes.html";
+    });
+
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") {
+        ACS_closeModal("assignModal");
+        ACS_closeModal("flightModal");
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", ACS_loadContext);
+       
+  </script>
 </body>
 </html>
