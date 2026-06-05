@@ -484,8 +484,13 @@ footer {
 
     <!-- Número de vuelo — VACÍO, motor intacto pero no se ejecuta -->
        
-    <label>Flight Number (Auto)</label>
-    <input type="text" id="flightNumber" readonly />
+    <label>Flight Number</label>
+    <input
+    type="text"
+    id="flightNumber"
+    value="Assigned automatically on confirmation"
+    readonly
+   />
 
     <!-- Aircraft limpia -->
        
@@ -493,7 +498,7 @@ footer {
        
     <!-- A2: se añade autoGenerateFlightNumber al onchange -->
        
-    <select id="aircraft" onchange="autoCalculate(); autoGenerateFlightNumber();">
+    <select id="aircraft" onchange="autoCalculate();">
   <option value="">-- Select Aircraft --</option>
 </select>
 
