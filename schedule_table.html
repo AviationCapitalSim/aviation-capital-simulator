@@ -164,6 +164,7 @@ body {
 /* ============================================================
    === MAIN ====================================================
    ============================================================ */
+       
 .acs-main {
   padding: 110px 2rem 70px;
   text-align: center;
@@ -223,6 +224,7 @@ body {
 }
 
 /* Aircraft */
+       
 #scheduleTable th:first-child,
 #scheduleTable td:first-child {
   width: 215px;
@@ -231,6 +233,7 @@ body {
 }
 
 /* Monday through Sunday */
+       
 #scheduleTable th:nth-child(n+2):nth-child(-n+8),
 #scheduleTable td:nth-child(n+2):nth-child(-n+8) {
   width: auto;
@@ -238,14 +241,18 @@ body {
 }
 
 /* Action Plan */
+       
 #scheduleTable th:last-child,
 #scheduleTable td:last-child {
-  width: 190px;
-  min-width: 190px;
-  max-width: 190px;
+  width: 215px;
+  min-width: 215px;
+  max-width: 215px;
+  padding-left: 8px;
+  padding-right: 8px;
 }
 
 /* Prevent long aircraft text from widening the column */
+       
 #scheduleTable td:first-child {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -253,6 +260,7 @@ body {
 }
 
 /* Keep aircraft information compact */
+       
 #scheduleTable td:first-child > * {
   max-width: 100%;
 }
@@ -522,20 +530,53 @@ footer {
 }
 
 /* ============================================================
-   === ACTION PLAN COLUMN (SMALLER) ============================
+   🟦 ACTION PLAN — RESPONSIVE AIRBUS OCC
+   Date: 06 JUN 2026
+   Purpose:
+   - Keep both buttons inside the column
+   - Preserve one-line layout on desktop
+   - Stack safely on compact devices
    ============================================================ */
 
 .plan-actions {
+  width: 100%;
   display: flex;
-  gap: 6px;
+  align-items: center;
   justify-content: center;
+  gap: 6px;
+  box-sizing: border-box;
 }
 
 .plan-actions .btn {
-  padding: 4px 10px;
-  font-size: 0.75rem;
+  min-width: 0;
+  padding: 5px 9px;
+  font-size: 0.72rem;
+  line-height: 1.1;
   border-radius: 10px;
   white-space: nowrap;
+  box-sizing: border-box;
+}
+
+/* Desktop */
+.plan-actions .btn-assign {
+  flex: 0 1 auto;
+}
+
+.plan-actions .btn-maint {
+  flex: 0 1 auto;
+}
+
+/* Tablet and mobile */
+@media (max-width: 900px) {
+  .plan-actions {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .plan-actions .btn {
+    width: 100%;
+    max-width: 145px;
+  }
 }
        
 /* ============================================================
@@ -553,6 +594,7 @@ footer {
 }
        
 /* HOTFIX — revertir flex global y proteger columna Aircraft */
+       
 #scheduleTable td { 
   display: table-cell; 
   vertical-align: middle; 
@@ -601,6 +643,7 @@ footer {
 /* ============================================================
    === B-CHECK DAY BACKGROUND — Qatar Luxury A2 Premium ========
    ============================================================ */
+       
 .bcheck-day {
   background: rgba(135, 145, 165, 0.26) !important;
   border: 1px solid rgba(135, 145, 165, 0.38) !important;
@@ -1348,7 +1391,7 @@ footer {
   <div class="acs-maint-card">
 
     <div class="acs-maint-header">
-      <h3>🛠 Plan Maintenance</h3>
+      <h3>🛠 Maintenance</h3>
       <button class="btn-close" onclick="closeMaintModal()">✕</button>
     </div>
 
@@ -1585,6 +1628,7 @@ if (
    - Lee C/D y grounded REAL desde MyAircraft
    - READ ONLY (Schedule NO modifica nada real)
    ============================================================ */
+     
 function ACS_ReadOperationalState(ac) {
 
   const ops = {
@@ -1672,6 +1716,7 @@ function ACS_isServiceActiveNow(service) {
    - NO modifica estado real (canFly/status/groundReason)
    - NO persiste en ACS_MyAircraft
    ============================================================ */
+     
 function ACS_EvaluateScheduleServiceState(ac, scheduleItems) {
 
   // Estado visual local (NO persistente)
@@ -2457,6 +2502,7 @@ function ACS_getWeeklyACheckVisual(dayStr, hourStart){
   }
 
   // 🔹 días hasta próximo día elegido
+     
   let deltaDays = targetDay - currentDay;
   if (deltaDays < 0) deltaDays += 7;
 
@@ -2608,6 +2654,7 @@ if (
   const dueDate = ac.lastBCheckAt + CYCLE_MS;
 
   // 🔹 1️⃣ Aún no vence → limpiar flags
+     
   if (now < dueDate) {
     ac.bOverdue = false;
     ac.maintenanceOverdue = false;
@@ -2615,6 +2662,7 @@ if (
   }
 
   // 🔹 2️⃣ Leer programación real
+     
   let scheduleItems = [];
   try {
     scheduleItems = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
@@ -2714,6 +2762,7 @@ if (ac.bInProgress) {
 // ============================================================
 // === AIRCRAFT HOVER CARD — Qatar Luxury v3 ==================
 // ============================================================
+     
 function showAircraftHover(ac, cell) {
 
   // Remover card anterior si existe
@@ -3056,7 +3105,7 @@ if (!fleet.length) {
 
     const maintBtn = document.createElement("button");
     maintBtn.className = "btn btn-maint";
-    maintBtn.textContent = "Plan Maintenance";
+    maintBtn.textContent = "Maintenance";
     maintBtn.onclick = () =>
       alert("⚠ No aircraft available. Buy one first.");
 
@@ -3232,7 +3281,7 @@ fleet.forEach(ac => {
 
     const maintBtn = document.createElement("button");
     maintBtn.className = "btn btn-maint";
-    maintBtn.textContent = "Plan Maintenance";
+    maintBtn.textContent = "Maintenance";
     maintBtn.onclick = () => openMaintModal(realModel, null, ac.id);
 
     wrap.appendChild(assignBtn);
