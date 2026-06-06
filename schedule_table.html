@@ -1,1094 +1,1693 @@
+<!-- ============================================================
+     === SCHEDULE TABLE MODULE — Qatar Luxury Edition ===========
+     ------------------------------------------------------------
+     Version: FINAL v1.5 | Date: 27 NOV 2025
+     ============================================================ -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Schedule Table - Aviation Capital Simulator</title>
 
-  <link rel="stylesheet" href="styles.css?v=3.1">
+  <!-- ======== ACS Styles ======== -->
+  <link rel="stylesheet" href="styles.css?v=3.1" />
+
+  <!-- ======== ACS Favicons ======== -->
   <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
   <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
   <link rel="apple-touch-icon" href="acs_logo_180.png">
 
   <style>
-    :root {
-      color-scheme: dark;
-      --acs-bg: #081530;
-      --acs-panel: rgba(10, 20, 45, 0.88);
-      --acs-panel-2: rgba(20, 35, 70, 0.78);
-      --acs-gold: #ffca3a;
-      --acs-gold-2: #ffb300;
-      --acs-text: #dbe4ff;
-      --acs-muted: #9dadd5;
-      --acs-green: #00d88a;
-      --acs-red: #ff5263;
-      --acs-border: rgba(255, 179, 0, 0.20);
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html,
-    body {
-      margin: 0;
-      min-height: 100%;
-      background: var(--acs-bg);
-      color: #fff;
-      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    button,
-    select,
-    input {
-      font: inherit;
-    }
-
-    button {
-      -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
-    }
-
-    .acs-header {
-      position: fixed;
-      inset: 0 0 auto 0;
-      min-height: 74px;
-      padding: 0.8rem max(1rem, env(safe-area-inset-right)) 0.8rem max(1rem, env(safe-area-inset-left));
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      align-items: center;
-      gap: 1rem;
-      border-bottom: 2px solid var(--acs-gold-2);
-      background: rgba(12, 23, 50, 0.88);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      z-index: 5000;
-    }
-
-    .acs-left,
-    .acs-right,
-    .acs-nav {
-      display: flex;
-      align-items: center;
-    }
-
-    .acs-left {
-      gap: 0.75rem;
-      min-width: 0;
-    }
-
-    .acs-left img {
-      width: 44px;
-      height: 44px;
-      object-fit: contain;
-      flex: 0 0 auto;
-    }
-
-    .acs-left h1 {
-      margin: 0;
-      color: var(--acs-gold-2);
-      font-size: 1.02rem;
-      white-space: nowrap;
-    }
-
-    .acs-nav {
-      justify-content: center;
-      gap: clamp(0.8rem, 2.5vw, 2rem);
-    }
-
-    .acs-nav a {
-      color: var(--acs-text);
-      text-decoration: none;
-      font-size: 0.95rem;
-      padding: 0.45rem 0;
-    }
-
-    .acs-nav a.active,
-    .acs-nav a:hover {
-      color: var(--acs-gold);
-    }
-
-    .acs-right {
-      justify-content: flex-end;
-      gap: 0.65rem;
-    }
-
-    .support-btn,
-    .logout-btn {
-      min-height: 40px;
-      padding: 0.45rem 0.9rem;
-      border-radius: 12px;
-      text-decoration: none;
-      cursor: pointer;
-      background: rgba(255, 179, 0, 0.05);
-    }
-
-    .support-btn {
-      color: #8ab4ff;
-      border: 1px solid rgba(138, 180, 255, 0.45);
-    }
-
-    .logout-btn {
-      color: var(--acs-gold-2);
-      border: 1px solid var(--acs-gold-2);
-    }
-
-    .acs-clock-header {
-      width: 248px;
-      min-height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0.45rem 0.7rem;
-      border: 1px solid rgba(0, 255, 128, 0.18);
-      border-radius: 10px;
-      background: rgba(0, 255, 128, 0.08);
-      color: #00ff80;
-      font-family: "Orbitron", ui-monospace, monospace;
-      font-size: 0.86rem;
-      white-space: nowrap;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .acs-main {
-      width: min(1600px, 100%);
-      margin: 0 auto;
-      padding: 112px max(1rem, env(safe-area-inset-right)) 54px max(1rem, env(safe-area-inset-left));
-      text-align: center;
-    }
-
-    .acs-main h2 {
-      margin: 0;
-      color: var(--acs-gold);
-      font-size: clamp(1.45rem, 3vw, 1.95rem);
-      text-shadow: 0 0 10px rgba(255, 200, 60, 0.45);
-    }
-
-    .sub {
-      margin: 0.35rem 0 1.2rem;
-      color: #cbd6ff;
-    }
-
-    .status-line {
-      width: min(94%, 1520px);
-      min-height: 42px;
-      margin: 0 auto 0.85rem;
-      padding: 0.65rem 0.85rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.035);
-      color: var(--acs-muted);
-      font-size: 0.84rem;
-      text-align: left;
-    }
-
-    .status-line[data-state="error"] {
-      border-color: rgba(255, 82, 99, 0.45);
-      color: #ff8a97;
-    }
-
-    .status-line[data-state="success"] {
-      border-color: rgba(0, 216, 138, 0.35);
-      color: #7bf0bd;
-    }
-
-    .table-shell {
-      width: min(94%, 1520px);
-      margin: 0 auto;
-      overflow-x: auto;
-      border: 1px solid var(--acs-border);
-      border-radius: 18px;
-      background: linear-gradient(180deg, var(--acs-panel-2), var(--acs-panel));
-      box-shadow: 0 0 20px rgba(255, 179, 0, 0.1);
-      -webkit-overflow-scrolling: touch;
-    }
-
-    table {
-      width: 100%;
-      min-width: 1080px;
-      border-collapse: collapse;
-      table-layout: fixed;
-    }
-
-    th,
-    td {
-      border: 1px solid rgba(255, 255, 255, 0.055);
-      padding: 0.72rem 0.55rem;
-      text-align: center;
-      vertical-align: top;
-    }
-
-    th {
-      position: sticky;
-      top: 0;
-      z-index: 2;
-      background: #28345b;
-      color: var(--acs-gold);
-      font-size: 0.88rem;
-    }
-
-    td {
-      background: rgba(10, 20, 45, 0.78);
-      color: var(--acs-text);
-      font-size: 0.84rem;
-    }
-
-    th:first-child,
-    td:first-child {
-      width: 205px;
-      position: sticky;
-      left: 0;
-      z-index: 3;
-    }
-
-    td:first-child {
-      background: #101f42;
-    }
-
-    th:last-child,
-    td:last-child {
-      width: 170px;
-      vertical-align: middle;
-    }
-
-    .aircraft-title {
-      display: block;
-      color: #ffe7a0;
-      font-weight: 800;
-      font-size: 0.9rem;
-    }
-
-    .aircraft-model {
-      display: block;
-      margin-top: 0.25rem;
-      color: var(--acs-muted);
-      font-size: 0.75rem;
-      line-height: 1.25;
-    }
-
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: 0.45rem;
-      padding: 0.18rem 0.55rem;
-      border-radius: 999px;
-      border: 1px solid rgba(0, 255, 128, 0.38);
-      background: rgba(0, 255, 128, 0.12);
-      color: #00ff80;
-      font-size: 0.67rem;
-      font-weight: 800;
-      letter-spacing: 0.04em;
-    }
-
-    .status-badge.blocked {
-      border-color: rgba(255, 82, 99, 0.45);
-      background: rgba(255, 82, 99, 0.13);
-      color: #ff8390;
-    }
-
-    .flight-chip {
-      width: 100%;
-      margin: 0 0 0.36rem;
-      padding: 0.42rem 0.45rem;
-      border: 1px solid rgba(255, 204, 51, 0.28);
-      border-radius: 10px;
-      background: rgba(12, 43, 82, 0.86);
-      color: #ffdf78;
-      cursor: pointer;
-      font-size: 0.72rem;
-      line-height: 1.3;
-      white-space: normal;
-    }
-
-    .flight-chip:hover,
-    .flight-chip:focus-visible {
-      border-color: rgba(255, 204, 51, 0.75);
-      outline: none;
-      box-shadow: 0 0 0 2px rgba(255, 204, 51, 0.12);
-    }
-
-    .flight-chip .fn {
-      display: block;
-      font-weight: 800;
-      color: var(--acs-gold);
-    }
-
-    .flight-chip .route,
-    .flight-chip .time {
-      display: block;
-    }
-
-    .cell-empty {
-      color: rgba(219, 228, 255, 0.32);
-    }
-
-    .plan-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 0.45rem;
-      align-items: stretch;
-    }
-
-    .btn {
-      min-height: 38px;
-      border: 0;
-      border-radius: 11px;
-      padding: 0.5rem 0.65rem;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .btn:disabled {
-      cursor: not-allowed;
-      opacity: 0.45;
-    }
-
-    .btn-assign {
-      background: #00a86b;
-      color: #fff;
-    }
-
-    .btn-secondary {
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--acs-text);
-    }
-
-    .back-btn {
-      margin-top: 1.4rem;
-      min-height: 44px;
-      padding: 0.65rem 1.25rem;
-      border: 1px solid var(--acs-gold-2);
-      border-radius: 11px;
-      background: rgba(255, 179, 0, 0.05);
-      color: var(--acs-gold-2);
-      cursor: pointer;
-      font-weight: 700;
-    }
-
-    .empty-state {
-      padding: 2rem 1rem;
-      color: var(--acs-muted);
-    }
-
-    .modal {
-      position: fixed;
-      inset: 0;
-      z-index: 99999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
-      background: rgba(0, 0, 0, 0.68);
-      backdrop-filter: blur(7px);
-      -webkit-backdrop-filter: blur(7px);
-    }
-
-    .modal.hidden {
-      display: none;
-    }
-
-    .modal-card {
-      width: min(560px, 100%);
-      max-height: min(86vh, 760px);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      border: 2px solid rgba(255, 204, 51, 0.68);
-      border-radius: 20px;
-      background: linear-gradient(180deg, #0b132b, #020617);
-      box-shadow: 0 0 42px rgba(255, 204, 51, 0.20);
-    }
-
-    .modal-header,
-    .modal-footer {
-      flex: 0 0 auto;
-      padding: 0.9rem 1rem;
-    }
-
-    .modal-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      border-bottom: 1px solid rgba(255, 204, 51, 0.30);
-      background: rgba(255, 179, 0, 0.09);
-    }
-
-    .modal-header h3 {
-      margin: 0;
-      color: var(--acs-gold);
-      font-size: 1.02rem;
-    }
-
-    .modal-close {
-      width: 40px;
-      height: 38px;
-      border: 1px solid rgba(255, 204, 51, 0.42);
-      border-radius: 11px;
-      background: rgba(255, 204, 51, 0.06);
-      color: var(--acs-gold);
-      cursor: pointer;
-    }
-
-    .modal-body {
-      flex: 1 1 auto;
-      overflow: auto;
-      padding: 1rem;
-      text-align: left;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .modal-footer {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.65rem;
-      border-top: 1px solid rgba(255, 204, 51, 0.20);
-    }
-
-    .route-option {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 0.8rem;
-      align-items: start;
-      margin-bottom: 0.65rem;
-      padding: 0.8rem;
-      border: 1px solid rgba(255, 255, 255, 0.10);
-      border-radius: 13px;
-      background: rgba(255, 255, 255, 0.035);
-    }
-
-    .route-option strong,
-    .detail-grid strong {
-      color: #ffe7a0;
-    }
-
-    .route-option small {
-      display: block;
-      margin-top: 0.2rem;
-      color: var(--acs-muted);
-      line-height: 1.35;
-    }
-
-    .detail-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.7rem;
-    }
-
-    .detail-card {
-      padding: 0.75rem;
-      border: 1px solid rgba(255, 255, 255, 0.09);
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.035);
-    }
-
-    .detail-card span {
-      display: block;
-      margin-bottom: 0.25rem;
-      color: var(--acs-muted);
-      font-size: 0.72rem;
-    }
-
-    footer {
-      padding: 1.8rem 1rem calc(1.8rem + env(safe-area-inset-bottom));
-      text-align: center;
-      color: #7c8bb8;
-    }
-
-    @media (max-width: 1080px) {
-      .acs-header {
-        grid-template-columns: 1fr auto;
-      }
-
-      .acs-nav {
-        grid-column: 1 / -1;
-        order: 3;
-        overflow-x: auto;
-        justify-content: flex-start;
-        padding-bottom: 0.2rem;
-      }
-
-      .acs-main {
-        padding-top: 142px;
-      }
-    }
-
-    @media (max-width: 720px) {
-      .acs-header {
-        position: sticky;
-        grid-template-columns: 1fr;
-        gap: 0.55rem;
-      }
-
-      .acs-left,
-      .acs-right {
-        justify-content: center;
-        flex-wrap: wrap;
-      }
-
-      .acs-nav {
-        width: 100%;
-        grid-column: auto;
-        justify-content: flex-start;
-      }
-
-      .acs-clock-header {
-        width: min(100%, 290px);
-      }
-
-      .acs-main {
-        padding-top: 28px;
-      }
-
-      .status-line {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      .detail-grid,
-      .modal-footer {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
+/* ============================================================
+   === GLOBAL PAGE STYLE =======================================
+   ============================================================ */
+body {
+  margin: 0;
+  background-color: #081530;
+  color: white;
+  font-family: "Poppins", sans-serif;
+}
+
+/* ============================================================
+   === QATAR LUXURY HEADER =====================================
+   ============================================================ */
+.acs-header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  backdrop-filter: blur(9px);
+  background: rgba(12,23,50,0.45);
+  padding: 0.8rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #ffb300;
+  z-index: 5000;
+}
+
+.acs-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.acs-left img {
+  height: 46px;
+}
+
+.acs-left h1 {
+  font-size: 1.15rem;
+  margin: 0;
+  color: #ffb300;
+  letter-spacing: 0.5px;
+}
+
+.acs-nav {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.acs-nav a {
+  position: relative;
+  font-size: 1rem;
+  letter-spacing: 0.4px;
+  color: #dbe4ff;
+  text-decoration: none;
+  transition: 0.25s ease;
+  padding-bottom: 6px;
+}
+
+.acs-nav a:hover,
+.acs-nav a.active {
+  color: #ffb300;
+  text-shadow: 0 0 6px rgba(255,179,0,0.6);
+}
+
+.acs-nav a.active::after,
+.acs-nav a:hover::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, #ffb300, #ffe7a0);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(255,200,60,0.45);
+}
+
+.acs-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.support-btn {
+  padding: 0.45rem 1.1rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  color: #8AB4FF;
+  border: 1px solid rgba(138,180,255,0.45);
+  background: rgba(138,180,255,0.08);
+}
+
+.logout-btn {
+  padding: 0.45rem 1.1rem;
+  border: 1px solid #ffb300;
+  border-radius: 12px;
+  background: rgba(255,179,0,0.05);
+  color: #ffb300;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ============================================================
+   🟦 ACS GLOBAL CLOCK — STABLE HEADER FIX (NO LAYOUT SHIFT)
+   Use in ALL ACS modules
+   ============================================================ */
+
+.acs-clock-header{
+
+  font-family:"Orbitron",monospace;
+  font-size:.95rem;
+  color:#00ff80;
+
+  background:rgba(0,255,128,.08);
+  border-radius:10px;
+
+  padding:.45rem .8rem;
+
+  width:260px;                 /* ancho fijo absoluto */
+  flex:0 0 260px;             /* evita expansión o compresión */
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  white-space:nowrap;
+
+  font-variant-numeric:tabular-nums;
+
+  border:1px solid rgba(0,255,128,.18);
+
+  overflow:hidden;            /* protección extra */
+}
+
+/* ============================================================
+   === MAIN ====================================================
+   ============================================================ */
+.acs-main {
+  padding: 110px 2rem 70px;
+  text-align: center;
+}
+
+.sub {
+  margin-top: -0.4rem;
+  color: #cbd6ff;
+  font-size: 1rem;
+}
+/* ============================================================
+   === SCHEDULE TABLE (Qatar Luxury) ===========================
+   ============================================================ */
+
+table {
+  width: 90%;
+  margin: 0 auto;
+  border-collapse: collapse;
+  background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(255,179,0,0.1);
+  border: 1px solid rgba(255,179,0,0.15);
+}
+
+th {
+  background: rgba(255,179,0,0.15);
+  color: #ffca3a;
+  padding: 1rem;
+  font-size: 1rem;
+  text-shadow: 0 0 6px rgba(255,200,80,0.4);
+}
+
+td {
+  background: rgba(10,20,45,0.8);
+  border: 1px solid rgba(255,255,255,0.05);
+  padding: 0.8rem;
+  color: #dbe4ff;
+  text-align: center;
+  font-size: 0.92rem;
+}
+
+/* ============================================================
+   === FLIGHT CHIPS ============================================
+   ============================================================ */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #0c2b52;
+  padding: 5px 10px;
+  margin: 2px 0;
+  border-radius: 8px;
+  color: #ffca3a;
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: 0 0 8px rgba(255,200,60,0.25);
+  cursor: pointer;
+  position: relative;
+}
+
+/* Tooltip */
+.chip .tooltip {
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  background: #ffca3a;
+  color: #0c1f3c;
+  border-radius: 6px;
+  display: none;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  font-weight: 700;
+  z-index: 99999;
+}
+
+.chip:hover .tooltip {
+  display: block;
+}
+
+/* ============================================================
+   === BUTTONS =================================================
+   ============================================================ */
+
+.btn {
+  border-radius: 14px;
+  padding: 7px 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-assign {
+  background: #00a86b;
+  color: #fff;
+}
+
+.btn-assign:hover {
+  background: #00945f;
+}
+
+.btn-maint {
+  background: #ffb300;
+  color: #0d1b34;
+}
+
+.btn-maint:hover {
+  background: #e6a100;
+}
+
+.back-btn {
+  margin-top: 2rem;
+  padding: 0.6rem 1.6rem;
+  border-radius: 10px;
+  border: 1px solid #ffb300;
+  background: rgba(255,179,0,0.05);
+  color: #ffb300;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.back-btn:hover {
+  background: #ffb300;
+  color: #0c1f3c;
+}
+
+/* ============================================================
+   === FOOTER ================================================
+   ============================================================ */
+
+footer {
+  text-align: center;
+  color: #7c8bb8;
+  padding: 2rem 0;
+  margin-top: 2rem;
+}
+
+/* ============================================================
+   === AIRCRAFT HOVER CARD — Qatar Luxury ======================
+   ============================================================ */
+
+.aircraft-hover-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -115%);
+  background: rgba(14, 27, 60, 0.95);
+  padding: 1rem 1.2rem;
+  border-radius: 14px;
+  border: 1px solid #ffb300;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.45);
+  color: #ffe9b3;
+  z-index: 9999;
+  width: 260px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.20s ease-in-out;
+}
+
+.aircraft-hover-card.visible {
+  opacity: 1;
+}
+
+.aircraft-hover-card h4 {
+  margin: 0 0 0.4rem 0;
+  font-size: 1rem;
+  color: #ffb300;
+  text-shadow: 0 0 6px rgba(255,179,0,0.5);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 6px;
+  margin-top: 0.5rem;
+  overflow: hidden;
+  border: 1px solid rgba(255,200,60,0.35);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ffb300, #ffdd80);
+  width: 0%;
+  transition: width 0.5s ease;
+}
+
+.progress-label {
+  display: block;
+  text-align: right;
+  font-size: 0.8rem;
+  margin-top: 4px;
+  color: #ffdd80;
+}
+
+/* ============================================================
+   === BASE MODAL STYLE ========================================
+   ============================================================ */
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(5, 10, 25, 0.65);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 6000;
+}
+
+.modal-content {
+  background: #0d1b34;
+  border: 1px solid rgba(255,179,0,0.35);
+  padding: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 0 18px rgba(255,179,0,0.25);
+  color: #dbe4ff;
+  width: 300px;
+  text-align: center;
+}
+
+/* ============================================================
+   === ACTION PLAN COLUMN (SMALLER) ============================
+   ============================================================ */
+
+.plan-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.plan-actions .btn {
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+#scheduleTable td:last-child,
+#scheduleTable th:last-child {
+  width: 170px;
+}
+       
+/* ============================================================
+   🟦 PASO 2 — TOP ALIGN + CHRONO STACK (FINAL)
+   ============================================================ */
+
+#scheduleTable td {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+
+  padding-top: 6px;
+  gap: 4px;
+}
+       
+/* HOTFIX — revertir flex global y proteger columna Aircraft */
+#scheduleTable td { 
+  display: table-cell; 
+  vertical-align: middle; 
+}
+
+#scheduleTable td:not(:first-child) {
+  vertical-align: top;
+}
+       
+/* ============================================================
+   🟦 FIX — KEEP ACTION PLAN CENTERED
+   ============================================================ */
+
+#scheduleTable td:last-child,
+#scheduleTable th:last-child {
+  vertical-align: middle !important;
+}
+.row-maint td {
+  opacity: 0.45;
+  background-color: rgba(200,80,0,0.15) !important;
+}
+
+.row-pending td {
+  opacity: 0.35;
+  background-color: rgba(150,150,150,0.12) !important;
+}
+
+/* ============================================================
+   MINI CHIP QATAR — ULTRA COMPACTO + CENTRADO
+   ============================================================ */
+       
+.flightChip {
+  display: block;                 /* uno debajo del otro */
+  margin: 2px auto;               /* centrado */
+  padding: 1px 5px;               /* ultra compacto */
+  font-size: 10px;                /* tamaño mini */
+  font-weight: 600;
+  color: #FFD54F;                 /* oro brillante */
+  background: rgba(255, 204, 0, 0.15); 
+  border: 1px solid rgba(255, 204, 0, 0.35);
+  border-radius: 6px;             /* óvalo pequeño */
+  width: fit-content;             /* ajustado al texto */
+  white-space: nowrap;            /* no dividir */
+}
+
+/* ============================================================
+   === B-CHECK DAY BACKGROUND — Qatar Luxury A2 Premium ========
+   ============================================================ */
+.bcheck-day {
+  background: rgba(135, 145, 165, 0.26) !important;
+  border: 1px solid rgba(135, 145, 165, 0.38) !important;
+  border-radius: 10px;
+}
+       
+/* === MODAL ERROR — Qatar Luxury Style === */
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.55);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.error-modal {
+  background: linear-gradient(180deg, #0a1c33 0%, #162b45 100%);
+  padding: 25px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 0 18px rgba(0,0,0,0.45);
+  width: 340px;
+  text-align: center;
+}
+
+.modal-title {
+  color: #ffb300;
+  font-size: 20px;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.modal-text {
+  color: #d1d9e6;
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+.modal-button {
+  background: #ffb300;
+  color: #000;
+  border: none;
+  padding: 12px 26px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.modal-button:hover {
+  background: #ffca47;
+}
+
+/* ============================================================
+   🟡 FLIGHT TOOLTIP (FIX CLIPPING)
+   ============================================================ */
+
+.flight-tooltip {
+  max-width: 280px;
+  white-space: normal;
+  overflow: visible;
+  line-height: 1.35;
+}
+       
+/* ============================================================
+   ✈️ FLIGHT CHIP — COMPACT (ONE LINE)
+   ============================================================ */
+
+.flight-chip {
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 14px;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.flight-chip strong {
+  font-weight: 600;
+}
+       
+/* ============================================================
+   ✨ ACS MODAL — QATAR LUXURY
+   ============================================================ */
+
+.acs-action-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.acs-action-box {
+  background: linear-gradient(180deg, #0b132b, #020617);
+  border: 2px solid #ffcc33;
+  border-radius: 20px;
+  padding: 22px;
+  display: flex;
+  gap: 14px;
+  box-shadow: 0 0 40px rgba(255,204,51,0.25);
+}
+
+.acs-action-btn {
+  min-width: 90px;
+  padding: 10px 0;
+  border-radius: 12px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.acs-action-btn.gold { background: #ffcc33; color: #000; }
+.acs-action-btn.amber { background: #f59e0b; color: #000; }
+.acs-action-btn.red   { background: #dc2626; color: #fff; }
+
+.acs-action-btn.ghost {
+  background: transparent;
+  color: #fff;
+  border: 1px solid #334155;
+}
+
+/* ============================================================
+   🦄 ACS MODAL — VISIBILITY FIX (SINGLE SOURCE)
+   ============================================================ */
+
+.acs-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.66);
+  backdrop-filter: blur(6px);
+  display: flex;                /* 🔑 SIEMPRE FLEX */
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+
+.acs-modal.hidden {
+  display: none;                /* 🔑 ÚNICO control de ocultación */
+}
+
+
+.acs-modal-card.qatar {
+  width: min(520px, 92vw);
+  border-radius: 20px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #0b132b 0%, #020617 100%);
+  border: 2px solid rgba(255, 204, 51, 0.70);
+  box-shadow: 0 0 42px rgba(255,204,51,0.20);
+}
+
+.acs-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: rgba(255,179,0,0.10);
+  border-bottom: 1px solid rgba(255, 204, 51, 0.35);
+}
+
+.acs-modal-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #ffcc33;
+  letter-spacing: 0.4px;
+  text-shadow: 0 0 10px rgba(255,204,51,0.25);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-close {
+  border: 1px solid rgba(255,204,51,0.45);
+  background: rgba(255,204,51,0.06);
+  color: #ffcc33;
+  width: 40px;
+  height: 36px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.btn-close:hover {
+  background: rgba(255,204,51,0.14);
+}
+
+.acs-modal-body {
+  padding: 14px 16px 6px;
+  color: #dbe4ff;
+  text-align: left;
+}
+
+.flight-kicker {
+  font-size: 0.85rem;
+  color: #cbd6ff;
+  opacity: 0.95;
+  margin-bottom: 10px;
+}
+
+.flight-hero {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,204,51,0.25);
+  background: rgba(16,43,77,0.35);
+  box-shadow: inset 0 0 18px rgba(0,0,0,0.35);
+  margin-bottom: 10px;
+}
+
+.flight-hero .route {
+  font-weight: 800;
+  color: #ffe7a0;
+  letter-spacing: 0.2px;
+}
+
+.flight-hero .times {
+  font-family: "Orbitron", monospace;
+  color: #00ff80;
+  font-size: 0.92rem;
+  white-space: nowrap;
+}
+
+.flight-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.meta-card {
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.meta-card .label {
+  display: block;
+  font-size: 0.78rem;
+  color: #cbd6ff;
+  opacity: 0.9;
+  margin-bottom: 4px;
+}
+
+.meta-card .value {
+  font-weight: 700;
+  color: #ffdd80;
+}
+
+.acs-modal-footer {
+  padding: 12px 16px 16px;
+  border-top: 1px solid rgba(255, 204, 51, 0.20);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.acs-modal-footer .btn-modal {
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.btn-modal.gold { background: #ffcc33; color: #000; }
+.btn-modal.amber { background: #f59e0b; color: #000; }
+.btn-modal.red { background: #dc2626; color: #fff; }
+
+.btn-modal.ghost {
+  background: rgba(255,255,255,0.05);
+  color: #dbe4ff;
+  border: 1px solid rgba(255,255,255,0.14);
+}
+
+.btn-modal:hover { filter: brightness(1.06); transform: translateY(-1px); }
+
+/* ============================================================
+   🦄 M1 — MAINTENANCE MODAL (Qatar Luxury Unicorn) — 17DEC25
+   ============================================================ */
+
+.acs-maint-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(6px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+
+.acs-maint-card {
+  width: min(420px, 92vw);
+  border-radius: 20px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #0b132b 0%, #020617 100%);
+  border: 2px solid rgba(255, 204, 51, 0.65);
+  box-shadow: 0 0 42px rgba(255,204,51,0.22);
+}
+
+.acs-maint-header {
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255,179,0,0.12);
+  border-bottom: 1px solid rgba(255,204,51,0.35);
+}
+
+.acs-maint-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #ffcc33;
+  letter-spacing: 0.4px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.acs-maint-body {
+  padding: 18px;
+  color: #dbe4ff;
+}
+
+.maint-field {
+  margin-bottom: 14px;
+}
+
+.maint-field label {
+  display: block;
+  font-size: 0.8rem;
+  color: #cbd6ff;
+  margin-bottom: 6px;
+}
+
+.maint-field select,
+.maint-field input[type="time"] {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,204,51,0.25);
+  background: rgba(16,43,77,0.45);
+  color: #fff;
+  font-size: 0.95rem;
+}
+
+.maint-field input[type="time"] {
+  font-family: "Orbitron", monospace;
+}
+
+.acs-maint-footer {
+  padding: 14px 18px 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  border-top: 1px solid rgba(255,204,51,0.25);
+}
+
+.maint-btn {
+  padding: 10px;
+  border-radius: 14px;
+  border: none;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.maint-btn.apply {
+  background: #ffcc33;
+  color: #000;
+}
+
+.maint-btn.cancel {
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+.maint-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+       
+/* ============================================================
+   🛠 SERVICE CHIP — TECH GRAY (QATAR LUXURY + INTERACTIVE)
+   ============================================================ */
+
+.service-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 3px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 999px;
+  white-space: nowrap;
+
+  background: rgba(160, 170, 185, 0.22);
+  border: 1px solid rgba(255, 179, 0, 0.55);
+  color: #E5E7EB;
+
+  box-shadow:
+    0 0 6px rgba(0,0,0,0.25),
+    inset 0 0 6px rgba(255,255,255,0.08);
+
+  /* 🔥 INTERACTIVO */
+  cursor: pointer;
+  pointer-events: auto;
+  position: relative;
+  z-index: 5;
+}
+
+.service-chip:hover {
+  filter: brightness(1.15);
+  box-shadow:
+    0 0 0 2px rgba(255, 200, 60, 0.35),
+    0 0 10px rgba(255, 179, 0, 0.25);
+}
+
+/* ============================================================
+   🟫 PASO 2 — B-CHECK DAY STYLE (GRAY CELL) — 17DEC25
+   ============================================================ */
+
+.bcheck-day {
+  background: rgba(120, 120, 120, 0.35) !important;
+  box-shadow: inset 0 0 0 1px rgba(160, 160, 160, 0.45);
+}
+
+.bcheck-day .chip,
+.bcheck-day .service-chip {
+  opacity: 0.85;
+}
+       
+/* ============================================================
+   🟦 PASO 3 — FLIGHT ACTIVE VISUAL (SAFE)
+   ============================================================ */
+
+.flying-now {
+  border: 2px solid #00ffcc;
+  box-shadow: 0 0 6px rgba(0, 255, 204, 0.8);
+  animation: flyingPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes flyingPulse {
+  0%   { box-shadow: 0 0 4px rgba(0, 255, 204, 0.6); }
+  50%  { box-shadow: 0 0 10px rgba(0, 255, 204, 1); }
+  100% { box-shadow: 0 0 4px rgba(0, 255, 204, 0.6); }
+}
+
+/* === A17.3 — Maintenance Due Badge === */
+       
+.maintenance-dot{
+  color:#d32f2f;
+  font-size:12px;
+  margin-top:2px;
+  display:inline-block;
+  cursor:default;
+}
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  50% { transform: translateX(6px); }
+  75% { transform: translateX(-4px); }
+  100% { transform: translateX(0); }
+}
+
+/* ============================================================
+   🟦 ACS STATUS BADGES — QATAR LUXURY
+   ============================================================ */
+
+.acs-status-badge{
+  margin-top:4px;
+  display:inline-block;
+  padding:2px 10px;
+  font-size:10px;
+  font-weight:800;
+  border-radius:999px;
+  letter-spacing:0.4px;
+}
+
+/* 🟢 ACTIVE */
+.badge-active{
+  background:rgba(0,255,128,0.18);
+  border:1px solid rgba(0,255,128,0.45);
+  color:#00ff80;
+}
+
+/* 🟡 A / B */
+.badge-acheck,
+.badge-bcheck{
+  background:rgba(255,204,0,0.18);
+  border:1px solid rgba(255,204,0,0.45);
+  color:#ffd54f;
+}
+
+/* 🟠 C */
+.badge-ccheck{
+  background:rgba(255,152,0,0.22);
+  border:1px solid rgba(255,152,0,0.55);
+  color:#ffb74d;
+}
+
+/* 🔴 D */
+.badge-dcheck{
+  background:rgba(211,47,47,0.25);
+  border:1px solid rgba(211,47,47,0.6);
+  color:#ff5252;
+}
+
+/* 🔴 OVERDUE */
+.badge-overdue{
+  background:rgba(183,28,28,0.35);
+  border:1px solid rgba(255,0,0,0.75);
+  color:#ff1744;
+}
+
+/* 🟡 MAINTENANCE (Qatar Luxury Yellow) */
+       
+.badge-unknown{
+  background: rgba(242, 201, 76, 0.18);
+  border: 1px solid rgba(242, 201, 76, 0.55);
+  color: #F2C94C;
+}
+
+       
+/* ============================================================
+   🟦 B-CHECK CYCLE BAR — AIRBUS OCC STYLE
+   ------------------------------------------------------------
+   • 30-day monthly cycle
+   • Color transitions: Green → Yellow → Orange → Red
+   • Purely visual (read-only)
+   ============================================================ */
+
+.bcycle-box {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,204,51,0.18);
+}
+
+.bcycle-header {
+  font-size: 0.75rem;
+  letter-spacing: 0.8px;
+  color: #cbd6ff;
+  margin-bottom: 6px;
+}
+
+.bcycle-bar {
+  width: 100%;
+  height: 10px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.12);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+.bcycle-fill {
+  height: 100%;
+  width: 0%;
+  transition: width 0.4s ease;
+}
+
+.bcycle-info {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  display: flex;
+  justify-content: space-between;
+  color: #dbe4ff;
+}
+
+/* ============================================================
+   🧭 ASSIGN ROUTE MODAL — FIXED SIZE + INTERNAL SCROLL
+   ------------------------------------------------------------
+   • No cambia tamaño del modal
+   • Body scrollea internamente
+   • Footer siempre visible
+   • Solo afecta assignFlightsModal
+   ============================================================ */
+
+#assignFlightsModal .acs-modal-card.qatar {
+  max-height: 85vh;          /* Altura estable */
+  height: 85vh;              /* Fija el tamaño */
+  display: flex;
+  flex-direction: column;
+}
+
+#assignFlightsModal .acs-modal-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+#assignFlightsModal .acs-modal-footer {
+  flex: 0 0 auto;
+  position: sticky;
+  bottom: 0;
+  background: #0b1a35; /* mismo fondo oscuro */
+  padding-top: 10px;
+  z-index: 2;
+}
+       
+</style>
+
 </head>
 <body>
-  <header class="acs-header">
-    <div class="acs-left">
-      <img src="acs_logo.png" alt="ACS Logo">
-      <h1>Aviation Capital Simulator</h1>
-    </div>
 
-    <nav class="acs-nav" aria-label="Primary">
-      <a href="dashboard.html">Main</a>
-      <a href="bank.html">Bank</a>
-      <a href="aircraft.html">Aircraft</a>
-      <a href="routes.html" class="active">Routes</a>
-      <a href="hr.html">HR</a>
-    </nav>
+<!-- ============================================================
+     === HEADER QATAR LUXURY (IDÉNTICO A DASHBOARD) =============
+     ============================================================ -->
+<header class="acs-header">
 
-    <div class="acs-right">
-      <a href="support.html" class="support-btn">Support</a>
-      <button class="logout-btn" id="logoutBtn" type="button">Logout</button>
-      <div id="acs-clock" class="acs-clock-header">--:-- — -- --- ----</div>
-    </div>
-  </header>
-
-  <main class="acs-main">
-    <h2>Weekly Flight Schedule</h2>
-    <p class="sub">Automatic schedule monitor with backend-authoritative route integration.</p>
-
-    <div id="statusLine" class="status-line" data-state="info" role="status" aria-live="polite">
-      <span id="statusMessage">Loading operational schedule…</span>
-      <span id="updateTime">Last update: --</span>
-    </div>
-
-    <div class="table-shell">
-      <table id="scheduleTable">
-        <thead>
-          <tr>
-            <th>Aircraft</th>
-            <th>Mon</th>
-            <th>Tue</th>
-            <th>Wed</th>
-            <th>Thu</th>
-            <th>Fri</th>
-            <th>Sat</th>
-            <th>Sun</th>
-            <th>Action Plan</th>
-          </tr>
-        </thead>
-        <tbody id="scheduleBody"></tbody>
-      </table>
-    </div>
-
-    <button class="back-btn" type="button" id="backBtn">Back to Routes</button>
-  </main>
-
-  <div id="assignModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="assignTitle">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 id="assignTitle">Assign Route</h3>
-        <button class="modal-close" type="button" data-close-modal="assignModal" aria-label="Close">✕</button>
-      </div>
-      <div id="assignBody" class="modal-body"></div>
-      <div class="modal-footer">
-        <button id="confirmAssignBtn" class="btn btn-assign" type="button">Assign Selected</button>
-        <button class="btn btn-secondary" type="button" data-close-modal="assignModal">Cancel</button>
-      </div>
-    </div>
+  <div class="acs-left">
+    <img src="acs_logo.png" alt="ACS Logo">
+    <h1>Aviation Capital Simulator</h1>
   </div>
 
-  <div id="flightModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="flightTitle">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 id="flightTitle">Flight</h3>
-        <button class="modal-close" type="button" data-close-modal="flightModal" aria-label="Close">✕</button>
-      </div>
-      <div id="flightBody" class="modal-body"></div>
-      <div class="modal-footer">
-        <button id="unassignRouteBtn" class="btn btn-secondary" type="button">Unassign Route</button>
-        <button class="btn btn-secondary" type="button" data-close-modal="flightModal">Close</button>
-      </div>
-    </div>
+  <nav class="acs-nav">
+    <a href="dashboard.html">Main</a>
+    <a href="bank.html">Bank</a>
+    <a href="aircraft.html">Aircraft</a>
+    <a href="routes.html" class="active">Routes</a>
+    <a href="hr.html">HR</a>
+  </nav>
+
+  <div class="acs-right">
+    <a href="support.html" class="support-btn">Support</a>
+    <a class="logout-btn" onclick="handleLogout()">Logout</a>
+    <div id="acs-clock" class="acs-clock-header">00:00 — 01 JAN 1940</div>
   </div>
 
-  <footer>© 2026 Aviation Capital Simulator. All rights reserved.</footer>
+</header>
 
-  <script>
-    "use strict";
+<!-- ============================================================
+     === MAIN CONTENT ===========================================
+     ============================================================ -->
+     
+<main class="acs-main">
 
-    const ACS_API_BASE = "https://api.aviationcapitalsim.com/v1";
-    const ACS_DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+  <h2
+    style="
+      font-size:1.9rem;
+      font-weight:700;
+      color:#ffca3a;
+      text-shadow:0 0 10px rgba(255,200,60,0.55);
+      letter-spacing:0.4px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+    "
+  >
+      📅 Weekly Flight Schedule
+  </h2>
 
-    const ACS_SCHEDULE_STATE = {
-      airline: null,
-      fleet: [],
-      routePlans: [],
-      scheduleItems: [],
-      selectedAircraftId: null,
-      selectedRoutePlanId: null,
-      selectedFlightId: null,
-      currentSimTime: null,
-      loading: false,
-      assigning: false
-    };
+  <p class="sub" style="font-size:1rem; color:#cbd6ff;">
+    Automatic schedule monitor with real-time route integration.
+  </p>
 
-    function ACS_text(value) {
-      return String(value ?? "").trim();
-    }
+  <table id="scheduleTable">
+    <thead>
+      <tr>
+        <th>Aircraft</th>
+        <th>Mon</th>
+        <th>Tue</th>
+        <th>Wed</th>
+        <th>Thu</th>
+        <th>Fri</th>
+        <th>Sat</th>
+        <th>Sun</th>
+        <th>Action Plan</th>
+      </tr>
+    </thead>
+    <tbody id="scheduleBody"></tbody>
+  </table>
+</div>
 
-    function ACS_upper(value) {
-      return ACS_text(value).toUpperCase();
-    }
+  <div class="summary">
+    <p id="updateTime">Last update: --</p>
+  </div>
 
-    function ACS_modelKey(value) {
-      return ACS_text(value).toLowerCase();
-    }
+  <button class="back-btn" onclick="window.location.href='routes.html'">
+    ⬅ Back to Routes
+  </button>
 
-    function ACS_escape(value) {
-      return ACS_text(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
+</main>
 
-    function ACS_setStatus(message, state = "info") {
-      const statusLine = document.getElementById("statusLine");
-      const statusMessage = document.getElementById("statusMessage");
+<!-- ============================================================
+     🦄 B2 — FLIGHT MODAL (Qatar Luxury Unicorn) — 17DEC25
+     REEMPLAZA COMPLETO el bloque #flightModal anterior
+     ============================================================ -->
 
-      statusLine.dataset.state = state;
-      statusMessage.textContent = message;
-    }
+<div id="flightModal" class="acs-modal hidden">
+  <div class="acs-modal-card qatar">
 
-    async function ACS_fetchJson(path, options = {}) {
-      const response = await fetch(`${ACS_API_BASE}${path}`, {
-        credentials: "include",
-        cache: "no-store",
-        headers: {
-          Accept: "application/json",
-          ...(options.body ? { "Content-Type": "application/json" } : {}),
-          ...(options.headers || {})
-        },
-        ...options
-      });
+    <div class="acs-modal-header">
+      <h3 id="flightModalTitle">✈️ Flight</h3>
+      <button class="btn-close" onclick="closeFlightModal()">✕</button>
+    </div>
 
-      let payload = null;
+    <div id="flightModalContent" class="acs-modal-body">
+      <!-- contenido dinámico por JS -->
+    </div>
 
-      try {
-        payload = await response.json();
-      } catch {
-        payload = null;
-      }
+    <div class="acs-modal-footer">
+     <button class="btn-modal gold" onclick="editSelectedFlight()">✏️ EDIT</button>
+     <button class="btn-modal amber" onclick="ACS_removeSelectedFlights()">🧹 REMOVE FLIGHTS</button>
+     <button class="btn-modal red" onclick="ACS_openDeleteFlightsModal(getCurrentAircraftFromFlight())">🗑 DELETE FLIGHTS</button>
+     <button class="btn-modal ghost" onclick="closeFlightModal()">Close</button>
+   </div>
 
-      if (!response.ok || !payload || payload.ok !== true) {
-        const error = new Error(
-          payload?.details || payload?.error || `HTTP_${response.status}`
-        );
-        error.status = response.status;
-        error.payload = payload;
-        throw error;
-      }
+  </div>
+</div>
 
-      return payload;
-    }
+<!-- ============================================================
+     🦄 M2 — MAINTENANCE MODAL (Qatar Luxury Unicorn) — 17DEC25
+     REEMPLAZA COMPLETO #maintModal
+     ============================================================ -->
 
-    function ACS_renderClock(value) {
-      const clock = document.getElementById("acs-clock");
-      const date = new Date(value);
+<div id="maintModal" class="acs-maint-modal">
+  <div class="acs-maint-card">
 
-      if (!clock || Number.isNaN(date.getTime())) {
-        return;
-      }
+    <div class="acs-maint-header">
+      <h3>🛠 Plan Maintenance</h3>
+      <button class="btn-close" onclick="closeMaintModal()">✕</button>
+    </div>
 
-      ACS_SCHEDULE_STATE.currentSimTime = date;
+    <div class="acs-maint-body">
 
-      const time = new Intl.DateTimeFormat("en-GB", {
-        timeZone: "UTC",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false
-      }).format(date);
+      <div class="maint-field">
+        <label>Maintenance Type</label>
+        <select id="maintType">
+          <option value="A">🔧 A-Check (5 hours)</option>
+          <option value="B">⚙️ B-Check (24 hours)</option>
+        </select>
+      </div>
 
-      const day = new Intl.DateTimeFormat("en-GB", {
-        timeZone: "UTC",
-        day: "2-digit",
-        month: "short",
-        year: "numeric"
-      }).format(date).toUpperCase();
+      <div class="maint-field">
+        <label>Day</label>
+        <select id="maintDay">
+          <option value="mon">Monday</option>
+          <option value="tue">Tuesday</option>
+          <option value="wed">Wednesday</option>
+          <option value="thu">Thursday</option>
+          <option value="fri">Friday</option>
+          <option value="sat">Saturday</option>
+          <option value="sun">Sunday</option>
+        </select>
+      </div>
 
-      clock.textContent = `${time} — ${day}`;
-    }
+      <div class="maint-field">
+  <label>Start Time</label>
+  <select id="maintStart">
+    <!-- opciones generadas por JS -->
+  </select>
+</div>
 
-    function ACS_statusBadge(aircraft) {
-      const dispatchable =
-        ACS_upper(aircraft.status) === "ACTIVE" &&
-        ACS_upper(aircraft.operational_status) === "AVAILABLE" &&
-        ACS_upper(aircraft.maintenance_status) === "SERVICEABLE";
+    </div>
 
-      return {
-        dispatchable,
-        className: dispatchable ? "status-badge" : "status-badge blocked",
-        label: dispatchable ? "AVAILABLE" : ACS_upper(
-          aircraft.operational_status || aircraft.maintenance_status || aircraft.status || "BLOCKED"
-        )
-      };
-    }
+    <div class="acs-maint-footer">
+      <button class="maint-btn apply" onclick="applyMaintenance()">Apply</button>
+      <button class="maint-btn cancel" onclick="closeMaintModal()">Cancel</button>
+    </div>
 
-    function ACS_itemsForAircraft(aircraftId) {
-      return ACS_SCHEDULE_STATE.scheduleItems.filter(
-        item => String(item.aircraft_id || "") === String(aircraftId)
-      );
-    }
+  </div>
+</div>
 
-    function ACS_routesAssignableToAircraft(aircraft) {
-      return ACS_SCHEDULE_STATE.routePlans.filter(route => {
-        const routeAssigned = Number(route.aircraft_id || 0) > 0;
-        const compatible = ACS_modelKey(route.model_key) === ACS_modelKey(aircraft.model_key);
-        return !routeAssigned && compatible;
-      });
-    }
+<!-- ============================================================
+     🦄 M3 — MAINTENANCE INFO MODAL (Qatar Luxury)
+     ------------------------------------------------------------
+     • Se abre al tocar un service-chip
+     • Permite EDITAR o REMOVER el servicio
+     ============================================================ -->
 
-    function ACS_renderFlightChip(item) {
-      const flightNumber = ACS_escape(item.flight_number || "—");
-      const route = `${ACS_escape(item.origin)}-${ACS_escape(item.destination)}`;
-      const time = `${ACS_escape(item.departure || "--:--")}–${ACS_escape(item.arrival || "--:--")}`;
+<div id="maintenanceInfoModal" class="acs-modal hidden">
+  <div class="acs-modal-card qatar">
 
-      return `
-        <button class="flight-chip" type="button" data-flight-id="${Number(item.id)}">
-          <span class="fn">${flightNumber}</span>
-          <span class="route">${route}</span>
-          <span class="time">${time}</span>
-        </button>
-      `;
-    }
+    <div class="acs-modal-header">
+      <h3 id="maintInfoTitle">🛠 Maintenance</h3>
+      <button class="btn-close" onclick="closeMaintenanceInfoModal()">✕</button>
+    </div>
 
-    function ACS_renderSchedule() {
-      const body = document.getElementById("scheduleBody");
-      body.textContent = "";
+    <div id="maintenanceInfoBody" class="acs-modal-body">
+      <!-- contenido dinámico -->
+    </div>
 
-      if (!ACS_SCHEDULE_STATE.fleet.length) {
-        const row = document.createElement("tr");
-        const cell = document.createElement("td");
-        cell.colSpan = 9;
-        cell.className = "empty-state";
-        cell.textContent = "No aircraft are available in the authenticated airline fleet.";
-        row.appendChild(cell);
-        body.appendChild(row);
-        return;
-      }
+    <div class="acs-modal-footer">
+      <button class="btn-modal gold" onclick="editMaintenanceFromInfo()">✏️ EDIT</button>
+      <button class="btn-modal red"  onclick="removeMaintenanceFromInfo()">🗑 REMOVE</button>
+      <button class="btn-modal ghost" onclick="closeMaintenanceInfoModal()">Close</button>
+    </div>
 
-      for (const aircraft of ACS_SCHEDULE_STATE.fleet) {
-        const row = document.createElement("tr");
-        const badge = ACS_statusBadge(aircraft);
-        const aircraftItems = ACS_itemsForAircraft(aircraft.id);
+  </div>
+</div>
+     
+<!-- ============================================================
+     === FLIGHT INFO MODAL — Qatar Luxury Edition ================
+     ============================================================ -->
+     
+<!-- === MODAL ERROR — MAINTENANCE A (Qatar Luxury) === -->
+<div id="maintenanceErrorModal" class="modal-overlay">
+  <div class="modal-content error-modal">
+    <h2 class="modal-title">❌ Invalid Maintenance Time</h2>
+    <p id="maintenanceErrorText" class="modal-text"></p>
+    <button class="modal-button" onclick="closeMaintenanceErrorModal()">OK</button>
+  </div>
+</div>
 
-        const aircraftCell = document.createElement("td");
-        aircraftCell.innerHTML = `
-          <span class="aircraft-title">${ACS_escape(aircraft.registration || `Aircraft ${aircraft.id}`)}</span>
-          <span class="aircraft-model">${ACS_escape(aircraft.aircraft_name || aircraft.model_key || "—")}</span>
-          <span class="${badge.className}">${ACS_escape(badge.label)}</span>
-        `;
-        row.appendChild(aircraftCell);
+<!-- ============================================================
+     🟦 PASO 4.2 — ASSIGN FLIGHTS MODAL (Qatar Luxury Premium)
+     ------------------------------------------------------------
+     ✅ Modal NUEVO (NO reutiliza #flightModal)
+     ============================================================ -->
 
-        for (const day of ACS_DAYS) {
-          const dayCell = document.createElement("td");
-          const dayItems = aircraftItems
-            .filter(item => ACS_text(item.selected_day).toLowerCase() === day)
-            .sort((a, b) => Number(a.dep_abs_min || 0) - Number(b.dep_abs_min || 0));
+<div id="assignFlightsModal" class="acs-modal hidden">
+  <div class="acs-modal-card qatar">
 
-          if (!dayItems.length) {
-            dayCell.innerHTML = '<span class="cell-empty">—</span>';
-          } else {
-            dayCell.innerHTML = dayItems.map(ACS_renderFlightChip).join("");
-          }
+    <div class="acs-modal-header">
+      <h3 id="assignFlightsTitle">✈️ Assign Flights</h3>
+      <button class="btn-close" onclick="ACS_closeAssignFlightsModal()">✕</button>
+    </div>
 
-          row.appendChild(dayCell);
-        }
+    <div id="assignFlightsBody" class="acs-modal-body">
+      <!-- contenido dinámico -->
+    </div>
 
-        const actionsCell = document.createElement("td");
-        const assignableCount = ACS_routesAssignableToAircraft(aircraft).length;
-        actionsCell.innerHTML = `
-          <div class="plan-actions">
-            <button
-              class="btn btn-assign"
-              type="button"
-              data-assign-aircraft="${Number(aircraft.id)}"
-              ${!badge.dispatchable || assignableCount === 0 ? "disabled" : ""}
-            >Assign Route</button>
-            <button class="btn btn-secondary" type="button" disabled>Maintenance</button>
-          </div>
-        `;
-        row.appendChild(actionsCell);
+    <div class="acs-modal-footer">
+      <button class="btn-modal gold" onclick="ACS_confirmAssignFlights()">✅ Assign Selected</button>
+      <button class="btn-modal ghost" onclick="ACS_closeAssignFlightsModal()">Cancel</button>
+    </div>
 
-        body.appendChild(row);
-      }
-    }
+  </div>
+</div>
+     
+<footer>
+  © 2026 Aviation Capital Simulator. All rights reserved.
+</footer>
 
-    async function ACS_loadContext() {
-      if (ACS_SCHEDULE_STATE.loading) {
-        return;
-      }
+<!-- ============================================================
+     ⏱ ACS TIME ENGINE — REQUIRED FOR SCHEDULE TABLE
+     ============================================================ -->
 
-      ACS_SCHEDULE_STATE.loading = true;
-      ACS_setStatus("Loading operational schedule…", "info");
+<!-- ============================================================
+     ⏳ ACS TIME ENGINE V12 — 24/7 RECOVERY LAYER
+     ============================================================ -->
+<script src="acs_time_recovery.js"></script>
+<script src="time_engine.js"></script>
 
-      try {
-        const payload = await ACS_fetchJson("/schedule/context");
+<!-- 🌍 WORLD / AIRPORT ENGINE -->
+<script src="engine/acs_world_engine.js"></script>
+     
+<script>
+const ACS_API_BASE = "https://api.aviationcapitalsim.com/v1";
+const ACS_WEEKDAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
-        ACS_SCHEDULE_STATE.airline = payload.airline || null;
-        ACS_SCHEDULE_STATE.fleet = Array.isArray(payload.fleet) ? payload.fleet : [];
-        ACS_SCHEDULE_STATE.routePlans = Array.isArray(payload.route_plans) ? payload.route_plans : [];
-        ACS_SCHEDULE_STATE.scheduleItems = Array.isArray(payload.schedule_items) ? payload.schedule_items : [];
+const ACS_SCHEDULE_STATE = {
+  fleet: [],
+  routePlans: [],
+  scheduleItems: [],
+  selectedFlight: null,
+  selectedAircraftId: null,
+  selectedRoutePlanId: null,
+  currentSimTime: null
+};
 
-        ACS_renderClock(payload.current_sim_time);
-        ACS_renderSchedule();
+function ACS_escape(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
-        const updateTime = document.getElementById("updateTime");
-        updateTime.textContent = `Last update: ${new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit"
-        })}`;
+function ACS_modelKey(value) {
+  return String(value ?? "").trim().toLowerCase();
+}
 
-        ACS_setStatus(
-          `${ACS_SCHEDULE_STATE.fleet.length} aircraft · ${ACS_SCHEDULE_STATE.routePlans.length} route plans · ${ACS_SCHEDULE_STATE.scheduleItems.length} schedule items`,
-          "success"
-        );
-      } catch (error) {
-        console.error("ACS SCHEDULE LOAD ERROR:", error);
-        ACS_setStatus(error.message || "Schedule context could not be loaded.", "error");
-        ACS_SCHEDULE_STATE.fleet = [];
-        ACS_SCHEDULE_STATE.routePlans = [];
-        ACS_SCHEDULE_STATE.scheduleItems = [];
-        ACS_renderSchedule();
-      } finally {
-        ACS_SCHEDULE_STATE.loading = false;
-      }
-    }
+function ACS_formatClock(dateValue) {
+  const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
+  if (Number.isNaN(date.getTime())) return "00:00 — 01 JAN 1940";
+  const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+  const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+  const hh = String(date.getHours()).padStart(2, "0");
+  const mm = String(date.getMinutes()).padStart(2, "0");
+  return `${hh}:${mm} — ${days[date.getDay()]} ${String(date.getDate()).padStart(2, "0")} ${months[date.getMonth()]} ${date.getFullYear()}`;
+}
 
-    function ACS_openAssignModal(aircraftId) {
-      const aircraft = ACS_SCHEDULE_STATE.fleet.find(
-        item => String(item.id) === String(aircraftId)
-      );
+function ACS_updateClock(dateValue) {
+  const clock = document.getElementById("acs-clock");
+  if (clock) clock.textContent = ACS_formatClock(dateValue);
+}
 
-      if (!aircraft) {
-        return;
-      }
+if (typeof registerTimeListener === "function") {
+  registerTimeListener((currentTime) => {
+    ACS_SCHEDULE_STATE.currentSimTime = currentTime;
+    ACS_updateClock(currentTime);
+  });
+}
 
-      ACS_SCHEDULE_STATE.selectedAircraftId = Number(aircraft.id);
-      ACS_SCHEDULE_STATE.selectedRoutePlanId = null;
+async function ACS_request(path, options = {}) {
+  const response = await fetch(`${ACS_API_BASE}${path}`, {
+    credentials: "include",
+    headers: {
+      Accept: "application/json",
+      ...(options.body ? { "Content-Type": "application/json" } : {}),
+      ...(options.headers || {})
+    },
+    ...options
+  });
 
-      const routes = ACS_routesAssignableToAircraft(aircraft);
-      const title = document.getElementById("assignTitle");
-      const body = document.getElementById("assignBody");
-      const confirm = document.getElementById("confirmAssignBtn");
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
 
-      title.textContent = `Assign Route — ${aircraft.registration || aircraft.id}`;
-      confirm.disabled = true;
+  if (!response.ok || !payload?.ok) {
+    const error = new Error(payload?.details || payload?.error || `HTTP_${response.status}`);
+    error.code = payload?.error || `HTTP_${response.status}`;
+    throw error;
+  }
 
-      if (!routes.length) {
-        body.innerHTML = '<div class="empty-state">No compatible unassigned route plans are available.</div>';
+  return payload;
+}
+
+function ACS_statusBadge(aircraft) {
+  const status = String(aircraft?.status || "").toUpperCase();
+  const operational = String(aircraft?.operational_status || "").toUpperCase();
+  const maintenance = String(aircraft?.maintenance_status || "").toUpperCase();
+
+  if (status !== "ACTIVE" || maintenance !== "SERVICEABLE") {
+    return { label: maintenance || status || "UNKNOWN", className: "badge-unknown" };
+  }
+  if (operational !== "AVAILABLE") {
+    return { label: operational || "UNAVAILABLE", className: "badge-unknown" };
+  }
+  return { label: "ACTIVE", className: "badge-active" };
+}
+
+function ACS_itemsForAircraft(aircraftId) {
+  return ACS_SCHEDULE_STATE.scheduleItems.filter(item =>
+    Number(item.aircraft_id) === Number(aircraftId)
+  );
+}
+
+function ACS_renderFlightChip(item) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "chip flight-chip";
+  button.innerHTML = `<strong>${ACS_escape(item.flight_number || "—")}</strong>&nbsp; ${ACS_escape(item.origin)}-${ACS_escape(item.destination)} ${ACS_escape(item.departure || "—")}`;
+  button.addEventListener("click", () => ACS_openFlightModal(item));
+  return button;
+}
+
+function renderSchedule() {
+  const tbody = document.getElementById("scheduleBody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+
+  const fleet = ACS_SCHEDULE_STATE.fleet;
+
+  if (!fleet.length) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 9;
+    cell.textContent = "No aircraft available.";
+    row.appendChild(cell);
+    tbody.appendChild(row);
+    return;
+  }
+
+  fleet.forEach(aircraft => {
+    const row = document.createElement("tr");
+    const badge = ACS_statusBadge(aircraft);
+
+    const aircraftCell = document.createElement("td");
+    aircraftCell.innerHTML = `
+      <strong style="color:#ffdd80;">${ACS_escape(aircraft.registration || "—")}</strong><br>
+      <span style="font-size:.8rem;color:#cbd6ff;">${ACS_escape(aircraft.aircraft_name || aircraft.model_key || "—")}</span><br>
+      <span class="acs-status-badge ${badge.className}">${ACS_escape(badge.label)}</span>
+    `;
+    row.appendChild(aircraftCell);
+
+    const assignedItems = ACS_itemsForAircraft(aircraft.id);
+
+    ACS_WEEKDAYS.forEach(day => {
+      const dayCell = document.createElement("td");
+      const dayItems = assignedItems
+        .filter(item => String(item.selected_day || "").toLowerCase() === day)
+        .sort((a, b) => Number(a.dep_abs_min || 0) - Number(b.dep_abs_min || 0));
+
+      if (!dayItems.length) {
+        dayCell.textContent = "—";
       } else {
-        body.innerHTML = routes.map(route => `
-          <label class="route-option">
-            <input type="radio" name="routePlan" value="${Number(route.id)}">
-            <span>
-              <strong>${ACS_escape(route.flight_number_out || "—")} / ${ACS_escape(route.flight_number_in || "—")}</strong>
-              <small>${ACS_escape(route.origin)}–${ACS_escape(route.destination)} · ${ACS_escape(route.departure)} · ${ACS_escape(route.aircraft || route.model_key)}</small>
-            </span>
-          </label>
-        `).join("");
+        dayItems.forEach(item => dayCell.appendChild(ACS_renderFlightChip(item)));
       }
 
-      document.getElementById("assignModal").classList.remove("hidden");
-    }
-
-    function ACS_openFlightModal(flightId) {
-      const item = ACS_SCHEDULE_STATE.scheduleItems.find(
-        flight => String(flight.id) === String(flightId)
-      );
-
-      if (!item) {
-        return;
-      }
-
-      ACS_SCHEDULE_STATE.selectedFlightId = Number(item.id);
-      ACS_SCHEDULE_STATE.selectedRoutePlanId = Number(item.route_plan_id);
-
-      const routePlan = ACS_SCHEDULE_STATE.routePlans.find(
-        route => String(route.id) === String(item.route_plan_id)
-      );
-
-      document.getElementById("flightTitle").textContent = item.flight_number || "Flight";
-      document.getElementById("flightBody").innerHTML = `
-        <div class="detail-grid">
-          <div class="detail-card"><span>Route</span><strong>${ACS_escape(item.origin)}–${ACS_escape(item.destination)}</strong></div>
-          <div class="detail-card"><span>Schedule</span><strong>${ACS_escape(item.selected_day)} ${ACS_escape(item.departure)}–${ACS_escape(item.arrival || "—")}</strong></div>
-          <div class="detail-card"><span>Aircraft</span><strong>${ACS_escape(item.aircraft_registration || "Unassigned")}</strong></div>
-          <div class="detail-card"><span>Status</span><strong>${ACS_escape(item.status || "planned")}</strong></div>
-          <div class="detail-card"><span>Direction</span><strong>${ACS_escape(item.flight_direction || "—")}</strong></div>
-          <div class="detail-card"><span>Paired flight</span><strong>${ACS_escape(item.paired_flight_number || routePlan?.flight_number_in || "—")}</strong></div>
-        </div>
-      `;
-
-      document.getElementById("unassignRouteBtn").disabled = !item.aircraft_id;
-      document.getElementById("flightModal").classList.remove("hidden");
-    }
-
-    function ACS_closeModal(id) {
-      document.getElementById(id)?.classList.add("hidden");
-    }
-
-    async function ACS_confirmAssignment() {
-      if (ACS_SCHEDULE_STATE.assigning) {
-        return;
-      }
-
-      const routePlanId = ACS_SCHEDULE_STATE.selectedRoutePlanId;
-      const aircraftId = ACS_SCHEDULE_STATE.selectedAircraftId;
-
-      if (!routePlanId || !aircraftId) {
-        return;
-      }
-
-      ACS_SCHEDULE_STATE.assigning = true;
-      const button = document.getElementById("confirmAssignBtn");
-      button.disabled = true;
-
-      try {
-        await ACS_fetchJson("/schedule/assign-aircraft", {
-          method: "POST",
-          body: JSON.stringify({
-            route_plan_id: routePlanId,
-            aircraft_id: aircraftId
-          })
-        });
-
-        ACS_closeModal("assignModal");
-        await ACS_loadContext();
-        ACS_setStatus("Route assigned successfully.", "success");
-      } catch (error) {
-        console.error("ACS ASSIGN ERROR:", error);
-        ACS_setStatus(error.message || "The route could not be assigned.", "error");
-        button.disabled = false;
-      } finally {
-        ACS_SCHEDULE_STATE.assigning = false;
-      }
-    }
-
-    async function ACS_unassignSelectedRoute() {
-      const routePlanId = ACS_SCHEDULE_STATE.selectedRoutePlanId;
-
-      if (!routePlanId) {
-        return;
-      }
-
-      const button = document.getElementById("unassignRouteBtn");
-      button.disabled = true;
-
-      try {
-        await ACS_fetchJson("/schedule/unassign-aircraft", {
-          method: "POST",
-          body: JSON.stringify({ route_plan_id: routePlanId })
-        });
-
-        ACS_closeModal("flightModal");
-        await ACS_loadContext();
-        ACS_setStatus("Route unassigned successfully.", "success");
-      } catch (error) {
-        console.error("ACS UNASSIGN ERROR:", error);
-        ACS_setStatus(error.message || "The route could not be unassigned.", "error");
-        button.disabled = false;
-      }
-    }
-
-    async function ACS_logout() {
-      try {
-        await fetch(`${ACS_API_BASE}/auth/logout`, {
-          method: "POST",
-          credentials: "include",
-          cache: "no-store"
-        });
-      } finally {
-        window.location.href = "login.html";
-      }
-    }
-
-    document.addEventListener("click", event => {
-      const assignButton = event.target.closest("[data-assign-aircraft]");
-      const flightButton = event.target.closest("[data-flight-id]");
-      const closeButton = event.target.closest("[data-close-modal]");
-
-      if (assignButton) {
-        ACS_openAssignModal(assignButton.dataset.assignAircraft);
-        return;
-      }
-
-      if (flightButton) {
-        ACS_openFlightModal(flightButton.dataset.flightId);
-        return;
-      }
-
-      if (closeButton) {
-        ACS_closeModal(closeButton.dataset.closeModal);
-      }
+      row.appendChild(dayCell);
     });
 
-    document.getElementById("assignBody").addEventListener("change", event => {
-      if (event.target.name !== "routePlan") {
-        return;
-      }
+    const actionCell = document.createElement("td");
+    const actions = document.createElement("div");
+    actions.className = "plan-actions";
 
-      ACS_SCHEDULE_STATE.selectedRoutePlanId = Number(event.target.value);
-      document.getElementById("confirmAssignBtn").disabled = false;
+    const assignButton = document.createElement("button");
+    assignButton.type = "button";
+    assignButton.className = "btn btn-assign";
+    assignButton.textContent = "Assign Route";
+    assignButton.addEventListener("click", () => ACS_openAssignFlightsModal(aircraft.id));
+
+    const maintenanceButton = document.createElement("button");
+    maintenanceButton.type = "button";
+    maintenanceButton.className = "btn btn-maint";
+    maintenanceButton.textContent = "Plan Maintenance";
+    maintenanceButton.disabled = true;
+
+    actions.append(assignButton, maintenanceButton);
+    actionCell.appendChild(actions);
+    row.appendChild(actionCell);
+    tbody.appendChild(row);
+  });
+
+  const updateTime = document.getElementById("updateTime");
+  if (updateTime) {
+    updateTime.textContent = `Last update: ${new Date().toLocaleTimeString()}`;
+  }
+}
+
+async function ACS_loadScheduleContext() {
+  try {
+    const payload = await ACS_request("/schedule/context");
+    ACS_SCHEDULE_STATE.fleet = Array.isArray(payload.fleet) ? payload.fleet : [];
+    ACS_SCHEDULE_STATE.routePlans = Array.isArray(payload.route_plans) ? payload.route_plans : [];
+    ACS_SCHEDULE_STATE.scheduleItems = Array.isArray(payload.schedule_items) ? payload.schedule_items : [];
+    ACS_SCHEDULE_STATE.currentSimTime = payload.current_sim_time || ACS_SCHEDULE_STATE.currentSimTime;
+    ACS_updateClock(ACS_SCHEDULE_STATE.currentSimTime);
+    renderSchedule();
+  } catch (error) {
+    console.error("ACS SCHEDULE CONTEXT ERROR:", error);
+    const tbody = document.getElementById("scheduleBody");
+    if (tbody) {
+      tbody.innerHTML = `<tr><td colspan="9">${ACS_escape(error.message)}</td></tr>`;
+    }
+  }
+}
+
+function getCurrentAircraftFromFlight() {
+  const item = ACS_SCHEDULE_STATE.selectedFlight;
+  if (!item?.aircraft_id) return null;
+  return ACS_SCHEDULE_STATE.fleet.find(ac => Number(ac.id) === Number(item.aircraft_id)) || null;
+}
+
+function ACS_openFlightModal(item) {
+  ACS_SCHEDULE_STATE.selectedFlight = item;
+  window.ACS_selectedFlightItem = item;
+
+  const modal = document.getElementById("flightModal");
+  const title = document.getElementById("flightModalTitle");
+  const content = document.getElementById("flightModalContent");
+
+  if (!modal || !title || !content) return;
+
+  title.textContent = `✈️ ${item.flight_number || "Flight"}`;
+  content.innerHTML = `
+    <div class="flight-kicker">${ACS_escape(item.flight_direction || "FLIGHT")}</div>
+    <div class="flight-hero">
+      <span class="route">${ACS_escape(item.origin)} → ${ACS_escape(item.destination)}</span>
+      <span class="times">${ACS_escape(item.departure || "—")} – ${ACS_escape(item.arrival || "—")}</span>
+    </div>
+    <div class="flight-meta">
+      <div class="meta-card"><span class="label">Day</span><span class="value">${ACS_escape(item.selected_day || "—")}</span></div>
+      <div class="meta-card"><span class="label">Aircraft</span><span class="value">${ACS_escape(item.aircraft_registration || "Unassigned")}</span></div>
+      <div class="meta-card"><span class="label">Status</span><span class="value">${ACS_escape(item.status || "—")}</span></div>
+      <div class="meta-card"><span class="label">Distance</span><span class="value">${ACS_escape(item.distance_nm || 0)} NM</span></div>
+    </div>
+  `;
+
+  modal.classList.remove("hidden");
+}
+
+function closeFlightModal() {
+  document.getElementById("flightModal")?.classList.add("hidden");
+}
+
+function editSelectedFlight() {
+  const item = ACS_SCHEDULE_STATE.selectedFlight;
+  if (!item?.route_plan_id) return;
+  window.location.href = `route_schedule.html?route_plan_id=${encodeURIComponent(item.route_plan_id)}`;
+}
+
+async function ACS_removeSelectedFlights() {
+  const item = ACS_SCHEDULE_STATE.selectedFlight;
+  if (!item?.route_plan_id) return;
+
+  try {
+    await ACS_request("/schedule/unassign-aircraft", {
+      method: "POST",
+      body: JSON.stringify({ route_plan_id: Number(item.route_plan_id) })
     });
+    closeFlightModal();
+    await ACS_loadScheduleContext();
+  } catch (error) {
+    alert(error.message);
+  }
+}
 
-    document.getElementById("confirmAssignBtn").addEventListener("click", ACS_confirmAssignment);
-    document.getElementById("unassignRouteBtn").addEventListener("click", ACS_unassignSelectedRoute);
-    document.getElementById("logoutBtn").addEventListener("click", ACS_logout);
-    document.getElementById("backBtn").addEventListener("click", () => {
-      window.location.href = "routes.html";
+function ACS_openDeleteFlightsModal() {
+  ACS_removeSelectedFlights();
+}
+
+function ACS_openAssignFlightsModal(aircraftId) {
+  ACS_SCHEDULE_STATE.selectedAircraftId = Number(aircraftId);
+  ACS_SCHEDULE_STATE.selectedRoutePlanId = null;
+
+  const aircraft = ACS_SCHEDULE_STATE.fleet.find(ac => Number(ac.id) === Number(aircraftId));
+  const modal = document.getElementById("assignFlightsModal");
+  const title = document.getElementById("assignFlightsTitle");
+  const body = document.getElementById("assignFlightsBody");
+
+  if (!modal || !title || !body || !aircraft) return;
+
+  title.textContent = `✈️ Assign Route — ${aircraft.registration || "Aircraft"}`;
+
+  const routes = ACS_SCHEDULE_STATE.routePlans.filter(route =>
+    ACS_modelKey(route.model_key) === ACS_modelKey(aircraft.model_key) &&
+    Number(route.aircraft_id || 0) !== Number(aircraftId)
+  );
+
+  if (!routes.length) {
+    body.innerHTML = `<p>No compatible route plans available.</p>`;
+  } else {
+    body.innerHTML = routes.map(route => `
+      <label class="meta-card" style="display:block;margin-bottom:10px;cursor:pointer;">
+        <input type="radio" name="acsRoutePlan" value="${Number(route.id)}">
+        <strong>${ACS_escape(route.flight_number_out || "—")} / ${ACS_escape(route.flight_number_in || "—")}</strong><br>
+        <span>${ACS_escape(route.origin)} → ${ACS_escape(route.destination)}</span><br>
+        <span style="font-size:.8rem;color:#cbd6ff;">${ACS_escape(route.departure || "—")} – ${ACS_escape(route.arrival || "—")}</span>
+      </label>
+    `).join("");
+
+    body.querySelectorAll('input[name="acsRoutePlan"]').forEach(input => {
+      input.addEventListener("change", event => {
+        ACS_SCHEDULE_STATE.selectedRoutePlanId = Number(event.target.value);
+      });
     });
+  }
 
-    document.addEventListener("keydown", event => {
-      if (event.key === "Escape") {
-        ACS_closeModal("assignModal");
-        ACS_closeModal("flightModal");
-      }
+  modal.classList.remove("hidden");
+}
+
+function ACS_closeAssignFlightsModal() {
+  document.getElementById("assignFlightsModal")?.classList.add("hidden");
+}
+
+async function ACS_confirmAssignFlights() {
+  const aircraftId = ACS_SCHEDULE_STATE.selectedAircraftId;
+  const routePlanId = ACS_SCHEDULE_STATE.selectedRoutePlanId;
+  if (!aircraftId || !routePlanId) return;
+
+  try {
+    await ACS_request("/schedule/assign-aircraft", {
+      method: "POST",
+      body: JSON.stringify({
+        route_plan_id: routePlanId,
+        aircraft_id: aircraftId
+      })
     });
+    ACS_closeAssignFlightsModal();
+    await ACS_loadScheduleContext();
+  } catch (error) {
+    alert(error.message);
+  }
+}
 
-    document.addEventListener("DOMContentLoaded", ACS_loadContext);
-       
-  </script>
+function closeMaintModal() {
+  const modal = document.getElementById("maintModal");
+  if (modal) modal.style.display = "none";
+}
+
+function applyMaintenance() {}
+function closeMaintenanceInfoModal() { document.getElementById("maintenanceInfoModal")?.classList.add("hidden"); }
+function editMaintenanceFromInfo() {}
+function removeMaintenanceFromInfo() {}
+function closeMaintenanceErrorModal() { const modal = document.getElementById("maintenanceErrorModal"); if (modal) modal.style.display = "none"; }
+
+async function handleLogout() {
+  try {
+    await fetch(`${ACS_API_BASE}/auth/logout`, {
+      method: "POST",
+      credentials: "include"
+    });
+  } finally {
+    window.location.href = "login.html";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", ACS_loadScheduleContext);
+</script>
+<script src="engine/acs_security_core.js?v=1"></script>
 </body>
 </html>
