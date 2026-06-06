@@ -174,21 +174,151 @@ body {
   color: #cbd6ff;
   font-size: 1rem;
 }
+       
 /* ============================================================
-   === SCHEDULE TABLE (Qatar Luxury) ===========================
+   📅 ACS SCHEDULE TABLE — RESPONSIVE AIRBUS OCC
+   Date: 06 JUN 2026
+   ------------------------------------------------------------
+   • Aircraft column controlled
+   • Balanced weekly columns
+   • Fixed Action Plan width
+   • Horizontal scroll only on compact screens
+   • Compatible with desktop, tablet and mobile
    ============================================================ */
 
-table {
-  width: 90%;
+.schedule-table-scroll {
+  width: 100%;
+  max-width: 1320px;
   margin: 0 auto;
-  border-collapse: collapse;
-  background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
+  overflow-x: auto;
+  overflow-y: hidden;
   border-radius: 18px;
-  overflow: hidden;
-  box-shadow: 0 0 20px rgba(255,179,0,0.1);
-  border: 1px solid rgba(255,179,0,0.15);
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
 
+#scheduleTable {
+  width: 100%;
+  min-width: 980px;
+  margin: 0 auto;
+
+  table-layout: fixed;
+  border-collapse: collapse;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(20,35,70,0.75),
+      rgba(10,18,40,0.85)
+    );
+
+  border-radius: 18px;
+  overflow: hidden;
+
+  box-shadow:
+    0 0 20px rgba(255,179,0,0.10);
+
+  border:
+    1px solid rgba(255,179,0,0.15);
+}
+
+/* Aircraft */
+#scheduleTable th:first-child,
+#scheduleTable td:first-child {
+  width: 215px;
+  min-width: 215px;
+  max-width: 215px;
+}
+
+/* Monday through Sunday */
+#scheduleTable th:nth-child(n+2):nth-child(-n+8),
+#scheduleTable td:nth-child(n+2):nth-child(-n+8) {
+  width: auto;
+  min-width: 88px;
+}
+
+/* Action Plan */
+#scheduleTable th:last-child,
+#scheduleTable td:last-child {
+  width: 190px;
+  min-width: 190px;
+  max-width: 190px;
+}
+
+/* Prevent long aircraft text from widening the column */
+#scheduleTable td:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: normal;
+}
+
+/* Keep aircraft information compact */
+#scheduleTable td:first-child > * {
+  max-width: 100%;
+}
+
+/* Tablet */
+@media (max-width: 1100px) {
+  .acs-main {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  #scheduleTable {
+    min-width: 930px;
+  }
+
+  #scheduleTable th:first-child,
+  #scheduleTable td:first-child {
+    width: 195px;
+    min-width: 195px;
+    max-width: 195px;
+  }
+
+  #scheduleTable th:last-child,
+  #scheduleTable td:last-child {
+    width: 180px;
+    min-width: 180px;
+    max-width: 180px;
+  }
+}
+
+/* Mobile and compact tablet */
+@media (max-width: 700px) {
+  .acs-main {
+    padding-left: 0.65rem;
+    padding-right: 0.65rem;
+  }
+
+  .schedule-table-scroll {
+    border-radius: 14px;
+  }
+
+  #scheduleTable {
+    min-width: 880px;
+  }
+
+  #scheduleTable th:first-child,
+  #scheduleTable td:first-child {
+    width: 180px;
+    min-width: 180px;
+    max-width: 180px;
+  }
+
+  #scheduleTable th:last-child,
+  #scheduleTable td:last-child {
+    width: 170px;
+    min-width: 170px;
+    max-width: 170px;
+  }
+
+  #scheduleTable th,
+  #scheduleTable td {
+    padding-left: 0.55rem;
+    padding-right: 0.55rem;
+  }
+}
+       
 th {
   background: rgba(255,179,0,0.15);
   color: #ffca3a;
@@ -406,11 +536,6 @@ footer {
   font-size: 0.75rem;
   border-radius: 10px;
   white-space: nowrap;
-}
-
-#scheduleTable td:last-child,
-#scheduleTable th:last-child {
-  width: 170px;
 }
        
 /* ============================================================
