@@ -3330,7 +3330,7 @@ for (let i = 0; i < EMPTY_ROWS; i++) {
 
   const maintBtn = document.createElement("button");
   maintBtn.className = "btn btn-maint";
-  maintBtn.textContent = "Plan Maintenance";
+  maintBtn.textContent = "Maintenance";
   maintBtn.onclick = () =>
     alert("⚠ No aircraft assigned to this slot.");
 
@@ -4096,7 +4096,7 @@ function openMaintModal(realModel, service = null, aircraftId = null) {
     if (headerTitle) headerTitle.textContent = "🛠 Edit Maintenance";
     if (btnApply) btnApply.textContent = "Save";
   } else {
-    if (headerTitle) headerTitle.textContent = "🛠 Plan Maintenance";
+    if (headerTitle) headerTitle.textContent = "🛠 Maintenance";
     if (btnApply) btnApply.textContent = "Apply";
   }
 
