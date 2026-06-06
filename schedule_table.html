@@ -2832,128 +2832,6 @@ function hideAircraftHover(){
 }
      
 /* ============================================================
-   🟧 A6 — MIGRATE LEGACY SCHEDULE ITEMS (ONE-TIME)
-   ------------------------------------------------------------
-   - Detecta vuelos sin aircraftId
-   - Resuelve aircraftId desde ACS_MyAircraft
-   - Preserva todos los demás campos
-   - Ejecuta una sola vez (flag protegido)
-   ============================================================ */
-
-(function migrateLegacyScheduleItems(){
-
-  const FLAG_KEY = "ACS_schedule_migrated_v1";
-  if (localStorage.getItem(FLAG_KEY)) return;
-
-  let items = [];
-  let fleet = [];
-
-  try {
-    items = JSON.parse(localStorage.getItem("scheduleItems")) || [];
-  } catch {
-    items = [];
-  }
-
-  try {
-    fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft")) || [];
-  } catch {
-    fleet = [];
-  }
-
-  if (!Array.isArray(items) || items.length === 0) {
-    localStorage.setItem(FLAG_KEY, "1");
-    return;
-  }
-
-  if (!Array.isArray(fleet) || fleet.length === 0) {
-    console.warn("🟧 A6: Fleet empty — migration skipped");
-    return;
-  }
-
-  let migratedCount = 0;
-
-  items.forEach(it => {
-
-    if (!it || it.type !== "flight") return;
-
-    // Ya está normalizado
-    if (it.aircraftId) return;
-
-     // =====================================
-    // ⏱ NORMALIZE LEGACY TIME (CRITICAL)
-    // =====================================
-
-    const timeToAbsMin = (hhmm) => {
-      if (!hhmm || typeof hhmm !== "string") return null;
-      const p = hhmm.split(":");
-      if (p.length !== 2) return null;
-      const h = parseInt(p[0], 10);
-      const m = parseInt(p[1], 10);
-      if (isNaN(h) || isNaN(m)) return null;
-      return (h * 60) + m;
-    };
-
-    // Departure
-    if (typeof it.depAbsMin !== "number") {
-      const depSrc =
-        it.depTime ||
-        it.dep ||
-        it.blockOut ||
-        null;
-
-      const depMin = timeToAbsMin(depSrc);
-      if (typeof depMin === "number") {
-        it.depAbsMin = depMin;
-      }
-    }
-
-    // Arrival
-    if (typeof it.arrAbsMin !== "number") {
-      const arrSrc =
-        it.arrTime ||
-        it.arr ||
-        it.blockIn ||
-        null;
-
-      const arrMin = timeToAbsMin(arrSrc);
-      if (typeof arrMin === "number") {
-        it.arrAbsMin = arrMin;
-      }
-    }
-       
-    // Intentar resolver por modelo / tipo
-    const modelKey =
-      it.acType ||
-      it.aircraftModel ||
-      it.modelKey ||
-      it.aircraft ||
-      "";
-
-    if (!modelKey) return;
-
-    const match = fleet.find(ac =>
-      ac &&
-      ac.model === modelKey &&
-      ac.status === "Active"
-    );
-
-    if (!match || !match.id) return;
-
-    it.aircraftId = match.id;
-    it.acType = match.model || it.acType || "";
-    migratedCount++;
-  });
-
-  if (migratedCount > 0) {
-    localStorage.setItem("scheduleItems", JSON.stringify(items));
-    console.log(`🟧 A6: Migrated ${migratedCount} legacy flight(s)`);
-  }
-
-  localStorage.setItem(FLAG_KEY, "1");
-
-})();
-
-/* ============================================================
    🧠 ST-MA LINK — DOMINANT MAINTENANCE OVERRIDE (C/D > B)
    Date: 2026-03-02
    Purpose:
@@ -2976,7 +2854,11 @@ function ACS_applyDominantMaintenanceFromMyAircraft(fleetAircraft, myAircraft){
 
   if (!fleetAircraft || !myAircraft) return fleetAircraft;
 
-  const now = (window.ACS_TIME && ACS_TIME.currentTime) ? +ACS_TIME.currentTime : Date.now();
+  const now = ACS_getSimTimeSafe();
+
+  if (!Number.isFinite(now)) {
+    return fleetAircraft;
+  }
 
   const myStatus = String(myAircraft.status || "").trim();
 
@@ -3021,7 +2903,12 @@ function renderSchedule() {
 
   const items = getItems();
   const fleet = getRealFleet();
-  const nowTs = ACS_TABLE_TIME?.date?.getTime?.() || Date.now();
+  const nowTs = ACS_getSimTimeSafe();
+
+  if (!Number.isFinite(nowTs)) {
+    console.error("[ACS SCHEDULE] Official simulation time unavailable");
+    return;
+  }
 
 // 🟥 CAMO MONTHLY AUTHORITY (INTERVAL + WINDOW)
 
