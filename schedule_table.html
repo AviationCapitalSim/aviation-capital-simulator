@@ -1147,6 +1147,16 @@ footer {
     Automatic schedule monitor with real-time route integration.
   </p>
 
+  <!-- ============================================================
+     📅 ACS SCHEDULE TABLE — RESPONSIVE OCC CONTAINER
+     Date: 06 JUN 2026
+     Purpose:
+     - Preserve desktop proportions
+     - Provide horizontal scrolling on compact devices
+     - Prevent Aircraft column from consuming excessive width
+     ============================================================ -->
+
+<div class="schedule-table-scroll">
   <table id="scheduleTable">
     <thead>
       <tr>
@@ -1161,8 +1171,10 @@ footer {
         <th>Action Plan</th>
       </tr>
     </thead>
+
     <tbody id="scheduleBody"></tbody>
   </table>
+</div>
 </div>
 
   <div class="summary">
