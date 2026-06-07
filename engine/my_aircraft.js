@@ -983,9 +983,14 @@ async function resolveCompletedMaintenanceEvents() {
         row.classList.add("pending-row");
       }
 
-      if (statusInfo.key === "MAINTENANCE_REQUIRED") {
-        row.classList.add("pending-row");
-      }
+      if (
+      statusInfo.key === "OVERDUE_D" ||
+      statusInfo.key === "OVERDUE_C" ||
+      statusInfo.key === "OVERDUE_B" ||
+      statusInfo.key === "OVERDUE_A"
+     ) {
+      row.classList.add("pending-row");
+     }
 
       const condition = Math.round(safeNumber(aircraft.condition_pct, 0));
 
