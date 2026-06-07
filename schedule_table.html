@@ -5686,52 +5686,74 @@ function openMaintenanceInfoModal(service, aircraft){
 const visual = ACS_getWeeklyACheckVisual(service.day, service.start);
      
 let barHTML = "";
-
 if (service.serviceType?.toUpperCase().includes("A")) {
 
-const visual = ACS_getWeeklyACheckVisual(service.day, service.start);
+  const visual = ACS_getWeeklyACheckVisual(
+    service.day,
+    service.start
+  );
 
-const remainingHours = (visual.days * 24) + visual.hours;
+  const remainingHours =
+    (visual.days * 24) + visual.hours;
 
-const totalWeek = 7 * 24;
-const percent = (remainingHours / totalWeek) * 100;
+  const totalWeek = 7 * 24;
 
-// 🎯 COLOR
-let color;
+  /*
+   * Al programar el A-Check, el ciclo visual inicia
+   * completamente reseteado: 100 % y verde.
+   *
+   * Se mantiene intacta la escala de colores para
+   * cualquier evolución posterior del porcentaje.
+   */
+  const calculatedPercent =
+    Math.max(
+      0,
+      Math.min(
+        100,
+        (remainingHours / totalWeek) * 100
+      )
+    );
 
-if (percent > 75) {
-  color = "#00c853"; // verde
-} else if (percent > 50) {
-  color = "#ffd600"; // amarillo
-} else if (percent > 25) {
-  color = "#ff9100"; // naranja
-} else {
-  color = "#d50000"; // rojo
-}
+  const progress =
+    String(service.status || "").toLowerCase() === "scheduled"
+      ? 100
+      : calculatedPercent;
 
-const progress = percent;
-     
+  // 🎯 ESCALA ORIGINAL DE COLORES
+  let color;
+
+  if (progress > 75) {
+    color = "#00c853"; // verde
+  } else if (progress > 50) {
+    color = "#ffd600"; // amarillo
+  } else if (progress > 25) {
+    color = "#ff9100"; // naranja
+  } else {
+    color = "#d50000"; // rojo
+  }
+
   barHTML = `
-  <div class="bcycle-box">
-    <div class="bcycle-header">A-CHECK CYCLE</div>
+    <div class="bcycle-box">
+      <div class="bcycle-header">A-CHECK CYCLE</div>
 
-    <div class="bcycle-bar">
-      <div class="bcycle-fill"
-           style="width:${progress}%; background:${color};">
+      <div class="bcycle-bar">
+        <div
+          class="bcycle-fill"
+          style="width:${progress}%; background:${color};"
+        ></div>
+      </div>
+
+      <div class="bcycle-info">
+        <span>Next</span>
+        <span>${visual.label}</span>
+      </div>
+
+      <div class="bcycle-info">
+        <span>Cycle</span>
+        <span>7 days</span>
       </div>
     </div>
-
-    <div class="bcycle-info">
-      <span>Next</span>
-      <span>${visual.label}</span>
-    </div>
-
-    <div class="bcycle-info">
-      <span>Cycle</span>
-      <span>7 days</span>
-    </div>
-  </div>
-`;
+  `;
      
 } else {
 
