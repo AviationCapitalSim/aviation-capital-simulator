@@ -4158,6 +4158,7 @@ function closeMaintModal(){
 /* ============================================================
    ✅ VALIDATE A-CHECK — overlap vs flights SAME aircraft/day
    ============================================================ */
+     
 function validateACheck(ac, day, startHHMM, endHHMM) {
 
   if (!ac || !ac.id) return false;
@@ -4274,20 +4275,18 @@ async function applyMaintenance() {
 
     const maintenance = quote.maintenance || {};
 
-    const confirmed = confirm(
-      `${maintenance.display_name || checkType.replace("_", "-")}\n\n` +
-      `Aircraft: ${quote.aircraft?.registration || "—"}\n` +
-      `Window: ${String(selectedDay).toUpperCase()} ` +
-      `${maintenance.start_time || startTime}–${maintenance.end_time || "—"}\n` +
-      `Duration: ${Number(maintenance.duration_minutes || 0)} minutes\n` +
-      `Estimated cost: ${maintenance.currency || "USD"} ` +
-      `${Number(maintenance.estimated_cost || 0).toLocaleString("en-US")}\n\n` +
-      `Confirm maintenance scheduling?`
-    );
+   const confirmed = confirm(
+     
+  `${maintenance.display_name || checkType.replace("_", "-")}\n\n` +
+  `Aircraft: ${quote.aircraft?.registration || "—"}\n` +
+  `Window: ${String(selectedDay).toUpperCase()} ` +
+  `${maintenance.start_time || startTime}–${maintenance.end_time || "—"}\n\n` +
+  `Confirm maintenance scheduling?`
+);
 
-    if (!confirmed) {
-      return;
-    }
+if (!confirmed) {
+  return;
+}
 
     const response = await fetch(
       `${ACS_SCHEDULE_API_BASE}/v1/schedule/maintenance`,
