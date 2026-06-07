@@ -5686,6 +5686,7 @@ function openMaintenanceInfoModal(service, aircraft){
 const visual = ACS_getWeeklyACheckVisual(service.day, service.start);
      
 let barHTML = "";
+     
 if (service.serviceType?.toUpperCase().includes("A")) {
 
   const visual = ACS_getWeeklyACheckVisual(
@@ -5698,13 +5699,6 @@ if (service.serviceType?.toUpperCase().includes("A")) {
 
   const totalWeek = 7 * 24;
 
-  /*
-   * Al programar el A-Check, el ciclo visual inicia
-   * completamente reseteado: 100 % y verde.
-   *
-   * Se mantiene intacta la escala de colores para
-   * cualquier evolución posterior del porcentaje.
-   */
   const calculatedPercent =
     Math.max(
       0,
@@ -5714,22 +5708,29 @@ if (service.serviceType?.toUpperCase().includes("A")) {
       )
     );
 
+  const isScheduled =
+    String(service.status || "").toLowerCase() === "scheduled";
+
   const progress =
-    String(service.status || "").toLowerCase() === "scheduled"
+    isScheduled
       ? 100
       : calculatedPercent;
 
-  // 🎯 ESCALA ORIGINAL DE COLORES
+  const remainingLabel =
+    isScheduled
+      ? "7 days"
+      : visual.label;
+
   let color;
 
   if (progress > 75) {
-    color = "#00c853"; // verde
+    color = "#00c853";
   } else if (progress > 50) {
-    color = "#ffd600"; // amarillo
+    color = "#ffd600";
   } else if (progress > 25) {
-    color = "#ff9100"; // naranja
+    color = "#ff9100";
   } else {
-    color = "#d50000"; // rojo
+    color = "#d50000";
   }
 
   barHTML = `
@@ -5744,8 +5745,8 @@ if (service.serviceType?.toUpperCase().includes("A")) {
       </div>
 
       <div class="bcycle-info">
-        <span>Next</span>
-        <span>${visual.label}</span>
+        <span>Remaining</span>
+        <span>${remainingLabel}</span>
       </div>
 
       <div class="bcycle-info">
