@@ -1058,55 +1058,21 @@ async function resolveCompletedMaintenanceEvents() {
    🟦 TABLE PRIMARY STATUS — CLEAN OCC DISPLAY
    ------------------------------------------------------------
    Purpose:
-   - Status column shows only the aircraft main operational state.
-   - Maintenance required becomes the primary status when backend
-     maintenance authority says MAINTENANCE_REQUIRED.
-   - Aircraft is not automatically moved into maintenance event.
+   - Status column displays the backend maintenance authority.
+   - Priority:
+     D-CHECK
+     C-CHECK
+     B-CHECK
+     A-CHECK
+     OVERDUE D
+     OVERDUE C
+     OVERDUE B
+     OVERDUE A
+     ACTIVE
    ============================================================ */
 
-  function resolvePrimaryTableStatus(aircraft) {
+function resolvePrimaryTableStatus(aircraft) {
   return resolveFleetStatus(aircraft).label;
-  }
-   
-  const status = normalizeStatus(aircraft.status);
-  const operational = normalizeStatus(aircraft.operational_status);
-  const maintenanceControl = normalizeStatus(aircraft.maintenance_control_status);
-
-  /*
-    ACS OCC Rule:
-    Real maintenance event has priority over technical warning.
-    If aircraft is physically IN_MAINTENANCE, table must show MAINTENANCE,
-    not MAINTENANCE REQUIRED.
-  */
-  if (isAircraftInMaintenanceEvent(aircraft)) {
-    return "MAINTENANCE";
-  }
-
-  if (maintenanceControl === "MAINTENANCE_REQUIRED") {
-    return "MAINTENANCE REQUIRED";
-  }
-
-  if (status === "ACTIVE") {
-    return "ACTIVE";
-  }
-
-  if (status === "PENDING_DELIVERY") {
-    return "PENDING DELIVERY";
-  }
-
-  if (status === "STORED") {
-    return "STORED";
-  }
-
-  if (status === "SCRAPPED") {
-    return "SCRAPPED";
-  }
-
-  if (status === "RETURNED_TO_LESSOR") {
-    return "RETURNED";
-  }
-
-  return normalizeDisplay(status || operational || "REVIEW");
 }
    
   function resolveNextCDisplay(aircraft) {
