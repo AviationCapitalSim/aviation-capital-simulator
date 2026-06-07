@@ -1577,133 +1577,47 @@ function normalizeModel(m){
    Schedule Table NO ejecuta lógica, solo refleja estado
    ============================================================ */
 
-function ACS_getAircraftStatusBadge(ac) {
+function ACS_getAircraftStatusBadge(ac){
+
   if (!ac) {
-    return {
-      label: "UNKNOWN",
-      class: "badge-unknown"
-    };
+    return { label: "UNKNOWN", class: "badge-unknown" };
   }
 
-  const aStatus =
-    ACS_scheduleText(ac.aCheckStatus).toUpperCase();
+  // 🔴 OVERDUE — prioridad absoluta
+if (
+  ac.maintenanceOverdue === true ||
+  ac?.maintenance?.bOverdue === true
+) {
+  return { label: "OVERDUE", class: "badge-overdue" };
+}
 
-  const bStatus =
-    ACS_scheduleText(ac.bCheckStatus).toUpperCase();
-
-  const cStatus =
-    ACS_scheduleText(ac.cCheckStatus).toUpperCase();
-
-  const dStatus =
-    ACS_scheduleText(ac.dCheckStatus).toUpperCase();
-
-  const reason =
-    ACS_scheduleText(
-      ac.maintenanceControlReason
-    ).toUpperCase();
-
-  /*
-    ACS / Airbus OCC priority:
-    D > C > B > A > ACTIVE
-  */
-
-  if (
-    dStatus === "IN_PROGRESS" ||
-    reason === "D_CHECK"
-  ) {
-    return {
-      label: "D-CHECK",
-      class: "badge-dcheck"
-    };
+  // 🔧 SERVICIOS MAYORES
+  if (ac.status === "In D-Check") {
+    return { label: "D-Check", class: "badge-dcheck" };
   }
 
-  if (
-    cStatus === "IN_PROGRESS" ||
-    reason === "C_CHECK"
-  ) {
-    return {
-      label: "C-CHECK",
-      class: "badge-ccheck"
-    };
+  if (ac.status === "In C-Check") {
+    return { label: "C-Check", class: "badge-ccheck" };
   }
 
-  if (
-    bStatus === "IN_PROGRESS" ||
-    reason === "B_CHECK"
-  ) {
-    return {
-      label: "B-CHECK",
-      class: "badge-bcheck"
-    };
+  // ⚙️ B-CHECK
+  if (ac.status === "B-Check") {
+    return { label: "B-Check", class: "badge-bcheck" };
   }
 
-  if (
-    aStatus === "IN_PROGRESS" ||
-    reason === "A_CHECK"
-  ) {
-    return {
-      label: "A-CHECK",
-      class: "badge-acheck"
-    };
+  // 🔧 A-CHECK
+  if (ac.status === "A-Check") {
+    return { label: "A-Check", class: "badge-acheck" };
   }
 
-  if (
-    dStatus === "OVERDUE" ||
-    reason === "D_CHECK_OVERDUE"
-  ) {
-    return {
-      label: "OVERDUE D",
-      class: "badge-overdue"
-    };
+  // 🟢 OPERATIVO
+  if (ac.status === "Active") {
+    return { label: "ACTIVE", class: "badge-active" };
   }
 
-  if (
-    cStatus === "OVERDUE" ||
-    reason === "C_CHECK_OVERDUE"
-  ) {
-    return {
-      label: "OVERDUE C",
-      class: "badge-overdue"
-    };
-  }
-
-  if (
-    bStatus === "OVERDUE" ||
-    reason === "B_CHECK_OVERDUE"
-  ) {
-    return {
-      label: "OVERDUE B",
-      class: "badge-overdue"
-    };
-  }
-
-  if (
-    aStatus === "OVERDUE" ||
-    reason === "A_CHECK_OVERDUE"
-  ) {
-    return {
-      label: "OVERDUE A",
-      class: "badge-overdue"
-    };
-  }
-
-  if (
-    ac.status === "Active" &&
-    ac.canFly === true
-  ) {
-    return {
-      label: "ACTIVE",
-      class: "badge-active"
-    };
-  }
-
+  // ⚪ FALLBACK
   return {
-    label: (
-      ac.status ||
-      ac.maintenanceStatus ||
-      "UNKNOWN"
-    ).toUpperCase(),
-
+    label: (ac.status || "UNKNOWN").toUpperCase(),
     class: "badge-unknown"
   };
 }
@@ -2057,16 +1971,10 @@ function ACS_adaptScheduleAircraft(row) {
   const maintenanceStatus =
     ACS_scheduleText(row?.maintenance_status).toUpperCase();
 
-  const maintenanceControlStatus =
-  ACS_scheduleText(
-    row?.maintenance_control_status
-  ).toUpperCase();
-
-const canFly =
-  ACS_scheduleText(row?.status).toUpperCase() === "ACTIVE" &&
-  operationalStatus === "AVAILABLE" &&
-  maintenanceStatus === "SERVICEABLE" &&
-  maintenanceControlStatus === "SERVICEABLE";
+  const canFly =
+    ACS_scheduleText(row?.status).toUpperCase() === "ACTIVE" &&
+    operationalStatus === "AVAILABLE" &&
+    maintenanceStatus === "SERVICEABLE";
 
   return {
     id: row?.id ?? null,
@@ -2095,36 +2003,12 @@ const canFly =
     registration: ACS_scheduleText(row?.registration, "—"),
     serialNumber: ACS_scheduleText(row?.serial_number),
 
-   status,
-operationalStatus,
-maintenanceStatus,
+    status,
+    operationalStatus,
+    maintenanceStatus,
 
-aCheckDueDate: row?.a_check_due_date ?? null,
-aCheckStatus: ACS_scheduleText(row?.a_check_status).toUpperCase(),
-
-bCheckDueDate: row?.b_check_due_date ?? null,
-bCheckStatus: ACS_scheduleText(row?.b_check_status).toUpperCase(),
-
-cCheckDueDate: row?.c_check_due_date ?? null,
-cCheckStatus: ACS_scheduleText(row?.c_check_status).toUpperCase(),
-
-dCheckDueDate: row?.d_check_due_date ?? null,
-dCheckStatus: ACS_scheduleText(row?.d_check_status).toUpperCase(),
-
-maintenanceControlStatus:
-  ACS_scheduleText(
-    row?.maintenance_control_status
-  ).toUpperCase(),
-
-maintenanceControlReason:
-  ACS_scheduleText(
-    row?.maintenance_control_reason
-  ).toUpperCase(),
-
-canFly,
-
-groundReason: canFly
-     
+    canFly,
+    groundReason: canFly
       ? null
       : (
           maintenanceStatus !== "SERVICEABLE"
@@ -2294,6 +2178,49 @@ function ACS_adaptScheduleItem(row, routePlansById) {
    Railway/PostgreSQL → ACS_SCHEDULE_STATE
    ============================================================ */
 
+async function ACS_resolveScheduledMaintenance() {
+  try {
+    const response = await fetch(
+      `${ACS_SCHEDULE_API_BASE}/v1/schedule/maintenance/resolver`,
+      {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          "Accept": "application/json"
+        }
+      }
+    );
+
+    const payload = await response.json().catch(() => null);
+
+    if (!response.ok || payload?.ok !== true) {
+      console.warn(
+        "[ACS SCHEDULE] Maintenance resolver warning:",
+        payload
+      );
+      return null;
+    }
+
+    console.info(
+      "[ACS SCHEDULE] Maintenance resolver synchronized",
+      {
+        started_count: payload.started_count || 0,
+        started_events: payload.started_events || []
+      }
+    );
+
+    return payload;
+  } catch (error) {
+    console.warn(
+      "[ACS SCHEDULE] Maintenance resolver connection warning:",
+      error
+    );
+    return null;
+  }
+}
+
+
 async function ACS_loadScheduleContext() {
   if (ACS_SCHEDULE_STATE.loading) {
     return ACS_SCHEDULE_STATE;
@@ -2462,6 +2389,7 @@ function getFleet() {
 
 async function ACS_initializeScheduleTable() {
   try {
+    await ACS_resolveScheduledMaintenance();
     await ACS_loadScheduleContext();
   } catch (error) {
     /*
@@ -3026,20 +2954,8 @@ function renderSchedule() {
     return;
   }
 
-// 🟥 CAMO MONTHLY AUTHORITY (INTERVAL + WINDOW)
-
-fleet.forEach(ac => {
-
-  // Integración CAMO real (ventana + overdue + activación)
-     
-  ACS_handleMonthlyBIntegration(ac);
-
-  // ============================================================
-// 🔒 PERSISTIR CAMBIOS DEL B-CHECK (CRÍTICO)
-// ============================================================
-localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
-     
-});
+// Maintenance authority is resolved by Railway/PostgreSQL.
+// renderSchedule() is read-only and never mutates fleet state.
 
 // 🔒 OPS FILTER — SkyTrack authority
 const operationalItems = items.filter(it => {
@@ -3948,7 +3864,6 @@ function ACS_closeDeleteFlightsModal() {
    - Borra por ID en scheduleItems
    - No toca SkyTrack directamente (Schedule Table manda)
    ============================================================ */
-     
 function ACS_deleteFlight(id) {
 
   if (!id) return;
@@ -4133,7 +4048,6 @@ function closeMaintModal(){
 /* ============================================================
    ✅ VALIDATE A-CHECK — overlap vs flights SAME aircraft/day
    ============================================================ */
-     
 function validateACheck(ac, day, startHHMM, endHHMM) {
 
   if (!ac || !ac.id) return false;
@@ -4178,229 +4092,164 @@ function validateACheck(ac, day, startHHMM, endHHMM) {
   return true;
 }
 
-function applyMaintenance(){
-
-  // ============================================================
-  // 0) GUARDIA
-  // ============================================================
-     
-  if (!maintTail && !maintAircraftId) {
-    closeMaintModal();
+async function applyMaintenance() {
+  if (!maintAircraftId) {
+    alert("Aircraft authority is not available.");
     return;
   }
 
-  const t = document.getElementById("maintType")?.value || "A";
-  const d = document.getElementById("maintDay")?.value || "mon";
-  const start = document.getElementById("maintStart")?.value || "06:00";
-  const dur = (t === "A") ? 300 : 1440;
+  const type =
+    document.getElementById("maintType")?.value || "A";
 
-  const startMin = toMin(start);
-  if (startMin === null) {
-    alert("⚠ Invalid start time.");
-    return;
-  }
+  const selectedDay =
+    document.getElementById("maintDay")?.value || "mon";
 
-  const end = toHHMM(startMin + dur);
+  const startTime =
+    document.getElementById("maintStart")?.value || "06:00";
 
-  const items = getItems();
-  const fleet = getRealFleet();
+  const checkType =
+    type === "B" ? "B_CHECK" : "A_CHECK";
 
-  // ============================================================
-  // 1) IDENTIFICAR AVIÓN (PRIORIDAD: aircraftId)
-  // ============================================================
-  let ac = null;
-
-  if (maintAircraftId) {
-    ac = fleet.find(x => String(x.id || "").trim() === String(maintAircraftId).trim()) || null;
-  }
-
-  // fallback legacy por modelo
-  if (!ac && maintTail) {
-    ac = fleet.find(x =>
-      normalizeModel(x.model || x.type || "") === normalizeModel(maintTail)
-    ) || null;
-  }
-
-  if (!ac) {
-    alert("⚠ Aircraft not found for maintenance.");
-    closeMaintModal();
-    return;
-  }
-
-  const editingService = window.__EDITING_SERVICE__;
-  const isEditing = !!(editingService && editingService.id);
-
-  // ============================================================
-  // 2) VALIDACIÓN A-CHECK (en ambos modos)
-  // ============================================================
-  if (t === "A") {
-    const ok = validateACheck(ac, d, start, end);
-    if (!ok) return; // NO cerrar: dejar corregir
-  }
-
-  // ============================================================
-  // 3) CREATE: bloquear duplicados (EDIT: NO bloquearse a sí mismo)
-  // ============================================================
-  if (!isEditing) {
-
-    const serviceSameDay = items.some(it =>
-      it &&
-      it.type === "service" &&
-      it.aircraftId === ac.id &&
-      String(it.day || "").toLowerCase() === String(d || "").toLowerCase()
+  const applyButton =
+    document.querySelector(
+      "#maintModal .maint-btn.apply"
     );
 
-    if (serviceSameDay) {
-      alert("⚠ A maintenance service is already scheduled for this aircraft on this day.");
-      closeMaintModal();
-      return;
-    }
-
-    const sameTypeAlready = items.some(it =>
-      it &&
-      it.type === "service" &&
-      it.aircraftId === ac.id &&
-      it.serviceType === t
-    );
-
-    if (sameTypeAlready) {
-      alert(t === "A"
-        ? "This aircraft already has an A-Check scheduled."
-        : "This aircraft already has a B-Check scheduled."
-      );
-      closeMaintModal();
-      return;
-    }
+  if (applyButton) {
+    applyButton.disabled = true;
+    applyButton.textContent = "Processing...";
   }
 
-  // ============================================================
-  // 4) COSTO B-CHECK (solo si se crea o si cambias a B en EDIT)
-  // ============================================================
-  const shouldChargeB =
-    (t === "B") && (
-      !isEditing || (editingService.serviceType !== "B")
-    );
-
-  if (shouldChargeB) {
-    try {
-      let F = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-      if (typeof F.capital === "number") {
-        const costB = 18000;
-        F.capital -= costB;
-        F.expenses = (F.expenses || 0) + costB;
-        F.log = F.log || [];
-        F.log.push({
-          type: "B_CHECK",
-          aircraft: ac.registration || ac.tail || ac.model,
-          day: String(d || "").toUpperCase(),
-          amount: costB,
-          date: new Date().toISOString()
-        });
-        localStorage.setItem("ACS_Finance", JSON.stringify(F));
+  try {
+    const quoteResponse = await fetch(
+      `${ACS_SCHEDULE_API_BASE}/v1/schedule/maintenance/quote`,
+      {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          aircraft_id: Number(maintAircraftId),
+          check_type: checkType,
+          selected_day: selectedDay,
+          start_time: startTime
+        })
       }
-    } catch (e) {
-      console.warn("Finance B error:", e);
-    }
-  }
-
-  // ============================================================
-  // 5) ESCRITURA: EDIT → UPDATE / CREATE → PUSH
-  // ============================================================
-  if (isEditing) {
-
-    const targetId = String(editingService.id).trim();
-    const idx = items.findIndex(x =>
-      x && x.type === "service" && String(x.id || "").trim() === targetId
     );
 
-    if (idx === -1) {
-      alert("⛔ Service not found to edit.");
-      closeMaintModal();
+    const quote =
+      await quoteResponse.json().catch(() => null);
+
+    if (!quoteResponse.ok || quote?.ok !== true) {
+      const message =
+        quote?.message ||
+        quote?.details ||
+        quote?.error ||
+        "MAINTENANCE_QUOTE_FAILED";
+
+      if (
+        quote?.error ===
+        "MAINTENANCE_SCHEDULE_CONFLICT"
+      ) {
+        showMaintenanceErrorModal(message);
+        return;
+      }
+
+      alert(message);
       return;
     }
 
-    const old = items[idx];
+    const maintenance = quote.maintenance || {};
 
-    items[idx] = {
-      ...old,
-      serviceType: t,
-      aircraftId: ac.id,
+    const confirmed = confirm(
+      `${maintenance.display_name || checkType.replace("_", "-")}\n\n` +
+      `Aircraft: ${quote.aircraft?.registration || "—"}\n` +
+      `Window: ${String(selectedDay).toUpperCase()} ` +
+      `${maintenance.start_time || startTime}–${maintenance.end_time || "—"}\n` +
+      `Duration: ${Number(maintenance.duration_minutes || 0)} minutes\n` +
+      `Estimated cost: ${maintenance.currency || "USD"} ` +
+      `${Number(maintenance.estimated_cost || 0).toLocaleString("en-US")}\n\n` +
+      `Confirm maintenance scheduling?`
+    );
 
-      day: String(d || "").toLowerCase(),
-      assigned: true,
-
-      start,
-      end,
-
-      startMinute: toMin(start) ?? 0,
-      endMinute:   (toMin(end) ?? (t === "B" ? 1440 : 300)),
-
-      tail: normalizeModel(ac.model || ac.type),
-      acType: ac.type || "",
-
-      durationMin: (t === "B" ? 1440 : 300)
-    };
-
-  } else {
-
-    items.push({
-      id: "svc-" + Math.random().toString(36).slice(2, 8),
-      type: "service",
-      serviceType: t,
-
-      aircraftId: ac.id,
-
-      day: String(d || "").toLowerCase(),
-      assigned: true,
-
-      start,
-      end,
-
-      startMinute: toMin(start) ?? 0,
-      endMinute:   (toMin(end) ?? (t === "B" ? 1440 : 300)),
-
-      tail: normalizeModel(ac.model || ac.type),
-      acType: ac.type || "",
-
-      durationMin: (t === "B" ? 1440 : 300)
-    });
-
-  }
-
-  // ============================================================
-  // 6) FINAL
-  // ============================================================
-  setItems(items);
-
-// 🟢 RESET B-CYCLE si es B-Check
-if (t === "B") {
-
-  const fleetNow = getRealFleet();
-  const idx = fleetNow.findIndex(x =>
-    String(x.id) === String(ac.id)
-  );
-
-  if (idx !== -1) {
-    const simNow = ACS_getSimTimeSafe();
-
-  if (!Number.isFinite(simNow)) {
-  alert("⚠ Time Engine not ready");
-  return;
-  }
-
-    fleetNow[idx].lastBCheckAt = simNow;
-    fleetNow[idx].maintenanceOverdue = false;
-    if (!fleetNow[idx].maintenance) {
-      fleetNow[idx].maintenance = {};
+    if (!confirmed) {
+      return;
     }
-    fleetNow[idx].maintenance.bOverdue = false;
 
-    localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleetNow));
+    const response = await fetch(
+      `${ACS_SCHEDULE_API_BASE}/v1/schedule/maintenance`,
+      {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          aircraft_id: Number(maintAircraftId),
+          check_type: checkType,
+          selected_day: selectedDay,
+          start_time: startTime
+        })
+      }
+    );
+
+    const payload =
+      await response.json().catch(() => null);
+
+    if (!response.ok || payload?.ok !== true) {
+      const message =
+        payload?.message ||
+        payload?.details ||
+        payload?.error ||
+        "MAINTENANCE_OPERATION_FAILED";
+
+      if (
+        payload?.error ===
+        "MAINTENANCE_SCHEDULE_CONFLICT"
+      ) {
+        showMaintenanceErrorModal(message);
+        return;
+      }
+
+      alert(message);
+      return;
+    }
+
+    closeMaintModal();
+
+    await ACS_resolveScheduledMaintenance();
+    await ACS_loadScheduleContext();
+
+    alert(
+      `${payload.maintenance?.check_type?.replace("_", "-") || "Maintenance"} scheduled.\n\n` +
+      `Aircraft: ${payload.aircraft?.registration || "—"}\n` +
+      `Day: ${String(payload.maintenance?.selected_day || selectedDay).toUpperCase()}\n` +
+      `Time: ${payload.maintenance?.start_time || startTime}–` +
+      `${payload.maintenance?.end_time || "—"}\n` +
+      `Status: SCHEDULED`
+    );
+
+  } catch (error) {
+    console.error(
+      "ACS SCHEDULE MAINTENANCE ERROR:",
+      error
+    );
+
+    alert(
+      "Maintenance connection failed. Please try again."
+    );
+
+  } finally {
+    if (applyButton) {
+      applyButton.disabled = false;
+      applyButton.textContent = "Apply";
+    }
   }
-}
-     
-  closeMaintModal();
-  renderSchedule();
 }
 
 function removeItem(){
