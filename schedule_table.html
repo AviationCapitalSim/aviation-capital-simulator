@@ -1971,10 +1971,16 @@ function ACS_adaptScheduleAircraft(row) {
   const maintenanceStatus =
     ACS_scheduleText(row?.maintenance_status).toUpperCase();
 
-  const canFly =
-    ACS_scheduleText(row?.status).toUpperCase() === "ACTIVE" &&
-    operationalStatus === "AVAILABLE" &&
-    maintenanceStatus === "SERVICEABLE";
+  const maintenanceControlStatus =
+  ACS_scheduleText(
+    row?.maintenance_control_status
+  ).toUpperCase();
+
+const canFly =
+  ACS_scheduleText(row?.status).toUpperCase() === "ACTIVE" &&
+  operationalStatus === "AVAILABLE" &&
+  maintenanceStatus === "SERVICEABLE" &&
+  maintenanceControlStatus === "SERVICEABLE";
 
   return {
     id: row?.id ?? null,
@@ -2003,12 +2009,36 @@ function ACS_adaptScheduleAircraft(row) {
     registration: ACS_scheduleText(row?.registration, "—"),
     serialNumber: ACS_scheduleText(row?.serial_number),
 
-    status,
-    operationalStatus,
-    maintenanceStatus,
+   status,
+operationalStatus,
+maintenanceStatus,
 
-    canFly,
-    groundReason: canFly
+aCheckDueDate: row?.a_check_due_date ?? null,
+aCheckStatus: ACS_scheduleText(row?.a_check_status).toUpperCase(),
+
+bCheckDueDate: row?.b_check_due_date ?? null,
+bCheckStatus: ACS_scheduleText(row?.b_check_status).toUpperCase(),
+
+cCheckDueDate: row?.c_check_due_date ?? null,
+cCheckStatus: ACS_scheduleText(row?.c_check_status).toUpperCase(),
+
+dCheckDueDate: row?.d_check_due_date ?? null,
+dCheckStatus: ACS_scheduleText(row?.d_check_status).toUpperCase(),
+
+maintenanceControlStatus:
+  ACS_scheduleText(
+    row?.maintenance_control_status
+  ).toUpperCase(),
+
+maintenanceControlReason:
+  ACS_scheduleText(
+    row?.maintenance_control_reason
+  ).toUpperCase(),
+
+canFly,
+
+groundReason: canFly
+     
       ? null
       : (
           maintenanceStatus !== "SERVICEABLE"
@@ -3832,6 +3862,7 @@ function ACS_closeDeleteFlightsModal() {
    - Borra por ID en scheduleItems
    - No toca SkyTrack directamente (Schedule Table manda)
    ============================================================ */
+     
 function ACS_deleteFlight(id) {
 
   if (!id) return;
@@ -4016,6 +4047,7 @@ function closeMaintModal(){
 /* ============================================================
    ✅ VALIDATE A-CHECK — overlap vs flights SAME aircraft/day
    ============================================================ */
+     
 function validateACheck(ac, day, startHHMM, endHHMM) {
 
   if (!ac || !ac.id) return false;
