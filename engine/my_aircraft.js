@@ -138,122 +138,227 @@
      ============================================================ */
 
   function resolveFleetStatus(aircraft) {
-    const status = normalizeStatus(aircraft.status);
-    const operational = normalizeStatus(aircraft.operational_status);
-    const maintenance = normalizeStatus(aircraft.maintenance_status);
-    const maintenanceControl = normalizeStatus(aircraft.maintenance_control_status);
-    const maintenanceReason = normalizeStatus(aircraft.maintenance_control_reason);
+  const status = normalizeStatus(aircraft.status);
+  const operational = normalizeStatus(aircraft.operational_status);
 
-    if (maintenanceControl === "MAINTENANCE_REQUIRED") {
-      return {
-        key: "MAINTENANCE_REQUIRED",
-        label: "MAINTENANCE REQUIRED",
-        className: "status-maintenance",
-        sub: normalizeDisplay(maintenanceReason || "TECHNICAL HOLD")
-      };
-    }
+  const aStatus = normalizeStatus(aircraft.a_check_status);
+  const bStatus = normalizeStatus(aircraft.b_check_status);
+  const cStatus = normalizeStatus(aircraft.c_check_status);
+  const dStatus = normalizeStatus(aircraft.d_check_status);
 
-    if (status === "SCRAPPED") {
-      return {
-        key: "SCRAPPED",
-        label: "SCRAPPED",
-        className: "status-maintenance-hold",
-        sub: "FINAL DISPOSITION"
-      };
-    }
+  const maintenanceControl =
+    normalizeStatus(aircraft.maintenance_control_status);
 
-    if (status === "RETURNED_TO_LESSOR") {
-      return {
-        key: "RETURNED_TO_LESSOR",
-        label: "RETURNED",
-        className: "status-maintenance-hold",
-        sub: "LESSOR RETURN"
-      };
-    }
+  const maintenanceReason =
+    normalizeStatus(aircraft.maintenance_control_reason);
 
-    if (status === "FOR_SALE") {
-      return {
-        key: "FOR_SALE",
-        label: "FOR SALE",
-        className: "status-pending",
-        sub: "MARKET LISTING"
-      };
-    }
+  /*
+    ACS / Airbus OCC priority:
+    D > C > B > A > ACTIVE
+  */
 
-    if (status === "FOR_LEASE") {
-      return {
-        key: "FOR_LEASE",
-        label: "FOR LEASE",
-        className: "status-pending",
-        sub: "LEASE OFFER"
-      };
-    }
-
-    if (status === "FOR_SALE_OR_LEASE") {
-      return {
-        key: "FOR_SALE_OR_LEASE",
-        label: "SALE / LEASE",
-        className: "status-pending",
-        sub: "MARKET OFFER"
-      };
-    }
-
-    if (status === "STORED") {
-      return {
-        key: "STORED",
-        label: "STORED",
-        className: "status-pending",
-        sub: "NOT IN SERVICE"
-      };
-    }
-
-    if (status === "PENDING_DELIVERY") {
-      return {
-        key: "PENDING_DELIVERY",
-        label: "PENDING DELIVERY",
-        className: "status-pending",
-        sub: "AWAITING ARRIVAL"
-      };
-    }
-
-    if (
-      status === "MAINTENANCE" ||
-      status === "IN_MAINTENANCE" ||
-      operational === "IN_MAINTENANCE"
-    ) {
-      return {
-        key: "MAINTENANCE",
-        label: "MAINTENANCE",
-        className: "status-maintenance",
-        sub: "IN SERVICE EVENT"
-      };
-    }
-
-    if (status === "ON_ORDER") {
-      return {
-        key: "ON_ORDER",
-        label: "ON ORDER",
-        className: "status-pending",
-        sub: "ORDER BOOK"
-      };
-    }
-
-    if (status === "ACTIVE" || operational === "AVAILABLE") {
-      return {
-        key: "ACTIVE",
-        label: "ACTIVE",
-        className: "status-active",
-        sub: "AVAILABLE"
-      };
-    }
-
+  if (
+    dStatus === "IN_PROGRESS" ||
+    maintenanceReason === "D_CHECK"
+  ) {
     return {
-      key: status || "UNKNOWN",
-      label: normalizeDisplay(status || operational || "UNKNOWN"),
-      className: "status-pending",
-      sub: normalizeDisplay(operational || maintenance || "REVIEW")
+      key: "D_CHECK",
+      label: "D-CHECK",
+      className: "status-maintenance",
+      sub: "IN PROGRESS"
     };
   }
+
+  if (
+    cStatus === "IN_PROGRESS" ||
+    maintenanceReason === "C_CHECK"
+  ) {
+    return {
+      key: "C_CHECK",
+      label: "C-CHECK",
+      className: "status-maintenance",
+      sub: "IN PROGRESS"
+    };
+  }
+
+  if (
+    bStatus === "IN_PROGRESS" ||
+    maintenanceReason === "B_CHECK"
+  ) {
+    return {
+      key: "B_CHECK",
+      label: "B-CHECK",
+      className: "status-maintenance",
+      sub: "IN PROGRESS"
+    };
+  }
+
+  if (
+    aStatus === "IN_PROGRESS" ||
+    maintenanceReason === "A_CHECK"
+  ) {
+    return {
+      key: "A_CHECK",
+      label: "A-CHECK",
+      className: "status-maintenance",
+      sub: "IN PROGRESS"
+    };
+  }
+
+  if (
+    dStatus === "OVERDUE" ||
+    maintenanceReason === "D_CHECK_OVERDUE"
+  ) {
+    return {
+      key: "OVERDUE_D",
+      label: "OVERDUE D",
+      className: "status-maintenance-hold",
+      sub: "NOT DISPATCHABLE"
+    };
+  }
+
+  if (
+    cStatus === "OVERDUE" ||
+    maintenanceReason === "C_CHECK_OVERDUE"
+  ) {
+    return {
+      key: "OVERDUE_C",
+      label: "OVERDUE C",
+      className: "status-maintenance-hold",
+      sub: "NOT DISPATCHABLE"
+    };
+  }
+
+  if (
+    bStatus === "OVERDUE" ||
+    maintenanceReason === "B_CHECK_OVERDUE"
+  ) {
+    return {
+      key: "OVERDUE_B",
+      label: "OVERDUE B",
+      className: "status-maintenance-hold",
+      sub: "NOT DISPATCHABLE"
+    };
+  }
+
+  if (
+    aStatus === "OVERDUE" ||
+    maintenanceReason === "A_CHECK_OVERDUE"
+  ) {
+    return {
+      key: "OVERDUE_A",
+      label: "OVERDUE A",
+      className: "status-maintenance-hold",
+      sub: "NOT DISPATCHABLE"
+    };
+  }
+
+  if (status === "SCRAPPED") {
+    return {
+      key: "SCRAPPED",
+      label: "SCRAPPED",
+      className: "status-maintenance-hold",
+      sub: "FINAL DISPOSITION"
+    };
+  }
+
+  if (status === "RETURNED_TO_LESSOR") {
+    return {
+      key: "RETURNED_TO_LESSOR",
+      label: "RETURNED",
+      className: "status-maintenance-hold",
+      sub: "LESSOR RETURN"
+    };
+  }
+
+  if (status === "FOR_SALE") {
+    return {
+      key: "FOR_SALE",
+      label: "FOR SALE",
+      className: "status-pending",
+      sub: "MARKET LISTING"
+    };
+  }
+
+  if (status === "FOR_LEASE") {
+    return {
+      key: "FOR_LEASE",
+      label: "FOR LEASE",
+      className: "status-pending",
+      sub: "LEASE OFFER"
+    };
+  }
+
+  if (status === "FOR_SALE_OR_LEASE") {
+    return {
+      key: "FOR_SALE_OR_LEASE",
+      label: "SALE / LEASE",
+      className: "status-pending",
+      sub: "MARKET OFFER"
+    };
+  }
+
+  if (status === "STORED") {
+    return {
+      key: "STORED",
+      label: "STORED",
+      className: "status-pending",
+      sub: "NOT IN SERVICE"
+    };
+  }
+
+  if (status === "PENDING_DELIVERY") {
+    return {
+      key: "PENDING_DELIVERY",
+      label: "PENDING DELIVERY",
+      className: "status-pending",
+      sub: "AWAITING ARRIVAL"
+    };
+  }
+
+  if (
+    status === "MAINTENANCE" ||
+    status === "IN_MAINTENANCE" ||
+    operational === "IN_MAINTENANCE" ||
+    maintenanceControl === "IN_MAINTENANCE"
+  ) {
+    return {
+      key: "MAINTENANCE",
+      label: "MAINTENANCE",
+      className: "status-maintenance",
+      sub: "IN SERVICE EVENT"
+    };
+  }
+
+  if (status === "ON_ORDER") {
+    return {
+      key: "ON_ORDER",
+      label: "ON ORDER",
+      className: "status-pending",
+      sub: "ORDER BOOK"
+    };
+  }
+
+  if (
+    status === "ACTIVE" &&
+    operational === "AVAILABLE" &&
+    maintenanceControl !== "MAINTENANCE_REQUIRED"
+  ) {
+    return {
+      key: "ACTIVE",
+      label: "ACTIVE",
+      className: "status-active",
+      sub: "AVAILABLE"
+    };
+  }
+
+  return {
+    key: status || "UNKNOWN",
+    label: normalizeDisplay(status || operational || "UNKNOWN"),
+    className: "status-pending",
+    sub: normalizeDisplay(operational || "REVIEW")
+  };
+}
 
   function isSchedulable(aircraft) {
      
@@ -960,6 +1065,9 @@ async function resolveCompletedMaintenanceEvents() {
    ============================================================ */
 
   function resolvePrimaryTableStatus(aircraft) {
+  return resolveFleetStatus(aircraft).label;
+  }
+   
   const status = normalizeStatus(aircraft.status);
   const operational = normalizeStatus(aircraft.operational_status);
   const maintenanceControl = normalizeStatus(aircraft.maintenance_control_status);
@@ -1068,14 +1176,56 @@ async function resolveCompletedMaintenanceEvents() {
 
   return formatDate(value);
 }
-   
-  function resolveAircraftAge(aircraft) {
-    const yearBuilt = Number(aircraft.year_built);
-    if (!Number.isInteger(yearBuilt) || yearBuilt <= 0) return NaN;
 
-    const now = new Date();
-    return Math.max(0, now.getUTCFullYear() - yearBuilt);
+function resolveLineMaintenanceDateDisplay(
+  dueDate,
+  statusValue
+) {
+  const status = normalizeStatus(statusValue);
+
+  if (status === "IN_PROGRESS") {
+    return "IN PROGRESS";
   }
+
+  if (status === "OVERDUE") {
+    return "OVERDUE";
+  }
+
+  if (status === "NOT_ESTABLISHED") {
+    return "—";
+  }
+
+  if (!dueDate) {
+    return "—";
+  }
+
+  return formatDate(dueDate);
+}
+
+  function resolveAircraftAge(aircraft) {
+  const yearBuilt = Number(aircraft.year_built);
+
+  if (!Number.isInteger(yearBuilt) || yearBuilt <= 0) {
+    return NaN;
+  }
+
+  const currentSimTime = aircraft.current_sim_time;
+
+  if (!currentSimTime) {
+    return NaN;
+  }
+
+  const simulatedDate = new Date(currentSimTime);
+
+  if (Number.isNaN(simulatedDate.getTime())) {
+    return NaN;
+  }
+
+  return Math.max(
+    0,
+    simulatedDate.getUTCFullYear() - yearBuilt
+  );
+}
 
   /* ============================================================
    🟦 AIRCRAFT AUTHORITY PANEL
@@ -1132,8 +1282,22 @@ async function resolveCompletedMaintenanceEvents() {
       This panel only mirrors windows when backend/schedule data is available.
       No "not scheduled" warning is shown here.
     */
-    setText("acpACheckWindow", safeText(aircraft.a_check_window, "—"));
-    setText("acpBCheckWindow", safeText(aircraft.b_check_window, "—"));
+     
+    setText(
+  "acpACheckWindow",
+  resolveLineMaintenanceDateDisplay(
+    aircraft.a_check_due_date,
+    aircraft.a_check_status
+  )
+);
+
+setText(
+  "acpBCheckWindow",
+  resolveLineMaintenanceDateDisplay(
+    aircraft.b_check_due_date,
+    aircraft.b_check_status
+  )
+);
 
     /*
       Capital display will be connected when finance snapshot is available
