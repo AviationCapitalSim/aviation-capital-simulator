@@ -1577,47 +1577,133 @@ function normalizeModel(m){
    Schedule Table NO ejecuta lógica, solo refleja estado
    ============================================================ */
 
-function ACS_getAircraftStatusBadge(ac){
-
+function ACS_getAircraftStatusBadge(ac) {
   if (!ac) {
-    return { label: "UNKNOWN", class: "badge-unknown" };
+    return {
+      label: "UNKNOWN",
+      class: "badge-unknown"
+    };
   }
 
-  // 🔴 OVERDUE — prioridad absoluta
-if (
-  ac.maintenanceOverdue === true ||
-  ac?.maintenance?.bOverdue === true
-) {
-  return { label: "OVERDUE", class: "badge-overdue" };
-}
+  const aStatus =
+    ACS_scheduleText(ac.aCheckStatus).toUpperCase();
 
-  // 🔧 SERVICIOS MAYORES
-  if (ac.status === "In D-Check") {
-    return { label: "D-Check", class: "badge-dcheck" };
+  const bStatus =
+    ACS_scheduleText(ac.bCheckStatus).toUpperCase();
+
+  const cStatus =
+    ACS_scheduleText(ac.cCheckStatus).toUpperCase();
+
+  const dStatus =
+    ACS_scheduleText(ac.dCheckStatus).toUpperCase();
+
+  const reason =
+    ACS_scheduleText(
+      ac.maintenanceControlReason
+    ).toUpperCase();
+
+  /*
+    ACS / Airbus OCC priority:
+    D > C > B > A > ACTIVE
+  */
+
+  if (
+    dStatus === "IN_PROGRESS" ||
+    reason === "D_CHECK"
+  ) {
+    return {
+      label: "D-CHECK",
+      class: "badge-dcheck"
+    };
   }
 
-  if (ac.status === "In C-Check") {
-    return { label: "C-Check", class: "badge-ccheck" };
+  if (
+    cStatus === "IN_PROGRESS" ||
+    reason === "C_CHECK"
+  ) {
+    return {
+      label: "C-CHECK",
+      class: "badge-ccheck"
+    };
   }
 
-  // ⚙️ B-CHECK
-  if (ac.status === "B-Check") {
-    return { label: "B-Check", class: "badge-bcheck" };
+  if (
+    bStatus === "IN_PROGRESS" ||
+    reason === "B_CHECK"
+  ) {
+    return {
+      label: "B-CHECK",
+      class: "badge-bcheck"
+    };
   }
 
-  // 🔧 A-CHECK
-  if (ac.status === "A-Check") {
-    return { label: "A-Check", class: "badge-acheck" };
+  if (
+    aStatus === "IN_PROGRESS" ||
+    reason === "A_CHECK"
+  ) {
+    return {
+      label: "A-CHECK",
+      class: "badge-acheck"
+    };
   }
 
-  // 🟢 OPERATIVO
-  if (ac.status === "Active") {
-    return { label: "ACTIVE", class: "badge-active" };
+  if (
+    dStatus === "OVERDUE" ||
+    reason === "D_CHECK_OVERDUE"
+  ) {
+    return {
+      label: "OVERDUE D",
+      class: "badge-overdue"
+    };
   }
 
-  // ⚪ FALLBACK
+  if (
+    cStatus === "OVERDUE" ||
+    reason === "C_CHECK_OVERDUE"
+  ) {
+    return {
+      label: "OVERDUE C",
+      class: "badge-overdue"
+    };
+  }
+
+  if (
+    bStatus === "OVERDUE" ||
+    reason === "B_CHECK_OVERDUE"
+  ) {
+    return {
+      label: "OVERDUE B",
+      class: "badge-overdue"
+    };
+  }
+
+  if (
+    aStatus === "OVERDUE" ||
+    reason === "A_CHECK_OVERDUE"
+  ) {
+    return {
+      label: "OVERDUE A",
+      class: "badge-overdue"
+    };
+  }
+
+  if (
+    ac.status === "Active" &&
+    ac.canFly === true
+  ) {
+    return {
+      label: "ACTIVE",
+      class: "badge-active"
+    };
+  }
+
   return {
-    label: (ac.status || "UNKNOWN").toUpperCase(),
+    label: (
+      ac.status ||
+      ac.maintenanceStatus ||
+      "UNKNOWN"
+    ).toUpperCase(),
+
     class: "badge-unknown"
   };
 }
