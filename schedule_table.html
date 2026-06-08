@@ -5841,19 +5841,31 @@ function closeMaintenanceInfoModal(){
   ACS_SELECTED_SERVICE = null;
 }
 
-function editMaintenanceFromInfo(){
+function editMaintenanceFromInfo() {
   if (!ACS_SELECTED_SERVICE) return;
 
-  // Reutilizamos el modal de planificación en modo EDIT
+  const serviceToEdit = {
+    ...ACS_SELECTED_SERVICE
+  };
+
+  const infoModal =
+    document.getElementById(
+      "maintenanceInfoModal"
+    );
+
+  if (infoModal) {
+    infoModal.classList.add("hidden");
+  }
+
   openMaintModal(
     null,
-    ACS_SELECTED_SERVICE,
-    ACS_SELECTED_SERVICE.aircraftId
+    serviceToEdit,
+    serviceToEdit.aircraftId
   );
 
-  closeMaintenanceInfoModal();
+  ACS_SELECTED_SERVICE = null;
 }
-
+     
 function removeMaintenanceFromInfo(){
 
   if (!ACS_SELECTED_SERVICE) return;
