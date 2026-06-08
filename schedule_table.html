@@ -5912,20 +5912,95 @@ function editMaintenanceFromInfo() {
   ACS_SELECTED_SERVICE = null;
 }
      
-function removeMaintenanceFromInfo(){
+async function removeMaintenanceFromInfo() {
 
-  if (!ACS_SELECTED_SERVICE) return;
+  if (!ACS_SELECTED_SERVICE) {
+    return;
+  }
 
-  const ok = confirm("⛔ Remove this maintenance service?");
-  if (!ok) return;
+  const serviceToRemove = {
+    ...ACS_SELECTED_SERVICE
+  };
 
-  const items = getItems().filter(it =>
-    !(it.type === "service" && it.id === ACS_SELECTED_SERVICE.id)
-  );
+  const scheduleItemId =
+    Number(
+      serviceToRemove.id
+    );
 
-  setItems(items);
-  closeMaintenanceInfoModal();
-  renderSchedule();
+  if (
+    !Number.isSafeInteger(scheduleItemId) ||
+    scheduleItemId <= 0
+  ) {
+    alert(
+      "Unable to remove this maintenance service."
+    );
+    return;
+  }
+
+  const confirmed =
+    confirm(
+      `Remove the ${
+        serviceToRemove.serviceType === "B"
+          ? "B-Check"
+          : "A-Check"
+      } maintenance?`
+    );
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+
+    const response =
+      await fetch(
+        `${ACS_SCHEDULE_API_BASE}` +
+        `/v1/schedule/maintenance/` +
+        `${scheduleItemId}/remove`,
+        {
+          method: "PATCH",
+          credentials: "include",
+          cache: "no-store",
+          headers: {
+            "Accept":
+              "application/json"
+          }
+        }
+      );
+
+    const payload =
+      await response
+        .json()
+        .catch(() => null);
+
+    if (
+      !response.ok ||
+      payload?.ok !== true
+    ) {
+      const message =
+        payload?.details ||
+        payload?.error ||
+        "Unable to remove this maintenance service.";
+
+      throw new Error(message);
+    }
+
+    closeMaintenanceInfoModal();
+
+    await ACS_loadScheduleContext();
+
+  } catch (error) {
+
+    console.error(
+      "[ACS SCHEDULE] Remove maintenance failed:",
+      error
+    );
+
+    alert(
+      error?.message ||
+      "Unable to remove this maintenance service."
+    );
+  }
 }
 
 /* ============================================================
