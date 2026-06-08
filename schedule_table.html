@@ -6009,36 +6009,6 @@ function ACS_sortDayEvents(events) {
     return aMin - bMin;
   });
 }
-
-/* ============================================================
-   🟢 B-CYCLE STATUS (SIM TIME SAFE)
-   ------------------------------------------------------------
-   • Calcula días restantes correctamente
-   • Corrige valores legacy Date.now()
-   • Nunca muestra números absurdos
-   ============================================================ */
-
-function ACS_getBCycleStatus(aircraft){
-
-  const DAY_MS = 24 * 60 * 60 * 1000;
-  const now = ACS_TABLE_TIME?.date?.getTime?.() || 0;
-
-  if (!aircraft.lastBCheckAt || aircraft.lastBCheckAt > now) {
-    aircraft.lastBCheckAt = now;
-  }
-
-  const daysPassed = Math.floor((now - aircraft.lastBCheckAt) / DAY_MS);
-  const safeDaysPassed = Math.max(0, daysPassed);
-
-  const remaining = Math.max(0, 30 - safeDaysPassed);
-  const percent = Math.min(100, (safeDaysPassed / 30) * 100);
-
-  return {
-    remainingDays: remaining,
-    percentUsed: percent,
-    overdue: safeDaysPassed >= 30
-  };
-}
      
 /* ============================================================
    🦄 M3 — MAINTENANCE INFO MODAL ENGINE
