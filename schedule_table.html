@@ -5867,9 +5867,13 @@ body.innerHTML = `
     </div>
 
     <div class="meta-card">
-      <span class="label">Status</span>
-      <span class="value">Scheduled</span>
-    </div>
+  <span class="label">Status</span>
+  <span class="value">
+    ${String(service.status || "scheduled")
+      .replace(/_/g, " ")
+      .toUpperCase()}
+  </span>
+</div>
 
     <div class="meta-card">
       <span class="label">Type</span>
