@@ -1081,15 +1081,6 @@ function resolvePrimaryTableStatus(aircraft) {
 }
    
   function resolveNextCDisplay(aircraft) {
-  /*
-    ACS OCC Rule:
-    During a real maintenance event, Next C is suspended visually.
-    New date appears only after maintenance resolver completes the event.
-  */
-  if (isAircraftInMaintenanceEvent(aircraft)) {
-    return "—";
-  }
-
   const status = normalizeStatus(aircraft.c_check_status);
 
   if (status === "OVERDUE") {
@@ -1102,11 +1093,16 @@ function resolvePrimaryTableStatus(aircraft) {
     aircraft.c_check_due_date ||
     null;
 
-  if (!value) return "—";
+  if (!value) {
+    return "—";
+  }
 
   if (
     aircraft.current_sim_time &&
-    isDatePastAgainstCurrentSimTime(value, aircraft.current_sim_time)
+    isDatePastAgainstCurrentSimTime(
+      value,
+      aircraft.current_sim_time
+    )
   ) {
     return "OVERDUE";
   }
@@ -1115,15 +1111,6 @@ function resolvePrimaryTableStatus(aircraft) {
 }
 
   function resolveNextDDisplay(aircraft) {
-  /*
-    ACS OCC Rule:
-    During a real maintenance event, Next D is suspended visually.
-    New date appears only after maintenance resolver completes the event.
-  */
-  if (isAircraftInMaintenanceEvent(aircraft)) {
-    return "—";
-  }
-
   const status = normalizeStatus(aircraft.d_check_status);
 
   if (status === "OVERDUE") {
@@ -1136,11 +1123,16 @@ function resolvePrimaryTableStatus(aircraft) {
     aircraft.d_check_due_date ||
     null;
 
-  if (!value) return "—";
+  if (!value) {
+    return "—";
+  }
 
   if (
     aircraft.current_sim_time &&
-    isDatePastAgainstCurrentSimTime(value, aircraft.current_sim_time)
+    isDatePastAgainstCurrentSimTime(
+      value,
+      aircraft.current_sim_time
+    )
   ) {
     return "OVERDUE";
   }
