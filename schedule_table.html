@@ -4288,24 +4288,68 @@ if (!confirmed) {
   return;
 }
 
-    const response = await fetch(
-      `${ACS_SCHEDULE_API_BASE}/v1/schedule/maintenance`,
-      {
-        method: "POST",
-        credentials: "include",
-        cache: "no-store",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify({
-          aircraft_id: Number(maintAircraftId),
-          check_type: checkType,
-          selected_day: selectedDay,
-          start_time: startTime
-        })
+    const editingService =
+  window.__EDITING_SERVICE__;
+
+const isEditMode =
+  Boolean(
+    editingService &&
+    editingService.type === "service" &&
+    editingService.id
+  );
+
+const endpoint =
+  isEditMode
+    ? `${ACS_SCHEDULE_API_BASE}/v1/schedule/maintenance/${editingService.id}`
+    : `${ACS_SCHEDULE_API_BASE}/v1/schedule/maintenance`;
+
+const method =
+  isEditMode
+    ? "PATCH"
+    : "POST";
+
+const requestBody =
+  isEditMode
+    ? {
+        selected_day:
+          selectedDay,
+
+        start_time:
+          startTime
       }
-    );
+    : {
+        aircraft_id:
+          Number(maintAircraftId),
+
+        check_type:
+          checkType,
+
+        selected_day:
+          selectedDay,
+
+        start_time:
+          startTime
+      };
+
+const response = await fetch(
+  endpoint,
+  {
+    method,
+    credentials: "include",
+    cache: "no-store",
+    headers: {
+      "Content-Type":
+        "application/json",
+
+      "Accept":
+        "application/json"
+    },
+    body:
+      JSON.stringify(
+        requestBody
+      )
+  }
+);
 
     const payload =
       await response.json().catch(() => null);
@@ -4331,6 +4375,8 @@ if (!confirmed) {
 
     closeMaintModal();
 
+    window.__EDITING_SERVICE__ = null;
+       
     await ACS_resolveScheduledMaintenance();
     await ACS_loadScheduleContext();
 
