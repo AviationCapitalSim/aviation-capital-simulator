@@ -6016,199 +6016,305 @@ function ACS_sortDayEvents(events) {
 
 let ACS_SELECTED_SERVICE = null;
 
-function openMaintenanceInfoModal(service, aircraft){
+/* ============================================================
+   🦄 M3 — MAINTENANCE INFO MODAL ENGINE
+   Date: 08 JUN 2026
+   ------------------------------------------------------------
+   ACS + AIRBUS OCC
 
-  if (!service || service.type !== "service") return;
+   Authority:
+   - PostgreSQL aircraft_maintenance_status
+   - ACS simulated time
+   - A-Check cycle: 7 days
+   - B-Check cycle: 30 days
 
-  ACS_SELECTED_SERVICE = service;
+   Lifecycle:
+   - Scheduling does not reset cycle
+   - Editing does not reset cycle
+   - Removing does not reset cycle
+   - A COMPLETED resets A only
+   - B COMPLETED resets B and A
+   ============================================================ */
 
-  const modal = document.getElementById("maintenanceInfoModal");
-  const body  = document.getElementById("maintenanceInfoBody");
-  const title = document.getElementById("maintInfoTitle");
+function openMaintenanceInfoModal(
+  service,
+  aircraft
+) {
+  if (
+    !service ||
+    service.type !== "service"
+  ) {
+    return;
+  }
 
-  const typeLabel = service.serviceType === "B" ? "⚙️ B-Check" : "🔧 A-Check";
+  if (!aircraft) {
+    return;
+  }
 
-  const lifecycleStatus = String(
-    service.eventStatus || service.status || ""
-  ).trim().toLowerCase();
+  ACS_SELECTED_SERVICE =
+    service;
+
+  const modal =
+    document.getElementById(
+      "maintenanceInfoModal"
+    );
+
+  const body =
+    document.getElementById(
+      "maintenanceInfoBody"
+    );
+
+  const title =
+    document.getElementById(
+      "maintInfoTitle"
+    );
+
+  if (
+    !modal ||
+    !body ||
+    !title
+  ) {
+    return;
+  }
+
+  const normalizedServiceType =
+    String(
+      service.serviceType || ""
+    )
+      .trim()
+      .toUpperCase();
+
+  const isBCheck =
+    normalizedServiceType === "B";
+
+  const typeLabel =
+    isBCheck
+      ? "⚙️ B-Check"
+      : "🔧 A-Check";
+
+  const lifecycleStatus =
+    String(
+      service.eventStatus ||
+      service.status ||
+      ""
+    )
+      .trim()
+      .toLowerCase();
 
   const operationAllowed =
     lifecycleStatus === "scheduled" ||
     lifecycleStatus === "in_progress";
 
   const editButton =
-    document.getElementById("maintInfoEditButton");
+    document.getElementById(
+      "maintInfoEditButton"
+    );
 
   const removeButton =
-    document.getElementById("maintInfoRemoveButton");
+    document.getElementById(
+      "maintInfoRemoveButton"
+    );
 
   if (editButton) {
-    editButton.disabled = !operationAllowed;
-    editButton.style.display = operationAllowed ? "" : "none";
+    editButton.disabled =
+      !operationAllowed;
+
+    editButton.style.display =
+      operationAllowed
+        ? ""
+        : "none";
   }
 
   if (removeButton) {
-    removeButton.disabled = !operationAllowed;
-    removeButton.style.display = operationAllowed ? "" : "none";
+    removeButton.disabled =
+      !operationAllowed;
+
+    removeButton.style.display =
+      operationAllowed
+        ? ""
+        : "none";
   }
 
-  title.textContent = typeLabel;
+  title.textContent =
+    typeLabel;
 
-const visual = ACS_getWeeklyACheckVisual(service.day, service.start);
-     
-let barHTML = "";
-     
-if (service.serviceType?.toUpperCase().includes("A")) {
-
-  const visual = ACS_getWeeklyACheckVisual(
-    service.day,
-    service.start
-  );
-
-  const remainingHours =
-    (visual.days * 24) + visual.hours;
-
-  const totalWeek = 7 * 24;
-
-  const calculatedPercent =
-    Math.max(
-      0,
-      Math.min(
-        100,
-        (remainingHours / totalWeek) * 100
-      )
+  const cycleVisual =
+    ACS_getMaintenanceCycleVisual(
+      aircraft,
+      normalizedServiceType
     );
 
-  const isScheduled =
-    String(service.status || "").toLowerCase() === "scheduled";
+  const cycleTitle =
+    isBCheck
+      ? "B-CHECK CYCLE"
+      : "A-CHECK CYCLE";
 
-  const progress =
-    isScheduled
-      ? 100
-      : calculatedPercent;
+  const cycleIntervalLabel =
+    isBCheck
+      ? "30 days"
+      : "7 days";
 
-  const remainingLabel =
-    isScheduled
-      ? "7 days"
-      : visual.label;
+  const cyclePercent =
+    cycleVisual.valid
+      ? cycleVisual.percent
+      : 0;
 
-  let color;
+  const cycleColor =
+    cycleVisual.valid
+      ? cycleVisual.color
+      : "#7c8bb8";
 
-  if (progress > 75) {
-    color = "#00c853";
-  } else if (progress > 50) {
-    color = "#ffd600";
-  } else if (progress > 25) {
-    color = "#ff9100";
-  } else {
-    color = "#d50000";
-  }
+  const cycleRemaining =
+    cycleVisual.valid
+      ? cycleVisual.remainingLabel
+      : "—";
 
-  barHTML = `
+  const cycleDueDate =
+    cycleVisual.valid &&
+    cycleVisual.dueDate
+      ? new Date(
+          cycleVisual.dueDate
+        ).toLocaleString(
+          "en-GB",
+          {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false
+          }
+        )
+      : "—";
+
+  const statusLabel =
+    String(
+      service.eventStatus ||
+      service.status ||
+      "scheduled"
+    )
+      .replace(
+        /_/g,
+        " "
+      )
+      .toUpperCase();
+
+  const dayLabel =
+    String(
+      service.day || "—"
+    ).toUpperCase();
+
+  const durationLabel =
+    isBCheck
+      ? "24 hours"
+      : "5 hours";
+
+  const barHTML = `
     <div class="bcycle-box">
-      <div class="bcycle-header">A-CHECK CYCLE</div>
+
+      <div class="bcycle-header">
+        ${cycleTitle}
+      </div>
 
       <div class="bcycle-bar">
         <div
           class="bcycle-fill"
-          style="width:${progress}%; background:${color};"
+          style="
+            width:${cyclePercent}%;
+            background:${cycleColor};
+          "
         ></div>
       </div>
 
       <div class="bcycle-info">
         <span>Remaining</span>
-        <span>${remainingLabel}</span>
+        <span>${cycleRemaining}</span>
       </div>
 
       <div class="bcycle-info">
         <span>Cycle</span>
-        <span>7 days</span>
+        <span>${cycleIntervalLabel}</span>
       </div>
+
+      <div class="bcycle-info">
+        <span>Due</span>
+        <span>${cycleDueDate}</span>
+      </div>
+
     </div>
   `;
-     
-} else {
 
-  const bCycle = ACS_getMonthlyBCycleVisual(aircraft);
+  body.innerHTML = `
+    <div class="flight-kicker">
+      <strong>
+        ${aircraft.registration || "—"}
+      </strong>
+      ·
+      ${aircraft.model || "—"}
+    </div>
 
-  if (bCycle) {
-
-    let color;
-
-    if (bCycle.remainingDays > 15) {
-      color = "#00c853";
-    } else if (bCycle.remainingDays > 7) {
-      color = "#ffd600";
-    } else if (bCycle.remainingDays > 3) {
-      color = "#ff9100";
-    } else {
-      color = "#d50000";
-    }
-
-    barHTML = `
-      <div class="bcycle-box">
-        <div class="bcycle-header">B-CHECK CYCLE</div>
-
-        <div class="bcycle-bar">
-          <div class="bcycle-fill"
-               style="width:${bCycle.percent}%; background:${color};">
-          </div>
-        </div>
-
-        <div class="bcycle-info">
-          <span>Remaining</span>
-          <span>${bCycle.remainingDays > 0 ? bCycle.remainingDays + " days" : "0 days"}</span>
-        </div>
+    <div class="flight-hero">
+      <div class="route">
+        Maintenance Window
       </div>
-    `;
-  }
-}
-     
-body.innerHTML = `
-  <div class="flight-kicker">
-    <strong>${aircraft.registration || "—"}</strong>
-    · ${aircraft.model || "—"}
-  </div>
 
-  <div class="flight-hero">
-    <div class="route">Maintenance Window</div>
-    <div class="times">
-      ${service.start} → ${service.end}
-    </div>
-  </div>
-
-  ${barHTML}
-
-  <div class="flight-meta">
-    <div class="meta-card">
-      <span class="label">Day</span>
-      <span class="value">${service.day.toUpperCase()}</span>
+      <div class="times">
+        ${service.start || "—"}
+        →
+        ${service.end || "—"}
+      </div>
     </div>
 
-    <div class="meta-card">
-      <span class="label">Duration</span>
-      <span class="value">
-        ${service.serviceType === "B" ? "24 hours" : "5 hours"}
-      </span>
+    ${barHTML}
+
+    <div class="flight-meta">
+
+      <div class="meta-card">
+        <span class="label">
+          Day
+        </span>
+
+        <span class="value">
+          ${dayLabel}
+        </span>
+      </div>
+
+      <div class="meta-card">
+        <span class="label">
+          Duration
+        </span>
+
+        <span class="value">
+          ${durationLabel}
+        </span>
+      </div>
+
+      <div class="meta-card">
+        <span class="label">
+          Status
+        </span>
+
+        <span class="value">
+          ${statusLabel}
+        </span>
+      </div>
+
+      <div class="meta-card">
+        <span class="label">
+          Type
+        </span>
+
+        <span class="value">
+          ${typeLabel}
+        </span>
+      </div>
+
     </div>
+  `;
 
-    <div class="meta-card">
-  <span class="label">Status</span>
-  <span class="value">
-    ${String(service.eventStatus || service.status || "scheduled")
-      .replace(/_/g, " ")
-      .toUpperCase()}
-  </span>
-</div>
-
-    <div class="meta-card">
-      <span class="label">Type</span>
-      <span class="value">${typeLabel}</span>
-    </div>
-  </div>
-`;
-
-  modal.classList.remove("hidden");
+  modal.classList.remove(
+    "hidden"
+  );
 }
 
 function closeMaintenanceInfoModal(){
