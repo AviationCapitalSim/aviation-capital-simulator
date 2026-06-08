@@ -1539,13 +1539,18 @@ async function startMaintenanceCheck(checkType) {
     return;
   }
 
-  const confirmMessage =
-    `Start ${normalizedCheckType.replace("_", " ")} for ${getRegistrationDisplay(aircraft)}?\n\n` +
-    "ACS will charge the maintenance cost from Company Finance and move the aircraft to IN MAINTENANCE.";
+  const checkLabel =
+  normalizedCheckType === "C_CHECK"
+    ? "C-Check"
+    : "D-Check";
 
-  if (!confirm(confirmMessage)) {
-    return;
-  }
+if (
+  !confirm(
+    `Confirm the ${checkLabel} maintenance?`
+  )
+) {
+  return;
+}
 
   const btnC = $("scdStartC");
   const btnD = $("scdStartD");
