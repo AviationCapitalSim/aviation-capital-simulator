@@ -4437,22 +4437,83 @@ function validateACheck(ac, day, startHHMM, endHHMM) {
 }
 
 async function applyMaintenance() {
-  if (!maintAircraftId) {
-    alert("Aircraft authority is not available.");
+  const operation = {
+    ...ACS_MAINTENANCE_OPERATION
+  };
+
+  const aircraftId =
+    Number(operation.aircraftId);
+
+  if (
+    !Number.isSafeInteger(aircraftId) ||
+    aircraftId <= 0
+  ) {
+    alert(
+      "Aircraft authority is not available."
+    );
+
     return;
   }
 
-  const type =
-    document.getElementById("maintType")?.value || "A";
+  const isCreateMode =
+    operation.mode === "CREATE";
+
+  const isEditMode =
+    operation.mode === "EDIT";
+
+  if (
+    !isCreateMode &&
+    !isEditMode
+  ) {
+    alert(
+      "Maintenance operation context is invalid."
+    );
+
+    return;
+  }
+
+  const scheduleItemId =
+    Number(operation.scheduleItemId);
+
+  if (
+    isEditMode &&
+    (
+      !Number.isSafeInteger(
+        scheduleItemId
+      ) ||
+      scheduleItemId <= 0
+    )
+  ) {
+    alert(
+      "Maintenance edit identity is invalid."
+    );
+
+    return;
+  }
+
+  const selectedType =
+    document.getElementById(
+      "maintType"
+    )?.value || "A";
 
   const selectedDay =
-    document.getElementById("maintDay")?.value || "mon";
+    document.getElementById(
+      "maintDay"
+    )?.value || "mon";
 
   const startTime =
-    document.getElementById("maintStart")?.value || "06:00";
+    document.getElementById(
+      "maintStart"
+    )?.value || "06:00";
 
   const checkType =
-    type === "B" ? "B_CHECK" : "A_CHECK";
+    isEditMode
+      ? operation.checkType
+      : (
+          selectedType === "B"
+            ? "B_CHECK"
+            : "A_CHECK"
+        );
 
   const applyButton =
     document.querySelector(
@@ -4461,33 +4522,62 @@ async function applyMaintenance() {
 
   if (applyButton) {
     applyButton.disabled = true;
-    applyButton.textContent = "Processing...";
+
+    applyButton.textContent =
+      "Processing...";
   }
 
   try {
-    const quoteResponse = await fetch(
-      `${ACS_SCHEDULE_API_BASE}/v1/schedule/maintenance/quote`,
-      {
-        method: "POST",
-        credentials: "include",
-        cache: "no-store",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify({
-          aircraft_id: Number(maintAircraftId),
-          check_type: checkType,
-          selected_day: selectedDay,
-          start_time: startTime
-        })
-      }
-    );
+    const quoteBody = {
+      aircraft_id:
+        aircraftId,
+
+      check_type:
+        checkType,
+
+      selected_day:
+        selectedDay,
+
+      start_time:
+        startTime
+    };
+
+    if (isEditMode) {
+      quoteBody.exclude_schedule_item_id =
+        scheduleItemId;
+    }
+
+    const quoteResponse =
+      await fetch(
+        `${ACS_SCHEDULE_API_BASE}` +
+        `/v1/schedule/maintenance/quote`,
+        {
+          method: "POST",
+          credentials: "include",
+          cache: "no-store",
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            "Accept":
+              "application/json"
+          },
+          body:
+            JSON.stringify(
+              quoteBody
+            )
+        }
+      );
 
     const quote =
-      await quoteResponse.json().catch(() => null);
+      await quoteResponse
+        .json()
+        .catch(() => null);
 
-    if (!quoteResponse.ok || quote?.ok !== true) {
+    if (
+      !quoteResponse.ok ||
+      quote?.ok !== true
+    ) {
       const message =
         quote?.message ||
         quote?.details ||
@@ -4498,7 +4588,10 @@ async function applyMaintenance() {
         quote?.error ===
         "MAINTENANCE_SCHEDULE_CONFLICT"
       ) {
-        showMaintenanceErrorModal(message);
+        showMaintenanceErrorModal(
+          message
+        );
+
         return;
       }
 
@@ -4506,88 +4599,136 @@ async function applyMaintenance() {
       return;
     }
 
-    const maintenance = quote.maintenance || {};
+    const maintenance =
+      quote.maintenance || {};
 
-   const confirmed = confirm(
-     
-  `${maintenance.display_name || checkType.replace("_", "-")}\n\n` +
-  `Aircraft: ${quote.aircraft?.registration || "—"}\n` +
-  `Window: ${String(selectedDay).toUpperCase()} ` +
-  `${maintenance.start_time || startTime}–${maintenance.end_time || "—"}\n\n` +
-  `Confirm maintenance scheduling?`
-);
+    const actionText =
+      isEditMode
+        ? "Confirm maintenance change?"
+        : "Confirm maintenance scheduling?";
 
-if (!confirmed) {
-  return;
-}
-
-    const editingService =
-  window.__EDITING_SERVICE__;
-
-const isEditMode =
-  Boolean(
-    editingService &&
-    editingService.type === "service" &&
-    editingService.id
-  );
-
-const endpoint =
-  isEditMode
-    ? `${ACS_SCHEDULE_API_BASE}/v1/schedule/maintenance/${editingService.id}`
-    : `${ACS_SCHEDULE_API_BASE}/v1/schedule/maintenance`;
-
-const method =
-  isEditMode
-    ? "PATCH"
-    : "POST";
-
-const requestBody =
-  isEditMode
-    ? {
-        selected_day:
-          selectedDay,
-
-        start_time:
+    const confirmed =
+      confirm(
+        `${
+          maintenance.display_name ||
+          checkType.replace(
+            "_",
+            "-"
+          )
+        }\n\n` +
+        `Aircraft: ${
+          quote.aircraft
+            ?.registration || "—"
+        }\n` +
+        `Window: ${
+          String(
+            selectedDay
+          ).toUpperCase()
+        } ` +
+        `${
+          maintenance.start_time ||
           startTime
-      }
-    : {
-        aircraft_id:
-          Number(maintAircraftId),
+        }–${
+          maintenance.end_time ||
+          "—"
+        }\n\n` +
+        actionText
+      );
 
-        check_type:
-          checkType,
+    if (!confirmed) {
+      return;
+    }
 
-        selected_day:
-          selectedDay,
-
-        start_time:
-          startTime
-      };
-
-const response = await fetch(
-  endpoint,
-  {
-    method,
-    credentials: "include",
-    cache: "no-store",
-    headers: {
-      "Content-Type":
-        "application/json",
-
-      "Accept":
-        "application/json"
-    },
-    body:
-      JSON.stringify(
-        requestBody
+    /*
+     * Revalidate the immutable operation identity.
+     * EDIT is never allowed to become CREATE.
+     */
+    if (
+      isEditMode &&
+      (
+        ACS_MAINTENANCE_OPERATION
+          .mode !== "EDIT" ||
+        Number(
+          ACS_MAINTENANCE_OPERATION
+            .scheduleItemId
+        ) !== scheduleItemId
       )
-  }
-);
+    ) {
+      throw new Error(
+        "MAINTENANCE_EDIT_CONTEXT_CHANGED"
+      );
+    }
+
+    const endpoint =
+      isEditMode
+        ? (
+            `${ACS_SCHEDULE_API_BASE}` +
+            `/v1/schedule/maintenance/` +
+            `${scheduleItemId}`
+          )
+        : (
+            `${ACS_SCHEDULE_API_BASE}` +
+            `/v1/schedule/maintenance`
+          );
+
+    const method =
+      isEditMode
+        ? "PATCH"
+        : "POST";
+
+    const requestBody =
+      isEditMode
+        ? {
+            selected_day:
+              selectedDay,
+
+            start_time:
+              startTime
+          }
+        : {
+            aircraft_id:
+              aircraftId,
+
+            check_type:
+              checkType,
+
+            selected_day:
+              selectedDay,
+
+            start_time:
+              startTime
+          };
+
+    const response =
+      await fetch(
+        endpoint,
+        {
+          method,
+          credentials: "include",
+          cache: "no-store",
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            "Accept":
+              "application/json"
+          },
+          body:
+            JSON.stringify(
+              requestBody
+            )
+        }
+      );
 
     const payload =
-      await response.json().catch(() => null);
+      await response
+        .json()
+        .catch(() => null);
 
-    if (!response.ok || payload?.ok !== true) {
+    if (
+      !response.ok ||
+      payload?.ok !== true
+    ) {
       const message =
         payload?.message ||
         payload?.details ||
@@ -4598,7 +4739,10 @@ const response = await fetch(
         payload?.error ===
         "MAINTENANCE_SCHEDULE_CONFLICT"
       ) {
-        showMaintenanceErrorModal(message);
+        showMaintenanceErrorModal(
+          message
+        );
+
         return;
       }
 
@@ -4608,17 +4752,43 @@ const response = await fetch(
 
     closeMaintModal();
 
-    window.__EDITING_SERVICE__ = null;
-       
-    await ACS_resolveScheduledMaintenance();
     await ACS_loadScheduleContext();
 
     alert(
-      `${payload.maintenance?.check_type?.replace("_", "-") || "Maintenance"} scheduled.\n\n` +
-      `Aircraft: ${payload.aircraft?.registration || "—"}\n` +
-      `Day: ${String(payload.maintenance?.selected_day || selectedDay).toUpperCase()}\n` +
-      `Time: ${payload.maintenance?.start_time || startTime}–` +
-      `${payload.maintenance?.end_time || "—"}\n` +
+      `${
+        payload.maintenance
+          ?.check_type
+          ?.replace("_", "-") ||
+        "Maintenance"
+      } ${
+        isEditMode
+          ? "updated"
+          : "scheduled"
+      }.\n\n` +
+      `Aircraft: ${
+        payload.aircraft
+          ?.registration ||
+        quote.aircraft
+          ?.registration ||
+        "—"
+      }\n` +
+      `Day: ${
+        String(
+          payload.maintenance
+            ?.selected_day ||
+          selectedDay
+        ).toUpperCase()
+      }\n` +
+      `Time: ${
+        payload.maintenance
+          ?.start_time ||
+        startTime
+      }–${
+        payload.maintenance
+          ?.end_time ||
+        maintenance.end_time ||
+        "—"
+      }\n` +
       `Status: SCHEDULED`
     );
 
@@ -4629,13 +4799,18 @@ const response = await fetch(
     );
 
     alert(
+      error?.message ||
       "Maintenance connection failed. Please try again."
     );
 
   } finally {
     if (applyButton) {
       applyButton.disabled = false;
-      applyButton.textContent = "Apply";
+
+      applyButton.textContent =
+        isEditMode
+          ? "Save"
+          : "Apply";
     }
   }
 }
