@@ -1765,6 +1765,7 @@ function ACS_ReadOperationalState(ac) {
    ============================================================ */
 
 function ACS_isServiceActiveNow(service) {
+     
   if (!service || service.type !== "service") return false;
   if (!service.assigned) return false;
 
@@ -4071,16 +4072,248 @@ function ACS_applyInitialFlightCosts(route, ac){
   }
 }
      
-// ============================================================
-// 🛠 MAINTENANCE (FIX EDIT vs APPLY) — 07 FEB 2026
-// REEMPLAZA COMPLETO el bloque actual "MAINTENANCE"
-// (desde: // ============================================================
-//         // MAINTENANCE
-//  hasta el final de applyMaintenance())
-// ============================================================
+/* ============================================================
+   ACS MAINTENANCE OPERATION CONTEXT
+   ------------------------------------------------------------
+   Single authoritative frontend context for CREATE / EDIT.
+   EDIT can never fall back silently to CREATE.
+   PostgreSQL remains the only operational authority.
+   ============================================================ */
 
-let maintTail = null;          // legacy (model string)
-let maintAircraftId = null;    // ✅ ID real del avión (source of truth)
+let maintTail = null;
+let maintAircraftId = null;
+
+let ACS_MAINTENANCE_OPERATION = {
+  mode: "IDLE",
+  scheduleItemId: null,
+  aircraftId: null,
+  checkType: null
+};
+
+function ACS_resetMaintenanceOperation() {
+  ACS_MAINTENANCE_OPERATION = {
+    mode: "IDLE",
+    scheduleItemId: null,
+    aircraftId: null,
+    checkType: null
+  };
+
+  maintTail = null;
+  maintAircraftId = null;
+}
+
+function openMaintModal(
+  realModel,
+  service = null,
+  aircraftId = null
+) {
+  const modal =
+    document.getElementById("maintModal");
+
+  if (!modal) {
+    return;
+  }
+
+  const serviceIsEditable =
+    Boolean(
+      service &&
+      service.type === "service" &&
+      Number.isSafeInteger(Number(service.id)) &&
+      Number(service.id) > 0
+    );
+
+  const resolvedAircraftId =
+    Number(
+      serviceIsEditable
+        ? service.aircraftId
+        : aircraftId
+    );
+
+  if (
+    !Number.isSafeInteger(resolvedAircraftId) ||
+    resolvedAircraftId <= 0
+  ) {
+    alert(
+      "Aircraft authority is not available."
+    );
+
+    return;
+  }
+
+  maintTail =
+    realModel || null;
+
+  maintAircraftId =
+    resolvedAircraftId;
+
+  if (serviceIsEditable) {
+    ACS_MAINTENANCE_OPERATION = {
+      mode: "EDIT",
+      scheduleItemId:
+        Number(service.id),
+      aircraftId:
+        resolvedAircraftId,
+      checkType:
+        service.serviceType === "B"
+          ? "B_CHECK"
+          : "A_CHECK"
+    };
+  } else {
+    ACS_MAINTENANCE_OPERATION = {
+      mode: "CREATE",
+      scheduleItemId: null,
+      aircraftId:
+        resolvedAircraftId,
+      checkType: null
+    };
+  }
+
+  const startSelect =
+    document.getElementById(
+      "maintStart"
+    );
+
+  if (startSelect) {
+    startSelect.innerHTML = "";
+
+    for (
+      let hour = 0;
+      hour < 24;
+      hour += 1
+    ) {
+      for (
+        let minute = 0;
+        minute < 60;
+        minute += 30
+      ) {
+        const hoursText =
+          String(hour).padStart(2, "0");
+
+        const minutesText =
+          String(minute).padStart(2, "0");
+
+        const option =
+          document.createElement(
+            "option"
+          );
+
+        option.value =
+          `${hoursText}:${minutesText}`;
+
+        option.textContent =
+          `${hoursText}:${minutesText}`;
+
+        startSelect.appendChild(
+          option
+        );
+      }
+    }
+  }
+
+  const headerTitle =
+    modal.querySelector(
+      ".acs-maint-header h3"
+    );
+
+  const applyButton =
+    modal.querySelector(
+      ".maint-btn.apply"
+    );
+
+  if (
+    ACS_MAINTENANCE_OPERATION.mode ===
+    "EDIT"
+  ) {
+    if (headerTitle) {
+      headerTitle.textContent =
+        "🛠 Edit Maintenance";
+    }
+
+    if (applyButton) {
+      applyButton.textContent =
+        "Save";
+    }
+  } else {
+    if (headerTitle) {
+      headerTitle.textContent =
+        "🛠 Maintenance";
+    }
+
+    if (applyButton) {
+      applyButton.textContent =
+        "Apply";
+    }
+  }
+
+  if (serviceIsEditable) {
+    const typeElement =
+      document.getElementById(
+        "maintType"
+      );
+
+    const dayElement =
+      document.getElementById(
+        "maintDay"
+      );
+
+    const startElement =
+      document.getElementById(
+        "maintStart"
+      );
+
+    if (typeElement) {
+      typeElement.value =
+        service.serviceType === "B"
+          ? "B"
+          : "A";
+
+      typeElement.disabled = true;
+    }
+
+    if (dayElement) {
+      dayElement.value =
+        service.day || "mon";
+    }
+
+    if (startElement) {
+      startElement.value =
+        service.start || "00:00";
+    }
+  } else {
+    const typeElement =
+      document.getElementById(
+        "maintType"
+      );
+
+    if (typeElement) {
+      typeElement.disabled = false;
+    }
+  }
+
+  modal.style.display = "flex";
+}
+
+function closeMaintModal() {
+  const modal =
+    document.getElementById(
+      "maintModal"
+    );
+
+  const typeElement =
+    document.getElementById(
+      "maintType"
+    );
+
+  if (typeElement) {
+    typeElement.disabled = false;
+  }
+
+  if (modal) {
+    modal.style.display = "none";
+  }
+
+  ACS_resetMaintenanceOperation();
+}
 
 function openMaintModal(realModel, service = null, aircraftId = null) {
 
