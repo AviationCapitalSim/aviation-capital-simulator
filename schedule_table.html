@@ -2591,143 +2591,174 @@ function ACS_getSimTimeSafe() {
 }
 
 /* ============================================================
-   🟦 A-CHECK — WEEKLY VISUAL ENGINE
+   🟦 ACS A/B MAINTENANCE CYCLE VISUAL ENGINE
+   Date: 08 JUN 2026
    ------------------------------------------------------------
-   • NO usa lastCheck
-   • Basado en día + hora programada
-   • Devuelve remaining en días + horas
+   Authority:
+   - PostgreSQL aircraft_maintenance_status
+   - a_check_due_date
+   - b_check_due_date
+   - ACS simulated time
+   - A cycle = 7 days
+   - B cycle = 30 days
+   - No localStorage
+   - No Date.now()
    ============================================================ */
 
-function ACS_getWeeklyACheckVisual(dayStr, hourStart){
+function ACS_getMaintenanceCycleVisual(
+  aircraft,
+  checkType
+) {
+  const normalizedCheckType =
+    String(checkType || "")
+      .trim()
+      .toUpperCase();
 
-  const DAYS = ["sun","mon","tue","wed","thu","fri","sat"];
+  const isBCheck =
+    normalizedCheckType === "B" ||
+    normalizedCheckType === "B_CHECK";
 
-  const nowRaw = ACS_TIME?.currentTime;
-  const now =
-    nowRaw instanceof Date ? nowRaw.getTime() :
-    typeof nowRaw === "number" ? nowRaw :
-    new Date(nowRaw).getTime();
+  const intervalDays =
+    isBCheck
+      ? 30
+      : 7;
 
-  if (!Number.isFinite(now)) {
-    return { label: "—", days: 0, hours: 0 };
+  const dueDateValue =
+    isBCheck
+      ? aircraft?.bCheckDueDate
+      : aircraft?.aCheckDueDate;
+
+  /*
+   * Prefer the live ACS Time Engine value.
+   * PostgreSQL current_sim_time remains the fallback.
+   */
+  const currentSimTimeValue =
+    ACS_TABLE_TIME?.date ||
+    ACS_SCHEDULE_STATE?.currentSimTime ||
+    null;
+
+  const dueDate =
+    dueDateValue
+      ? new Date(dueDateValue)
+      : null;
+
+  const currentSimTime =
+    currentSimTimeValue
+      ? new Date(currentSimTimeValue)
+      : null;
+
+  if (
+    !dueDate ||
+    !currentSimTime ||
+    Number.isNaN(dueDate.getTime()) ||
+    Number.isNaN(currentSimTime.getTime())
+  ) {
+    return {
+      valid: false,
+      intervalDays,
+      remainingLabel: "—",
+      percent: 0,
+      overdue: false,
+      color: "#7c8bb8"
+    };
   }
 
-  const nowDate = new Date(now);
+  const HOUR_MS =
+    60 * 60 * 1000;
 
-  const currentDay = nowDate.getUTCDay();
-  const targetDay = DAYS.indexOf((dayStr || "").toLowerCase());
+  const DAY_MS =
+    24 * HOUR_MS;
 
-  if (targetDay === -1) {
-    return { label: "—", days: 0, hours: 0 };
-  }
+  const intervalMs =
+    intervalDays * DAY_MS;
 
-  // 🔹 días hasta próximo día elegido
-     
-  let deltaDays = targetDay - currentDay;
-  if (deltaDays < 0) deltaDays += 7;
+  const rawRemainingMs =
+    dueDate.getTime() -
+    currentSimTime.getTime();
 
-  const next = new Date(now);
+  const overdue =
+    rawRemainingMs <= 0;
 
-  next.setUTCDate(nowDate.getUTCDate() + deltaDays);
+  const remainingMs =
+    Math.max(
+      0,
+      rawRemainingMs
+    );
 
-  // 🔹 usar EXACTAMENTE la hora elegida por el usuario
-  let hh = 0, mm = 0;
+  const remainingTotalHours =
+    Math.ceil(
+      remainingMs / HOUR_MS
+    );
 
-  if (typeof hourStart === "string" && hourStart.includes(":")) {
-    [hh, mm] = hourStart.split(":").map(Number);
-  }
+  const remainingDays =
+    Math.floor(
+      remainingTotalHours / 24
+    );
 
-  next.setUTCHours(hh || 0, mm || 0, 0, 0);
+  const remainingHours =
+    remainingTotalHours % 24;
 
-  // 🔹 si es hoy y ya pasó → próxima semana
-  if (deltaDays === 0 && next.getTime() <= now) {
-    next.setUTCDate(next.getUTCDate() + 7);
-  }
-
-  const diff = next.getTime() - now;
-
-  const totalHours = Math.floor(diff / (1000 * 60 * 60));
-  const days = Math.floor(totalHours / 24);
-  const hours = totalHours % 24;
-
-  return {
-    label: `${days}d ${hours}h`,
-    days,
-    hours
-  };
-}
-     
-/* ============================================================
-   🟦 B-CHECK CYCLE — CAMO REAL (INTERVAL DRIVEN)
-   ------------------------------------------------------------
-   • Intervalo fijo 30 días
-   • Barra depende SOLO del dueDate técnico
-   • Ventana semanal NO afecta barra
-   • Estilo KLM / CAMO real
-   ============================================================ */
-
-function ACS_getMonthlyBCycleVisual(ac) {
-
-  const DEFAULT = {
-    remainingDays: 30,
-    percent: 100,
-    color: "#00c853"
-  };
-
-  if (!ac) return DEFAULT;
-  if (!ACS_TIME || !ACS_TIME.currentTime) return DEFAULT;
-
-  const now = ACS_getSimTimeSafe();
-  if (!Number.isFinite(now)) return DEFAULT;
-
-  const MS_DAY = 24 * 60 * 60 * 1000;
-  const INTERVAL = 30 * MS_DAY;
-
-  let last = ac.lastBCheckAt;
-
-// 🔹 FIX REAL: soportar number, string ISO y string numérico
-if (typeof last === "string") {
-  const trimmed = last.trim();
-
-  // Caso 1: string numérico puro
-  if (/^\d+$/.test(trimmed)) {
-    last = Number(trimmed);
-  } else {
-    // Caso 2: ISO date string
-    const parsed = new Date(trimmed).getTime();
-    last = Number.isFinite(parsed) ? parsed : now;
-  }
-}
-
-// 🔹 Fallback final seguro
-if (!Number.isFinite(last)) {
-  last = now;
-}
-
-  const dueDate = last + INTERVAL;
-  const remainingMs = Math.max(0, dueDate - now);
-  const remainingDays = Math.ceil(remainingMs / MS_DAY);
-
-  const percent = Math.min(
-    100,
-    Math.max(0, (remainingMs / INTERVAL) * 100)
-  );
+  const percent =
+    Math.max(
+      0,
+      Math.min(
+        100,
+        (
+          remainingMs /
+          intervalMs
+        ) * 100
+      )
+    );
 
   let color = "#00c853";
 
-  if (remainingDays <= 2) {
+  if (
+    overdue ||
+    percent <= 25
+  ) {
     color = "#d50000";
-  } else if (remainingDays <= 7) {
+  } else if (percent <= 50) {
     color = "#ff9100";
-  } else if (remainingDays <= 15) {
+  } else if (percent <= 75) {
     color = "#ffd600";
   }
 
+  let remainingLabel =
+    `${remainingDays}d ${remainingHours}h`;
+
+  if (overdue) {
+    const overdueTotalHours =
+      Math.floor(
+        Math.abs(
+          rawRemainingMs
+        ) / HOUR_MS
+      );
+
+    const overdueDays =
+      Math.floor(
+        overdueTotalHours / 24
+      );
+
+    const overdueHours =
+      overdueTotalHours % 24;
+
+    remainingLabel =
+      `OVERDUE ${overdueDays}d ${overdueHours}h`;
+  }
+
   return {
+    valid: true,
+    intervalDays,
+    dueDate:
+      dueDate.toISOString(),
+    currentSimTime:
+      currentSimTime.toISOString(),
     remainingDays,
+    remainingHours,
+    remainingLabel,
     percent,
-    color,
-    dueDate
+    overdue,
+    color
   };
 }
      
