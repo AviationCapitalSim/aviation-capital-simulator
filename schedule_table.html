@@ -1455,8 +1455,8 @@ footer {
     </div>
 
     <div class="acs-modal-footer">
-      <button class="btn-modal gold" onclick="editMaintenanceFromInfo()">✏️ EDIT</button>
-      <button class="btn-modal red"  onclick="removeMaintenanceFromInfo()">🗑 REMOVE</button>
+      <button id="maintInfoEditButton" class="btn-modal gold" onclick="editMaintenanceFromInfo()">✏️ EDIT</button>
+      <button id="maintInfoRemoveButton" class="btn-modal red" onclick="removeMaintenanceFromInfo()">🗑 REMOVE</button>
       <button class="btn-modal ghost" onclick="closeMaintenanceInfoModal()">Close</button>
     </div>
 
@@ -2225,6 +2225,14 @@ function ACS_adaptScheduleItem(row, routePlansById) {
     id: row?.id ?? null,
     scheduleUid: row?.schedule_uid ?? null,
 
+    maintenanceEventId: row?.maintenance_event_id ?? null,
+    maintenanceEventUid: row?.maintenance_event_uid ?? null,
+    eventStatus: ACS_scheduleText(
+      row?.maintenance_event_status
+    ).toLowerCase(),
+    financeCharged: row?.maintenance_finance_charged === true,
+    financeLogId: row?.maintenance_finance_log_id ?? null,
+
     routePlanId,
     routeUid: row?.route_uid ?? routePlan?.routeUid ?? null,
     airlineId: row?.airline_id ?? null,
@@ -2287,50 +2295,8 @@ function ACS_adaptScheduleItem(row, routePlansById) {
 /* ============================================================
    🟦 ACS SCHEDULE CONTEXT LOADER
    Railway/PostgreSQL → ACS_SCHEDULE_STATE
+   Read-only frontend: operational resolution belongs to backend.
    ============================================================ */
-
-async function ACS_resolveScheduledMaintenance() {
-  try {
-    const response = await fetch(
-      `${ACS_SCHEDULE_API_BASE}/v1/schedule/maintenance/resolver`,
-      {
-        method: "POST",
-        credentials: "include",
-        cache: "no-store",
-        headers: {
-          "Accept": "application/json"
-        }
-      }
-    );
-
-    const payload = await response.json().catch(() => null);
-
-    if (!response.ok || payload?.ok !== true) {
-      console.warn(
-        "[ACS SCHEDULE] Maintenance resolver warning:",
-        payload
-      );
-      return null;
-    }
-
-    console.info(
-      "[ACS SCHEDULE] Maintenance resolver synchronized",
-      {
-        started_count: payload.started_count || 0,
-        started_events: payload.started_events || []
-      }
-    );
-
-    return payload;
-  } catch (error) {
-    console.warn(
-      "[ACS SCHEDULE] Maintenance resolver connection warning:",
-      error
-    );
-    return null;
-  }
-}
-
 
 async function ACS_loadScheduleContext() {
   if (ACS_SCHEDULE_STATE.loading) {
@@ -2500,7 +2466,6 @@ function getFleet() {
 
 async function ACS_initializeScheduleTable() {
   try {
-    await ACS_resolveScheduledMaintenance();
     await ACS_loadScheduleContext();
   } catch (error) {
     /*
@@ -4315,6 +4280,7 @@ function closeMaintModal() {
   ACS_resetMaintenanceOperation();
 }
 
+
 /* ============================================================
    ✅ VALIDATE A-CHECK — overlap vs flights SAME aircraft/day
    ============================================================ */
@@ -6061,6 +6027,30 @@ function openMaintenanceInfoModal(service, aircraft){
 
   const typeLabel = service.serviceType === "B" ? "⚙️ B-Check" : "🔧 A-Check";
 
+  const lifecycleStatus = String(
+    service.eventStatus || service.status || ""
+  ).trim().toLowerCase();
+
+  const operationAllowed =
+    lifecycleStatus === "scheduled" ||
+    lifecycleStatus === "in_progress";
+
+  const editButton =
+    document.getElementById("maintInfoEditButton");
+
+  const removeButton =
+    document.getElementById("maintInfoRemoveButton");
+
+  if (editButton) {
+    editButton.disabled = !operationAllowed;
+    editButton.style.display = operationAllowed ? "" : "none";
+  }
+
+  if (removeButton) {
+    removeButton.disabled = !operationAllowed;
+    removeButton.style.display = operationAllowed ? "" : "none";
+  }
+
   title.textContent = typeLabel;
 
 const visual = ACS_getWeeklyACheckVisual(service.day, service.start);
@@ -6204,7 +6194,7 @@ body.innerHTML = `
     <div class="meta-card">
   <span class="label">Status</span>
   <span class="value">
-    ${String(service.status || "scheduled")
+    ${String(service.eventStatus || service.status || "scheduled")
       .replace(/_/g, " ")
       .toUpperCase()}
   </span>
@@ -6228,6 +6218,20 @@ function closeMaintenanceInfoModal(){
 
 function editMaintenanceFromInfo() {
   if (!ACS_SELECTED_SERVICE) return;
+
+  const lifecycleStatus = String(
+    ACS_SELECTED_SERVICE.eventStatus ||
+    ACS_SELECTED_SERVICE.status ||
+    ""
+  ).trim().toLowerCase();
+
+  if (
+    lifecycleStatus !== "scheduled" &&
+    lifecycleStatus !== "in_progress"
+  ) {
+    alert("This maintenance event is closed and cannot be edited.");
+    return;
+  }
 
   const serviceToEdit = {
     ...ACS_SELECTED_SERVICE
@@ -6254,6 +6258,20 @@ function editMaintenanceFromInfo() {
 async function removeMaintenanceFromInfo() {
 
   if (!ACS_SELECTED_SERVICE) {
+    return;
+  }
+
+  const lifecycleStatus = String(
+    ACS_SELECTED_SERVICE.eventStatus ||
+    ACS_SELECTED_SERVICE.status ||
+    ""
+  ).trim().toLowerCase();
+
+  if (
+    lifecycleStatus !== "scheduled" &&
+    lifecycleStatus !== "in_progress"
+  ) {
+    alert("This maintenance event is closed and cannot be removed.");
     return;
   }
 
