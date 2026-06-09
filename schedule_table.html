@@ -1960,6 +1960,93 @@ function ACS_scheduleArray(value) {
   return [];
 }
 
+
+/* ============================================================
+   ACS SCHEDULE NOTES PARSER
+   ------------------------------------------------------------
+   Reads PostgreSQL schedule_items.notes safely.
+   No browser persistence.
+   ============================================================ */
+
+function ACS_scheduleObject(value) {
+  if (!value) {
+    return {};
+  }
+
+  if (typeof value === "object" && !Array.isArray(value)) {
+    return value;
+  }
+
+  if (typeof value !== "string") {
+    return {};
+  }
+
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return {};
+  }
+
+  try {
+    const parsed = JSON.parse(trimmed);
+
+    return (
+      parsed &&
+      typeof parsed === "object" &&
+      !Array.isArray(parsed)
+    )
+      ? parsed
+      : {};
+  } catch (error) {
+    return {};
+  }
+}
+
+function ACS_formatUtcTime(value) {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return (
+    `${String(date.getUTCHours()).padStart(2, "0")}:` +
+    `${String(date.getUTCMinutes()).padStart(2, "0")}`
+  );
+}
+
+function ACS_formatUtcDayTime(value) {
+  if (!value) {
+    return "—";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "—";
+  }
+
+  const days = [
+    "SUN",
+    "MON",
+    "TUE",
+    "WED",
+    "THU",
+    "FRI",
+    "SAT"
+  ];
+
+  return (
+    `${days[date.getUTCDay()]} ` +
+    `${String(date.getUTCHours()).padStart(2, "0")}:` +
+    `${String(date.getUTCMinutes()).padStart(2, "0")}`
+  );
+}
+
 function ACS_scheduleNormalizeDay(value) {
   const day = ACS_scheduleText(value).toLowerCase();
 
@@ -2218,8 +2305,38 @@ function ACS_adaptScheduleItem(row, routePlansById) {
   }
 
   const aircraftId = row?.aircraft_id ?? null;
-  const departure = ACS_scheduleText(row?.departure);
-  const arrival = ACS_scheduleText(row?.arrival);
+  const notesObject = ACS_scheduleObject(row?.notes);
+
+  const scheduledStartAt =
+    row?.maintenance_scheduled_start_at ??
+    row?.scheduled_start_at ??
+    notesObject?.scheduled_start_at ??
+    null;
+
+  const scheduledEndAt =
+    row?.maintenance_scheduled_end_at ??
+    row?.scheduled_end_at ??
+    notesObject?.scheduled_end_at ??
+    null;
+
+  const rawDeparture = ACS_scheduleText(row?.departure);
+  const rawArrival = ACS_scheduleText(row?.arrival);
+
+  const departure =
+    type === "service"
+      ? (
+          ACS_formatUtcTime(scheduledStartAt) ||
+          rawDeparture
+        )
+      : rawDeparture;
+
+  const arrival =
+    type === "service"
+      ? (
+          ACS_formatUtcTime(scheduledEndAt) ||
+          rawArrival
+        )
+      : rawArrival;
 
   return {
     id: row?.id ?? null,
@@ -2232,6 +2349,9 @@ function ACS_adaptScheduleItem(row, routePlansById) {
     ).toLowerCase(),
     financeCharged: row?.maintenance_finance_charged === true,
     financeLogId: row?.maintenance_finance_log_id ?? null,
+
+    scheduledStartAt,
+    scheduledEndAt,
 
     routePlanId,
     routeUid: row?.route_uid ?? routePlan?.routeUid ?? null,
@@ -2285,6 +2405,7 @@ function ACS_adaptScheduleItem(row, routePlansById) {
 
     status: ACS_scheduleText(row?.status, "planned").toLowerCase(),
     notes: ACS_scheduleText(row?.notes),
+    notesObject,
 
     createdAt: row?.created_at ?? null,
     updatedAt: row?.updated_at ?? null
@@ -2485,6 +2606,55 @@ if (document.readyState === "loading") {
 } else {
   ACS_initializeScheduleTable();
 }
+
+
+/* ============================================================
+   ACS SCHEDULE LIVE REFRESH
+   ------------------------------------------------------------
+   Keeps the read-only UI synchronized with PostgreSQL while
+   the backend scheduler changes SCHEDULED / IN_PROGRESS /
+   COMPLETED states.
+   ============================================================ */
+
+const ACS_SCHEDULE_REFRESH_MS = 15000;
+let ACS_SCHEDULE_REFRESH_TIMER = null;
+
+function ACS_startScheduleRefresh() {
+  if (ACS_SCHEDULE_REFRESH_TIMER !== null) {
+    return;
+  }
+
+  ACS_SCHEDULE_REFRESH_TIMER = window.setInterval(() => {
+    if (document.visibilityState === "visible") {
+      ACS_loadScheduleContext().catch(() => {});
+    }
+  }, ACS_SCHEDULE_REFRESH_MS);
+}
+
+function ACS_stopScheduleRefresh() {
+  if (ACS_SCHEDULE_REFRESH_TIMER === null) {
+    return;
+  }
+
+  window.clearInterval(ACS_SCHEDULE_REFRESH_TIMER);
+  ACS_SCHEDULE_REFRESH_TIMER = null;
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    ACS_loadScheduleContext().catch(() => {});
+  }
+});
+
+window.addEventListener("focus", () => {
+  ACS_loadScheduleContext().catch(() => {});
+});
+
+window.addEventListener("beforeunload", () => {
+  ACS_stopScheduleRefresh();
+});
+
+ACS_startScheduleRefresh();
 
 
 const TURNAROUND_MIN = 45;
@@ -2767,613 +2937,15 @@ function ACS_getMaintenanceCycleVisual(
    ============================================================ */
 
 function ACS_handleMonthlyBIntegration(ac) {
-
-  const now = ACS_getSimTimeSafe();
-  if (!Number.isFinite(now)) return ac;
-  const DAY_MS = 24 * 60 * 60 * 1000;
-  const CYCLE_MS = 30 * DAY_MS;
-
-  /* ============================================================
-   🔒 MAJOR CHECK OVERRIDE — RESET & FREEZE B
-   Date: 2026-03-02
-   Purpose:
-   - If aircraft enters C/D:
-       • Reset B cycle
-       • Freeze B completely
-       • Prevent overdue
-       • Prevent activation
-   ============================================================ */
-
-if (
-  ac.status === "Maintenance" &&
-  (ac.maintenanceType === "C" || ac.maintenanceType === "D")
-) {
-
-  // 🔹 Reset B cycle to NOW (C kills B)
-  ac.lastBCheckAt = now;
-
-  // 🔹 Clear any B flags
-  ac.bOverdue = false;
-  ac.bInProgress = false;
-  ac.bStartTime = null;
-
-  return ac; // Freeze while C/D active
-}
-     
-  if (!ac.lastBCheckAt) return ac;
-
-  const dueDate = ac.lastBCheckAt + CYCLE_MS;
-
-  // 🔹 1️⃣ Aún no vence → limpiar flags
-     
-  if (now < dueDate) {
-    ac.bOverdue = false;
-    ac.maintenanceOverdue = false;
-    return ac;
-  }
-
-  // 🔹 2️⃣ Leer programación real
-     
-  let scheduleItems = [];
-  try {
-    scheduleItems = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-  } catch (e) {}
-
-  const service = scheduleItems.find(e =>
-    e.aircraftId === ac.id &&
-    e.type === "service" &&
-    e.serviceType === "B"
-  );
-
-  // 🔹 3️⃣ Si no hay programación → overdue
-  if (!service) {
-    ac.bOverdue = true;
-    ac.maintenanceOverdue = true;
-    return ac;
-  }
-
-  // 🔹 4️⃣ Activación automática (DÍA + HORA REAL)
-
-const daysMap = ["sun","mon","tue","wed","thu","fri","sat"];
-const nowDate = new Date(now);
-
-const todaySim = daysMap[nowDate.getDay()];
-const currentMinutes = nowDate.getHours() * 60 + nowDate.getMinutes();
-
-// Convertir ventana "01:00" → minutos
-function toMinutes(hhmm) {
-  if (!hhmm || !hhmm.includes(":")) return null;
-  const [h, m] = hhmm.split(":").map(Number);
-  return (h * 60) + m;
-}
-
-const startMin = toMinutes(service.start);
-const endMin   = toMinutes(service.end);
-
-// Validaciones
-const isScheduledToday = service.day === todaySim;
-const isWithinWindow =
-  startMin !== null &&
-  endMin !== null &&
-  currentMinutes >= startMin &&
-  currentMinutes <= endMin;
-
-// 👉 ENTRADA REAL AL B
-if (
-  isScheduledToday &&
-  isWithinWindow &&
-  ac.status !== "B-Check"
-) {
-  ac.status = "B-Check";
-  ac.bInProgress = true;
-  ac.bStartTime = now;
-
-  console.log("🟡 B-CHECK START:", {
-    aircraft: ac.id,
-    simTime: nowDate.toISOString(),
-    window: service.start + " → " + service.end
-  });
-}
-
-  // 🔹 5️⃣ Completar después de 24h — FIX ROBUSTO
-
-if (ac.bInProgress) {
-
-  // 🛡️ Validar bStartTime correctamente
-  if (!Number.isFinite(ac.bStartTime)) {
-    console.warn("⚠️ B-CHECK: bStartTime inválido — reiniciando");
-    ac.bStartTime = now;
-    return ac;
-  }
-
-  const endTime = ac.bStartTime + DAY_MS;
-
-  if (now >= endTime) {
-
-    // ✅ Cierre correcto del B
-    ac.lastBCheckAt = now;
-    ac.status = "Active";
-    ac.bInProgress = false;
-    ac.bStartTime = null;
-
-    ac.bOverdue = false;
-    ac.maintenanceOverdue = false;
-
-    console.log("🟢 B-CHECK COMPLETED:", ac.id);
-  }
-}
-
-  // 🔹 6️⃣ Si ya venció pero no es su día todavía → mantener due (sin overdue)
-  ac.bOverdue = false;
-  ac.maintenanceOverdue = false;
-
+  /*
+   * Legacy browser maintenance authority disabled.
+   *
+   * PostgreSQL + the backend A/B resolver are the only
+   * authorities for SCHEDULED, IN_PROGRESS and COMPLETED.
+   * This function remains as a compatibility no-op because
+   * older render paths may still call it.
+   */
   return ac;
-}
-     
-// ============================================================
-// === AIRCRAFT HOVER CARD — Qatar Luxury v3 ==================
-// ============================================================
-     
-function showAircraftHover(ac, cell) {
-
-  // Remover card anterior si existe
-  const old = document.querySelector(".aircraft-hover-card");
-  if (old) old.remove();
-
-  // Ocultar hover si el avión no está en servicio especial
-  const st = ac.status || "";
-  const activeStatuses = [
-    "In C-Check",
-    "In D-Check",
-    "Pending Delivery",
-    "B-Check"
-  ];
-  if (!activeStatuses.includes(st)) return;
-
-  // Crear card
-  const card = document.createElement("div");
-  card.className = "aircraft-hover-card";
-
-  // Fechas para progreso
-  const start = ac.lastC || ac.lastD || ac.deliveryStart || null;
-  const end   = ac.deliveryDate || ac.nextC || ac.nextD || null;
-
-  let pct = 0;
-  if (start && end) {
-    const now = new Date();
-    const s = new Date(start);
-    const e = new Date(end);
-    pct = Math.min(100, Math.max(0, ((now - s) / (e - s)) * 100));
-  }
-
-  // Icono según servicio
-  const icon =
-    st === "In C-Check"       ? "🛠" :
-    st === "In D-Check"       ? "⚙️" :
-    st === "Pending Delivery" ? "⏳" :
-    st === "B-Check"          ? "🔧" : "";
-
-  // Construcción del contenido
-  card.innerHTML = `
-    <h4>${ac.registration}</h4>
-    <p style="margin-top:-4px; font-size:0.85rem; color:#ffdd80;">
-      ${ac.model || "—"} — ${icon}
-    </p>
-
-    <p style="margin:6px 0 10px; color:#cbd6ff;">
-      Started: ${start ? new Date(start).toDateString() : "—"}<br>
-      Ends: ${end ? new Date(end).toDateString() : "—"}
-    </p>
-
-    <div class="progress-bar">
-      <div class="progress-fill" style="width:${pct.toFixed(0)}%"></div>
-    </div>
-    <span class="progress-label">${pct.toFixed(0)}%</span>
-  `;
-
-  // Mostrar en la celda
-  cell.style.position = "relative";
-  cell.appendChild(card);
-  setTimeout(() => card.classList.add("visible"), 10);
-}
-
-function hideAircraftHover(){
-  const c = document.querySelector(".aircraft-hover-card");
-  if (c) c.remove();
-}
-     
-/* ============================================================
-   🧠 ST-MA LINK — DOMINANT MAINTENANCE OVERRIDE (C/D > B)
-   Date: 2026-03-02
-   Purpose:
-   - If My Aircraft says C/D, Schedule Table MUST ignore B status
-   - B time is frozen while in C/D
-   - When released from C/D, B timer restarts from release moment
-   ============================================================ */
-
-function ACS_isMajorCheckStatus(status){
-  const st = String(status || "").trim();
-  return (
-    st === "In C-Check" || st === "C-Check" || st === "C" ||
-    st === "In D-Check" || st === "D-Check" || st === "D"
-  );
-}
-
-function ACS_applyDominantMaintenanceFromMyAircraft(fleetAircraft, myAircraft){
-  // fleetAircraft = objeto que usa Schedule Table (tu "real fleet")
-  // myAircraft = objeto del array ACS_MyAircraft (source of truth para status)
-
-  if (!fleetAircraft || !myAircraft) return fleetAircraft;
-
-  const now = ACS_getSimTimeSafe();
-
-  if (!Number.isFinite(now)) {
-    return fleetAircraft;
-  }
-
-  const myStatus = String(myAircraft.status || "").trim();
-
-  // 1) Si My Aircraft está en C/D → domina y bloquea B
-  if (ACS_isMajorCheckStatus(myStatus)) {
-
-    // domina el status en la tabla
-    fleetAircraft.status = myStatus;
-
-    // bloquea B mientras esté en C/D
-    fleetAircraft.__bcheckLockedByMajor = true;
-    if (!fleetAircraft.__bcheckLockSince) fleetAircraft.__bcheckLockSince = now;
-
-    // IMPORTANTÍSIMO: mientras esté bloqueado, NO debe quedar B overdue.
-    // (tu cálculo de overdue debe respetar __bcheckLockedByMajor)
-    return fleetAircraft;
-  }
-
-  // 2) Si ya NO está en C/D pero antes lo estuvo → liberar y reiniciar reloj B
-  if (fleetAircraft.__bcheckLockedByMajor) {
-
-    // salir del lock
-    fleetAircraft.__bcheckLockedByMajor = false;
-    fleetAircraft.__bcheckLockSince = null;
-
-    // reset del reloj B al momento de liberación
-    // (esto cumple tu regla: “esperar lo libere my aircraft para que empiece a rodar el tiempo de B check”)
-    fleetAircraft.lastBCheckAt = now;
-  }
-
-  return fleetAircraft;
-}     
-
-// ============================================================
-// === RENDER PRINCIPAL DEL SCHEDULE ==========================
-// ============================================================
-     
-function renderSchedule() {
-
-  const tbody = document.getElementById("scheduleBody");
-  tbody.innerHTML = "";
-
-  const items = getItems();
-  const fleet = getRealFleet();
-  const nowTs = ACS_getSimTimeSafe();
-
-  if (!Number.isFinite(nowTs)) {
-    console.error("[ACS SCHEDULE] Official simulation time unavailable");
-    return;
-  }
-
-// Maintenance authority is resolved by Railway/PostgreSQL.
-// renderSchedule() is read-only and never mutates fleet state.
-
-// 🔒 OPS FILTER — SkyTrack authority
-const operationalItems = items.filter(it => {
-  if (it.type === "flight") return true;
-  if (it.type === "service") return ACS_isServiceActiveNow(it);
-  return false;
-});
-     
-// ============================================================
-// 🟧 A3.3 — APPLY STATES (READ ONLY + VISUAL ONLY)
-// ============================================================
-
-fleet.forEach(ac => {
-  ACS_ReadOperationalState(ac);
-  ACS_EvaluateScheduleServiceState(ac, operationalItems);
-});
-    
-// ============================================================
-// 🟦 3A.1 — INDEXAR ITEMS POR AIRCRAFT ID (FLIGHTS + SERVICES)
-// ============================================================
-
-const byAircraftId = {};
-
-items.forEach(it => {
-
-  if (!it) return;
-  if (it.__edited === true) return;
-
-  const key = String(it.aircraftId || "").trim();
-  if (!key) return;
-
-  const day = String(it.day || "").toLowerCase();
-  if (!["mon","tue","wed","thu","fri","sat","sun"].includes(day)) return;
-
-  if (it.type !== "flight" && it.type !== "service") return;
-
-  if (!byAircraftId[key]) byAircraftId[key] = [];
-  byAircraftId[key].push(it);
-});
-
-if (!fleet.length) {
-
-  for (let i = 0; i < 5; i++) {
-
-    const tr = document.createElement("tr");
-
-    const tdTail = document.createElement("td");
-    tdTail.textContent = "(empty)";
-    tr.appendChild(tdTail);
-
-    days.forEach(() => {
-      const td = document.createElement("td");
-      td.textContent = "—";
-      tr.appendChild(td);
-    });
-
-    const planTd = document.createElement("td");
-    const wrap = document.createElement("div");
-    wrap.className = "plan-actions";
-
-    const assignBtn = document.createElement("button");
-    assignBtn.className = "btn btn-assign";
-    assignBtn.textContent = "Assign Route";
-    assignBtn.onclick = () =>
-      alert("⚠ No aircraft available. Buy one first.");
-
-    const maintBtn = document.createElement("button");
-    maintBtn.className = "btn btn-maint";
-    maintBtn.textContent = "Maintenance";
-    maintBtn.onclick = () =>
-      alert("⚠ No aircraft available. Buy one first.");
-
-    wrap.appendChild(assignBtn);
-    wrap.appendChild(maintBtn);
-    planTd.appendChild(wrap);
-    tr.appendChild(planTd);
-
-    tbody.appendChild(tr);
-  }
-
-  document.getElementById("updateTime").textContent =
-    "Last update: " + new Date().toLocaleTimeString();
-
-  return;
-}
-
-// ============================================================
-// CON FLOTA
-// ============================================================
-
-fleet.forEach(ac => {
-
-  const tr = document.createElement("tr");
-  tr.dataset.aircraftId = ac.id || "";
-
-  const realModel = ac.model || ac.type || ac.data?.model || "";
-  const modelKey  = normalizeModel(realModel);
-  tr.dataset.model = modelKey;
-
-  const tdTail = document.createElement("td");
-  tdTail.classList.add("col-aircraft");
-  tdTail.dataset.model = modelKey;
-
-  const reg = ac.registration && ac.registration.trim()
-    ? ac.registration
-    : "—";
-
-  const manu = ac.manufacturer || "—";
-  const status = ACS_getAircraftStatusBadge(ac);
-
-  const wrapInfo = document.createElement("div");
-  wrapInfo.style.lineHeight = "1.25";
-  wrapInfo.style.textAlign = "left";
-
-  wrapInfo.innerHTML = `
-    <strong>${reg}</strong><br>
-    <span>${realModel}</span><br>
-    <span style="color:#ffca3a;font-weight:600;">
-      ${manu.toUpperCase()}
-    </span>
-    <div class="acs-status-badge ${status.class}">
-      ${status.label}
-    </div>
-  `;
-
-  tdTail.appendChild(wrapInfo);
-  tdTail.onmouseenter = () => showAircraftHover(ac, tdTail);
-  tdTail.onmouseleave = hideAircraftHover;
-
-  tr.appendChild(tdTail);
-
-  days.forEach(day => {
-
-    const td = document.createElement("td");
-    const aircraftId = String(ac.id || "").trim();
-
-    const rawDayItems = (byAircraftId[aircraftId] || []).filter(x => {
-      if (!x) return false;
-      if (String(x.day || "").toLowerCase() !== day) return false;
-      if (x.__edited === true) return false;
-
-      if (x.type === "service") return true;
-
-      if (x.type === "flight") {
-        if (x.assigned !== true) return false;
-        return ACS_isFlightCompatibleWithAircraft(x, ac);
-      }
-
-      return false;
-    });
-     
-    const dayItems = ACS_sortDayEvents(rawDayItems);
-
-    const nowMin = ACS_TABLE_TIME.minute;
-
-    const hasActiveBCheck = dayItems.some(it => {
-      if (it.type !== "service" || it.serviceType !== "B") return false;
-      return nowMin >= it.startMinute && nowMin < it.endMinute;
-    });
-
-    if (hasActiveBCheck) td.classList.add("bcheck-day");
-
-    dayItems.forEach(it => {
-
-      const depMin = toMin(it.departure) ?? -1;
-      const arrMin = toMin(it.arrival) ?? -1;
-
-      const isFlying =
-        depMin >= 0 &&
-        arrMin >= 0 &&
-        nowMin >= depMin &&
-        nowMin < arrMin;
-
-      if (it.type === "flight") {
-
-        const chip = document.createElement("span");
-        chip.className = "chip flight-chip";
-        chip.dataset.id = it.id;
-        chip.dataset.blockId = it.blockId || "";
-        chip.dataset.type = "flight";
-
-        const labelOut = it.labelOut || it.flightLabelOut || it.flightNumberOut || "—";
-        const labelIn  = it.labelIn  || it.flightLabelIn  || it.flightNumberIn  || "—";
-
-        chip.textContent = `${labelOut} / ${labelIn}`;
-
-        if (isFlying) {
-          chip.classList.add("flying-now");
-          chip.title = "✈️ Flight in progress";
-        }
-
-        chip.onclick = () => {
-          window.selectedFlight = {
-            data: it,
-            element: chip
-          };
-          openFlightModal(it, chip);
-        };
-
-        td.appendChild(chip);
-      }
-
-      if (it.type === "service") {
-
-        const chip = document.createElement("span");
-        chip.className = "service-chip";
-        chip.dataset.id = it.id;
-        chip.dataset.type = "service";
-
-        chip.textContent =
-          it.serviceType === "A"
-            ? "🔧 A-Check"
-            : "⚙️ B-Check";
-
-        chip.onclick = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          window.ACS_SELECTED_SERVICE = it;
-          openMaintenanceInfoModal(it, ac);
-        };
-
-        td.appendChild(chip);
-      }
-
-    });
-
-    tr.appendChild(td);
-
-  });
-
-    // ============================================================
-    // ACTION PLAN
-    // ============================================================
-    const planTd = document.createElement("td");
-    const wrap = document.createElement("div");
-    wrap.className = "plan-actions";
-
-    const assignBtn = document.createElement("button");
-    assignBtn.className = "btn btn-assign";
-    assignBtn.textContent = "Assign Route";
-    assignBtn.onclick = () => assignRouteToTail(ac);
-
-    const maintBtn = document.createElement("button");
-    maintBtn.className = "btn btn-maint";
-    maintBtn.textContent = "Maintenance";
-    maintBtn.onclick = () => openMaintModal(realModel, null, ac.id);
-
-    wrap.appendChild(assignBtn);
-    wrap.appendChild(maintBtn);
-    planTd.appendChild(wrap);
-    tr.appendChild(planTd);
-
-    tbody.appendChild(tr);
-  });
-     
-/* ============================================================
-   🟢 B4 — EMPTY BUFFER ROWS (3 ALWAYS)
-   Se renderizan siempre, con o sin flota
-   ============================================================ */
-
-const EMPTY_ROWS = 3;
-
-for (let i = 0; i < EMPTY_ROWS; i++) {
-
-  const tr = document.createElement("tr");
-  tr.classList.add("row-pending");
-
-  // Aircraft
-  const tdTail = document.createElement("td");
-  tdTail.textContent = "(empty)";
-  tdTail.style.opacity = "0.6";
-  tr.appendChild(tdTail);
-
-  // Days
-  days.forEach(() => {
-    const td = document.createElement("td");
-    td.textContent = "—";
-    tr.appendChild(td);
-  });
-
-  // Action Plan
-  const planTd = document.createElement("td");
-  const wrap = document.createElement("div");
-  wrap.className = "plan-actions";
-
-  const assignBtn = document.createElement("button");
-  assignBtn.className = "btn btn-assign";
-  assignBtn.textContent = "Assign Route";
-  assignBtn.onclick = () =>
-    alert("⚠ This slot is reserved for a future aircraft.");
-
-  const maintBtn = document.createElement("button");
-  maintBtn.className = "btn btn-maint";
-  maintBtn.textContent = "Maintenance";
-  maintBtn.onclick = () =>
-    alert("⚠ No aircraft assigned to this slot.");
-
-  wrap.appendChild(assignBtn);
-  wrap.appendChild(maintBtn);
-  planTd.appendChild(wrap);
-  tr.appendChild(planTd);
-
-  tbody.appendChild(tr);
-}
-     
-  // ============================================================
-  // UPDATE TIME (NO TOCAR)
-  // ============================================================
-     
-  document.getElementById("updateTime").textContent =
-    "Last update: " + new Date().toLocaleTimeString();
 }
 
 /* ============================================================
@@ -6085,6 +5657,11 @@ function openMaintenanceInfoModal(
   const isBCheck =
     serviceType === "B";
 
+  const checkType =
+    isBCheck
+      ? "B_CHECK"
+      : "A_CHECK";
+
   const typeLabel =
     isBCheck
       ? "⚙️ B-Check"
@@ -6161,12 +5738,95 @@ function openMaintenanceInfoModal(
   const operationalTitle =
     isInProgress
       ? "Maintenance In Progress"
-      : "Scheduled Maintenance";
+      : isScheduled
+        ? "Scheduled Maintenance"
+        : "Maintenance Record";
 
   const statusColor =
     isInProgress
       ? "#00ff80"
-      : "#ffcc33";
+      : isScheduled
+        ? "#ffcc33"
+        : "#cbd6ff";
+
+  const cycle =
+    ACS_getMaintenanceCycleVisual(
+      aircraft,
+      checkType
+    );
+
+  const scheduledStartAt =
+    service.scheduledStartAt ||
+    service.notesObject?.scheduled_start_at ||
+    null;
+
+  const scheduledEndAt =
+    service.scheduledEndAt ||
+    service.notesObject?.scheduled_end_at ||
+    null;
+
+  const windowStart =
+    scheduledStartAt
+      ? ACS_formatUtcDayTime(scheduledStartAt)
+      : (
+          `${dayLabel} ` +
+          `${service.start || "—"}`
+        );
+
+  const windowEnd =
+    scheduledEndAt
+      ? ACS_formatUtcDayTime(scheduledEndAt)
+      : (
+          `${dayLabel} ` +
+          `${service.end || "—"}`
+        );
+
+  let cyclePercent =
+    cycle.valid
+      ? Number(cycle.percent)
+      : 0;
+
+  let cycleText =
+    cycle.valid
+      ? cycle.remainingLabel
+      : "Cycle data unavailable";
+
+  let cycleColor =
+    cycle.valid
+      ? cycle.color
+      : "#7c8bb8";
+
+  /*
+   * A valid scheduled service covers the technical due item.
+   * Do not show an absurd historical OVERDUE age inside the
+   * player-facing service modal.
+   */
+  if (
+    isScheduled &&
+    cycle.valid &&
+    cycle.overdue
+  ) {
+    cyclePercent = 0;
+    cycleText = "Covered by scheduled service";
+    cycleColor = "#ffcc33";
+  }
+
+  if (isInProgress) {
+    cyclePercent = 100;
+    cycleText = "Service in progress";
+    cycleColor = "#00ff80";
+  }
+
+  const safeCyclePercent =
+    Math.max(
+      0,
+      Math.min(
+        100,
+        Number.isFinite(cyclePercent)
+          ? cyclePercent
+          : 0
+      )
+    );
 
   body.innerHTML = `
     <div class="flight-kicker">
@@ -6183,9 +5843,9 @@ function openMaintenanceInfoModal(
       </div>
 
       <div class="times">
-        ${service.start || "—"}
+        ${windowStart}
         →
-        ${service.end || "—"}
+        ${windowEnd}
       </div>
     </div>
 
@@ -6198,8 +5858,18 @@ function openMaintenanceInfoModal(
         ${operationalTitle}
       </div>
 
+      <div class="bcycle-bar">
+        <div
+          class="bcycle-fill"
+          style="
+            width:${safeCyclePercent}%;
+            background:${cycleColor};
+          "
+        ></div>
+      </div>
+
       <div class="bcycle-info">
-        <span>Maintenance Cycle</span>
+        <span>${cycleText}</span>
         <span>${cycleLabel}</span>
       </div>
 
