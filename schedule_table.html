@@ -6018,22 +6018,14 @@ let ACS_SELECTED_SERVICE = null;
 
 /* ============================================================
    🦄 M3 — MAINTENANCE INFO MODAL ENGINE
-   Date: 08 JUN 2026
    ------------------------------------------------------------
    ACS + AIRBUS OCC
 
-   Authority:
-   - PostgreSQL aircraft_maintenance_status
-   - ACS simulated time
-   - A-Check cycle: 7 days
-   - B-Check cycle: 30 days
-
-   Lifecycle:
-   - Scheduling does not reset cycle
-   - Editing does not reset cycle
-   - Removing does not reset cycle
-   - A COMPLETED resets A only
-   - B COMPLETED resets B and A
+   Player-facing information only:
+   - No technical overdue age
+   - No due date
+   - No internal cycle calculations
+   - SCHEDULED and IN_PROGRESS lifecycle presentation
    ============================================================ */
 
 function openMaintenanceInfoModal(
@@ -6042,17 +6034,13 @@ function openMaintenanceInfoModal(
 ) {
   if (
     !service ||
-    service.type !== "service"
+    service.type !== "service" ||
+    !aircraft
   ) {
     return;
   }
 
-  if (!aircraft) {
-    return;
-  }
-
-  ACS_SELECTED_SERVICE =
-    service;
+  ACS_SELECTED_SERVICE = service;
 
   const modal =
     document.getElementById(
@@ -6069,42 +6057,6 @@ function openMaintenanceInfoModal(
       "maintInfoTitle"
     );
 
-  if (
-    !modal ||
-    !body ||
-    !title
-  ) {
-    return;
-  }
-
-  const normalizedServiceType =
-    String(
-      service.serviceType || ""
-    )
-      .trim()
-      .toUpperCase();
-
-  const isBCheck =
-    normalizedServiceType === "B";
-
-  const typeLabel =
-    isBCheck
-      ? "⚙️ B-Check"
-      : "🔧 A-Check";
-
-  const lifecycleStatus =
-    String(
-      service.eventStatus ||
-      service.status ||
-      ""
-    )
-      .trim()
-      .toLowerCase();
-
-  const operationAllowed =
-    lifecycleStatus === "scheduled" ||
-    lifecycleStatus === "in_progress";
-
   const editButton =
     document.getElementById(
       "maintInfoEditButton"
@@ -6114,6 +6066,58 @@ function openMaintenanceInfoModal(
     document.getElementById(
       "maintInfoRemoveButton"
     );
+
+  if (
+    !modal ||
+    !body ||
+    !title
+  ) {
+    return;
+  }
+
+  const serviceType =
+    String(
+      service.serviceType || ""
+    )
+      .trim()
+      .toUpperCase();
+
+  const isBCheck =
+    serviceType === "B";
+
+  const typeLabel =
+    isBCheck
+      ? "⚙️ B-Check"
+      : "🔧 A-Check";
+
+  const durationLabel =
+    isBCheck
+      ? "24 hours"
+      : "5 hours";
+
+  const cycleLabel =
+    isBCheck
+      ? "30-day cycle"
+      : "7-day cycle";
+
+  const lifecycleStatus =
+    String(
+      service.eventStatus ||
+      service.status ||
+      "scheduled"
+    )
+      .trim()
+      .toLowerCase();
+
+  const isScheduled =
+    lifecycleStatus === "scheduled";
+
+  const isInProgress =
+    lifecycleStatus === "in_progress";
+
+  const operationAllowed =
+    isScheduled ||
+    isInProgress;
 
   if (editButton) {
     editButton.disabled =
@@ -6138,111 +6142,36 @@ function openMaintenanceInfoModal(
   title.textContent =
     typeLabel;
 
-  const cycleVisual =
-    ACS_getMaintenanceCycleVisual(
-      aircraft,
-      normalizedServiceType
-    );
-
-  const cycleTitle =
-    isBCheck
-      ? "B-CHECK CYCLE"
-      : "A-CHECK CYCLE";
-
-  const cycleIntervalLabel =
-    isBCheck
-      ? "30 days"
-      : "7 days";
-
-  const cyclePercent =
-    cycleVisual.valid
-      ? cycleVisual.percent
-      : 0;
-
-  const cycleColor =
-    cycleVisual.valid
-      ? cycleVisual.color
-      : "#7c8bb8";
-
-  const cycleRemaining =
-    cycleVisual.valid
-      ? cycleVisual.remainingLabel
-      : "—";
-
-  const cycleDueDate =
-    cycleVisual.valid &&
-    cycleVisual.dueDate
-      ? new Date(
-          cycleVisual.dueDate
-        ).toLocaleString(
-          "en-GB",
-          {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false
-          }
-        )
-      : "—";
-
-  const statusLabel =
-    String(
-      service.eventStatus ||
-      service.status ||
-      "scheduled"
-    )
-      .replace(
-        /_/g,
-        " "
-      )
-      .toUpperCase();
-
   const dayLabel =
     String(
       service.day || "—"
     ).toUpperCase();
 
-  const durationLabel =
-    isBCheck
-      ? "24 hours"
-      : "5 hours";
+  const statusLabel =
+    isInProgress
+      ? "IN PROGRESS"
+      : isScheduled
+        ? "SCHEDULED"
+        : String(
+            lifecycleStatus || "—"
+          )
+            .replace(/_/g, " ")
+            .toUpperCase();
 
-  const barHTML = `
-    <div class="bcycle-box">
+  const operationalTitle =
+    isInProgress
+      ? "Maintenance In Progress"
+      : "Scheduled Maintenance";
 
-      <div class="bcycle-header">
-        ${cycleTitle}
-      </div>
+  const operationalMessage =
+    isInProgress
+      ? "Aircraft is currently undergoing the scheduled maintenance service."
+      : "Maintenance will begin automatically at the programmed ACS time.";
 
-      <div class="bcycle-bar">
-        <div
-          class="bcycle-fill"
-          style="
-            width:${cyclePercent}%;
-            background:${cycleColor};
-          "
-        ></div>
-      </div>
-
-      <div class="bcycle-info">
-        <span>Remaining</span>
-        <span>${cycleRemaining}</span>
-      </div>
-
-      <div class="bcycle-info">
-        <span>Cycle</span>
-        <span>${cycleIntervalLabel}</span>
-      </div>
-
-      <div class="bcycle-info">
-        <span>Due</span>
-        <span>${cycleDueDate}</span>
-      </div>
-
-    </div>
-  `;
+  const statusColor =
+    isInProgress
+      ? "#00ff80"
+      : "#ffcc33";
 
   body.innerHTML = `
     <div class="flight-kicker">
@@ -6265,7 +6194,32 @@ function openMaintenanceInfoModal(
       </div>
     </div>
 
-    ${barHTML}
+    <div class="bcycle-box">
+
+      <div
+        class="bcycle-header"
+        style="color:${statusColor};"
+      >
+        ${operationalTitle}
+      </div>
+
+      <div
+        style="
+          margin-top:8px;
+          color:#dbe4ff;
+          font-size:0.84rem;
+          line-height:1.45;
+        "
+      >
+        ${operationalMessage}
+      </div>
+
+      <div class="bcycle-info">
+        <span>Maintenance Cycle</span>
+        <span>${cycleLabel}</span>
+      </div>
+
+    </div>
 
     <div class="flight-meta">
 
@@ -6294,7 +6248,10 @@ function openMaintenanceInfoModal(
           Status
         </span>
 
-        <span class="value">
+        <span
+          class="value"
+          style="color:${statusColor};"
+        >
           ${statusLabel}
         </span>
       </div>
