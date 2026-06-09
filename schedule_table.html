@@ -6163,11 +6163,6 @@ function openMaintenanceInfoModal(
       ? "Maintenance In Progress"
       : "Scheduled Maintenance";
 
-  const operationalMessage =
-    isInProgress
-      ? "Aircraft is currently undergoing the scheduled maintenance service."
-      : "Maintenance will begin automatically at the programmed ACS time.";
-
   const statusColor =
     isInProgress
       ? "#00ff80"
@@ -6201,17 +6196,6 @@ function openMaintenanceInfoModal(
         style="color:${statusColor};"
       >
         ${operationalTitle}
-      </div>
-
-      <div
-        style="
-          margin-top:8px;
-          color:#dbe4ff;
-          font-size:0.84rem;
-          line-height:1.45;
-        "
-      >
-        ${operationalMessage}
       </div>
 
       <div class="bcycle-info">
