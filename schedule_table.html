@@ -6004,6 +6004,18 @@ function openMaintenanceInfoModal(service, aircraft) {
   const serviceType = String(service.serviceType || "").trim().toUpperCase();
   const isBCheck = serviceType === "B";
   const checkType = isBCheck ? "B_CHECK" : "A_CHECK";
+
+/*
+ * ACS OCC VISUAL RULE:
+ * When B_CHECK is IN_PROGRESS, the A cycle is fully covered.
+ * A remains internally SCHEDULED and is not charged or started.
+ */
+     
+const bCheckInProgress =
+  String(aircraft.bCheckStatus || "")
+    .trim()
+    .toUpperCase() === "IN_PROGRESS";
+     
   const typeLabel = isBCheck ? "⚙️ B-Check" : "🔧 A-Check";
   const durationLabel = isBCheck ? "24 hours" : "5 hours";
   const cycleLabel = isBCheck ? "30-day cycle" : "7-day cycle";
@@ -6077,10 +6089,15 @@ function openMaintenanceInfoModal(service, aircraft) {
     cycleColor = "#ffcc33";
   }
 
+  if (!isBCheck && bCheckInProgress) {
+  cyclePercent = 100;
+  cycleColor = "#00ff80";
+  }
+
   if (isInProgress) {
-    cyclePercent = 100;
-    cycleText = "Service in progress";
-    cycleColor = "#00ff80";
+  cyclePercent = 100;
+  cycleText = "Service in progress";
+  cycleColor = "#00ff80";
   }
 
   const safeCyclePercent = Math.max(
