@@ -6020,24 +6020,44 @@ const bCheckInProgress =
   const durationLabel = isBCheck ? "24 hours" : "5 hours";
   const cycleLabel = isBCheck ? "30-day cycle" : "7-day cycle";
 
+    /*
+   * ACS AIRBUS OCC — PLAYER PLAN AUTHORITY
+   * ----------------------------------------------------------
+   * EDIT and REMOVE belong to the persistent schedule plan.
+   * They must remain available while the service chip exists.
+   *
+   * eventStatus may represent the last technical occurrence
+   * and may legitimately be COMPLETED.
+   * It must never hide control of the active schedule_item.
+   */
+
   const lifecycleStatus = String(
-    service.eventStatus || service.status || "scheduled"
+    service.eventStatus ||
+    service.status ||
+    "scheduled"
   ).trim().toLowerCase();
 
-  const isScheduled = lifecycleStatus === "scheduled";
-  const isInProgress = lifecycleStatus === "in_progress";
-  const operationAllowed = isScheduled || isInProgress;
+  const planStatus = String(
+    service.status ||
+    "scheduled"
+  ).trim().toLowerCase();
+
+  const isScheduled =
+    planStatus === "scheduled";
+
+  const isInProgress =
+    planStatus === "in_progress";
 
   if (editButton) {
-    editButton.disabled = !operationAllowed;
-    editButton.style.display = operationAllowed ? "" : "none";
+    editButton.disabled = false;
+    editButton.style.display = "";
   }
 
   if (removeButton) {
-    removeButton.disabled = !operationAllowed;
-    removeButton.style.display = operationAllowed ? "" : "none";
+    removeButton.disabled = false;
+    removeButton.style.display = "";
   }
-
+     
   title.textContent = typeLabel;
 
   const dayLabel = String(service.day || "—").toUpperCase();
