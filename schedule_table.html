@@ -6187,25 +6187,32 @@ function closeMaintenanceInfoModal(){
 }
 
 function editMaintenanceFromInfo() {
-  if (!ACS_SELECTED_SERVICE) return;
 
-  const lifecycleStatus = String(
-    ACS_SELECTED_SERVICE.eventStatus ||
-    ACS_SELECTED_SERVICE.status ||
-    ""
-  ).trim().toLowerCase();
-
-  if (
-    lifecycleStatus !== "scheduled" &&
-    lifecycleStatus !== "in_progress"
-  ) {
-    alert("This maintenance event is closed and cannot be edited.");
+  if (!ACS_SELECTED_SERVICE) {
     return;
   }
+
+  /*
+   * EDIT controls the persistent schedule_item.
+   * A historical COMPLETED event must not block editing.
+   */
 
   const serviceToEdit = {
     ...ACS_SELECTED_SERVICE
   };
+
+  const scheduleItemId =
+    Number(serviceToEdit.id);
+
+  if (
+    !Number.isSafeInteger(scheduleItemId) ||
+    scheduleItemId <= 0
+  ) {
+    alert(
+      "Unable to edit this maintenance service."
+    );
+    return;
+  }
 
   const infoModal =
     document.getElementById(
@@ -6231,28 +6238,18 @@ async function removeMaintenanceFromInfo() {
     return;
   }
 
-  const lifecycleStatus = String(
-    ACS_SELECTED_SERVICE.eventStatus ||
-    ACS_SELECTED_SERVICE.status ||
-    ""
-  ).trim().toLowerCase();
-
-  if (
-    lifecycleStatus !== "scheduled" &&
-    lifecycleStatus !== "in_progress"
-  ) {
-    alert("This maintenance event is closed and cannot be removed.");
-    return;
-  }
+  /*
+   * REMOVE controls the persistent schedule_item.
+   * It must remain available even when the latest technical
+   * occurrence returned by the backend is COMPLETED.
+   */
 
   const serviceToRemove = {
     ...ACS_SELECTED_SERVICE
   };
 
   const scheduleItemId =
-    Number(
-      serviceToRemove.id
-    );
+    Number(serviceToRemove.id);
 
   if (
     !Number.isSafeInteger(scheduleItemId) ||
@@ -6270,7 +6267,7 @@ async function removeMaintenanceFromInfo() {
         serviceToRemove.serviceType === "B"
           ? "B-Check"
           : "A-Check"
-      } maintenance?`
+      } maintenance plan?`
     );
 
   if (!confirmed) {
@@ -6289,8 +6286,7 @@ async function removeMaintenanceFromInfo() {
           credentials: "include",
           cache: "no-store",
           headers: {
-            "Accept":
-              "application/json"
+            "Accept": "application/json"
           }
         }
       );
