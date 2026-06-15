@@ -6167,10 +6167,10 @@ const bCheckInProgress =
     /*
      * A scheduled plan must never erase the technical cycle.
      * At or beyond due time the cycle is fully consumed, not 0%.
+     * Preserve the original technical cycle color authority.
      */
     cyclePercent = 100;
     cycleText = "Service scheduled — cycle due";
-    cycleColor = "#ffcc33";
   }
 
   if (!isBCheck && bCheckInProgress) {
