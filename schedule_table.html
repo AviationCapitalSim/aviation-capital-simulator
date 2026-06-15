@@ -1683,6 +1683,27 @@ function ACS_getAircraftStatusBadge(ac) {
     };
   }
 
+  /*
+   * ACS POSTGRESQL MAINTENANCE AUTHORITY
+   * ----------------------------------------------------------
+   * A stale aircraft_fleet status must not publish the generic
+   * MAINTENANCE label when maintenance_control_status already
+   * confirms that no A/B/C/D check controls the aircraft.
+   *
+   * The hierarchy above has already resolved every valid
+   * IN_PROGRESS and OVERDUE state. Reaching this point with
+   * SERVICEABLE therefore means ACTIVE for Schedule Table.
+   */
+  if (
+    ACS_scheduleText(ac.maintenanceControlStatus)
+      .toUpperCase() === "SERVICEABLE"
+  ) {
+    return {
+      label: "ACTIVE",
+      class: "badge-active"
+    };
+  }
+
   if (
     ac.status === "Active" &&
     ac.canFly === true
@@ -1694,11 +1715,7 @@ function ACS_getAircraftStatusBadge(ac) {
   }
 
   return {
-    label: (
-      ac.status ||
-      ac.maintenanceStatus ||
-      "UNKNOWN"
-    ).toUpperCase(),
+    label: "UNKNOWN",
     class: "badge-unknown"
   };
 }
@@ -2273,15 +2290,14 @@ function ACS_adaptScheduleItem(row, routePlansById) {
   const rawDeparture = ACS_scheduleText(row?.departure);
   const rawArrival = ACS_scheduleText(row?.arrival);
 
-  const departure =
-    type === "service"
-      ? (ACS_formatUtcTime(scheduledStartAt) || rawDeparture)
-      : rawDeparture;
-
-  const arrival =
-    type === "service"
-      ? (ACS_formatUtcTime(scheduledEndAt) || rawArrival)
-      : rawArrival;
+  /*
+   * The weekly schedule_item is the player-plan authority for
+   * the visible maintenance window. Absolute occurrence dates
+   * belong to aircraft_maintenance_events and must not replace
+   * the weekly start/end shown by Schedule Table.
+   */
+  const departure = rawDeparture;
+  const arrival = rawArrival;
 
   return {
     id: row?.id ?? null,
@@ -6081,31 +6097,79 @@ const bCheckInProgress =
 
   const cycle = ACS_getMaintenanceCycleVisual(aircraft, checkType);
 
-  const scheduledStartAt =
-    service.scheduledStartAt ||
-    service.notesObject?.scheduled_start_at ||
-    null;
+  /*
+   * Weekly player plan authority.
+   * Never build the visible window from a historical technical
+   * occurrence because that can display impossible spans such
+   * as SUN 00:00 → FRI 12:16 for a 24-hour B-Check.
+   */
+  const windowStart =
+    `${dayLabel} ${service.start || service.departure || "—"}`;
 
-  const scheduledEndAt =
-    service.scheduledEndAt ||
-    service.notesObject?.scheduled_end_at ||
-    null;
+  const endDayLabel = (() => {
+    const startMinutes = Number(service.depAbsMin);
+    const endMinutes = Number(service.arrAbsMin);
 
-  const windowStart = scheduledStartAt
-    ? ACS_formatUtcDayTime(scheduledStartAt)
-    : `${dayLabel} ${service.start || "—"}`;
+    if (
+      Number.isFinite(startMinutes) &&
+      Number.isFinite(endMinutes) &&
+      endMinutes >= 7 * 24 * 60
+    ) {
+      const days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
+      return days[Math.floor((endMinutes % (7 * 24 * 60)) / 1440)] || dayLabel;
+    }
 
-  const windowEnd = scheduledEndAt
-    ? ACS_formatUtcDayTime(scheduledEndAt)
-    : `${dayLabel} ${service.end || "—"}`;
+    if (
+      Number.isFinite(startMinutes) &&
+      Number.isFinite(endMinutes) &&
+      endMinutes < startMinutes
+    ) {
+      const days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
+      const currentIndex = days.indexOf(dayLabel);
+      return currentIndex >= 0
+        ? days[(currentIndex + 1) % 7]
+        : dayLabel;
+    }
+
+    const startText = String(service.start || service.departure || "");
+    const endText = String(service.end || service.arrival || "");
+    const toMinutes = value => {
+      const match = /^(\d{2}):(\d{2})$/.exec(value);
+      return match ? Number(match[1]) * 60 + Number(match[2]) : null;
+    };
+    const startClock = toMinutes(startText);
+    const endClock = toMinutes(endText);
+
+    if (
+      Number.isFinite(startClock) &&
+      Number.isFinite(endClock) &&
+      endClock <= startClock &&
+      Number(service.blockTimeMin || 0) > 0
+    ) {
+      const days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
+      const currentIndex = days.indexOf(dayLabel);
+      return currentIndex >= 0
+        ? days[(currentIndex + 1) % 7]
+        : dayLabel;
+    }
+
+    return dayLabel;
+  })();
+
+  const windowEnd =
+    `${endDayLabel} ${service.end || service.arrival || "—"}`;
 
   let cyclePercent = cycle.valid ? Number(cycle.percent) : 0;
   let cycleText = cycle.valid ? cycle.remainingLabel : "Cycle data unavailable";
   let cycleColor = cycle.valid ? cycle.color : "#7c8bb8";
 
   if (isScheduled && cycle.valid && cycle.overdue) {
-    cyclePercent = 0;
-    cycleText = "Covered by scheduled service";
+    /*
+     * A scheduled plan must never erase the technical cycle.
+     * At or beyond due time the cycle is fully consumed, not 0%.
+     */
+    cyclePercent = 100;
+    cycleText = "Service scheduled — cycle due";
     cycleColor = "#ffcc33";
   }
 
