@@ -6099,25 +6099,129 @@ const bCheckInProgress =
     ? ACS_formatUtcDayTime(scheduledEndAt)
     : `${dayLabel} ${service.end || "—"}`;
 
-  let cyclePercent = cycle.valid ? Number(cycle.percent) : 0;
-  let cycleText = cycle.valid ? cycle.remainingLabel : "Cycle data unavailable";
-  let cycleColor = cycle.valid ? cycle.color : "#7c8bb8";
+    /* ============================================================
+     ACS OCC — MAINTENANCE MODAL CYCLE BAR RESTORE
+     ------------------------------------------------------------
+     GLOBAL RULE:
+     - The modal must always show the remaining time to the
+       next scheduled A/B service.
+     - A/B visual countdown is read-only.
+     - No backend mutation.
+     - No C/D mutation.
+     - No aircraft state mutation.
+     ============================================================ */
 
-  if (isScheduled && cycle.valid && cycle.overdue) {
-    cyclePercent = 0;
-    cycleText = "Covered by scheduled service";
-    cycleColor = "#ffcc33";
+  const ACS_MODAL_HOUR_MS = 60 * 60 * 1000;
+  const ACS_MODAL_DAY_MS = 24 * ACS_MODAL_HOUR_MS;
+
+  const modalIntervalDays =
+    isBCheck
+      ? 30
+      : 7;
+
+  const modalIntervalMs =
+    modalIntervalDays * ACS_MODAL_DAY_MS;
+
+  const modalNowValue =
+    ACS_TABLE_TIME?.date ||
+    ACS_SCHEDULE_STATE?.currentSimTime ||
+    null;
+
+  const modalNowDate =
+    modalNowValue
+      ? new Date(modalNowValue)
+      : null;
+
+  const modalScheduledStartDate =
+    scheduledStartAt
+      ? new Date(scheduledStartAt)
+      : null;
+
+  let cyclePercent =
+    cycle.valid
+      ? Number(cycle.percent)
+      : 0;
+
+  let cycleText =
+    cycle.valid
+      ? cycle.remainingLabel
+      : "Cycle data unavailable";
+
+  let cycleColor =
+    cycle.valid
+      ? cycle.color
+      : "#7c8bb8";
+
+  if (
+    isScheduled &&
+    modalNowDate &&
+    modalScheduledStartDate &&
+    !Number.isNaN(modalNowDate.getTime()) &&
+    !Number.isNaN(modalScheduledStartDate.getTime())
+  ) {
+    const rawMsToService =
+      modalScheduledStartDate.getTime() -
+      modalNowDate.getTime();
+
+    const msToService =
+      Math.max(
+        0,
+        rawMsToService
+      );
+
+    const totalHoursToService =
+      Math.ceil(
+        msToService / ACS_MODAL_HOUR_MS
+      );
+
+    const daysToService =
+      Math.floor(
+        totalHoursToService / 24
+      );
+
+    const hoursToService =
+      totalHoursToService % 24;
+
+    cyclePercent =
+      Math.max(
+        0,
+        Math.min(
+          100,
+          (
+            msToService /
+            modalIntervalMs
+          ) * 100
+        )
+      );
+
+    cycleText =
+      rawMsToService <= 0
+        ? "Due now"
+        : `${daysToService}d ${hoursToService}h`;
+
+    if (rawMsToService <= 0) {
+      cycleColor = "#ff1744";
+    } else if (cyclePercent <= 10) {
+      cycleColor = "#ff1744";
+    } else if (cyclePercent <= 25) {
+      cycleColor = "#ff9800";
+    } else if (cyclePercent <= 50) {
+      cycleColor = "#ffcc33";
+    } else {
+      cycleColor = "#00c853";
+    }
   }
 
   if (!isBCheck && bCheckInProgress) {
-  cyclePercent = 100;
-  cycleColor = "#00ff80";
+    cyclePercent = 100;
+    cycleText = "Covered by B-Check";
+    cycleColor = "#00ff80";
   }
 
   if (isInProgress) {
-  cyclePercent = 100;
-  cycleText = "Service in progress";
-  cycleColor = "#00ff80";
+    cyclePercent = 100;
+    cycleText = "Service in progress";
+    cycleColor = "#00ff80";
   }
 
   const safeCyclePercent = Math.max(
