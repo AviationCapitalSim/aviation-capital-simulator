@@ -443,31 +443,60 @@ function ACS_slugAircraftName(value) {
     .replace(/^_+|_+$/g, "");
 }
 
-function ACS_cleanImageModelName(ac) {
+function ACS_escapeRegex(value) {
+  return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function ACS_getAircraftDisplayModel(ac) {
   if (!ac) return "";
 
   const manufacturer = String(ac.manufacturer || "").trim();
-  let model = String(ac.model || ac.aircraft_name || "").trim();
 
-  /* Remove manufacturer prefix if backend already includes it */
-  if (manufacturer) {
-    const re = new RegExp("^" + manufacturer.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s+", "i");
+  let model = String(
+    ac.model ||
+    ac.aircraft_model ||
+    ac.aircraft_name ||
+    ac.model_key ||
+    ""
+  ).trim();
+
+  const prefixes = [
+    manufacturer,
+    "Airbus",
+    "Avro",
+    "Beechcraft",
+    "Boeing",
+    "Cessna",
+    "Convair",
+    "de Havilland",
+    "Douglas",
+    "Handley Page",
+    "Ilyushin",
+    "Lockheed",
+    "Vickers"
+  ].filter(Boolean);
+
+  prefixes.forEach(prefix => {
+    const re = new RegExp("^" + ACS_escapeRegex(prefix) + "\\s+", "i");
     model = model.replace(re, "").trim();
-  }
+  });
 
-  /* Remove common duplicated manufacturer names */
-  model = model
-    .replace(/^boeing\s+/i, "")
-    .replace(/^douglas\s+/i, "")
-    .replace(/^lockheed\s+/i, "")
-    .replace(/^airbus\s+/i, "")
-    .replace(/^avro\s+/i, "")
-    .replace(/^convair\s+/i, "")
-    .replace(/^de\s+havilland\s+/i, "")
-    .replace(/^vickers\s+/i, "")
+  return model || String(ac.model || ac.aircraft_name || "").trim();
+}
+
+function ACS_getAircraftDisplayName(ac) {
+  if (!ac) return "Unknown Aircraft";
+
+  const manufacturer = String(ac.manufacturer || "").trim();
+  const model = ACS_getAircraftDisplayModel(ac);
+
+  return `${manufacturer} ${model}`
+    .replace(/\s+/g, " ")
     .trim();
+}
 
-  return model;
+function ACS_cleanImageModelName(ac) {
+  return ACS_getAircraftDisplayModel(ac);
 }
 
 /* ============================================================
@@ -602,19 +631,19 @@ async function renderCards(filterManufacturer = "All") {
     card.className = "card";
 
     const img = getAircraftImage(ac);
+    const displayName = ACS_getAircraftDisplayName(ac);
 
-      const engineLine =
-      String(ac.engines || "").trim() || "Not specified";
-     
+    const engineLine =
+    String(ac.engines || "").trim() || "Not specified";
 
     const rangeLine = Number(ac.range_nm || 0).toLocaleString("en-US");
     const priceLine = Number(ac.price_acs_usd || 0).toLocaleString("en-US");
 
-    card.innerHTML = `
-      <img src="${img}" alt="${ac.model}"
-       onerror="ACS_handleImageFallback(this)" />
+   card.innerHTML = `
+   <img src="${img}" alt="${displayName}"
+   onerror="ACS_handleImageFallback(this)" />
 
-      <h3>${ac.manufacturer} ${ac.model}</h3>
+      <h3>${displayName}</h3>
       <div class="spec-line">Year: ${ac.year}</div>
       <div class="spec-line">Seats: ${ac.seats}</div>
       <div class="spec-line">Range: ${rangeLine} nm</div>
@@ -681,9 +710,10 @@ function openBuyModal(ac) {
 
   document.getElementById("modalImage").src = selectedAircraftImage;
   document.getElementById("modalTitle").textContent =
-    `${ac.manufacturer} ${ac.model}`;
+  ACS_getAircraftDisplayName(ac);
 
   // BUY como default
+   
   const opSel = document.getElementById("modalOperation");
   opSel.value = "BUY";
 
