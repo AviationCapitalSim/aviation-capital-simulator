@@ -38,18 +38,17 @@
     font-size: 1rem;
   }
 
-  /* FILTER BAR */
-       
-.filter-bar {
-  display: flex;
-  gap: 0.6rem;
-  padding: 0.7rem 1rem;
-  overflow-x: auto;
-  scrollbar-width: thin;
-  max-width: 1400px;
-  margin: 0 auto 1.5rem;
+ /* FILTER BAR — permite varias filas, queda alineado a la izquierda  */
+.filter-bar{
+  display:flex;
+  flex-wrap:wrap;          /* ⬅️  rompe línea cuando se llena */
+  gap:0.6rem;
+  padding:0.7rem 1rem;
+  overflow-x:visible;      /* ⬅️  quita scroll oculto */
+  max-width:1400px;
+  margin:0 auto 1.5rem;
+  justify-content:flex-start;  /* ⬅️  NO centra, mantiene alineado */
 }
-
   .chip {
     padding: 0.45rem 1rem;
     background: #0f203c;
