@@ -376,22 +376,37 @@ async function getAircraftBase() {
 }
 
 /* ============================================================
-   4) CHIPS DE FABRICANTE
+   4) CHIPS DE FABRICANTE — HISTORICAL CATALOG SYNC
+   ------------------------------------------------------------
+   Purpose:
+   - El filtro usa EXACTAMENTE la misma lista histórica que las tarjetas
+   - Evita desincronización entre chips y aircraft cards
+   - No toca Finance, Orders, Factory Slots ni Time Engine
    ============================================================ */
 
-async function buildFilterChips() {
+let ACS_BUY_NEW_ACTIVE_CATALOG = [];
+
+function ACS_getManufacturerKey(value) {
+  return String(value || "")
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+async function buildFilterChips(baseList = null) {
   const bar = document.getElementById("filterBar");
   if (!bar) return;
 
-  const base = await getAircraftBase();
+  const base = Array.isArray(baseList)
+    ? baseList
+    : ACS_BUY_NEW_ACTIVE_CATALOG;
 
-  const set = new Set(
-    base
-      .map(a => a.manufacturer)
-      .filter(Boolean)
-  );
-
-  const list = Array.from(set).sort();
+  const manufacturers = Array.from(
+    new Set(
+      base
+        .map(a => ACS_getManufacturerKey(a.manufacturer))
+        .filter(Boolean)
+    )
+  ).sort((a, b) => a.localeCompare(b));
 
   bar.innerHTML = "";
 
@@ -401,11 +416,11 @@ async function buildFilterChips() {
   allChip.textContent = "All";
   bar.appendChild(allChip);
 
-  list.forEach(m => {
+  manufacturers.forEach(manufacturer => {
     const chip = document.createElement("div");
     chip.className = "chip";
-    chip.dataset.manufacturer = m;
-    chip.textContent = m;
+    chip.dataset.manufacturer = manufacturer;
+    chip.textContent = manufacturer;
     bar.appendChild(chip);
   });
 
@@ -421,6 +436,11 @@ async function buildFilterChips() {
 
     await renderCards(chip.dataset.manufacturer);
   };
+
+  console.log(
+    "🟩 ACS Buy New Manufacturer Filters:",
+    manufacturers
+  );
 }
 
 /* ============================================================
@@ -603,12 +623,24 @@ async function renderCards(filterManufacturer = "All") {
     </div>
   `;
 
-  const base = await getAircraftBase();
+  const base =
+    Array.isArray(ACS_BUY_NEW_ACTIVE_CATALOG) &&
+    ACS_BUY_NEW_ACTIVE_CATALOG.length > 0
+      ? ACS_BUY_NEW_ACTIVE_CATALOG
+      : await getAircraftBase();
+
+  if (!ACS_BUY_NEW_ACTIVE_CATALOG.length) {
+    ACS_BUY_NEW_ACTIVE_CATALOG = base;
+  }
+
+  const selectedManufacturer = ACS_getManufacturerKey(filterManufacturer);
 
   const list =
-    filterManufacturer === "All"
+    selectedManufacturer === "All"
       ? base
-      : base.filter(a => a.manufacturer === filterManufacturer);
+      : base.filter(a =>
+          ACS_getManufacturerKey(a.manufacturer) === selectedManufacturer
+        );
 
   ACS_currentRenderedList = list;
 
@@ -1520,12 +1552,26 @@ document.addEventListener("DOMContentLoaded", () => {
       return setTimeout(initBuyNewWhenTimeReady, 200);
     }
 
- await buildFilterChips();
+const historicalCatalog = await getAircraftBase();
+
+ACS_BUY_NEW_ACTIVE_CATALOG = historicalCatalog;
+
+await buildFilterChips(ACS_BUY_NEW_ACTIVE_CATALOG);
 await renderCards("All");
 
 console.log(
   "🟩 Buy New Aircraft — Factory Catalog Initialized:",
-  simYear
+  simYear,
+  "Aircraft:",
+  ACS_BUY_NEW_ACTIVE_CATALOG.length,
+  "Manufacturers:",
+  Array.from(
+    new Set(
+      ACS_BUY_NEW_ACTIVE_CATALOG
+        .map(a => ACS_getManufacturerKey(a.manufacturer))
+        .filter(Boolean)
+    )
+  ).sort()
 );
   }
 
