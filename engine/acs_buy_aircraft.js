@@ -376,8 +376,72 @@ async function getAircraftBase() {
 }
 
 /* ============================================================
-   4) CHIPS DE FABRICANTE
+   4) CHIPS DE FABRICANTE — ACS OCC NORMALIZED FILTER
+   ------------------------------------------------------------
+   Purpose:
+   - Build manufacturer filters from backend catalog safely
+   - Normalize OEM/manufacturer names
+   - Avoid missing chips caused by inconsistent PostgreSQL fields
+   - Frontend remains read-only; backend remains authority
    ============================================================ */
+
+function ACS_normalizeManufacturerName(value) {
+  return String(value || "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function ACS_resolveAircraftManufacturer(ac) {
+  const direct = ACS_normalizeManufacturerName(
+    ac?.manufacturer ||
+    ac?.oem ||
+    ac?.make ||
+    ac?.manufacturer_name ||
+    ac?.brand
+  );
+
+  if (direct && direct !== "Unknown") return direct;
+
+  const text = ACS_normalizeManufacturerName(
+    ac?.aircraft_name ||
+    ac?.model ||
+    ac?.model_key ||
+    ""
+  );
+
+  const knownManufacturers = [
+    "Airbus",
+    "ATR",
+    "Avro",
+    "BAC",
+    "Beechcraft",
+    "Boeing",
+    "Bombardier",
+    "Cessna",
+    "COMAC",
+    "Convair",
+    "de Havilland",
+    "Douglas",
+    "Embraer",
+    "Fokker",
+    "Handley Page",
+    "Ilyushin",
+    "Lockheed",
+    "McDonnell Douglas",
+    "Sud Aviation",
+    "Sukhoi",
+    "Tupolev",
+    "Vickers"
+  ];
+
+  return knownManufacturers.find(m =>
+    text.toLowerCase().startsWith(m.toLowerCase())
+  ) || "Unknown";
+}
+
+function ACS_getManufacturerFilterKey(ac) {
+  return ACS_resolveAircraftManufacturer(ac);
+}
 
 async function buildFilterChips() {
   const bar = document.getElementById("filterBar");
@@ -385,27 +449,29 @@ async function buildFilterChips() {
 
   const base = await getAircraftBase();
 
-  const set = new Set(
-    base
-      .map(a => a.manufacturer)
-      .filter(Boolean)
-  );
-
-  const list = Array.from(set).sort();
+  const manufacturers = Array.from(
+    new Set(
+      base
+        .map(ac => ACS_getManufacturerFilterKey(ac))
+        .filter(m => m && m !== "Unknown")
+    )
+  ).sort((a, b) => a.localeCompare(b));
 
   bar.innerHTML = "";
 
   const allChip = document.createElement("div");
   allChip.className = "chip active";
   allChip.dataset.manufacturer = "All";
-  allChip.textContent = "All";
+  allChip.textContent = `All (${base.length})`;
   bar.appendChild(allChip);
 
-  list.forEach(m => {
+  manufacturers.forEach(m => {
+    const count = base.filter(ac => ACS_getManufacturerFilterKey(ac) === m).length;
+
     const chip = document.createElement("div");
     chip.className = "chip";
     chip.dataset.manufacturer = m;
-    chip.textContent = m;
+    chip.textContent = `${m} (${count})`;
     bar.appendChild(chip);
   });
 
@@ -413,14 +479,13 @@ async function buildFilterChips() {
     const chip = e.target.closest(".chip");
     if (!chip) return;
 
-    bar.querySelectorAll(".chip").forEach(c => {
-      c.classList.remove("active");
-    });
-
+    bar.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
     chip.classList.add("active");
 
     await renderCards(chip.dataset.manufacturer);
   };
+
+  console.log("🟩 ACS Buy New Filter Manufacturers:", manufacturers);
 }
 
 /* ============================================================
@@ -593,6 +658,7 @@ function getAircraftImage(ac) {
 let ACS_currentRenderedList = [];
 
 async function renderCards(filterManufacturer = "All") {
+   
   const grid = document.getElementById("cardsGrid");
   if (!grid) return;
 
@@ -606,9 +672,9 @@ async function renderCards(filterManufacturer = "All") {
   const base = await getAircraftBase();
 
   const list =
-    filterManufacturer === "All"
-      ? base
-      : base.filter(a => a.manufacturer === filterManufacturer);
+  filterManufacturer === "All"
+    ? base
+    : base.filter(a => ACS_getManufacturerFilterKey(a) === filterManufacturer);
 
   ACS_currentRenderedList = list;
 
