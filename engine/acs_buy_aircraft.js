@@ -1567,32 +1567,48 @@ document.addEventListener("click", e => {
 });
 
 /* ============================================================
-   🚀 INIT SEQUENCE — FACTORY CATALOG READY
+   🚀 INIT SEQUENCE — BUY NEW waits for ACS_TIME authority
    ------------------------------------------------------------
-   Purpose:
-   - Wait for ACS Time Engine when available
-   - Allow 1940 as valid simulation year
-   - Load Factory Catalog from backend
-   - Render Buy New cards from PostgreSQL authority
+   Fix:
+   - Prevents Buy New from initializing with fallback year 1940
+   - Waits until ACS_TIME.currentTime exists
+   - Then loads the real historical catalog year
+   - Rebuilds filters and cards from the same final catalog
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
 
   async function initBuyNewWhenTimeReady() {
+    const hasTimeAuthority =
+      typeof ACS_TIME !== "undefined" &&
+      ACS_TIME &&
+      ACS_TIME.currentTime;
 
-    const simYear = Number(getCurrentSimYear() || 1940);
-
-    if (!simYear || simYear < 1940) {
-      return setTimeout(initBuyNewWhenTimeReady, 200);
+    if (!hasTimeAuthority) {
+      return setTimeout(initBuyNewWhenTimeReady, 250);
     }
 
- await buildFilterChips();
-await renderCards("All");
+    const simYear = Number(getCurrentSimYear());
 
-console.log(
-  "🟩 Buy New Aircraft — Factory Catalog Initialized:",
-  simYear
-);
+    if (!Number.isFinite(simYear) || simYear <= 1940) {
+      return setTimeout(initBuyNewWhenTimeReady, 250);
+    }
+
+    ACS_FACTORY_CATALOG_CACHE = {
+      year: null,
+      aircraft: []
+    };
+
+    await getAircraftBase();
+    await buildFilterChips();
+    await renderCards("All");
+
+    console.log(
+      "🟩 Buy New Aircraft — Factory Catalog Initialized:",
+      simYear,
+      "COUNT:",
+      ACS_FACTORY_CATALOG_CACHE.aircraft.length
+    );
   }
 
   initBuyNewWhenTimeReady();
