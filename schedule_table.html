@@ -4534,11 +4534,11 @@ body.innerHTML = `
   const dep    = it?.departure || "—";
   const arr    = it?.arrival || "—";
 
-  // ============================================================
-  // 🔧 FLIGHT PANEL — ÚNICA CORRECCIÓN
-  // ============================================================
+ // ============================================================
+// 🔧 FLIGHT PANEL — ÚNICA CORRECCIÓN
+// ============================================================
 
-  const oneWayMin = Number.isFinite(Number(it?.blockTimeMin))
+const oneWayMin = Number.isFinite(Number(it?.blockTimeMin))
   ? Number(it.blockTimeMin)
   : (
       dep !== "—" && arr !== "—"
@@ -4546,68 +4546,60 @@ body.innerHTML = `
         : 0
     );
 
-   const turnBase = Number.isFinite(Number(it?.turnaroundMin))
+const blockTotalMin = oneWayMin * 2;
+
+const turnBase = Number.isFinite(Number(it?.turnaroundMin))
   ? Number(it.turnaroundMin)
   : TURNAROUND_MIN;
 
-  const oneWayMin = route && Number.isFinite(route.blockTimeMin)
-    ? route.blockTimeMin
-    : (dep !== "—" && arr !== "—" ? Math.max(0, toMin(arr) - toMin(dep)) : 0);
+let rotEnd = dep !== "—"
+  ? toHHMM(toMin(dep) + oneWayMin + turnBase + oneWayMin)
+  : arr;
 
-  const blockTotalMin = oneWayMin * 2;
+let nextFlightText = dep !== "—"
+  ? toHHMM(toMin(dep) + oneWayMin + turnBase + oneWayMin + turnBase)
+  : "—";
 
-  const turnBase = route && Number.isFinite(route.turnaroundMin)
-    ? route.turnaroundMin
-    : TURNAROUND_MIN;
+const blockText =
+  `${Math.floor(blockTotalMin / 60)}h${String(blockTotalMin % 60).padStart(2,"0")}`;
 
-  let rotEnd = dep !== "—"
-    ? toHHMM(toMin(dep) + oneWayMin + turnBase + oneWayMin)
-    : arr;
+const turnText = `${turnBase} min`;
 
-  let nextFlightText = dep !== "—"
-    ? toHHMM(toMin(dep) + oneWayMin + turnBase + oneWayMin + turnBase)
-    : "—";
+title.textContent = `✈️ ${flightLabel}`;
 
-  const blockText =
-    `${Math.floor(blockTotalMin / 60)}h${String(blockTotalMin % 60).padStart(2,"0")}`;
+box.innerHTML = `
+  <div class="flight-kicker">
+    <strong>${origin}</strong> ⇄ <strong>${dest}</strong>
+    ${day ? `<span style="opacity:.85;"> · ${day.toUpperCase()}</span>` : ""}
+  </div>
 
-  const turnText = `${turnBase} min`;
+  <div class="flight-hero">
+    <div class="route">Route Panel</div>
+    <div class="times">DEP ${dep} · END ${rotEnd}</div>
+  </div>
 
-  title.textContent = `✈️ ${flightLabel}`;
-
-  box.innerHTML = `
-    <div class="flight-kicker">
-      <strong>${origin}</strong> ⇄ <strong>${dest}</strong>
-      ${day ? `<span style="opacity:.85;"> · ${day.toUpperCase()}</span>` : ""}
+  <div class="flight-meta">
+    <div class="meta-card">
+      <span class="label">Block Total Time</span>
+      <span class="value">${blockText}</span>
     </div>
-
-    <div class="flight-hero">
-      <div class="route">Route Panel</div>
-      <div class="times">DEP ${dep} · END ${rotEnd}</div>
+    <div class="meta-card">
+      <span class="label">Turnaround</span>
+      <span class="value">${turnText}</span>
     </div>
-
-    <div class="flight-meta">
-      <div class="meta-card">
-        <span class="label">Block Total Time</span>
-        <span class="value">${blockText}</span>
-      </div>
-      <div class="meta-card">
-        <span class="label">Turnaround</span>
-        <span class="value">${turnText}</span>
-      </div>
-      <div class="meta-card">
-        <span class="label">Maintenance</span>
-        <span class="value">None</span>
-      </div>
-      <div class="meta-card">
-        <span class="label">Next Flight</span>
-        <span class="value">${nextFlightText}</span>
-      </div>
+    <div class="meta-card">
+      <span class="label">Maintenance</span>
+      <span class="value">None</span>
     </div>
-  `;
+    <div class="meta-card">
+      <span class="label">Next Flight</span>
+      <span class="value">${nextFlightText}</span>
+    </div>
+  </div>
+`;
 
-  modal.classList.remove("hidden");
- 
+modal.classList.remove("hidden");
+
 }
 
 /* ============================================================
@@ -4617,6 +4609,7 @@ body.innerHTML = `
    ✅ Limpia selección
    ✅ No toca delete logic
    ============================================================ */
+     
 function closeFlightModal(){
 
   const modal = document.getElementById("flightModal");
