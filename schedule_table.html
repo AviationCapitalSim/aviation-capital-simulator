@@ -1829,31 +1829,49 @@ function ACS_EvaluateScheduleServiceState(ac, scheduleItems) {
 }
      
 /* ============================================================
-   🟦 PASO 4.2-A — FLIGHT COMPATIBILITY HELPERS (MODEL EXACT)
+   🟦 ACS MODEL COMPATIBILITY — AIRBUS OCC AUTHORITY
+   ------------------------------------------------------------
+   Date: 24 JUN 2026
+   Rule:
+   - Routes are compatible by aircraft model/performance family.
+   - A route created for one model can rotate only among same model.
+   - No registration-only authority.
+   - No frontend persistence.
    ============================================================ */
 
-function ACS_isFlightCompatibleWithAircraft(flight, aircraft) {
-
-  // Normalizador seguro
-  const norm = (v) => String(v || "")
+function ACS_normalizeAircraftModelKey(value) {
+  return String(value || "")
     .normalize("NFKC")
-    .replace(/\s+/g, " ")
     .replace(/\u00A0/g, " ")
+    .replace(/[_\-]+/g, " ")
+    .replace(/\s+/g, " ")
     .trim()
     .toUpperCase();
+}
 
+function ACS_getModelAuthorityKey(obj) {
+  if (!obj) return "";
+
+  return ACS_normalizeAircraftModelKey(
+    obj.modelKey ||
+    obj.model_key ||
+    obj.model ||
+    obj.aircraft_name ||
+    obj.aircraft ||
+    obj.type ||
+    obj.name
+  );
+}
+
+function ACS_isFlightCompatibleWithAircraft(flight, aircraft) {
   if (!flight || !aircraft) return false;
 
-  // ✅ Vuelo: usar SIEMPRE modelKey (o aircraft) como fuente real
-  const fKey = norm(flight.modelKey || flight.aircraft || flight.model || flight.aircraftModel);
+  const flightModel = ACS_getModelAuthorityKey(flight);
+  const aircraftModel = ACS_getModelAuthorityKey(aircraft);
 
-  // ✅ Avión: usar model real del fleet
-  const aKey = norm(aircraft.model || aircraft.modelKey || aircraft.aircraft || aircraft.name);
+  if (!flightModel || !aircraftModel) return false;
 
-  if (!fKey || !aKey) return false;
-
-  // Compatibilidad estricta por modelo
-  return fKey === aKey;
+  return flightModel === aircraftModel;
 }
 
 function ACS_isFlightAlreadyAssigned(flight){
