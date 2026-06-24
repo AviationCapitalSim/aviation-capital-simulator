@@ -1829,49 +1829,31 @@ function ACS_EvaluateScheduleServiceState(ac, scheduleItems) {
 }
      
 /* ============================================================
-   🟦 ACS MODEL COMPATIBILITY — AIRBUS OCC AUTHORITY
-   ------------------------------------------------------------
-   Date: 24 JUN 2026
-   Rule:
-   - Routes are compatible by aircraft model/performance family.
-   - A route created for one model can rotate only among same model.
-   - No registration-only authority.
-   - No frontend persistence.
+   🟦 PASO 4.2-A — FLIGHT COMPATIBILITY HELPERS (MODEL EXACT)
    ============================================================ */
 
-function ACS_normalizeAircraftModelKey(value) {
-  return String(value || "")
+function ACS_isFlightCompatibleWithAircraft(flight, aircraft) {
+
+  // Normalizador seguro
+  const norm = (v) => String(v || "")
     .normalize("NFKC")
-    .replace(/\u00A0/g, " ")
-    .replace(/[_\-]+/g, " ")
     .replace(/\s+/g, " ")
+    .replace(/\u00A0/g, " ")
     .trim()
     .toUpperCase();
-}
 
-function ACS_getModelAuthorityKey(obj) {
-  if (!obj) return "";
-
-  return ACS_normalizeAircraftModelKey(
-    obj.modelKey ||
-    obj.model_key ||
-    obj.model ||
-    obj.aircraft_name ||
-    obj.aircraft ||
-    obj.type ||
-    obj.name
-  );
-}
-
-function ACS_isFlightCompatibleWithAircraft(flight, aircraft) {
   if (!flight || !aircraft) return false;
 
-  const flightModel = ACS_getModelAuthorityKey(flight);
-  const aircraftModel = ACS_getModelAuthorityKey(aircraft);
+  // ✅ Vuelo: usar SIEMPRE modelKey (o aircraft) como fuente real
+  const fKey = norm(flight.modelKey || flight.aircraft || flight.model || flight.aircraftModel);
 
-  if (!flightModel || !aircraftModel) return false;
+  // ✅ Avión: usar model real del fleet
+  const aKey = norm(aircraft.model || aircraft.modelKey || aircraft.aircraft || aircraft.name);
 
-  return flightModel === aircraftModel;
+  if (!fKey || !aKey) return false;
+
+  // Compatibilidad estricta por modelo
+  return fKey === aKey;
 }
 
 function ACS_isFlightAlreadyAssigned(flight){
@@ -3381,19 +3363,15 @@ for (let i = 0; i < EMPTY_ROWS; i++) {
    ============================================================ */
 
 /* ============================================================
-   🟦 ASSIGN ROUTE TO AIRCRAFT — MODEL COMPATIBLE MODAL
+   🟦 PASO 2.2-A — ASSIGN ROUTE (SOURCE = scheduleItems)
    ------------------------------------------------------------
-   Date: 24 JUN 2026
-   ACS / Airbus OCC Rule:
-   - Route Schedule creates planned flights for a model.
-   - Schedule Table opens modal first.
-   - Player assigns/rotates compatible flights manually.
-   - Compatibility is by model, not only registration.
-   - No localStorage.
-   - No automatic frontend assignment.
+   • SOLO abre el modal
+   • NO asigna nada aquí
+   • NO valida compatibilidad aquí
    ============================================================ */
 
-function assignRouteToTail(ac) {
+function assignRouteToTail(ac){
+
   if (!ac || !ac.id) {
     alert("⚠ Invalid aircraft.");
     return;
@@ -3406,26 +3384,26 @@ function assignRouteToTail(ac) {
     return;
   }
 
-  const compatibleFlights = items
+  const unassignedFlights = items
     .filter(it =>
       it &&
       it.type === "flight" &&
-      String(it.status || "planned").toLowerCase() === "planned"
+      (!it.aircraftId || it.__edited === true)
     )
     .filter(it => {
       if (typeof ACS_isFlightCompatibleWithAircraft !== "function") return true;
       return ACS_isFlightCompatibleWithAircraft(it, ac);
     });
 
-  if (!compatibleFlights.length) {
-    alert("⚠ No compatible planned flights found for this aircraft model.");
+  if (!unassignedFlights.length) {
+    alert("⚠ All scheduled flights are already assigned.");
     return;
   }
 
   ACS_ASSIGN_CTX.aircraft = ac;
   ACS_ASSIGN_CTX.flightIds = [];
 
-  openAssignFlightsModal(compatibleFlights);
+  ACS_openAssignFlightsModal(ac, unassignedFlights);
 }
      
 /* ============================================================
