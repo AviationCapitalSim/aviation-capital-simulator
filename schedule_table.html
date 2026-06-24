@@ -4970,103 +4970,26 @@ function closeFlightModal(){
     try { ACS_restoreFlightModalFooterDefault(); } catch(e){}
   }
 }
-     
+          
 /* ============================================================
-   ❌ PASO 4 — CANCEL SERVICE — 17DEC25
-   ============================================================ */
-
-function cancelSelectedService(){
-
-  if (!ACS_selectedChipEl) {
-    closeFlightModal();
-    return;
-  }
-
-  const id = ACS_selectedChipEl.dataset.id || "";
-  if (!id) {
-    closeFlightModal();
-    return;
-  }
-
-  const items = getItems();
-  const filtered = items.filter(it => it.id !== id);
-
-  setItems(filtered);
-  closeFlightModal();
-  renderSchedule();
-}
-     
-/* ============================================================
-   🟥 HOTFIX — RESTORE flightModal FOOTER (Edit/Remove/Delete)
+   🟦 HOTFIX — RESTORE flightModal FOOTER (Edit Only)
    ------------------------------------------------------------
-   ✅ Usa window.selectedFlight (source of truth real)
-   ✅ Delete llama redirect con (aircraft + flight)
+   Airbus OCC:
+   - No REMOVE local
+   - No DELETE local
+   - Schedule Table no borra vuelos en navegador
    ============================================================ */
 
-function ACS_restoreFlightModalFooterDefault(){
-
-  const modal = document.getElementById("flightModal");
-  if (!modal) return;
-
-  const footer = modal.querySelector(".acs-modal-footer");
+function ACS_restoreFlightModalFooterDefault() {
+  const footer = document.querySelector("#flightModal .acs-modal-footer");
   if (!footer) return;
 
-  // ✅ Source of truth real en tu tabla:
-  // window.selectedFlight = { data: it, element: chip }
-  const canEdit = !!(window.selectedFlight && window.selectedFlight.data);
-
   footer.innerHTML = `
-    ${canEdit
-      ? `<button class="btn-modal gold" onclick="editSelectedFlight()">✏️ EDIT</button>`
-      : `<button class="btn-modal gold disabled" disabled>✏️ EDIT</button>`
-    }
-    <button class="btn-modal amber" onclick="ACS_removeSelectedFlights()">🧹 REMOVE FLIGHTS</button>
-    <button class="btn-modal red" onclick="ACS_redirectToDeleteFlights(getCurrentAircraftFromFlight(), window.selectedFlight?.data || window.ACS_selectedFlightItem)">🗑 DELETE FLIGHTS</button>
+    <button class="btn-modal gold" onclick="editSelectedFlight()">✏️ EDIT</button>
     <button class="btn-modal ghost" onclick="closeFlightModal()">Close</button>
   `;
 }
-
-     
-/* ============================================================
-   🟥 D3.1 — DELETE FLIGHTS REDIRECT (SINGLE FLIGHT SCOPE)
-   ------------------------------------------------------------
-   Fix:
-   ✅ Pasa aircraft + flightNumberOut
-   ✅ Delete Modal muestra SOLO ese vuelo
-   ✅ No toca la tabla
-   ============================================================ */
-
-function ACS_redirectToDeleteFlights(ac, flight) {
-
-  if (!ac || !flight) {
-    console.warn("Delete redirect aborted: missing aircraft or flight");
-    return;
-  }
-
-  // Cerrar Flight Modal (si aplica)
-  const fm = document.getElementById("flightModal");
-  if (fm) fm.classList.add("hidden");
-
-  // 🔑 ENVIAR AMBOS flightNumbers (OUT + IN)
-  ACS_openDeleteFlightsModal({
-    aircraft: ac,
-    flightNumbers: [
-      String(
-        flight.flightNumberOut ||
-        flight.labelOut ||
-        flight.flightLabelOut ||
-        ""
-      ),
-      String(
-        flight.flightNumberIn ||
-        flight.labelIn ||
-        flight.flightLabelIn ||
-        ""
-      )
-    ]
-  });
-}
-     
+          
 /* ============================================================
    🟩 B2 — EDIT SELECTED FLIGHT (EACH DAY FIX)
    ------------------------------------------------------------
