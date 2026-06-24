@@ -3381,15 +3381,19 @@ for (let i = 0; i < EMPTY_ROWS; i++) {
    ============================================================ */
 
 /* ============================================================
-   🟦 PASO 2.2-A — ASSIGN ROUTE (SOURCE = scheduleItems)
+   🟦 ASSIGN ROUTE TO AIRCRAFT — MODEL COMPATIBLE MODAL
    ------------------------------------------------------------
-   • SOLO abre el modal
-   • NO asigna nada aquí
-   • NO valida compatibilidad aquí
+   Date: 24 JUN 2026
+   ACS / Airbus OCC Rule:
+   - Route Schedule creates planned flights for a model.
+   - Schedule Table opens modal first.
+   - Player assigns/rotates compatible flights manually.
+   - Compatibility is by model, not only registration.
+   - No localStorage.
+   - No automatic frontend assignment.
    ============================================================ */
 
-function assignRouteToTail(ac){
-
+function assignRouteToTail(ac) {
   if (!ac || !ac.id) {
     alert("⚠ Invalid aircraft.");
     return;
@@ -3402,26 +3406,26 @@ function assignRouteToTail(ac){
     return;
   }
 
-  const unassignedFlights = items
+  const compatibleFlights = items
     .filter(it =>
       it &&
       it.type === "flight" &&
-      (!it.aircraftId || it.__edited === true)
+      String(it.status || "planned").toLowerCase() === "planned"
     )
     .filter(it => {
       if (typeof ACS_isFlightCompatibleWithAircraft !== "function") return true;
       return ACS_isFlightCompatibleWithAircraft(it, ac);
     });
 
-  if (!unassignedFlights.length) {
-    alert("⚠ All scheduled flights are already assigned.");
+  if (!compatibleFlights.length) {
+    alert("⚠ No compatible planned flights found for this aircraft model.");
     return;
   }
 
   ACS_ASSIGN_CTX.aircraft = ac;
   ACS_ASSIGN_CTX.flightIds = [];
 
-  ACS_openAssignFlightsModal(ac, unassignedFlights);
+  openAssignFlightsModal(compatibleFlights);
 }
      
 /* ============================================================
