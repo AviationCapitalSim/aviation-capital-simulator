@@ -4507,7 +4507,10 @@ body.innerHTML = `
     x.day === day
   );
 
-  const iataCode = localStorage.getItem("userIATA") || "IT";
+  const iataCode = ACS_scheduleText(
+  ACS_SCHEDULE_STATE.airline?.iata,
+  "IT"
+  ).toUpperCase();
   const fnOutRaw = it?.flightNumberOut || "";
   const fnInRaw  = it?.flightNumberIn  || "";
 
