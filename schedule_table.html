@@ -3355,15 +3355,16 @@ for (let i = 0; i < EMPTY_ROWS; i++) {
 }
 
 /* ============================================================
-   🟦 ASSIGN ROUTE — MODEL AUTHORITY / MODAL FIRST
+   🟦 ASSIGN ROUTE — MODEL TYPE AUTHORITY / MODAL FIRST
    ------------------------------------------------------------
    Date: 24 JUN 2026
-   Rule:
-   - Route Schedule creates planned flights by aircraft model/type.
-   - Schedule Table assigns the real tail/registration through modal.
-   - Pending flights have no aircraftId.
-   - Compatibility is by model_key / aircraft model.
-   - No automatic assignment here.
+   ACS Rule:
+   - Route Schedule may store aircraft_id/registration as reference data.
+   - Schedule Table assigns operationally by aircraft MODEL/TYPING.
+   - Do NOT treat aircraft_id as final assignment authority here.
+   - Modal opens for flights compatible with selected aircraft model.
+   - No backend changes.
+   - No localStorage.
    ============================================================ */
 
 function assignRouteToTail(ac) {
@@ -3383,13 +3384,20 @@ function assignRouteToTail(ac) {
   const aircraftModelKey = normalizeModel(
     ac.modelKey ||
     ac.model ||
-    ac.aircraft ||
     ac.type ||
+    ac.aircraft ||
+    ac.aircraftName ||
     ac.name ||
     ""
   );
 
-  const pendingFlights = items.filter(it => {
+  if (!aircraftModelKey) {
+    alert("⚠ Aircraft model data missing.");
+    return;
+  }
+
+  const compatibleFlights = items.filter(it => {
+
     if (!it) return false;
     if (it.type !== "flight") return false;
 
@@ -3399,36 +3407,31 @@ function assignRouteToTail(ac) {
 
     if (status !== "planned") return false;
 
-    const alreadyAssigned =
-      Boolean(it.aircraftId) ||
-      Boolean(it.aircraft_id) ||
-      it.assigned === true;
-
-    if (alreadyAssigned && it.__edited !== true) return false;
-
     const flightModelKey = normalizeModel(
       it.modelKey ||
       it.model_key ||
       it.acType ||
       it.model ||
       it.aircraft ||
+      it.aircraftName ||
       ""
     );
 
-    if (!aircraftModelKey || !flightModelKey) return false;
+    if (!flightModelKey) return false;
 
-    return aircraftModelKey === flightModelKey;
+    return flightModelKey === aircraftModelKey;
+
   });
 
-  if (!pendingFlights.length) {
-    alert("⚠ No pending compatible flights found for this aircraft model.");
+  if (!compatibleFlights.length) {
+    alert("⚠ No compatible planned flights found for this aircraft model.");
     return;
   }
 
   ACS_ASSIGN_CTX.aircraft = ac;
   ACS_ASSIGN_CTX.flightIds = [];
 
-  ACS_openAssignFlightsModal(ac, pendingFlights);
+  ACS_openAssignFlightsModal(ac, compatibleFlights);
 }
      
 /* ============================================================
