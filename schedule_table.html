@@ -4817,8 +4817,10 @@ function ACS_loadRoutesStepA() {
 
   console.log("🟦 STEP A — Loading routes...");
 
-  const routes = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-
+  const routes = Array.isArray(ACS_SCHEDULE_STATE.scheduleItems)
+  ? [...ACS_SCHEDULE_STATE.scheduleItems]
+  : [];
+     
   if (!Array.isArray(routes)) {
     console.warn("⚠ scheduleItems no es un array. Valor:", routes);
     window.ACS_Routes_Stored = [];
