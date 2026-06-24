@@ -2140,36 +2140,32 @@ async function confirmRoute() {
        ============================================================ */
 
     const payload = {
-      origin,
-      destination,
+    origin,
+    destination,
 
-      aircraft_id: aircraftId,
-      aircraftId,
+  selected_days: selectedDays,
+  days: selectedDays,
 
-      selected_days: selectedDays,
-      days: selectedDays,
+  departure,
+  arrival,
 
-      departure,
-      arrival,
+  route_type: "PASSENGER",
 
-      route_type: "PASSENGER",
+  distance_nm: Math.round(finalDistanceNM),
+  block_time_min: Math.round(blockTimeMin),
+  turnaround_min: Math.round(turnaroundMin),
+  total_rotation_min: Math.round(totalRotationMin),
 
-      distance_nm: Math.round(finalDistanceNM),
-      block_time_min: Math.round(blockTimeMin),
-      turnaround_min: Math.round(turnaroundMin),
-      total_rotation_min: Math.round(totalRotationMin),
+  aircraft_range_nm: Math.round(aircraftRangeNm),
+  speed_kts: Math.round(speedKts),
 
-      aircraft_range_nm: Math.round(aircraftRangeNm),
-      speed_kts: Math.round(speedKts),
+  model_key: modelKey,
+  aircraft: aircraftName,
 
-      model_key: modelKey,
-      aircraft: aircraftName,
-      registration,
-
-      optimize_rotation: optimizeRotation,
-      source: "ACS_ROUTE_SCHEDULE_BACKEND_CONFIRM_V3"
-    };
-
+  optimize_rotation: optimizeRotation,
+  source: "ACS_ROUTE_SCHEDULE_BACKEND_CONFIRM_V3_MODEL_AUTHORITY"
+};
+       
     console.log("🟦 RS CONFIRM ROUTE PAYLOAD:", payload);
 
     /* ============================================================
