@@ -694,26 +694,34 @@ async function RS_loadOperationalFleetFromBackend() {
       return [];
     }
 
-    const availableFleet = data.fleet.filter(ac => {
+/* ============================================================
+   🟦 ACS ROUTE SCHEDULE — PROGRAMMABLE FLEET FILTER
+   ------------------------------------------------------------
+   Date: 24 JUN 2026
+   Rule:
+   - Route Schedule is planning authority, not dispatch authority.
+   - Aircraft in maintenance may still receive future schedules.
+   - Exclude only aircraft that cannot belong to future planning.
+   - No localStorage.
+   ============================================================ */
 
-      const status = String(ac.status || "").trim().toUpperCase();
-      const operationalStatus = String(ac.operational_status || "").trim().toUpperCase();
-      const maintenanceStatus = String(ac.maintenance_status || "").trim().toUpperCase();
-      const maintenanceControl = String(ac.maintenance_control_status || "").trim().toUpperCase();
+const availableFleet = data.fleet.filter(ac => {
 
-      const isActive =
-        status === "ACTIVE";
+  const status = String(ac.status || "")
+    .trim()
+    .toUpperCase();
 
-      const isAvailable =
-        operationalStatus === "AVAILABLE";
+  const nonProgrammableStatuses = new Set([
+    "SOLD",
+    "SCRAPPED",
+    "RETIRED",
+    "PENDING_DELIVERY",
+    "CANCELLED"
+  ]);
 
-      const isServiceable =
-        maintenanceStatus === "SERVICEABLE" ||
-        maintenanceControl === "SERVICEABLE";
+  return !nonProgrammableStatuses.has(status);
 
-      return isActive && isAvailable && isServiceable;
-
-    });
+});
 
     window.ACS_ROUTE_AVAILABLE_AIRCRAFT = availableFleet;
 
