@@ -4538,8 +4538,17 @@ body.innerHTML = `
   // 🔧 FLIGHT PANEL — ÚNICA CORRECCIÓN
   // ============================================================
 
-  let route = null;
-  try { route = JSON.parse(localStorage.getItem("confirmedRoute")); } catch(e){}
+  const oneWayMin = Number.isFinite(Number(it?.blockTimeMin))
+  ? Number(it.blockTimeMin)
+  : (
+      dep !== "—" && arr !== "—"
+        ? Math.max(0, toMin(arr) - toMin(dep))
+        : 0
+    );
+
+   const turnBase = Number.isFinite(Number(it?.turnaroundMin))
+  ? Number(it.turnaroundMin)
+  : TURNAROUND_MIN;
 
   const oneWayMin = route && Number.isFinite(route.blockTimeMin)
     ? route.blockTimeMin
@@ -4646,59 +4655,10 @@ function ACS_restoreFlightModalFooterDefault() {
   `;
 }
           
-/* ============================================================
-   🟩 B2 — EDIT SELECTED FLIGHT (EACH DAY FIX)
-   ------------------------------------------------------------
-   RULES:
-   - Every Day  → preserve full days block
-   - Each Day  → send ONLY the single day being edited
-   ============================================================ */
-
 function editSelectedFlight() {
-
-  if (!window.selectedFlight || !window.selectedFlight.data) {
-    alert("⚠ No flight selected for edit.");
-    return;
-  }
-
-  const it = window.selectedFlight.data;
-
-  const isEachDay = !it.blockId || it.blockId === "";
-
-  const editCtx = {
-    mode: "EDIT",
-
-    // ✅ FIX CRÍTICO — ESTE ERA EL PROBLEMA
-    flightId: it.id,
-
-    origin: it.origin,
-    destination: it.destination,
-
-    aircraftId: it.aircraftId || "",
-    aircraft: it.acType || "",
-
-    departure: it.departure,
-    arrival: it.arrival,
-
-    flightNumberOut: it.flightNumberOut || "",
-    flightNumberIn:  it.flightNumberIn  || "",
-
-    blockTimeMin: it.blockTimeMin || null,
-
-    separateDays: isEachDay
-  };
-
-  if (isEachDay) {
-    editCtx.day  = it.day;
-    editCtx.days = [it.day];
-  } else {
-    editCtx.days = Array.isArray(it.days) && it.days.length
-      ? it.days
-      : ["mon","tue","wed","thu","fri","sat","sun"];
-  }
-
-  localStorage.setItem("ACS_ROUTE_EDIT", JSON.stringify(editCtx));
-  window.location.href = "route_schedule.html";
+  alert(
+    "Flight editing is temporarily disabled until the PostgreSQL route edit endpoint is connected."
+  );
 }
 
 /* ========== LOGOUT ========== */
