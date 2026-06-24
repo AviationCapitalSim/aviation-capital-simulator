@@ -1829,31 +1829,41 @@ function ACS_EvaluateScheduleServiceState(ac, scheduleItems) {
 }
      
 /* ============================================================
-   🟦 PASO 4.2-A — FLIGHT COMPATIBILITY HELPERS (MODEL EXACT)
+   🟦 ACS FLIGHT / AIRCRAFT COMPATIBILITY — MODEL KEY AUTHORITY
+   ------------------------------------------------------------
+   Date: 24 JUN 2026
+   Rule:
+   - Compatibility is by aircraft type/model.
+   - Accepts model_key, modelKey, aircraft_name, aircraft.
+   - Normalizes underscores, dots, spaces, hyphens and casing.
    ============================================================ */
 
 function ACS_isFlightCompatibleWithAircraft(flight, aircraft) {
 
-  // Normalizador seguro
-  const norm = (v) => String(v || "")
-    .normalize("NFKC")
-    .replace(/\s+/g, " ")
-    .replace(/\u00A0/g, " ")
-    .trim()
-    .toUpperCase();
-
   if (!flight || !aircraft) return false;
 
-  // ✅ Vuelo: usar SIEMPRE modelKey (o aircraft) como fuente real
-  const fKey = norm(flight.modelKey || flight.aircraft || flight.model || flight.aircraftModel);
+  const flightModel = normalizeModel(
+    flight.modelKey ||
+    flight.model_key ||
+    flight.aircraft ||
+    flight.model ||
+    flight.aircraftModel ||
+    ""
+  );
 
-  // ✅ Avión: usar model real del fleet
-  const aKey = norm(aircraft.model || aircraft.modelKey || aircraft.aircraft || aircraft.name);
+  const aircraftModel = normalizeModel(
+    aircraft.modelKey ||
+    aircraft.model_key ||
+    aircraft.model ||
+    aircraft.aircraft ||
+    aircraft.type ||
+    aircraft.name ||
+    ""
+  );
 
-  if (!fKey || !aKey) return false;
+  if (!flightModel || !aircraftModel) return false;
 
-  // Compatibilidad estricta por modelo
-  return fKey === aKey;
+  return flightModel === aircraftModel;
 }
 
 function ACS_isFlightAlreadyAssigned(flight){
