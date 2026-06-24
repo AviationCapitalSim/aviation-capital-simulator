@@ -2139,9 +2139,12 @@ async function confirmRoute() {
        7️⃣ BACKEND PAYLOAD
        ============================================================ */
 
-    const payload = {
-    origin,
-    destination,
+ const payload = {
+  origin,
+  destination,
+
+  aircraft_id: aircraftId,
+  aircraftId,
 
   selected_days: selectedDays,
   days: selectedDays,
@@ -2161,9 +2164,10 @@ async function confirmRoute() {
 
   model_key: modelKey,
   aircraft: aircraftName,
+  registration,
 
   optimize_rotation: optimizeRotation,
-  source: "ACS_ROUTE_SCHEDULE_BACKEND_CONFIRM_V3_MODEL_AUTHORITY"
+  source: "ACS_ROUTE_SCHEDULE_BACKEND_CONFIRM_V3"
 };
        
     console.log("🟦 RS CONFIRM ROUTE PAYLOAD:", payload);
