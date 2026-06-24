@@ -3357,24 +3357,19 @@ function assignRouteToTail(ac){
     return;
   }
 
-  // 🔑 FUENTE ÚNICA: scheduleItems
-  let items = [];
-  try {
-    items = JSON.parse(localStorage.getItem("scheduleItems")) || [];
-  } catch {
-    items = [];
-  }
+  const items = getItems();
 
   if (!Array.isArray(items) || !items.length) {
     alert("⚠ No scheduled flights found.");
     return;
   }
 
-    // 👉 Vuelos disponibles para asignar:
-  // - NO asignados (sin aircraftId)
-  // - O editados (__edited === true) aunque tengan aircraftId (para que pasen por Assign Route)
   const unassignedFlights = items
-    .filter(it => it && it.type === "flight" && (!it.aircraftId || it.__edited === true))
+    .filter(it =>
+      it &&
+      it.type === "flight" &&
+      (!it.aircraftId || it.__edited === true)
+    )
     .filter(it => {
       if (typeof ACS_isFlightCompatibleWithAircraft !== "function") return true;
       return ACS_isFlightCompatibleWithAircraft(it, ac);
@@ -3385,14 +3380,12 @@ function assignRouteToTail(ac){
     return;
   }
 
-  // ✅ CONTEXTO DEL MODAL (canónico)
   ACS_ASSIGN_CTX.aircraft = ac;
   ACS_ASSIGN_CTX.flightIds = [];
 
-  // ✅ Abrir modal con DATOS REALES DEL SCHEDULE
   ACS_openAssignFlightsModal(ac, unassignedFlights);
 }
-
+     
 /* ============================================================
    🟦 ASSIGN FLIGHTS MODAL CONTEXT (CANÓNICO)
    ------------------------------------------------------------
