@@ -3659,6 +3659,93 @@ function ACS_closeAssignFlightsModal(){
   ACS_ASSIGN_CTX.flightIds = [];
 }
 
+/* ============================================================
+   🟦 ASSIGN FLIGHTS — APPLY SELECTED TO TABLE
+   ------------------------------------------------------------
+   Date: 24 JUN 2026
+   Purpose:
+   - Apply selected modal flights to selected aircraft in memory.
+   - Uses aircraft model compatibility already filtered by modal.
+   - Does NOT use localStorage.
+   - Does NOT touch A/B.
+   - Does NOT touch C/D.
+   - PostgreSQL persistence will be wired in the next backend step.
+   ============================================================ */
+
+function ACS_confirmAssignFlights() {
+
+  const modal = document.getElementById("assignFlightsModal");
+
+  if (!modal) {
+    alert("⛔ Assign modal not found.");
+    return;
+  }
+
+  const aircraft = ACS_ASSIGN_CTX?.aircraft || null;
+
+  if (!aircraft || !aircraft.id) {
+    alert("⛔ No aircraft selected for assignment.");
+    return;
+  }
+
+  const selectedIds = [...modal.querySelectorAll("input.acs-assign-check:checked")]
+    .map(input => String(input.dataset.flightId || "").trim())
+    .filter(Boolean);
+
+  if (!selectedIds.length) {
+    alert("⚠ Select at least one flight.");
+    return;
+  }
+
+  const selectedSet = new Set(selectedIds);
+  const items = getItems();
+
+  if (!Array.isArray(items)) {
+    alert("⛔ Schedule items unavailable.");
+    return;
+  }
+
+  let assignedCount = 0;
+
+  items.forEach(item => {
+    if (!item || !selectedSet.has(String(item.id))) {
+      return;
+    }
+
+    item.aircraftId = aircraft.id;
+    item.aircraft_id = aircraft.id;
+
+    item.aircraftRegistration =
+      aircraft.registration ||
+      aircraft.aircraftRegistration ||
+      item.aircraftRegistration ||
+      "";
+
+    item.registration =
+      aircraft.registration ||
+      aircraft.aircraftRegistration ||
+      item.registration ||
+      "";
+
+    item.assigned = true;
+    item.__assignedViaModal = true;
+
+    assignedCount++;
+  });
+
+  ACS_closeAssignFlightsModal();
+
+  if (typeof renderSchedule === "function") {
+    renderSchedule();
+  }
+
+  console.info("🟢 ACS ASSIGN ROUTE APPLIED:", {
+    aircraft_id: aircraft.id,
+    registration: aircraft.registration,
+    assignedCount
+  });
+}
+     
 function ACS_toggleSelectAllDelete(){
 
   const modal = document.getElementById("deleteFlightsModal");
