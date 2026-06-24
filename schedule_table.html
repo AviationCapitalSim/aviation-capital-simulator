@@ -3355,22 +3355,18 @@ for (let i = 0; i < EMPTY_ROWS; i++) {
 }
 
 /* ============================================================
-   🟦 PASO 4.1 — ASSIGN FLIGHTS TO AIRCRAFT (QATAR LUXURY) — FIX
+   🟦 ASSIGN ROUTE — MODEL AUTHORITY / MODAL FIRST
    ------------------------------------------------------------
-   ✅ Usa MODAL NUEVO (#assignFlightsModal)
-   ✅ NO toca #flightModal (Edit/Delete/Remove)
-   ✅ SOLO asigna aircraftId en ACS_FLIGHTS
+   Date: 24 JUN 2026
+   Rule:
+   - Route Schedule creates planned flights by aircraft model/type.
+   - Schedule Table assigns the real tail/registration through modal.
+   - Pending flights have no aircraftId.
+   - Compatibility is by model_key / aircraft model.
+   - No automatic assignment here.
    ============================================================ */
 
-/* ============================================================
-   🟦 PASO 2.2-A — ASSIGN ROUTE (SOURCE = scheduleItems)
-   ------------------------------------------------------------
-   • SOLO abre el modal
-   • NO asigna nada aquí
-   • NO valida compatibilidad aquí
-   ============================================================ */
-
-function assignRouteToTail(ac){
+function assignRouteToTail(ac) {
 
   if (!ac || !ac.id) {
     alert("⚠ Invalid aircraft.");
@@ -3384,26 +3380,55 @@ function assignRouteToTail(ac){
     return;
   }
 
-  const unassignedFlights = items
-    .filter(it =>
-      it &&
-      it.type === "flight" &&
-      (!it.aircraftId || it.__edited === true)
-    )
-    .filter(it => {
-      if (typeof ACS_isFlightCompatibleWithAircraft !== "function") return true;
-      return ACS_isFlightCompatibleWithAircraft(it, ac);
-    });
+  const aircraftModelKey = normalizeModel(
+    ac.modelKey ||
+    ac.model ||
+    ac.aircraft ||
+    ac.type ||
+    ac.name ||
+    ""
+  );
 
-  if (!unassignedFlights.length) {
-    alert("⚠ All scheduled flights are already assigned.");
+  const pendingFlights = items.filter(it => {
+    if (!it) return false;
+    if (it.type !== "flight") return false;
+
+    const status = String(it.status || "planned")
+      .trim()
+      .toLowerCase();
+
+    if (status !== "planned") return false;
+
+    const alreadyAssigned =
+      Boolean(it.aircraftId) ||
+      Boolean(it.aircraft_id) ||
+      it.assigned === true;
+
+    if (alreadyAssigned && it.__edited !== true) return false;
+
+    const flightModelKey = normalizeModel(
+      it.modelKey ||
+      it.model_key ||
+      it.acType ||
+      it.model ||
+      it.aircraft ||
+      ""
+    );
+
+    if (!aircraftModelKey || !flightModelKey) return false;
+
+    return aircraftModelKey === flightModelKey;
+  });
+
+  if (!pendingFlights.length) {
+    alert("⚠ No pending compatible flights found for this aircraft model.");
     return;
   }
 
   ACS_ASSIGN_CTX.aircraft = ac;
   ACS_ASSIGN_CTX.flightIds = [];
 
-  ACS_openAssignFlightsModal(ac, unassignedFlights);
+  ACS_openAssignFlightsModal(ac, pendingFlights);
 }
      
 /* ============================================================
