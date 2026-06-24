@@ -4800,39 +4800,10 @@ function applyLongChipBehavior(){
 
 })();
 
-
-/* ============================================================
-   🟦 B3-C — OPERATING COST ENGINE (por vuelo) — Qatar Luxury v1.0
-   ------------------------------------------------------------
-   - Cobra combustible, handling y mantenimiento
-   - Solo cuando el vuelo "arranca"
-   - Se ejecuta según ACS_TIME (motor global)
-   ============================================================ */
-
-(function(){
-
-    // Registro para no cobrar dos veces el mismo vuelo en el mismo día sim
-    function hasFlightBeenChargedToday(flightID, simDate){
-        const key = `ACS_FlightCharge_${flightID}_${simDate}`;
-        return localStorage.getItem(key) === "YES";
-    }
-
-    function markFlightCharged(flightID, simDate){
-        const key = `ACS_FlightCharge_${flightID}_${simDate}`;
-        localStorage.setItem(key, "YES");
-    }
-
-    // 🔥 EVENTO: cada vez que ACS_TIME avanza
-    if (typeof registerTimeListener === "function") {
-
-        registerTimeListener(function(){
-
-            const items  = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-            const fleet  = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-
 /* ============================================================
    🟦 A10.17.2 — APPLY MAINTENANCE DUE FLAGS
    ============================================================ */
+     
 const nowTs = ACS_TIME?.currentTime?.getTime?.() || 0;
 
 fleet.forEach(ac => {
