@@ -3660,19 +3660,19 @@ function ACS_closeAssignFlightsModal(){
 }
 
 /* ============================================================
-   🟦 ASSIGN FLIGHTS — APPLY SELECTED TO TABLE
+   🟦 ASSIGN FLIGHTS — POSTGRESQL AUTHORITY
    ------------------------------------------------------------
    Date: 24 JUN 2026
    Purpose:
-   - Apply selected modal flights to selected aircraft in memory.
-   - Uses aircraft model compatibility already filtered by modal.
-   - Does NOT use localStorage.
-   - Does NOT touch A/B.
-   - Does NOT touch C/D.
-   - PostgreSQL persistence will be wired in the next backend step.
+   - Persist Assign Selected through backend.
+   - Uses existing POST /v1/schedule/assign-aircraft.
+   - Groups selected flights by route_plan_id.
+   - No localStorage.
+   - No A/B changes.
+   - No C/D changes.
    ============================================================ */
 
-function ACS_confirmAssignFlights() {
+async function ACS_confirmAssignFlights() {
 
   const modal = document.getElementById("assignFlightsModal");
 
@@ -3700,50 +3700,87 @@ function ACS_confirmAssignFlights() {
   const selectedSet = new Set(selectedIds);
   const items = getItems();
 
-  if (!Array.isArray(items)) {
-    alert("⛔ Schedule items unavailable.");
+  const selectedFlights = items.filter(item =>
+    item &&
+    selectedSet.has(String(item.id)) &&
+    item.type === "flight" &&
+    item.routePlanId
+  );
+
+  if (!selectedFlights.length) {
+    alert("⛔ No valid route plan found for selected flights.");
     return;
   }
 
-  let assignedCount = 0;
+  const routePlanIds = [
+    ...new Set(
+      selectedFlights
+        .map(item => String(item.routePlanId || "").trim())
+        .filter(Boolean)
+    )
+  ];
 
-  items.forEach(item => {
-    if (!item || !selectedSet.has(String(item.id))) {
-      return;
+  try {
+
+    const assignButton = modal.querySelector(".btn-modal.gold");
+    if (assignButton) {
+      assignButton.disabled = true;
+      assignButton.textContent = "ASSIGNING...";
     }
 
-    item.aircraftId = aircraft.id;
-    item.aircraft_id = aircraft.id;
+    for (const routePlanId of routePlanIds) {
 
-    item.aircraftRegistration =
-      aircraft.registration ||
-      aircraft.aircraftRegistration ||
-      item.aircraftRegistration ||
-      "";
+      const res = await fetch(
+        "https://api.aviationcapitalsim.com/v1/schedule/assign-aircraft",
+        {
+          method: "POST",
+          credentials: "include",
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            route_plan_id: Number(routePlanId),
+            aircraft_id: Number(aircraft.id)
+          })
+        }
+      );
 
-    item.registration =
-      aircraft.registration ||
-      aircraft.aircraftRegistration ||
-      item.registration ||
-      "";
+      const data = await res.json();
 
-    item.assigned = true;
-    item.__assignedViaModal = true;
+      if (!res.ok || data?.ok !== true) {
+        throw new Error(
+          data?.error ||
+          data?.details ||
+          "SCHEDULE_ASSIGN_FAILED"
+        );
+      }
+    }
 
-    assignedCount++;
-  });
+    ACS_closeAssignFlightsModal();
 
-  ACS_closeAssignFlightsModal();
+    await ACS_loadScheduleContext();
 
-  if (typeof renderSchedule === "function") {
-    renderSchedule();
+    alert("✅ Flights assigned successfully.");
+
+  } catch (error) {
+
+    console.error("🔴 ACS ASSIGN ROUTE FAILED:", error);
+
+    alert(
+      "⛔ Assign failed: " +
+      (error?.message || "Unknown error")
+    );
+
+  } finally {
+
+    const assignButton = modal.querySelector(".btn-modal.gold");
+    if (assignButton) {
+      assignButton.disabled = false;
+      assignButton.textContent = "✅ Assign Selected";
+    }
+
   }
-
-  console.info("🟢 ACS ASSIGN ROUTE APPLIED:", {
-    aircraft_id: aircraft.id,
-    registration: aircraft.registration,
-    assignedCount
-  });
 }
      
 function ACS_toggleSelectAllDelete(){
