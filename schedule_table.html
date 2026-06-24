@@ -3925,34 +3925,6 @@ function ACS_closeDeleteFlightsModal() {
   ACS_DELETE_FLIGHTS_CTX = { aircraftId: null, flights: [] };
 }
 
-/* ============================================================
-   🟥 D2.1 — DELETE ENGINE (LOCAL) — scheduleItems authority
-   ------------------------------------------------------------
-   - Borra por ID en scheduleItems
-   - No toca SkyTrack directamente (Schedule Table manda)
-   ============================================================ */
-function ACS_deleteFlight(id) {
-
-  if (!id) return;
-
-  const items = getItems();
-  const before = items.length;
-
-  const afterItems = items.filter(it => !(it && it.type === "flight" && String(it.id) === String(id)));
-
-  if (afterItems.length !== before) {
-    setItems(afterItems);
-  }
-
-  // limpiar selección si coincide
-  if (window.ACS_selectedFlightItem && String(window.ACS_selectedFlightItem.id) === String(id)) {
-    window.ACS_selectedFlightItem = null;
-  }
-  if (window.selectedFlight && window.selectedFlight.data && String(window.selectedFlight.data.id) === String(id)) {
-    window.selectedFlight = null;
-  }
-}
-
 function ACS_confirmDeleteFlightsBulk() {
 
   const list = document.getElementById("deleteFlightsList");
@@ -3979,55 +3951,7 @@ function ACS_confirmDeleteFlightsBulk() {
   ACS_closeDeleteFlightsModal();
   renderSchedule();
 }
-     
-/* ============================================================
-   === B3-A — COSTOS INICIALES AL ASIGNAR RUTA (OPERACIÓN) ====
-   ============================================================ */
-     
-function ACS_applyInitialFlightCosts(route, ac){
-  try {
-    if (!route || !ac) return;
-
-    // 1) Obtener aeropuerto de origen desde el JS correcto (EU/AF/ASIA según corresponda)
-    const origin = route.origin;
-    let airport = null;
-
-    if (origin?.startsWith("E")) airport = getAirportsEuropeSafe()?.find(a => a.icao === origin);
-    if (origin?.startsWith("D") || origin?.startsWith("G")) airport = getAirportsAfricaSafe()?.find(a => a.icao === origin);
-    if (origin?.startsWith("V") || origin?.startsWith("R")) airport = getAirportsAsiaSafe()?.find(a => a.icao === origin);
-
-    if (!airport) return;
-
-    const slot = airport.slot_cost_usd || 0;
-    const fee  = airport.landing_fee_usd || 0;
-    const fuel = airport.fuel_usd_gal || 0;
-
-    // 2) Sumar al Finance Engine (si existe)
-    let F = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-    if (!F || typeof F.capital !== "number") return;
-
-    const totalCost = slot + fee + (fuel * 120); // TEMPORAL
-    F.capital -= totalCost;
-
-    F.expenses = (F.expenses || 0) + totalCost;
-
-    F.log = F.log || [];
-    F.log.push({
-      type: "ROUTE_ASSIGN_COST",
-      route: `${route.origin}-${route.destination}`,
-      aircraft: ac.registration || ac.tail || ac.model,
-      amount: totalCost,
-      date: new Date().toISOString()
-    });
-
-    localStorage.setItem("ACS_Finance", JSON.stringify(F));
-    console.log("💰 B3-A aplicado:", totalCost);
-
-  } catch(err){
-    console.warn("❗ Error B3-A:", err);
-  }
-}
-     
+          
 /* ============================================================
    ACS MAINTENANCE OPERATION CONTEXT
    ------------------------------------------------------------
