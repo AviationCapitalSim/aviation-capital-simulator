@@ -4827,6 +4827,7 @@ function ACS_restoreFlightModalFooterDefault() {
 
   footer.innerHTML = `
     <button class="btn-modal gold" onclick="editSelectedFlight()">✏️ EDIT</button>
+    <button class="btn-modal red" onclick="ACS_openDeleteFlightsModal()">🗑 DELETE FLIGHT</button>
     <button class="btn-modal ghost" onclick="closeFlightModal()">Close</button>
   `;
 }
