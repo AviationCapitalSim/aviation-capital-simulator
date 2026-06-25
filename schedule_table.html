@@ -2369,7 +2369,7 @@ function ACS_adaptScheduleItem(row, routePlansById) {
     turnaroundMin: ACS_scheduleNumber(row?.turnaround_min ?? routePlan?.turnaroundMin, 0),
 
     status: ACS_scheduleText(row?.status, "planned"),
-    assigned: Boolean(aircraftId),
+    assigned: ACS_scheduleText(row?.status, "planned").toLowerCase() === "assigned",
 
     notes: row?.notes ?? null,
     createdAt: row?.created_at ?? null,
