@@ -563,6 +563,16 @@ function RS_getRouteContextFromURL() {
 
   const params = new URLSearchParams(window.location.search);
 
+  const mode = String(params.get("mode") || "")
+    .trim()
+    .toLowerCase();
+
+  const routePlanId = String(params.get("route_plan_id") || "")
+    .trim();
+
+  const scheduleItemId = String(params.get("schedule_item_id") || "")
+    .trim();
+
   const origin = String(params.get("origin") || "")
     .trim()
     .toUpperCase();
@@ -571,18 +581,27 @@ function RS_getRouteContextFromURL() {
     .trim()
     .toUpperCase();
 
+  if (mode === "edit") {
+    return {
+      mode: "edit",
+      routePlanId,
+      scheduleItemId,
+      source: "url-edit"
+    };
+  }
+
   if (!origin || !destination) {
     return null;
   }
 
   return {
+    mode: "create",
     origin,
     destination,
-    source: "url"
+    source: "url-create"
   };
-
 }
-
+     
 function RS_validateRouteContext(routeCtx, companyCtx) {
 
   if (!routeCtx || !companyCtx || companyCtx.ok !== true) {
