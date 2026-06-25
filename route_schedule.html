@@ -1029,6 +1029,130 @@ async function RS_loadOfficialFlightNumberPreview() {
   }
 }
 
+/* ============================================================
+   ✏️ RS EDIT — LOAD FLIGHT CONTEXT FROM SCHEDULE
+   ------------------------------------------------------------
+   Arrastra el vuelo exacto desde Schedule Table hacia Route Schedule
+   ============================================================ */
+
+async function RS_loadEditFlightContext() {
+
+  const ctx = window.ACS_ROUTE_CONTEXT;
+
+  if (!ctx || ctx.mode !== "edit") {
+    return null;
+  }
+
+  const res = await fetch(
+    "https://api.aviationcapitalsim.com/v1/schedule/context",
+    {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+      headers: {
+        "Accept": "application/json"
+      }
+    }
+  );
+
+  const data = await res.json();
+
+  if (!res.ok || !data || data.ok !== true) {
+    alert("⛔ Could not load flight edit context.");
+    console.error("RS EDIT context load failed:", data);
+    return null;
+  }
+
+  const scheduleItems = Array.isArray(data.schedule_items)
+    ? data.schedule_items
+    : [];
+
+  const routePlans = Array.isArray(data.route_plans)
+    ? data.route_plans
+    : [];
+
+  const scheduleItemId = String(ctx.scheduleItemId || "").trim();
+  const routePlanId = String(ctx.routePlanId || "").trim();
+
+  const item = scheduleItems.find(si =>
+    String(si.id || "") === scheduleItemId
+  );
+
+  if (!item) {
+    alert("⛔ Flight to edit was not found.");
+    console.error("RS EDIT schedule item not found:", ctx);
+    return null;
+  }
+
+  const route = routePlans.find(rp =>
+    String(rp.id || "") === String(item.route_plan_id || routePlanId)
+  );
+
+  if (!route) {
+    alert("⛔ Route plan for this flight was not found.");
+    console.error("RS EDIT route plan not found:", { ctx, item });
+    return null;
+  }
+
+  window.ACS_ROUTE_EDIT_CONTEXT = {
+    mode: "edit",
+
+    routePlanId: route.id,
+    scheduleItemId: item.id,
+
+    origin: route.origin || item.origin || "",
+    destination: route.destination || item.destination || "",
+
+    aircraftId: item.aircraft_id || route.aircraft_id || null,
+    modelKey: item.model_key || route.model_key || "",
+
+    selectedDay: item.selected_day || "",
+    departure: item.departure || route.departure || "",
+    arrival: item.arrival || route.arrival || "",
+
+    flightNumber: item.flight_number || "",
+    pairedFlightNumber: item.paired_flight_number || "",
+
+    route,
+    item
+  };
+
+  const edit = window.ACS_ROUTE_EDIT_CONTEXT;
+
+  document.getElementById("origin").value =
+    String(edit.origin || "").toUpperCase();
+
+  document.getElementById("destination").value =
+    String(edit.destination || "").toUpperCase();
+
+  const flightNumberInput = document.getElementById("flightNumber");
+  if (flightNumberInput) {
+    flightNumberInput.value =
+      `${edit.flightNumber} ➜ ${edit.pairedFlightNumber}`;
+  }
+
+  const departureInput = document.getElementById("departureTime");
+  if (departureInput && edit.departure) {
+    departureInput.value = edit.departure;
+  }
+
+  ["mon", "tue", "wed", "thu", "fri", "sat", "sun"].forEach(day => {
+    const el = document.getElementById(day);
+    if (el) el.checked = day === String(edit.selectedDay || "").toLowerCase();
+  });
+
+  await RS_populateAircraftSelector(edit.aircraftId);
+
+  const btn = document.getElementById("confirmRouteBtn");
+  if (btn) {
+    btn.textContent = "UPDATE ROUTE";
+  }
+
+  console.log("✏️ RS EDIT FLIGHT CONTEXT LOADED:", edit);
+
+  return edit;
+}
+     
 async function RS_initCoreOnce() {
 
   if (window.__RS_CORE_INIT_DONE) return;
@@ -1040,16 +1164,40 @@ async function RS_initCoreOnce() {
     return;
   }
 
-    await rs_populateAircraftSelect("");
-    await RS_loadOfficialFlightNumberPreview();
+  /* ============================================================
+     ✏️ EDIT MODE
+     ============================================================ */
+
+  if (routeContext.mode === "edit") {
+
+    await RS_loadEditFlightContext();
+
+    const aircraftSelect = document.getElementById("aircraft");
+    if (aircraftSelect) {
+      aircraftSelect.addEventListener("change", autoCalculate);
+    }
+
+    const departureSelect = document.getElementById("departureTime");
+    if (departureSelect) {
+      departureSelect.addEventListener("change", autoCalculate);
+    }
+
+    return;
+  }
+
+  /* ============================================================
+     CREATE MODE
+     ============================================================ */
+
+  await rs_populateAircraftSelect("");
+  await RS_loadOfficialFlightNumberPreview();
 
   const aircraftSelect = document.getElementById("aircraft");
   if (aircraftSelect) {
     aircraftSelect.value = "";
   }
-
 }
-
+     
 document.addEventListener("DOMContentLoaded", RS_initCoreOnce);
      
 </script>
