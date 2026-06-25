@@ -2180,6 +2180,9 @@ async function confirmRoute() {
        
     console.log("🟦 RS CONFIRM ROUTE PAYLOAD:", payload);
 
+    window.__ACS_LAST_ROUTE_PAYLOAD = payload;
+    console.table(payload);
+   
     /* ============================================================
        8️⃣ POST TO RAILWAY / POSTGRESQL AUTHORITY
        ============================================================ */
