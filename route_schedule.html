@@ -645,6 +645,40 @@ async function RS_initRouteContext() {
   const companyCtx = await RS_loadCompanyContext();
   const routeCtx = RS_getRouteContextFromURL();
 
+  if (!routeCtx) {
+    alert("⛔ Route context invalid.");
+    window.location.href = "routes.html";
+    return null;
+  }
+
+  /* ============================================================
+     ✏️ EDIT MODE — allow entry by PostgreSQL IDs
+     ============================================================ */
+
+  if (routeCtx.mode === "edit") {
+
+    if (!routeCtx.routePlanId && !routeCtx.scheduleItemId) {
+      alert("⛔ Edit context invalid. Missing route identifiers.");
+      window.location.href = "schedule_table.html";
+      return null;
+    }
+
+    window.ACS_ROUTE_CONTEXT = {
+      mode: "edit",
+      routePlanId: routeCtx.routePlanId,
+      scheduleItemId: routeCtx.scheduleItemId,
+      source: "edit-url"
+    };
+
+    console.log("✏️ RS EDIT CONTEXT READY:", window.ACS_ROUTE_CONTEXT);
+
+    return window.ACS_ROUTE_CONTEXT;
+  }
+
+  /* ============================================================
+     CREATE MODE
+     ============================================================ */
+
   const validation = RS_validateRouteContext(routeCtx, companyCtx);
 
   if (!validation.ok) {
@@ -655,10 +689,10 @@ async function RS_initRouteContext() {
 
     window.location.href = "routes.html";
     return null;
-
   }
 
   window.ACS_ROUTE_CONTEXT = {
+    mode: "create",
     origin: validation.origin,
     destination: validation.destination,
     source: "backend+url"
@@ -678,7 +712,6 @@ async function RS_initRouteContext() {
   console.log("🟢 RS ROUTE CONTEXT READY:", window.ACS_ROUTE_CONTEXT);
 
   return window.ACS_ROUTE_CONTEXT;
-
 }
      
 /* ============================================================
