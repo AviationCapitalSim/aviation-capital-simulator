@@ -1372,10 +1372,11 @@ footer {
       <!-- contenido dinámico por JS -->
     </div>
 
-    <div class="acs-modal-footer">
+    <<div class="acs-modal-footer">
      <button class="btn-modal gold" onclick="editSelectedFlight()">✏️ EDIT</button>
+     <button class="btn-modal red" onclick="ACS_deleteSelectedFlight()">🗑 DELETE FLIGHT</button>
      <button class="btn-modal ghost" onclick="closeFlightModal()">Close</button>
-   </div>
+  </div>
 
   </div>
 </div>
@@ -4885,6 +4886,94 @@ function editSelectedFlight() {
     `route_schedule.html?${params.toString()}`;
 }
 
+/* ============================================================
+   🟥 DELETE FLIGHT — POSTGRESQL AUTHORITY
+   ------------------------------------------------------------
+   ACS OCC:
+   - Deletes selected flight from Schedule Table
+   - Backend cancels schedule_item
+   - Backend releases slots
+   ============================================================ */
+
+async function ACS_deleteSelectedFlight() {
+
+  const flight =
+    window.ACS_selectedFlightItem ||
+    window.selectedFlight?.data ||
+    null;
+
+  if (!flight) {
+    alert("⛔ No flight selected.");
+    return;
+  }
+
+  const scheduleItemId =
+    flight.id ||
+    flight.scheduleItemId ||
+    flight.schedule_item_id ||
+    null;
+
+  if (!scheduleItemId) {
+    console.warn("DELETE FLIGHT missing schedule item id:", flight);
+    alert("⛔ This flight cannot be deleted because its ID is missing.");
+    return;
+  }
+
+  const flightNumber =
+    flight.flightNumber ||
+    flight.flight_number ||
+    "this flight";
+
+  const confirmed = confirm(
+    `Delete ${flightNumber}?\n\nThis flight will disappear from Schedule Table and its slots will be released.`
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+
+    const res = await fetch(
+      `https://api.aviationcapitalsim.com/v1/schedule/flights/${scheduleItemId}`,
+      {
+        method: "DELETE",
+        credentials: "include",
+        headers: {
+          "Accept": "application/json"
+        }
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok || !data || data.ok !== true) {
+      console.error("DELETE FLIGHT failed:", data);
+      alert(
+        "⛔ Delete failed: " +
+        (data?.error || data?.details || "Unknown error")
+      );
+      return;
+    }
+
+    closeFlightModal();
+
+    if (typeof ACS_loadScheduleContext === "function") {
+      await ACS_loadScheduleContext();
+    } else if (typeof renderSchedule === "function") {
+      renderSchedule();
+    }
+
+    alert("✅ Flight deleted.");
+
+  } catch (err) {
+
+    console.error("DELETE FLIGHT error:", err);
+    alert("⛔ Delete failed. Check console.");
+
+  }
+}
+     
 /* ========== LOGOUT ========== */
   
 function handleLogout(){
