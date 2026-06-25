@@ -2178,8 +2178,7 @@ async function confirmRoute() {
   source: "ACS_ROUTE_SCHEDULE_BACKEND_CONFIRM_V3"
 };
        
-    console.log("RS CONFIRM ROUTE PAYLOAD JSON:", JSON.stringify(payload, null, 2));
-    alert(JSON.stringify(payload, null, 2));
+    console.log("🟦 RS CONFIRM ROUTE PAYLOAD:", payload);
 
     window.__ACS_LAST_ROUTE_PAYLOAD = payload;
     console.table(payload);
