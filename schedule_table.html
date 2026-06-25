@@ -4830,10 +4830,59 @@ function ACS_restoreFlightModalFooterDefault() {
   `;
 }
           
+/* ============================================================
+   🟦 EDIT ROUTE — POSTGRESQL AUTHORITY ENTRY POINT
+   ------------------------------------------------------------
+   Source: Schedule Table selected flight
+   Target: route_schedule.html edit mode
+   No localStorage
+   No maintenance modules touched
+   ============================================================ */
+
 function editSelectedFlight() {
-  alert(
-    "Flight editing is temporarily disabled until the PostgreSQL route edit endpoint is connected."
-  );
+
+  const flight =
+    window.ACS_selectedFlightItem ||
+    window.selectedFlight?.data ||
+    null;
+
+  if (!flight) {
+    alert("⛔ No flight selected for editing.");
+    return;
+  }
+
+  const routePlanId =
+    flight.routePlanId ||
+    flight.route_plan_id ||
+    flight.route_planId ||
+    null;
+
+  const scheduleItemId =
+    flight.id ||
+    flight.scheduleItemId ||
+    flight.schedule_item_id ||
+    null;
+
+  if (!routePlanId && !scheduleItemId) {
+    console.warn("⛔ EDIT ROUTE missing PostgreSQL IDs:", flight);
+    alert("⛔ This flight cannot be edited because PostgreSQL route identifiers are missing.");
+    return;
+  }
+
+  const params = new URLSearchParams();
+
+  params.set("mode", "edit");
+
+  if (routePlanId) {
+    params.set("route_plan_id", String(routePlanId));
+  }
+
+  if (scheduleItemId) {
+    params.set("schedule_item_id", String(scheduleItemId));
+  }
+
+  window.location.href =
+    `route_schedule.html?${params.toString()}`;
 }
 
 /* ========== LOGOUT ========== */
