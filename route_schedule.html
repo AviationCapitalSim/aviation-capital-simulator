@@ -1107,6 +1107,10 @@ async function RS_loadEditFlightContext() {
     modelKey: item.model_key || route.model_key || "",
 
     selectedDay: item.selected_day || "",
+    selectedDays: Array.isArray(route.selected_days)
+    ? route.selected_days
+    : [],
+       
     departure: item.departure || route.departure || "",
     arrival: item.arrival || route.arrival || "",
 
@@ -1136,10 +1140,19 @@ async function RS_loadEditFlightContext() {
     departureInput.value = edit.departure;
   }
 
-  ["mon", "tue", "wed", "thu", "fri", "sat", "sun"].forEach(day => {
-    const el = document.getElementById(day);
-    if (el) el.checked = day === String(edit.selectedDay || "").toLowerCase();
-  });
+  const editDays = Array.isArray(edit.selectedDays)
+  ? edit.selectedDays.map(d => String(d).toLowerCase())
+  : [];
+
+["mon", "tue", "wed", "thu", "fri", "sat", "sun"].forEach(day => {
+  const el = document.getElementById(day);
+  if (el) el.checked = editDays.includes(day);
+});
+
+const allDays = document.getElementById("allDays");
+if (allDays) {
+  allDays.checked = editDays.length === 7;
+}
 
   await RS_populateAircraftSelector(edit.aircraftId);
 
@@ -1150,6 +1163,10 @@ async function RS_loadEditFlightContext() {
 
   console.log("✏️ RS EDIT FLIGHT CONTEXT LOADED:", edit);
 
+  if (typeof autoCalculate === "function") {
+  autoCalculate();
+  }    
+     
   return edit;
 }
      
