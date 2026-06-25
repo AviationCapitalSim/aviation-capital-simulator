@@ -2465,6 +2465,143 @@ async function confirmRoute() {
   }
 }
 
+/* ============================================================
+   ✏️ EDIT ROUTE — UPDATE BUTTON OVERRIDE
+   ------------------------------------------------------------
+   UPDATE ROUTE usa el route_plan original.
+   No crea ruta nueva.
+   ============================================================ */
+
+const RS_confirmRouteCreateMode = window.confirmRoute || confirmRoute;
+
+window.confirmRoute = async function () {
+
+  const edit = window.ACS_ROUTE_EDIT_CONTEXT;
+
+  if (!edit || edit.mode !== "edit") {
+    return RS_confirmRouteCreateMode();
+  }
+
+  const DAY_IDS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+  const confirmBtn = document.getElementById("confirmRouteBtn");
+
+  try {
+
+    if (confirmBtn) {
+      confirmBtn.disabled = true;
+      confirmBtn.style.opacity = "0.55";
+      confirmBtn.style.cursor = "wait";
+      confirmBtn.textContent = "UPDATING...";
+    }
+
+    const selectedDays = DAY_IDS.filter(day =>
+      document.getElementById(day)?.checked
+    );
+
+    if (!selectedDays.length) {
+      alert("⚠️ Select at least one day.");
+      return;
+    }
+
+    const origin = String(document.getElementById("origin")?.value || "")
+      .trim()
+      .toUpperCase();
+
+    const destination = String(document.getElementById("destination")?.value || "")
+      .trim()
+      .toUpperCase();
+
+    const departure = String(document.getElementById("departureTime")?.value || "")
+      .trim();
+
+    const selectedAircraft =
+      typeof RS_getSelectedAircraftFromBackendCache === "function"
+        ? RS_getSelectedAircraftFromBackendCache()
+        : null;
+
+    if (!selectedAircraft) {
+      alert("⚠️ Select an aircraft.");
+      return;
+    }
+
+    if (typeof autoCalculate === "function") {
+      autoCalculate();
+    }
+
+    const tech = window.ACS_RouteTechData || {};
+
+    const blockTimeMin = Number(tech.blockMin || edit.item?.block_time_min || 0);
+
+    if (!Number.isFinite(blockTimeMin) || blockTimeMin <= 0) {
+      alert("⛔ Route technical data invalid.");
+      return;
+    }
+
+    const arrival =
+      typeof ACS_convertDepartureToArrival === "function"
+        ? ACS_convertDepartureToArrival(departure, blockTimeMin)
+        : edit.arrival;
+
+    const payload = {
+      origin,
+      destination,
+
+      aircraft_id: Number(selectedAircraft.id),
+      selected_days: selectedDays,
+
+      departure,
+      arrival,
+
+      distance_nm: Math.round(Number(tech.distNM || edit.route?.distance_nm || 0)),
+      block_time_min: Math.round(blockTimeMin),
+      turnaround_min: Math.round(Number(tech.turnMin || edit.route?.turnaround_min || 0)),
+      total_rotation_min: Math.round(Number(tech.totalMin || edit.route?.total_rotation_min || 0)),
+
+      model_key: String(selectedAircraft.model_key || edit.modelKey || "").toUpperCase(),
+      aircraft: String(selectedAircraft.aircraft_name || selectedAircraft.model_key || ""),
+      registration: String(selectedAircraft.registration || "")
+    };
+
+    const res = await fetch(
+      `https://api.aviationcapitalsim.com/v1/routes/plans/${edit.routePlanId}`,
+      {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok || !data || data.ok !== true) {
+      console.error("EDIT ROUTE failed:", data);
+      alert("⛔ Update failed: " + (data?.error || data?.details || "Unknown error"));
+      return;
+    }
+
+    alert("✅ Route updated.");
+    window.location.href = "schedule_table.html";
+
+  } catch (err) {
+
+    console.error("EDIT ROUTE error:", err);
+    alert("⛔ Update failed. Check console.");
+
+  } finally {
+
+    if (confirmBtn) {
+      confirmBtn.disabled = false;
+      confirmBtn.style.opacity = "1";
+      confirmBtn.style.cursor = "pointer";
+      confirmBtn.textContent = "UPDATE ROUTE";
+    }
+
+  }
+};
+     
 </script>
 
 <!-- ===========================================================
