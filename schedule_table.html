@@ -4973,6 +4973,181 @@ async function ACS_deleteSelectedFlight() {
 
   }
 }
+
+/* ============================================================
+   🟥 DELETE FLIGHTS MODAL — ACS OCC
+   ------------------------------------------------------------
+   Opens all sibling flights for the same route_plan_id.
+   Player can delete one, several, or Select All.
+   ============================================================ */
+
+function ACS_openDeleteFlightsModal() {
+
+  const flight =
+    window.ACS_selectedFlightItem ||
+    window.selectedFlight?.data ||
+    null;
+
+  if (!flight) {
+    alert("⛔ No flight selected.");
+    return;
+  }
+
+  const routePlanId =
+    flight.routePlanId ||
+    flight.route_plan_id ||
+    null;
+
+  if (!routePlanId) {
+    alert("⛔ Route Plan ID missing.");
+    return;
+  }
+
+  const allItems =
+    window.ACS_SCHEDULE_CONTEXT?.schedule_items ||
+    window.ACS_scheduleContext?.schedule_items ||
+    [];
+
+  const routeFlights = allItems.filter(item =>
+    String(item.route_plan_id || item.routePlanId || "") === String(routePlanId) &&
+    String(item.item_type || "").toLowerCase() === "flight" &&
+    String(item.status || "planned").toLowerCase() !== "cancelled"
+  );
+
+  if (!routeFlights.length) {
+    alert("⛔ No flights found for this route.");
+    return;
+  }
+
+  const title =
+    `${flight.flightNumber || flight.flight_number || ""} / ${flight.pairedFlightNumber || flight.paired_flight_number || ""}`;
+
+  const rows = routeFlights.map(item => {
+    const id = item.id || item.scheduleItemId || item.schedule_item_id;
+    const day = String(item.selected_day || "").toUpperCase();
+    const origin = String(item.origin || "");
+    const destination = String(item.destination || "");
+    const dep = String(item.departure || "");
+    const arr = String(item.arrival || "");
+
+    return `
+      <label class="acs-delete-flight-row">
+        <input
+          type="checkbox"
+          class="acs-delete-flight-check"
+          value="${id}"
+        />
+        <span class="acs-delete-day">${day}</span>
+        <span class="acs-delete-route">${origin} → ${destination}</span>
+        <span class="acs-delete-time">${dep}–${arr}</span>
+      </label>
+    `;
+  }).join("");
+
+  const html = `
+    <div id="acsDeleteFlightsOverlay" class="acs-delete-overlay">
+      <div class="acs-delete-modal">
+        <div class="acs-delete-header">
+          <div>🟥 Delete Flights — ${title}</div>
+          <button onclick="ACS_closeDeleteFlightsModal()">×</button>
+        </div>
+
+        <div class="acs-delete-body">
+          <p>Select the flights you want to delete from this route.</p>
+
+          <button class="acs-delete-select-all" onclick="ACS_toggleDeleteFlightsAll()">
+            Select all
+          </button>
+
+          <div class="acs-delete-list">
+            ${rows}
+          </div>
+        </div>
+
+        <div class="acs-delete-footer">
+          <button class="btn-modal red" onclick="ACS_confirmDeleteFlightsBatch()">
+            🗑 DELETE SELECTED
+          </button>
+          <button class="btn-modal ghost" onclick="ACS_closeDeleteFlightsModal()">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML("beforeend", html);
+}
+
+function ACS_closeDeleteFlightsModal() {
+  document.getElementById("acsDeleteFlightsOverlay")?.remove();
+}
+
+function ACS_toggleDeleteFlightsAll() {
+  const checks = [...document.querySelectorAll(".acs-delete-flight-check")];
+  const shouldCheck = checks.some(ch => !ch.checked);
+  checks.forEach(ch => ch.checked = shouldCheck);
+}
+
+async function ACS_confirmDeleteFlightsBatch() {
+
+  const ids = [...document.querySelectorAll(".acs-delete-flight-check:checked")]
+    .map(ch => Number(ch.value))
+    .filter(Boolean);
+
+  if (!ids.length) {
+    alert("⚠️ Select at least one flight.");
+    return;
+  }
+
+  const confirmed = confirm(
+    `Delete ${ids.length} selected flight(s)?\n\nThey will disappear from Schedule Table and their slots will be released.`
+  );
+
+  if (!confirmed) return;
+
+  try {
+
+    const res = await fetch(
+      "https://api.aviationcapitalsim.com/v1/schedule/flights",
+      {
+        method: "DELETE",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          schedule_item_ids: ids
+        })
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok || !data || data.ok !== true) {
+      console.error("DELETE FLIGHTS failed:", data);
+      alert("⛔ Delete failed: " + (data?.error || data?.details || "Unknown error"));
+      return;
+    }
+
+    ACS_closeDeleteFlightsModal();
+
+    if (typeof closeFlightModal === "function") {
+      closeFlightModal();
+    }
+
+    if (typeof ACS_loadScheduleContext === "function") {
+      await ACS_loadScheduleContext();
+    }
+
+    alert(`✅ Deleted ${data.deleted_count || ids.length} flight(s).`);
+
+  } catch (err) {
+    console.error("DELETE FLIGHTS error:", err);
+    alert("⛔ Delete failed. Check console.");
+  }
+}
      
 /* ========== LOGOUT ========== */
   
