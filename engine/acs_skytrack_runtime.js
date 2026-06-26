@@ -1027,19 +1027,19 @@ function ACS_SkyTrack_resolveState(aircraftId) {
     )
     .sort((a, b) => b.arrAbsMin - a.arrAbsMin)[0];
 
-  if (lastFlight) {
-    return {
-      state: "GROUND",
-      position: {
-        airport:
-          lastFlight.destination ||
-          ac.currentAirport ||
-          ac.baseAirport ||
-          null
-      },
-      flight: null
-    };
-  }
+if (lastFlight) {
+  return {
+    state: "GROUND",
+    position: {
+      airport:
+        ac.currentAirport ||
+        ac.baseAirport ||
+        lastFlight.destination ||
+        null
+    },
+    flight: null
+  };
+}
 
   return {
     state: "GROUND",
