@@ -145,22 +145,18 @@ function ACS_convertWorldFlight(f){
 
   } else {
 
-    state =
-      "GROUND";
+  state =
+    "GROUND";
 
-    if (
-      Number.isFinite(arr) &&
-      now != null &&
-      now >= arr &&
-      destination
-    ) {
-      position =
-        { airport: destination };
-    } else {
-      position =
-        { airport: currentAirport || origin || null };
-    }
-  }
+  position = {
+    airport:
+      currentAirport ||
+      f.base_icao ||
+      origin ||
+      null
+  };
+
+}
 
   return {
 
