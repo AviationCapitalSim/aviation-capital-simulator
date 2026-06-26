@@ -33,7 +33,13 @@ window.ACS_SkyTrack = {
   initialized: false,
   nowAbsMin: null,
   aircraftIndex: {},
+
+  // Contiene vuelos + servicios, igual que la logística anterior
   itemsByAircraft: {},
+
+  // Separación interna OCC. No rompe la lógica actual.
+  flightItemsByAircraft: {},
+  serviceItemsByAircraft: {},
 
   // 🟦 C1 — cache del último vuelo activo
   lastActiveFlight: {}
