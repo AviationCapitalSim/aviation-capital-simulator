@@ -378,15 +378,58 @@ window.dispatchEvent(
 } // 🔒 cierre function ACS_SkyTrack_onTick()
 
 /* ============================================================
-   📦 LOAD DATA (FLEET + SCHEDULE) — CANONICAL
+   📦 LOAD DATA (FLEET + SCHEDULE) 
    ============================================================ */
-function ACS_SkyTrack_loadData() {
 
-  // 1️⃣ Build fleet + schedule index (source of truth)
-  ACS_SkyTrack.aircraftIndex = ACS_SkyTrack_getFleetIndex();
-  ACS_SkyTrack.itemsByAircraft = ACS_SkyTrack_indexScheduleItems();
+async function ACS_SkyTrack_loadData() {
 
-} // ✅ <<< ESTA LLAVE FALTABA
+  try {
+
+    const res = await fetch(
+      "https://api.aviationcapitalsim.com/v1/skytrack/context",
+      {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          "Accept": "application/json"
+        }
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok || data?.ok !== true) {
+      throw new Error(data?.error || "SKYTRACK_CONTEXT_FAILED");
+    }
+
+    if (data.authority !== "POSTGRESQL_SKYTRACK_AUTHORITY") {
+      throw new Error("SKYTRACK_AUTHORITY_INVALID");
+    }
+
+    ACS_SkyTrack.aircraftIndex =
+      ACS_SkyTrack_buildFleetIndexFromServer(data.fleet || []);
+
+    ACS_SkyTrack.itemsByAircraft =
+      ACS_SkyTrack_indexScheduleItemsFromServer(data.schedule_items || []);
+
+    console.log("🟢 SkyTrack PostgreSQL context loaded", {
+      fleet: Object.keys(ACS_SkyTrack.aircraftIndex).length,
+      scheduledAircraft: Object.keys(ACS_SkyTrack.itemsByAircraft).length
+    });
+
+    ACS_SkyTrack_onTick();
+
+  } catch (err) {
+
+    console.warn("⛔ SkyTrack context load failed:", err);
+
+    ACS_SkyTrack.aircraftIndex = {};
+    ACS_SkyTrack.itemsByAircraft = {};
+
+  }
+
+}
 
 /* ============================================================
    🧩 FLEET INDEX (ACS_MyAircraft)
