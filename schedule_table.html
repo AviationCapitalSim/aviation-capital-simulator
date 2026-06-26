@@ -5088,13 +5088,21 @@ async function ACS_openDeleteFlightsModal() {
     </p>
 
     <button
-      class="btn-modal red"
-      type="button"
-      onclick="ACS_toggleDeleteFlightsAll()"
-      style="margin-bottom:12px;"
-    >
-      Select all
-    </button>
+  class="btn-modal red"
+  type="button"
+  onclick="ACS_toggleDeleteFlightsAll()"
+  style="
+    padding:6px 14px;
+    border-radius:12px;
+    font-weight:800;
+    margin-bottom:12px;
+    background:#b91c1c;
+    border:1px solid rgba(248,113,113,0.45);
+    box-shadow:0 0 12px rgba(220,38,38,0.22);
+  "
+>
+  Select all
+</button>
 
     <div style="display:flex; flex-direction:column; gap:10px;">
       ${routeFlights.map(item => {
