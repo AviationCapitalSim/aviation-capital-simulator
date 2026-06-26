@@ -97,14 +97,24 @@ window.ACS_SkyTrack = {
 /* ============================================================
    🟦 ENTRY POINT
    ============================================================ */
-function ACS_SkyTrack_init(headless = false) {
+
+async function ACS_SkyTrack_init(headless = false) {
+
   if (ACS_SkyTrack.initialized) return;
+
   ACS_SkyTrack.initialized = true;
 
-  console.log("✈️ SkyTrack Runtime initialized (FR24 core)");
+  console.log(
+    "✈️ SkyTrack Runtime initialized (POSTGRESQL OCC)"
+  );
 
-  ACS_SkyTrack_loadData();
+  await ACS_SkyTrack_loadData();
+
   ACS_SkyTrack_hookTimeEngine();
+
+  console.log(
+    "🟢 SkyTrack OCC runtime ready"
+  );
 }
 
 /* ============================================================
@@ -1017,13 +1027,25 @@ if (!window.__ACS_RUNTIME_ACTIVE__) {
     ACS_SkyTrack_init(true);
 
   } else {
+     
     // Normal mode (SkyTrack with UI)
-    document.addEventListener("DOMContentLoaded", () => {
-      ACS_SkyTrack_init(false);
-    });
+     
+    document.addEventListener("DOMContentLoaded", async () => {
+
+  try {
+
+    await ACS_SkyTrack_init(false);
+
+  } catch(err) {
+
+    console.error(
+      "⛔ SkyTrack bootstrap failed",
+      err
+    );
+
   }
 
-}
+});
 
 /* ============================================================
    🌍 SKYTRACK → WORLD SERVER SYNC
