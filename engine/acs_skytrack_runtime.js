@@ -436,6 +436,9 @@ async function ACS_SkyTrack_loadData() {
 
     ACS_SkyTrack.baseICAO =
     data.base_icao || null;
+
+    ACS_SkyTrack.airlineId =
+    data.airline_id ? String(data.airline_id) : null;
      
     const indexedSchedule =
       ACS_SkyTrack_indexScheduleItemsFromServer(
