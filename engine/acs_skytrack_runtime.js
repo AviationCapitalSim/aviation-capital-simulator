@@ -573,16 +573,7 @@ function ACS_SkyTrack_indexScheduleItemsFromServer(scheduleRows) {
     };
   }
 
-  scheduleRows.forEach(row => {
-
-    const aircraftId = row.aircraft_id || row.aircraftId;
-    if (!aircraftId) return;
-
-    const itemType =
-      String(row.item_type || row.type || "").toLowerCase();
-
-    const status =
-      String(row.status || "").toLowerCase();
+  function ensureAircraftBuckets(aircraftId) {
 
     if (!itemsByAircraft[aircraftId]) {
       itemsByAircraft[aircraftId] = [];
@@ -595,8 +586,50 @@ function ACS_SkyTrack_indexScheduleItemsFromServer(scheduleRows) {
     if (!serviceItemsByAircraft[aircraftId]) {
       serviceItemsByAircraft[aircraftId] = [];
     }
+  }
 
-    const item = {
+  function addItem(item) {
+
+    if (!item || !item.aircraftId) return;
+
+    const aircraftId = item.aircraftId;
+
+    ensureAircraftBuckets(aircraftId);
+
+    itemsByAircraft[aircraftId].push(item);
+
+    if (
+      item.type === "flight" &&
+      item.status === "assigned" &&
+      Number.isFinite(item.depAbsMin) &&
+      Number.isFinite(item.arrAbsMin)
+    ) {
+      flightItemsByAircraft[aircraftId].push(item);
+    }
+
+    if (
+      item.type === "service" &&
+      ["scheduled", "in_progress"].includes(item.status)
+    ) {
+      serviceItemsByAircraft[aircraftId].push(item);
+    }
+  }
+
+  function buildBaseItem(row) {
+
+    const aircraftId =
+      row.aircraft_id ||
+      row.aircraftId;
+
+    if (!aircraftId) return null;
+
+    const itemType =
+      String(row.item_type || row.type || "").toLowerCase();
+
+    const status =
+      String(row.status || "").toLowerCase();
+
+    return {
       id: row.id,
       scheduleUid: row.schedule_uid,
 
@@ -605,58 +638,212 @@ function ACS_SkyTrack_indexScheduleItemsFromServer(scheduleRows) {
 
       aircraftId,
 
-      origin: String(row.origin || "").toUpperCase(),
-      destination: String(row.destination || "").toUpperCase(),
+      origin:
+        String(row.origin || "").toUpperCase(),
 
-      day: row.selected_day || null,
+      destination:
+        String(row.destination || "").toUpperCase(),
 
-      departure: row.departure || null,
-      arrival: row.arrival || null,
+      day:
+        row.selected_day || null,
 
-      depAbsMin: Number(row.dep_abs_min),
-      arrAbsMin: Number(row.arr_abs_min),
+      departure:
+        row.departure || null,
 
-      flightNumber: row.flight_number || null,
-      pairedFlightNumber: row.paired_flight_number || null,
-      flightDirection: row.flight_direction || null,
+      arrival:
+        row.arrival || null,
 
-      serviceType: row.service_type || null,
+      depAbsMin:
+        Number(row.dep_abs_min),
 
-      modelKey: row.model_key || null,
-      aircraft: row.aircraft || null,
-      registration: row.aircraft_registration || null,
+      arrAbsMin:
+        Number(row.arr_abs_min),
 
-      distanceNM: Number(row.distance_nm || 0),
-      blockTimeMin: Number(row.block_time_min || 0),
-      turnaroundMin: Number(row.turnaround_min || 0),
+      flightNumber:
+        row.flight_number || null,
 
-      __leg: row.flight_direction || null,
-      __turnaroundMin: Number(row.turnaround_min || 0),
+      pairedFlightNumber:
+        row.paired_flight_number || null,
+
+      flightDirection:
+        row.flight_direction || null,
+
+      serviceType:
+        row.service_type || null,
+
+      modelKey:
+        row.model_key || null,
+
+      aircraft:
+        row.aircraft || null,
+
+      registration:
+        row.aircraft_registration || null,
+
+      distanceNM:
+        Number(row.distance_nm || 0),
+
+      blockTimeMin:
+        Number(row.block_time_min || 0),
+
+      turnaroundMin:
+        Number(row.turnaround_min || 0),
+
+      __leg:
+        row.flight_direction || null,
+
+      __turnaroundMin:
+        Number(row.turnaround_min || 0),
+
+      __runtimeGenerated:
+        false,
 
       status
     };
+  }
 
-    itemsByAircraft[aircraftId].push(item);
+  function hasReturnLeg(baseItem) {
+
+    if (!baseItem) return true;
+
+    const aircraftId =
+      baseItem.aircraftId;
+
+    const flights =
+      flightItemsByAircraft[aircraftId] || [];
+
+    return flights.some(f => {
+
+      if (f.__runtimeGenerated) return false;
+
+      return (
+        f.origin === baseItem.destination &&
+        f.destination === baseItem.origin &&
+        Number.isFinite(f.depAbsMin) &&
+        f.depAbsMin >= baseItem.arrAbsMin
+      );
+    });
+  }
+
+  function buildRuntimeReturnLeg(baseItem) {
+
+    if (!baseItem) return null;
+
+    if (baseItem.type !== "flight") return null;
+    if (baseItem.status !== "assigned") return null;
+
+    if (!baseItem.pairedFlightNumber) return null;
 
     if (
-      itemType === "flight" &&
-      status === "assigned" &&
-      Number.isFinite(item.depAbsMin) &&
-      Number.isFinite(item.arrAbsMin)
+      !Number.isFinite(baseItem.depAbsMin) ||
+      !Number.isFinite(baseItem.arrAbsMin)
     ) {
-      flightItemsByAircraft[aircraftId].push(item);
+      return null;
     }
 
-    if (
-      itemType === "service" &&
-      ["scheduled", "in_progress"].includes(status)
-    ) {
-      serviceItemsByAircraft[aircraftId].push(item);
-    }
+    const blockTime =
+      Number(baseItem.blockTimeMin || 0) > 0
+        ? Number(baseItem.blockTimeMin)
+        : Math.max(1, baseItem.arrAbsMin - baseItem.depAbsMin);
+
+    const turnaround =
+      Number(baseItem.turnaroundMin || baseItem.__turnaroundMin || 0) > 0
+        ? Number(baseItem.turnaroundMin || baseItem.__turnaroundMin)
+        : 45;
+
+    const depAbsMin =
+      baseItem.arrAbsMin + turnaround;
+
+    const arrAbsMin =
+      depAbsMin + blockTime;
+
+    return {
+      ...baseItem,
+
+      id:
+        `${baseItem.id || baseItem.scheduleUid || "flight"}_RETURN_RUNTIME`,
+
+      scheduleUid:
+        `${baseItem.scheduleUid || baseItem.id || "flight"}_RETURN_RUNTIME`,
+
+      origin:
+        baseItem.destination,
+
+      destination:
+        baseItem.origin,
+
+      depAbsMin,
+      arrAbsMin,
+
+      departure:
+        ACS_SkyTrack_absToHHMM(depAbsMin),
+
+      arrival:
+        ACS_SkyTrack_absToHHMM(arrAbsMin),
+
+      flightNumber:
+        baseItem.pairedFlightNumber,
+
+      pairedFlightNumber:
+        baseItem.flightNumber || null,
+
+      flightDirection:
+        "RETURN",
+
+      __leg:
+        "RETURN",
+
+      __runtimeGenerated:
+        true,
+
+      status:
+        "assigned"
+    };
+  }
+
+  scheduleRows.forEach(row => {
+
+    const item =
+      buildBaseItem(row);
+
+    if (!item) return;
+
+    addItem(item);
+
+  });
+
+  /*
+   * ACS OCC runtime return generation:
+   * PostgreSQL remains the authority.
+   * This only restores the historical SkyTrack visual/runtime leg.
+   */
+  Object.keys(flightItemsByAircraft).forEach(acId => {
+
+    const sourceFlights =
+      [...flightItemsByAircraft[acId]];
+
+    sourceFlights.forEach(baseItem => {
+
+      if (baseItem.__runtimeGenerated) return;
+      if (baseItem.type !== "flight") return;
+      if (baseItem.status !== "assigned") return;
+      if (!baseItem.pairedFlightNumber) return;
+
+      if (hasReturnLeg(baseItem)) return;
+
+      const returnLeg =
+        buildRuntimeReturnLeg(baseItem);
+
+      if (returnLeg) {
+        addItem(returnLeg);
+      }
+
+    });
 
   });
 
   Object.keys(itemsByAircraft).forEach(acId => {
+
     itemsByAircraft[acId].sort((a, b) => {
       return Number(a.depAbsMin || 0) - Number(b.depAbsMin || 0);
     });
@@ -668,6 +855,7 @@ function ACS_SkyTrack_indexScheduleItemsFromServer(scheduleRows) {
     serviceItemsByAircraft[acId].sort((a, b) => {
       return Number(a.depAbsMin || 0) - Number(b.depAbsMin || 0);
     });
+
   });
 
   return {
@@ -701,6 +889,24 @@ function ACS_SkyTrack_dayTimeToAbs(day, hhmm) {
   if (!Number.isFinite(hh) || !Number.isFinite(mm)) return NaN;
 
   return (dayIndex * 1440) + (hh * 60 + mm);
+}
+
+function ACS_SkyTrack_absToHHMM(absMin) {
+
+  if (!Number.isFinite(absMin)) {
+    return null;
+  }
+
+  const normalized =
+    ((Number(absMin) % 1440) + 1440) % 1440;
+
+  const hh =
+    String(Math.floor(normalized / 60)).padStart(2, "0");
+
+  const mm =
+    String(normalized % 60).padStart(2, "0");
+
+  return `${hh}:${mm}`;
 }
 
 /* ============================================================
