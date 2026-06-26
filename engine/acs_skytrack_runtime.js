@@ -431,6 +431,130 @@ async function ACS_SkyTrack_loadData() {
 
 }
 
+function ACS_SkyTrack_buildFleetIndexFromServer(fleetRows) {
+
+  const index = {};
+
+  if (!Array.isArray(fleetRows)) return index;
+
+  fleetRows.forEach(row => {
+
+    if (!row || !row.id) return;
+
+    index[row.id] = {
+      id: row.id,
+      aircraftId: row.id,
+
+      registration: row.registration || "—",
+
+      model:
+        row.aircraft_name ||
+        row.model_key ||
+        row.model ||
+        "—",
+
+      type:
+        row.aircraft_name ||
+        row.model_key ||
+        row.model ||
+        "—",
+
+      status: row.status,
+      operationalStatus: row.operational_status,
+      maintenanceStatus: row.maintenance_status,
+      maintenanceControlStatus: row.maintenance_control_status,
+      maintenanceControlReason: row.maintenance_control_reason,
+
+      canFly:
+        String(row.status).toUpperCase() === "ACTIVE" &&
+        String(row.operational_status).toUpperCase() === "AVAILABLE" &&
+        String(row.maintenance_status).toUpperCase() === "SERVICEABLE" &&
+        String(row.maintenance_control_status).toUpperCase() === "SERVICEABLE",
+
+      baseAirport:
+        row.base_icao ||
+        row.current_airport ||
+        null,
+
+      currentAirport:
+        row.current_airport ||
+        row.base_icao ||
+        null
+    };
+
+  });
+
+  return index;
+}
+
+function ACS_SkyTrack_indexScheduleItemsFromServer(scheduleRows) {
+
+  const byAircraft = {};
+
+  if (!Array.isArray(scheduleRows)) return byAircraft;
+
+  scheduleRows.forEach(row => {
+
+    const aircraftId = row.aircraft_id || row.aircraftId;
+    if (!aircraftId) return;
+
+    const type =
+      String(row.item_type || row.type || "flight").toLowerCase();
+
+    if (type !== "flight") return;
+
+    const depAbsMin = Number(row.dep_abs_min);
+    const arrAbsMin = Number(row.arr_abs_min);
+
+    if (!Number.isFinite(depAbsMin) || !Number.isFinite(arrAbsMin)) {
+      return;
+    }
+
+    if (!byAircraft[aircraftId]) {
+      byAircraft[aircraftId] = [];
+    }
+
+    byAircraft[aircraftId].push({
+      id: row.id,
+      scheduleUid: row.schedule_uid,
+
+      type: "flight",
+      aircraftId,
+
+      origin: String(row.origin || "").toUpperCase(),
+      destination: String(row.destination || "").toUpperCase(),
+
+      flightNumber: row.flight_number || null,
+      pairedFlightNumber: row.paired_flight_number || null,
+
+      depAbsMin,
+      arrAbsMin,
+
+      day:
+        row.selected_day ||
+        row.day ||
+        row.day_of_week ||
+        null,
+
+      departure: row.departure || null,
+      arrival: row.arrival || null,
+
+      modelKey: row.model_key || null,
+
+      distanceNM: Number(row.distance_nm || row.distanceNM || 0),
+
+      status: row.status || "assigned"
+    });
+
+  });
+
+  Object.keys(byAircraft).forEach(acId => {
+    byAircraft[acId].sort((a, b) => a.depAbsMin - b.depAbsMin);
+  });
+
+  return byAircraft;
+}
+
 /* ============================================================
    🧩 FLEET INDEX (ACS_MyAircraft)
    ============================================================ */
