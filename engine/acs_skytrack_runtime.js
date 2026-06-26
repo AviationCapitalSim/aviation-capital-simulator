@@ -1107,6 +1107,23 @@ function ACS_SkyTrack_debugDump() {
   });
 }
 
+function ACS_SkyTrack_startContextRefresh() {
+
+  if (window.__ACS_SKYTRACK_CONTEXT_REFRESH__) return;
+
+  window.__ACS_SKYTRACK_CONTEXT_REFRESH__ = true;
+
+  setInterval(async () => {
+    try {
+      await ACS_SkyTrack_loadData();
+    } catch (err) {
+      console.warn("SkyTrack context refresh failed", err);
+    }
+  }, 15000);
+
+  console.log("🔁 SkyTrack PostgreSQL context refresh active");
+}
+
 /* ============================================================
    🟧 RUNTIME BOOTSTRAP
    ============================================================ */
