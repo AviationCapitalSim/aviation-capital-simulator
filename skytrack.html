@@ -1214,6 +1214,18 @@ function renderFlightDetails(snapshot) {
 
       centerMapOnce(snapshot);
 
+      const visibleIds = new Set(
+  snapshot.map(item => String(item.aircraftId))
+);
+
+Object.keys(markers).forEach(id => {
+  if (!visibleIds.has(String(id))) {
+    if (map.hasLayer(markers[id])) {
+      map.removeLayer(markers[id]);
+    }
+    delete markers[id];
+  }
+});       
       snapshot.forEach(item => {
 
 /* ============================================================
@@ -1254,13 +1266,14 @@ if(counter){
   let m = markers[item.aircraftId];
 
   const markerKey =
-  [
-    item.aircraftId,
-    item.state,
-    item.originICAO,
-    item.destinationICAO,
-    item.flightNumber
-  ].join("|");
+[
+  item.aircraftId,
+  item.state,
+  item.position?.airport || "",
+  item.originICAO,
+  item.destinationICAO,
+  item.flightNumber
+].join("|");
 
 if (m && m.__acsMarkerKey && m.__acsMarkerKey !== markerKey) {
 
