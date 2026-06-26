@@ -303,6 +303,21 @@ window.ACS_buildWorldSnapshot =
 
         if (!item) return false;
 
+        const myAirlineId =
+  window.ACS_SkyTrack?.airlineId
+    ? String(window.ACS_SkyTrack.airlineId)
+    : null;
+
+const itemAirlineId =
+  String(item.airline_id || item.airlineId || "");
+
+if (
+  myAirlineId &&
+  itemAirlineId === myAirlineId
+) {
+  return false;
+}
+         
         if (localAircraftIds.has(String(item.aircraftId))) {
           return false;
         }
