@@ -1058,15 +1058,32 @@ function renderFlightDetails(snapshot) {
     }
 
     function centerMapOnce(snapshot) {
-       
-      if (didCenter) return;
-      const baseICAO = localStorage.getItem("ACS_baseICAO");
-      const ll = baseICAO ? apLatLng(baseICAO) : null;
-      if (ll) {
-        map.setView(ll, 6, { animate:false });
-        didCenter = true;
-      }
-    }
+
+  if (didCenter) return;
+
+  const baseICAO =
+    window.ACS_SkyTrack?.baseICAO ||
+    null;
+
+  const ll =
+    baseICAO ? apLatLng(baseICAO) : null;
+
+  if (ll) {
+
+    map.setView(
+      ll,
+      6,
+      { animate: false }
+    );
+
+    didCenter = true;
+
+    console.log(
+      "🛫 SkyTrack centered on operational base:",
+      baseICAO
+    );
+  }
+}
 
     function resolvePosition(item) {
 
