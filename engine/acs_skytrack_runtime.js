@@ -516,70 +516,117 @@ function ACS_SkyTrack_buildFleetIndexFromServer(fleetRows) {
 
 function ACS_SkyTrack_indexScheduleItemsFromServer(scheduleRows) {
 
-  const byAircraft = {};
+  const itemsByAircraft = {};
+  const flightItemsByAircraft = {};
+  const serviceItemsByAircraft = {};
 
-  if (!Array.isArray(scheduleRows)) return byAircraft;
+  if (!Array.isArray(scheduleRows)) {
+    return {
+      itemsByAircraft,
+      flightItemsByAircraft,
+      serviceItemsByAircraft
+    };
+  }
 
   scheduleRows.forEach(row => {
 
     const aircraftId = row.aircraft_id || row.aircraftId;
     if (!aircraftId) return;
 
-    const type =
-      String(row.item_type || row.type || "flight").toLowerCase();
+    const itemType =
+      String(row.item_type || row.type || "").toLowerCase();
 
-    if (type !== "flight") return;
+    const status =
+      String(row.status || "").toLowerCase();
 
-    const depAbsMin = Number(row.dep_abs_min);
-    const arrAbsMin = Number(row.arr_abs_min);
-
-    if (!Number.isFinite(depAbsMin) || !Number.isFinite(arrAbsMin)) {
-      return;
+    if (!itemsByAircraft[aircraftId]) {
+      itemsByAircraft[aircraftId] = [];
     }
 
-    if (!byAircraft[aircraftId]) {
-      byAircraft[aircraftId] = [];
+    if (!flightItemsByAircraft[aircraftId]) {
+      flightItemsByAircraft[aircraftId] = [];
     }
 
-    byAircraft[aircraftId].push({
+    if (!serviceItemsByAircraft[aircraftId]) {
+      serviceItemsByAircraft[aircraftId] = [];
+    }
+
+    const item = {
       id: row.id,
       scheduleUid: row.schedule_uid,
 
-      type: "flight",
+      type: itemType,
+      itemType,
+
       aircraftId,
 
       origin: String(row.origin || "").toUpperCase(),
       destination: String(row.destination || "").toUpperCase(),
 
-      flightNumber: row.flight_number || null,
-      pairedFlightNumber: row.paired_flight_number || null,
-
-      depAbsMin,
-      arrAbsMin,
-
-      day:
-        row.selected_day ||
-        row.day ||
-        row.day_of_week ||
-        null,
+      day: row.selected_day || null,
 
       departure: row.departure || null,
       arrival: row.arrival || null,
 
+      depAbsMin: Number(row.dep_abs_min),
+      arrAbsMin: Number(row.arr_abs_min),
+
+      flightNumber: row.flight_number || null,
+      pairedFlightNumber: row.paired_flight_number || null,
+      flightDirection: row.flight_direction || null,
+
+      serviceType: row.service_type || null,
+
       modelKey: row.model_key || null,
+      aircraft: row.aircraft || null,
+      registration: row.aircraft_registration || null,
 
-      distanceNM: Number(row.distance_nm || row.distanceNM || 0),
+      distanceNM: Number(row.distance_nm || 0),
+      blockTimeMin: Number(row.block_time_min || 0),
+      turnaroundMin: Number(row.turnaround_min || 0),
 
-      status: row.status || "assigned"
+      status
+    };
+
+    itemsByAircraft[aircraftId].push(item);
+
+    if (
+      itemType === "flight" &&
+      status === "assigned" &&
+      Number.isFinite(item.depAbsMin) &&
+      Number.isFinite(item.arrAbsMin)
+    ) {
+      flightItemsByAircraft[aircraftId].push(item);
+    }
+
+    if (
+      itemType === "service" &&
+      ["scheduled", "in_progress"].includes(status)
+    ) {
+      serviceItemsByAircraft[aircraftId].push(item);
+    }
+
+  });
+
+  Object.keys(itemsByAircraft).forEach(acId => {
+    itemsByAircraft[acId].sort((a, b) => {
+      return Number(a.depAbsMin || 0) - Number(b.depAbsMin || 0);
     });
 
+    flightItemsByAircraft[acId].sort((a, b) => {
+      return Number(a.depAbsMin || 0) - Number(b.depAbsMin || 0);
+    });
+
+    serviceItemsByAircraft[acId].sort((a, b) => {
+      return Number(a.depAbsMin || 0) - Number(b.depAbsMin || 0);
+    });
   });
 
-  Object.keys(byAircraft).forEach(acId => {
-    byAircraft[acId].sort((a, b) => a.depAbsMin - b.depAbsMin);
-  });
-
-  return byAircraft;
+  return {
+    itemsByAircraft,
+    flightItemsByAircraft,
+    serviceItemsByAircraft
+  };
 }
 
 /* ============================================================
