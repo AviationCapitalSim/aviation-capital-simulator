@@ -242,12 +242,43 @@ if (
 
   let resolvedDistanceNM = 0;
 
-  try {
-    const scheduleItems = JSON.parse(
-      localStorage.getItem("scheduleItems") || "[]"
-    );
+try {
 
-    const match = scheduleItems.find(s => {
+  const scheduleItems =
+    ACS_SkyTrack.itemsByAircraft[acId] || [];
+
+  const match = scheduleItems.find(s => {
+
+    if (s.type !== "flight") return false;
+
+    const o1 = String(s.origin);
+    const d1 = String(s.destination);
+    const o2 = String(prev.origin);
+    const d2 = String(prev.destination);
+
+    return (
+      (o1 === o2 && d1 === d2) ||
+      (o1 === d2 && d1 === o2)
+    );
+  });
+
+  if (match) {
+    resolvedDistanceNM = Number(
+      match.distanceNM ||
+      match.distance_nm ||
+      0
+    );
+  }
+
+} catch (e) {
+
+  console.warn(
+    "⚠️ Distance resolve failed",
+    e
+  );
+
+}
+   
     if (String(s.aircraftId) !== String(acId)) return false;
 
     const o1 = String(s.origin);
@@ -627,205 +658,6 @@ function ACS_SkyTrack_indexScheduleItemsFromServer(scheduleRows) {
     flightItemsByAircraft,
     serviceItemsByAircraft
   };
-}
-
-/* ============================================================
-   🧩 FLEET INDEX (ACS_MyAircraft)
-   ============================================================ */
-function ACS_SkyTrack_getFleetIndex() {
-  let fleet = [];
-
-  try {
-    fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-  } catch (e) {
-    console.warn("SkyTrack: Invalid ACS_MyAircraft");
-  }
-
-  const index = {};
-  fleet.forEach(ac => {
-    if (!ac || !ac.id) return;
-    index[ac.id] = ac;
-  });
-
-  return index;
-}
-
-/* ============================================================
-   🟧 A4.2 — SCHEDULE EXPANDER (ROUND TRIP / FR24)
-   - scheduleItems puede venir como "ruta" (LEMD ⇄ DEST)
-   - Genera 2 legs: OUTBOUND + RETURN con turnaround
-   - Soporta it.days[] (mon..sun) y/o it.day
-   ============================================================ */
-
-function ACS_SkyTrack_indexScheduleItems() {
-  let raw = [];
-
-  try {
-    raw = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-  } catch (e) {
-    console.warn("SkyTrack: Invalid scheduleItems");
-  }
-
-  const byAircraft = {};
-  const seen = new Set();
-   
-  raw.forEach(it => {
-    if (!it || !it.aircraftId) return;
-
-    // Guardar servicios si existen (B-check / etc.)
-    if (it.type === "service") {
-      if (!byAircraft[it.aircraftId]) byAircraft[it.aircraftId] = [];
-      byAircraft[it.aircraftId].push(it);
-      return;
-    }
-
-    // Solo vuelos/rutas
-    if (it.type !== "flight") return;
-
-    // days source (prefer it.days[]; fallback it.day)
-    let days = [];
-    if (Array.isArray(it.days) && it.days.length) {
-      days = it.days.slice();
-    } else if (typeof it.day === "string" && it.day) {
-      days = [it.day];
-    } else {
-      // si no hay day(s), no podemos indexar por tiempo
-      return;
-    }
-
-    // Turnaround (prioriza optimized si existe)
-     
-    const turn =
-      Number.isFinite(it.turnaroundMinOptimized) ? it.turnaroundMinOptimized :
-      Number.isFinite(it.turnaroundMin) ? it.turnaroundMin :
-      45;
-
-    // Block por pierna (si no viene, deducimos por dep/arr)
-    // (si tampoco se puede, default conservador 60)
-     
-    const blockFallback = 60;
-
-    days.forEach(d => {
-      const dep1 = ACS_SkyTrack_dayTimeToAbs(d, it.departure);
-      let arr1  = ACS_SkyTrack_dayTimeToAbs(d, it.arrival);
-
-      if (!Number.isFinite(dep1) || !Number.isFinite(arr1)) return;
-
-      // Overnight protection (si arr < dep, cruza medianoche)
-      if (arr1 < dep1) arr1 += 1440;
-
-      const block1 =
-        Number.isFinite(it.blockTimeMin) ? it.blockTimeMin :
-        Math.max(1, (arr1 - dep1));
-
-      // OUTBOUND leg (BASE -> DEST)
-       
-      const outFlightNumber = it.flightNumberOut || it.flightNumber || null;
-
-      const outKey = [
-        it.aircraftId, "OUT", d,
-        (it.origin || ""), (it.destination || ""),
-        (it.departure || ""), (it.arrival || ""),
-        (outFlightNumber || "")
-      ].join("|");
-
-      if (!seen.has(outKey)) {
-        seen.add(outKey);
-
-        if (!byAircraft[it.aircraftId]) byAircraft[it.aircraftId] = [];
-        byAircraft[it.aircraftId].push({
-          type: "flight",
-          aircraftId: it.aircraftId,
-
-          origin: it.origin || null,
-          destination: it.destination || null,
-
-          flightNumber: outFlightNumber,
-          modelKey: it.modelKey || it.acType || it.aircraft || null,
-
-          day: (typeof d === "string" ? d.toLowerCase() : d),
-          departure: it.departure,
-          arrival: it.arrival,
-
-          depAbsMin: dep1,
-          arrAbsMin: arr1,
-
-          // ✅ DISTANCIA CANÓNICA (se guarda en el LEG)
-          distanceNM: Number(
-            it.distanceNM ??
-            it.distance_nm ??
-            it.distNM ??
-            it.dist_nm ??
-            0
-          ),
-
-          // meta útil
-          __leg: "OUTBOUND",
-          __turnaroundMin: turn
-        });
-
-      }
-
-      // RETURN leg (DEST -> BASE)
-       
-      const dep2 = arr1 + turn;
-      const arr2 = dep2 + (Number.isFinite(block1) ? block1 : blockFallback);
-
-      const retFlightNumber = it.flightNumberIn || null;
-
-      const retKey = [
-        it.aircraftId, "RET", d,
-        (it.destination || ""), (it.origin || ""),
-        dep2, arr2,
-        (retFlightNumber || "")
-      ].join("|");
-
-      if (!seen.has(retKey)) {
-        seen.add(retKey);
-
-        if (!byAircraft[it.aircraftId]) byAircraft[it.aircraftId] = [];
-        byAircraft[it.aircraftId].push({
-          type: "flight",
-          aircraftId: it.aircraftId,
-
-          origin: it.destination || null,
-          destination: it.origin || null,
-
-          flightNumber: retFlightNumber,
-          modelKey: it.modelKey || it.acType || it.aircraft || null,
-
-          day: (typeof d === "string" ? d.toLowerCase() : d),
-          departure: null,
-          arrival: null,
-
-          depAbsMin: dep2,
-          arrAbsMin: arr2,
-
-          __leg: "RETURN",
-          __turnaroundMin: turn
-        });
-      }
-    });
-  });
-
-  // Ordenar por tiempo por avión (para resolver contexto mejor)
-  Object.keys(byAircraft).forEach(acId => {
-    byAircraft[acId].sort((a, b) => {
-      const ta =
-        (a.type === "flight" && Number.isFinite(a.depAbsMin)) ? a.depAbsMin :
-        (a.type === "service" && a.day && a.start) ? ACS_SkyTrack_dayTimeToAbs(a.day, a.start) :
-        0;
-
-      const tb =
-        (b.type === "flight" && Number.isFinite(b.depAbsMin)) ? b.depAbsMin :
-        (b.type === "service" && b.day && b.start) ? ACS_SkyTrack_dayTimeToAbs(b.day, b.start) :
-        0;
-
-      return ta - tb;
-    });
-  });
-
-  return byAircraft;
 }
 
 /* ============================================================
