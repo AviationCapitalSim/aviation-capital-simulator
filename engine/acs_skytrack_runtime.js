@@ -39,6 +39,8 @@ window.ACS_SkyTrack = {
 
   aircraftIndex: {},
 
+  baseICAO: null,
+   
   itemsByAircraft: {},
   flightItemsByAircraft: {},
   serviceItemsByAircraft: {},
@@ -432,6 +434,9 @@ async function ACS_SkyTrack_loadData() {
     ACS_SkyTrack.aircraftIndex =
       ACS_SkyTrack_buildFleetIndexFromServer(data.fleet || []);
 
+    ACS_SkyTrack.baseICAO =
+    data.base_icao || null;
+     
     const indexedSchedule =
       ACS_SkyTrack_indexScheduleItemsFromServer(
         data.schedule_items || []
