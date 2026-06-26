@@ -426,8 +426,19 @@ async function ACS_SkyTrack_loadData() {
     ACS_SkyTrack.aircraftIndex =
       ACS_SkyTrack_buildFleetIndexFromServer(data.fleet || []);
 
-    ACS_SkyTrack.itemsByAircraft =
-      ACS_SkyTrack_indexScheduleItemsFromServer(data.schedule_items || []);
+    const indexedSchedule =
+  ACS_SkyTrack_indexScheduleItemsFromServer(
+    data.schedule_items || []
+  );
+
+ACS_SkyTrack.itemsByAircraft =
+  indexedSchedule.itemsByAircraft;
+
+ACS_SkyTrack.flightItemsByAircraft =
+  indexedSchedule.flightItemsByAircraft;
+
+ACS_SkyTrack.serviceItemsByAircraft =
+  indexedSchedule.serviceItemsByAircraft;
 
     console.log("🟢 SkyTrack PostgreSQL context loaded", {
       fleet: Object.keys(ACS_SkyTrack.aircraftIndex).length,
