@@ -1,112 +1,247 @@
 /* ============================================================
-   🌍 ACS WORLD TRAFFIC ENGINE
-   Obtiene vuelos del servidor global y los adapta a SkyTrack
+   🌍 ACS WORLD TRAFFIC ENGINE — POSTGRESQL GLOBAL SKYTRACK
+   ------------------------------------------------------------
+   ACS OCC / AIRBUS OCC
+   - Reads all ACS airlines from PostgreSQL global endpoint.
+   - Converts aircraft fleet rows into SkyTrack snapshot items.
+   - Shows aircraft even when GROUND.
+   - No localStorage.
+   - No old world /v1/flights authority.
    ============================================================ */
 
 (function(){
 
-const WORLD_SERVER =
-"https://acs-world-server-production.up.railway.app/v1/flights";
+  const GLOBAL_SERVER =
+    "https://api.aviationcapitalsim.com/v1/skytrack/global";
 
-async function ACS_fetchWorldFlights(){
+  async function ACS_fetchWorldFlights(){
 
-  try{
+    try {
 
-    const map = window.ACS_SkyTrack_Map;
+      const res = await fetch(
+        GLOBAL_SERVER,
+        {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store",
+          headers: {
+            "Accept": "application/json"
+          }
+        }
+      );
 
-    if(!map){
+      const data = await res.json();
+
+      if (!res.ok || data?.ok !== true) {
+        throw new Error(data?.error || "GLOBAL_SKYTRACK_FETCH_FAILED");
+      }
+
+      if (Array.isArray(data.flights)) {
+        return data.flights;
+      }
+
       return [];
+
+    } catch (err) {
+
+      console.warn(
+        "🌍 Global SkyTrack fetch error:",
+        err
+      );
+
+      return [];
+
     }
-
-    const bounds = map.getBounds();
-
-    const minLat = bounds.getSouth();
-    const maxLat = bounds.getNorth();
-    const minLng = bounds.getWest();
-    const maxLng = bounds.getEast();
-
-    const url =
-      `${WORLD_SERVER}?minLat=${minLat}&maxLat=${maxLat}&minLng=${minLng}&maxLng=${maxLng}`;
-
-    const res = await fetch(url);
-    const data = await res.json();
-
-    if(Array.isArray(data)) return data;
-
-    if(Array.isArray(data.flights)) return data.flights;
-
-    return [];
-
-  }catch(err){
-
-    console.warn("🌍 World flights fetch error:", err);
-    return [];
 
   }
 
-}
-window.ACS_fetchWorldFlights = ACS_fetchWorldFlights;
+  window.ACS_fetchWorldFlights =
+    ACS_fetchWorldFlights;
 
 })();
 
 /* ============================================================
-   🟧 W2 — WORLD FLIGHT → SKYTRACK SNAPSHOT ITEM
+   🌍 GLOBAL AIRCRAFT → SKYTRACK SNAPSHOT ITEM
    ============================================================ */
 
 function ACS_convertWorldFlight(f){
 
-  const now = window.ACS_TIME?.absMin;
+  if (!f) return null;
 
-  if(now == null) return null;
+  const now =
+    Number.isFinite(window.ACS_SkyTrack?.nowAbsMin)
+      ? window.ACS_SkyTrack.nowAbsMin
+      : Number.isFinite(window.ACS_TIME?.minute)
+        ? window.ACS_TIME.minute % 10080
+        : null;
 
-  const dep = Number(f.dep_time);
-  const arr = Number(f.arr_time);
+  const aircraftId =
+    "GLOBAL_" + String(f.airline_id) + "_" + String(f.aircraft_id);
 
-  if(!Number.isFinite(dep) || !Number.isFinite(arr)) return null;
+  const airlineId =
+    String(f.airline_id || "");
 
-  if(arr <= dep) return null;
+  const dep =
+    Number(f.dep_abs_min);
 
-  let progress = (now - dep) / (arr - dep);
+  const arr =
+    Number(f.arr_abs_min);
 
-  progress = Math.max(0, Math.min(1, progress));
+  const origin =
+    String(f.origin || f.base_icao || f.current_airport || "").toUpperCase();
+
+  const destination =
+    String(f.destination || f.current_airport || f.base_icao || "").toUpperCase();
+
+  const currentAirport =
+    String(f.current_airport || f.base_icao || origin || "").toUpperCase();
+
+  const maintenanceControlStatus =
+    String(f.maintenance_control_status || "").toUpperCase();
+
+  const maintenanceControlReason =
+    String(f.maintenance_control_reason || "").toUpperCase();
+
+  let state =
+    "GROUND";
+
+  let position =
+    { airport: currentAirport || origin || null };
+
+  if (
+    maintenanceControlStatus === "IN_MAINTENANCE" ||
+    maintenanceControlStatus === "UNSERVICEABLE"
+  ) {
+    state =
+      maintenanceControlReason || maintenanceControlStatus || "MAINTENANCE";
+
+    position =
+      { airport: currentAirport || f.base_icao || null };
+
+  } else if (
+    now != null &&
+    Number.isFinite(dep) &&
+    Number.isFinite(arr) &&
+    arr > dep &&
+    now >= dep &&
+    now < arr
+  ) {
+
+    const progress =
+      Math.max(
+        0,
+        Math.min(
+          1,
+          (now - dep) / (arr - dep)
+        )
+      );
+
+    state =
+      "EN_ROUTE";
+
+    position = {
+      progress
+    };
+
+  } else {
+
+    state =
+      "GROUND";
+
+    if (
+      Number.isFinite(arr) &&
+      now != null &&
+      now >= arr &&
+      destination
+    ) {
+      position =
+        { airport: destination };
+    } else {
+      position =
+        { airport: currentAirport || origin || null };
+    }
+  }
 
   return {
 
-  aircraftId: "WORLD_" + f.flight_id,
+    aircraftId,
 
-  flightNumber: f.flight_number || "WORLD",
+    airlineId,
+    airline_id: airlineId,
 
-  originICAO: f.origin,
+    airlineName:
+      f.airline_name || null,
 
-  destinationICAO: f.destination,
+    airlineIata:
+      f.iata || null,
 
-  state: progress >= 1 ? "GROUND" : "EN_ROUTE",
+    airlineIcao:
+      f.icao || null,
 
-  position: {
-    lat: f.latitude,
-    lng: f.longitude,
-    progress: progress
-  }
+    registration:
+      f.registration || "—",
 
-};
+    model:
+      f.aircraft_name ||
+      f.model_key ||
+      "—",
+
+    aircraft:
+      f.aircraft_name ||
+      f.model_key ||
+      "—",
+
+    modelKey:
+      f.model_key || null,
+
+    flightNumber:
+      f.flight_number || null,
+
+    originICAO:
+      origin || null,
+
+    destinationICAO:
+      destination || null,
+
+    state,
+
+    position,
+
+    depAbsMin:
+      Number.isFinite(dep) ? dep : null,
+
+    arrAbsMin:
+      Number.isFinite(arr) ? arr : null,
+
+    distanceNM:
+      Number(f.distance_nm || 0),
+
+    __globalTraffic:
+      true
+
+  };
 
 }
 
 /* ============================================================
-   🌍 BUILD WORLD SNAPSHOT
+   🌍 BUILD GLOBAL SKYTRACK SNAPSHOT
    ============================================================ */
 
 async function ACS_buildWorldSnapshot(){
 
-  const flights = await window.ACS_fetchWorldFlights();
+  const flights =
+    await window.ACS_fetchWorldFlights();
 
   const snapshot = [];
 
   flights.forEach(f => {
 
-    const item = ACS_convertWorldFlight(f);
+    const item =
+      ACS_convertWorldFlight(f);
 
-    if(item) snapshot.push(item);
+    if (item) {
+      snapshot.push(item);
+    }
 
   });
 
@@ -114,71 +249,94 @@ async function ACS_buildWorldSnapshot(){
 
 }
 
-window.ACS_buildWorldSnapshot = ACS_buildWorldSnapshot;
+window.ACS_buildWorldSnapshot =
+  ACS_buildWorldSnapshot;
 
 /* ============================================================
-   🟧 W4 — WORLD SNAPSHOT INJECTOR
+   🌍 GLOBAL SNAPSHOT INJECTOR
    ============================================================ */
 
 (function(){
 
-let worldCache = [];
+  let worldCache = [];
 
-/* actualizar cache cada 10s */
+  async function updateWorldCache(){
 
-async function updateWorldCache(){
+    try {
 
-  try{
+      worldCache =
+        await window.ACS_buildWorldSnapshot();
 
-    worldCache = await window.ACS_buildWorldSnapshot();
+    } catch (err) {
 
-  }catch(err){
+      console.warn(
+        "🌍 global cache error",
+        err
+      );
 
-    console.warn("🌍 world cache error", err);
-
-  }
-
-}
-
-setInterval(updateWorldCache,10000);
-
-updateWorldCache();
-
-/* merge con snapshot antes de render */
-
-window.addEventListener("ACS_SKYTRACK_SNAPSHOT", function(e){
-
-  if(!Array.isArray(e.detail)) return;
-
-  const mode = window.ACS_SKYTRACK_VIEW_MODE || "global";
-
-  // GLOBAL TRAFFIC
-  if(mode === "global"){
-
-    worldCache.forEach(f => e.detail.push(f));
-    return;
+    }
 
   }
 
-  // SELECTED AIRLINES
-  if(mode === "selected"){
+  setInterval(
+    updateWorldCache,
+    10000
+  );
 
-    const selected = window.ACS_SELECTED_AIRLINES || [];
+  updateWorldCache();
 
-    worldCache.forEach(f => {
+  window.addEventListener(
+    "ACS_SKYTRACK_SNAPSHOT",
+    function(e){
 
-      const airline = f.airline_id || "";
+      if (!Array.isArray(e.detail)) return;
 
-      if(selected.includes(airline)){
-        e.detail.push(f);
+      const mode =
+        window.ACS_SKYTRACK_VIEW_MODE || "global";
+
+      const localAircraftIds =
+        new Set(
+          e.detail.map(item => String(item.aircraftId))
+        );
+
+      function shouldInject(item) {
+
+        if (!item) return false;
+
+        if (localAircraftIds.has(String(item.aircraftId))) {
+          return false;
+        }
+
+        if (mode === "global") {
+          return true;
+        }
+
+        if (mode === "selected") {
+
+          const selected =
+            window.ACS_SELECTED_AIRLINES || [];
+
+          return selected.includes(
+            String(item.airline_id || item.airlineId || "")
+          );
+        }
+
+        return false;
       }
 
-    });
+      worldCache.forEach(item => {
 
-  }
+        if (shouldInject(item)) {
+          e.detail.push(item);
+        }
 
-});
+      });
 
-console.log("🌍 W4 World Traffic Injector active");
+    }
+  );
+
+  console.log(
+    "🌍 ACS Global SkyTrack Injector active"
+  );
 
 })();
