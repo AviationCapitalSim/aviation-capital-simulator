@@ -279,33 +279,6 @@ try {
 
 }
    
-    if (String(s.aircraftId) !== String(acId)) return false;
-
-    const o1 = String(s.origin);
-    const d1 = String(s.destination);
-    const o2 = String(prev.origin);
-    const d2 = String(prev.destination);
-
-    return (
-    (o1 === o2 && d1 === d2) ||
-    (o1 === d2 && d1 === o2)
-  );
-});
-
-    if (match) {
-      resolvedDistanceNM = Number(
-        match.distanceNM ??
-        match.distance_nm ??
-        match.distNM ??
-        match.dist_nm ??
-        0
-      );
-    }
-
-  } catch (e) {
-    console.warn("⚠️ Distance resolve failed", e);
-  }
-
   const arrivalPayload = {
     flightId: `${acId}|${prev.origin}|${prev.destination}|${prev.depAbsMin}`,
     aircraftId: acId,
