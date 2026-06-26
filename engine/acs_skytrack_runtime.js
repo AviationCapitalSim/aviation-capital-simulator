@@ -855,19 +855,6 @@ function ACS_SkyTrack_computePosition(flight, nowAbsMin) {
 }
 
 /* ============================================================
-   🕒 DAY + TIME → ABS MINUTES (HELPER)
-   ============================================================ */
-function ACS_SkyTrack_dayTimeToAbs(day, hhmm) {
-  const days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
-  const dayIndex = days.indexOf(day.toLowerCase());
-  if (dayIndex < 0) return NaN;
-
-  const [hh, mm] = hhmm.split(":").map(Number);
-  const baseDayMin = dayIndex * 1440;
-  return baseDayMin + (hh * 60 + mm);
-}
-
-/* ============================================================
    🧪 DEBUG UTILITIES
    ============================================================ */
 function ACS_SkyTrack_debugDump() {
