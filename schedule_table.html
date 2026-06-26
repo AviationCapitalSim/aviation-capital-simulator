@@ -1500,6 +1500,34 @@ footer {
 
   </div>
 </div>
+
+<!-- ============================================================
+     🟥 DELETE FLIGHTS MODAL — ACS OCC
+     ============================================================ -->
+
+<div id="deleteFlightsModal" class="acs-modal hidden">
+  <div class="acs-modal-card qatar">
+
+    <div class="acs-modal-header">
+      <h3 id="deleteFlightsTitle">🟥 Delete Flights</h3>
+      <button class="btn-close" onclick="ACS_closeDeleteFlightsModal()">✕</button>
+    </div>
+
+    <div id="deleteFlightsBody" class="acs-modal-body">
+      <!-- contenido dinámico -->
+    </div>
+
+    <div class="acs-modal-footer">
+      <button class="btn-modal red" onclick="ACS_confirmDeleteFlightsBatch()">
+        🗑 DELETE SELECTED
+      </button>
+      <button class="btn-modal ghost" onclick="ACS_closeDeleteFlightsModal()">
+        Cancel
+      </button>
+    </div>
+
+  </div>
+</div>
      
 <footer>
   © 2026 Aviation Capital Simulator. All rights reserved.
