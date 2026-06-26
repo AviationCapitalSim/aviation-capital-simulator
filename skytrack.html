@@ -1087,27 +1087,67 @@ function renderFlightDetails(snapshot) {
 
     function resolvePosition(item) {
 
-      if (item.state === "EN_ROUTE" && item.position?.progress != null) {
-        const o = window.ACS_AIRPORT_INDEX[item.originICAO];
-        const d = window.ACS_AIRPORT_INDEX[item.destinationICAO];
-        if (!o || !d) return null;
+  if (!item) return null;
 
-        const p = Math.max(0, Math.min(1, item.position.progress));
-        return [
-          o.latitude + (d.latitude - o.latitude) * p,
-          o.longitude + (d.longitude - o.longitude) * p
-        ];
-      }
+  if (item.state !== "EN_ROUTE") {
 
-      if (item.position?.airport) {
-        const ap = window.ACS_AIRPORT_INDEX[item.position.airport];
-        if (!ap) return null;
-        return [ap.latitude, ap.longitude];
-      }
+    const airportCode =
+      item.position?.airport ||
+      item.currentAirport ||
+      item.current_airport ||
+      item.baseICAO ||
+      item.base_icao ||
+      item.originICAO ||
+      null;
 
+    if (!airportCode) return null;
+
+    const ap =
+      window.ACS_AIRPORT_INDEX?.[airportCode];
+
+    if (!ap) return null;
+
+    const lat =
+      Number(ap.latitude);
+
+    const lng =
+      Number(ap.longitude);
+
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
       return null;
     }
 
+    return [lat, lng];
+  }
+
+  if (item.state === "EN_ROUTE" && item.position?.progress != null) {
+
+    const o =
+      window.ACS_AIRPORT_INDEX?.[item.originICAO];
+
+    const d =
+      window.ACS_AIRPORT_INDEX?.[item.destinationICAO];
+
+    if (!o || !d) return null;
+
+    const p =
+      Math.max(
+        0,
+        Math.min(
+          1,
+          Number(item.position.progress)
+        )
+      );
+
+    return [
+      Number(o.latitude) + (Number(d.latitude) - Number(o.latitude)) * p,
+      Number(o.longitude) + (Number(d.longitude) - Number(o.longitude)) * p
+    ];
+  }
+
+  return null;
+}
+     
     function buildATCContent(item) {
        
       const reg =
@@ -1213,6 +1253,26 @@ if(counter){
 
   let m = markers[item.aircraftId];
 
+  const markerKey =
+  [
+    item.aircraftId,
+    item.state,
+    item.originICAO,
+    item.destinationICAO,
+    item.flightNumber
+  ].join("|");
+
+if (m && m.__acsMarkerKey && m.__acsMarkerKey !== markerKey) {
+
+  if (map.hasLayer(m)) {
+    map.removeLayer(m);
+  }
+
+  delete markers[item.aircraftId];
+
+  m = null;
+}
+         
   if (!m) {
 
   let spawnPos = pos;
@@ -1231,6 +1291,8 @@ if(counter){
   m = L.marker(spawnPos, { icon: atcIcon }).addTo(map);
   markers[item.aircraftId] = m;
 
+  m.__acsMarkerKey = markerKey;
+     
   // 🟦 A6.4.2 — Persistent ATC Popup (bind once)
   m.bindPopup("", {
     autoClose: false,
