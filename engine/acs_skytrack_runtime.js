@@ -104,8 +104,12 @@ async function ACS_SkyTrack_init(headless = false) {
 
   await ACS_SkyTrack_loadData();
 
-  ACS_SkyTrack_hookTimeEngine();
+ACS_SkyTrack_hookTimeEngine();
 
+ACS_SkyTrack_startContextRefresh();
+  
+
+   
   console.log(
     "🟢 SkyTrack OCC runtime ready"
   );
