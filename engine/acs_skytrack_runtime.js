@@ -38,8 +38,10 @@ window.ACS_SkyTrack = {
   nowAbsMin: null,
 
   aircraftIndex: {},
-
-  baseICAO: null,
+   
+   airlineId: null,
+   
+   baseICAO: null,
    
   itemsByAircraft: {},
   flightItemsByAircraft: {},
