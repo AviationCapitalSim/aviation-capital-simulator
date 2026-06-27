@@ -1264,10 +1264,25 @@ if (m && m.__acsMarkerKey && m.__acsMarkerKey !== markerKey) {
     spawnPos = [ap.latitude, ap.longitude];
   }
 
-  m = L.marker(spawnPos, { icon: atcIcon }).addTo(map);
-  markers[item.aircraftId] = m;
+ m = L.marker(spawnPos, { icon: atcIcon }).addTo(map);
+markers[item.aircraftId] = m;
 
-  m.__acsMarkerKey = markerKey;
+/* ============================================================
+   ACS OCC / AIRBUS OCC — FIRST EN_ROUTE POSITION FIX
+   ------------------------------------------------------------
+   If the first received snapshot is already EN_ROUTE,
+   the marker must be placed immediately at calculated position,
+   not left at origin until next render cycle.
+   ============================================================ */
+
+if (
+  item.state === "EN_ROUTE" &&
+  pos
+) {
+  m.setLatLng(pos);
+}
+
+m.__acsMarkerKey = markerKey;
      
   // 🟦 A6.4.2 — Persistent ATC Popup (bind once)
   m.bindPopup("", {
