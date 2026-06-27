@@ -398,6 +398,34 @@ function ACS_SkyTrack_onTick() {
 
   });
 
+  const globalSnapshot =
+  Array.isArray(window.__ACS_GLOBAL_SKYTRACK_CACHE__)
+    ? window.__ACS_GLOBAL_SKYTRACK_CACHE__
+    : [];
+
+const myAirlineId =
+  ACS_SkyTrack.airlineId
+    ? String(ACS_SkyTrack.airlineId)
+    : null;
+
+globalSnapshot.forEach(item => {
+
+  if (!item) return;
+
+  const itemAirlineId =
+    String(item.airline_id || item.airlineId || "");
+
+  if (
+    myAirlineId &&
+    itemAirlineId === myAirlineId
+  ) {
+    return;
+  }
+
+  snapshot.push(item);
+
+});
+   
   window.__ACS_LAST_SKYTRACK_SNAPSHOT__ = snapshot;
 
   window.dispatchEvent(
@@ -842,6 +870,7 @@ function ACS_SkyTrack_indexScheduleItemsFromServer(scheduleRows) {
    * PostgreSQL remains the authority.
    * This only restores the historical SkyTrack visual/runtime leg.
    */
+   
   Object.keys(flightItemsByAircraft).forEach(acId => {
 
     const sourceFlights =
