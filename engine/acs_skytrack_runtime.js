@@ -503,6 +503,14 @@ try {
       throw new Error("SKYTRACK_AUTHORITY_INVALID");
     }
 
+    ACS_SkyTrack.nowAbsMin =
+  Number.isFinite(Number(data.now_abs_min))
+    ? Number(data.now_abs_min)
+    : ACS_SkyTrack.nowAbsMin;
+
+ACS_SkyTrack.currentSimTime =
+  data.current_sim_time || null;
+     
     ACS_SkyTrack.aircraftIndex =
       ACS_SkyTrack_buildFleetIndexFromServer(data.fleet || []);
 
