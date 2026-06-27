@@ -457,19 +457,27 @@ async function ACS_SkyTrack_loadData() {
 
     const data = await res.json();
 
-    let globalFlights = [];
-
 try {
 
-  globalFlights =
-    await window.ACS_fetchWorldFlights();
+  if (typeof window.ACS_buildWorldSnapshot === "function") {
+
+    window.__ACS_GLOBAL_SKYTRACK_CACHE__ =
+      await window.ACS_buildWorldSnapshot();
+
+  } else {
+
+    window.__ACS_GLOBAL_SKYTRACK_CACHE__ = [];
+
+  }
 
 } catch(err) {
 
   console.warn(
-    "🌍 Global SkyTrack load failed",
+    "🌍 Global SkyTrack snapshot load failed",
     err
   );
+
+  window.__ACS_GLOBAL_SKYTRACK_CACHE__ = [];
 
 }
      
