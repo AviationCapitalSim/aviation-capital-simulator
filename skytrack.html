@@ -1289,7 +1289,16 @@ if (m && m.__acsMarkerKey && m.__acsMarkerKey !== markerKey) {
     spawnPos = [ap.latitude, ap.longitude];
   }
 
- m = L.marker(spawnPos, { icon: atcIcon }).addTo(map);
+const airlineColor =
+  item.airlineColorHex || "#0b3cff";
+
+m = L.marker(
+  spawnPos,
+  {
+    icon: ACS_buildATCIcon(airlineColor)
+  }
+).addTo(map);
+
 markers[item.aircraftId] = m;
 
 /* ============================================================
