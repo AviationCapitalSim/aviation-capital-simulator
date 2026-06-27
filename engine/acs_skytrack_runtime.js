@@ -372,9 +372,17 @@ function ACS_SkyTrack_onTick() {
       null;
 
     snapshot.push({
-      aircraftId: acId,
-      registration: ac.registration || ac.reg || "—",
-      model: ac.model || ac.type || "—",
+  aircraftId: acId,
+
+  airlineId: ACS_SkyTrack.airlineId,
+  airline_id: ACS_SkyTrack.airlineId,
+
+  airlineColorHex: ac.airlineColorHex || "#3A5FFF",
+  airlineColorHsl: ac.airlineColorHsl || "hsl(220,70%,50%)",
+  airlineColorIndex: Number(ac.airlineColorIndex || 0),
+
+  registration: ac.registration || ac.reg || "—",
+  model: ac.model || ac.type || "—",
 
       state: stateObj.state,
       position: stateObj.position || null,
