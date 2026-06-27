@@ -814,6 +814,30 @@ card.addEventListener("click", () => {
     liveListEl.appendChild(card);
   });
 }
+
+   function ACS_buildATCIcon(color) {
+
+  return L.divIcon({
+
+    className: "acs-atc-aircraft",
+
+    html: `
+      <div style="
+        width:8px;
+        height:8px;
+        background:${color};
+        border:1px solid rgba(0,0,0,.55);
+        border-radius:2px;
+        box-shadow:0 0 6px ${color};
+      "></div>
+    `,
+
+    iconSize:[18,18],
+    iconAnchor:[9,9]
+
+  });
+
+}
      
     // 🔵 ATC MARKER — SMALL
     const atcIcon = L.divIcon({
@@ -957,6 +981,7 @@ function renderFlightDetails(snapshot) {
   }
 
   // Extra EN_ROUTE: % + remaining (NO Finance)
+   
   const now = ACS_ST_nowAbsMin();
   let extra = "";
 
