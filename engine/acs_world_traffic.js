@@ -69,12 +69,9 @@ function ACS_convertWorldFlight(f){
   if (!f) return null;
 
   const now =
-    Number.isFinite(window.ACS_SkyTrack?.nowAbsMin)
-      ? window.ACS_SkyTrack.nowAbsMin
-      : Number.isFinite(window.ACS_TIME?.minute)
-        ? window.ACS_TIME.minute % 10080
-        : null;
-
+  Number.isFinite(window.ACS_SkyTrack?.nowAbsMin)
+    ? Number(window.ACS_SkyTrack.nowAbsMin)
+    : null;
   const aircraftId =
     "GLOBAL_" + String(f.airline_id) + "_" + String(f.aircraft_id);
 
