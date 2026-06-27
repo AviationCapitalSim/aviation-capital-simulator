@@ -779,7 +779,7 @@ card.addEventListener("click", () => {
       "badge-maint";
 
     let extra = "";
-    const now = ACS_ST_nowAbsMin();
+    const now = window.ACS_TIME?.absMin;
 
     if (
   item.state === "EN_ROUTE" &&
@@ -884,11 +884,12 @@ function ACS_ST_toHHMM(absMin) {
 }
 
 function ACS_ST_nowAbsMin() {
-
-  if (Number.isFinite(window.ACS_SkyTrack?.nowAbsMin)) {
-    return Number(window.ACS_SkyTrack.nowAbsMin) % 10080;
-  }
-
+   
+  // runtime normaliza a semana (0..10079). Mantenemos igual.
+   
+  if (Number.isFinite(window.ACS_SkyTrack?.nowAbsMin)) return window.ACS_SkyTrack.nowAbsMin;
+  if (Number.isFinite(window.ACS_TIME?.absMin)) return (window.ACS_TIME.absMin % 10080);
+  if (Number.isFinite(window.ACS_TIME?.minute)) return (window.ACS_TIME.minute % 10080);
   return null;
 }
 
@@ -1154,16 +1155,16 @@ function renderFlightDetails(snapshot) {
        "";
        
       let extra = "";
-      const now = ACS_ST_nowAbsMin();
+      const now = window.ACS_TIME?.absMin;
 
       if (
         item.state === "EN_ROUTE" &&
         now != null &&
-        Number.isFinite(item.depAbsMin) &&
-        Number.isFinite(item.arrAbsMin)
+        item.depAbs != null &&
+        item.arrAbs != null
       ) {
-        const total = Math.max(1, item.arrAbsMin - item.depAbsMin);
-        const remaining = Math.max(0, item.arrAbsMin - now);
+        const total = item.arrAbs - item.depAbs;
+        const remaining = Math.max(0, item.arrAbs - now);
         const pct = Math.round((remaining / total) * 100);
 
         const hh = String(Math.floor(remaining / 60)).padStart(2, "0");
@@ -1185,6 +1186,9 @@ function renderFlightDetails(snapshot) {
         </div>
       `;
     }
+     
+    // 🟦 A6.5 — MONOTONIC SNAPSHOT GUARD (per aircraft)
+    const lastSeenSnapshot = {}; // aircraftId -> last logical time
      
     function render(snapshot) {
 
@@ -1223,6 +1227,19 @@ const counter = document.getElementById("skytrackVisibleCount");
 if(counter){
   counter.textContent = snapshot.length;
 }
+         
+  // 🟦 A6.5.1 — IGNORE OUT-OF-ORDER SNAPSHOTS
+         
+  const key = item.aircraftId;
+  const logicalTime =
+    Number.isFinite(item.depAbsMin) ? item.depAbsMin :
+    Number.isFinite(item.arrAbsMin) ? item.arrAbsMin : 0;
+
+  if (lastSeenSnapshot[key] != null && logicalTime < lastSeenSnapshot[key]) {
+    return; // ⛔ ignore older snapshot
+  }
+
+  lastSeenSnapshot[key] = logicalTime;
 
   // 🟦 A6.4.1 — STATE-AWARE POSITION (NO mixed states)
          
@@ -1243,13 +1260,9 @@ if(counter){
   item.aircraftId,
   item.state,
   item.position?.airport || "",
-  Number.isFinite(Number(item.position?.progress))
-    ? Number(item.position.progress).toFixed(4)
-    : "",
   item.originICAO,
   item.destinationICAO,
-  item.flightNumber,
-  item.airlineColorHex || ""
+  item.flightNumber
 ].join("|");
 
 if (m && m.__acsMarkerKey && m.__acsMarkerKey !== markerKey) {
@@ -1289,7 +1302,6 @@ m = L.marker(
 ).addTo(map);
 
 markers[item.aircraftId] = m;
-m.__acsColor = airlineColor;
 
 /* ============================================================
    ACS OCC / AIRBUS OCC — FIRST EN_ROUTE POSITION FIX
@@ -1321,15 +1333,11 @@ m.__acsMarkerKey = markerKey;
   });
 
 } else {
-  // 🔁 Reset trace if flight leg or airline color changed
-  const traceColor = item.airlineColorHex || "#0b3cff";
-
+  // 🔁 Reset trace if flight leg changed
   if (
+    item.flightNumber &&
     traces[item.aircraftId] &&
-    (
-      traces[item.aircraftId].__lastFlight !== item.flightNumber ||
-      traces[item.aircraftId].__color !== traceColor
-    )
+    traces[item.aircraftId].__lastFlight !== item.flightNumber
   ) {
     if (map.hasLayer(traces[item.aircraftId])) {
       map.removeLayer(traces[item.aircraftId]);
@@ -1338,13 +1346,6 @@ m.__acsMarkerKey = markerKey;
   }
 
   m.setLatLng(pos);
-
-  const nextColor = item.airlineColorHex || "#0b3cff";
-
-  if (m.__acsColor !== nextColor) {
-    m.setIcon(ACS_buildATCIcon(nextColor));
-    m.__acsColor = nextColor;
-  }
 
   // 🟦 A8.4 — Highlight active aircraft
      
@@ -1360,13 +1361,12 @@ m.__acsMarkerKey = markerKey;
 
     if (!traces[item.aircraftId]) {
       traces[item.aircraftId] = L.polyline([pos], {
-        color: traceColor,
+        color: "#0b3cff",
         weight: 2,
         opacity: 0.85
       }).addTo(map);
 
       traces[item.aircraftId].__lastFlight = item.flightNumber;
-      traces[item.aircraftId].__color = traceColor;
     } else {
       traces[item.aircraftId].addLatLng(pos);
     }
@@ -1384,6 +1384,29 @@ m.__acsMarkerKey = markerKey;
    window.addEventListener("ACS_SKYTRACK_SNAPSHOT", e => {
   render(e.detail);
 });
+
+/* ============================================================
+   🌍 GLOBAL REFRESH → FORCE RERENDER
+   ============================================================ */
+
+window.addEventListener(
+  "ACS_GLOBAL_SKYTRACK_UPDATED",
+  () => {
+
+    if (
+      Array.isArray(
+        window.__ACS_LAST_SKYTRACK_SNAPSHOT__
+      )
+    ) {
+
+      render(
+        window.__ACS_LAST_SKYTRACK_SNAPSHOT__
+      );
+
+    }
+
+  }
+);
 
 /* ============================================================
    📡 LIVE RENDER LOOP (FR24 STYLE)
