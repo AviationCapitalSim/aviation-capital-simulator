@@ -429,6 +429,22 @@ async function ACS_SkyTrack_loadData() {
 
     const data = await res.json();
 
+    let globalFlights = [];
+
+try {
+
+  globalFlights =
+    await window.ACS_fetchWorldFlights();
+
+} catch(err) {
+
+  console.warn(
+    "🌍 Global SkyTrack load failed",
+    err
+  );
+
+}
+     
     if (!res.ok || data?.ok !== true) {
       throw new Error(data?.error || "SKYTRACK_CONTEXT_FAILED");
     }
