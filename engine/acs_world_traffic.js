@@ -250,6 +250,8 @@ async function ACS_buildWorldSnapshot(){
 
   });
 
+  window.__ACS_GLOBAL_SKYTRACK_CACHE__ = snapshot;
+   
   return snapshot;
 
 }
