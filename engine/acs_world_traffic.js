@@ -172,11 +172,20 @@ function ACS_convertWorldFlight(f){
       f.iata || null,
 
     airlineIcao:
-      f.icao || null,
+  f.icao || null,
 
-    registration:
-      f.registration || "—",
+airlineColorHex:
+  f.color_hex || "#3A5FFF",
 
+airlineColorHsl:
+  f.color_hsl || "hsl(220,70%,50%)",
+
+airlineColorIndex:
+  Number(f.color_index || 0),
+
+registration:
+  f.registration || "—",
+     
     model:
       f.aircraft_name ||
       f.model_key ||
