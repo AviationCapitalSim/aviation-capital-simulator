@@ -575,6 +575,13 @@ function ACS_SkyTrack_buildFleetIndexFromServer(fleetRows) {
 
       registration: row.registration || "—",
 
+      airlineId: ACS_SkyTrack.airlineId,
+airline_id: ACS_SkyTrack.airlineId,
+
+airlineColorHex: row.color_hex || "#3A5FFF",
+airlineColorHsl: row.color_hsl || "hsl(220,70%,50%)",
+airlineColorIndex: Number(row.color_index || 0),
+       
       manufacturer: row.manufacturer || null,
       modelKey: row.model_key || null,
 
