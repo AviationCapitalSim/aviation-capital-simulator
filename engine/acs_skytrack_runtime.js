@@ -55,17 +55,6 @@ window.ACS_SkyTrack = {
   lastActiveFlight: {}
 };
    
-   airlineId: null,
-   
-   baseICAO: null,
-   
-  itemsByAircraft: {},
-  flightItemsByAircraft: {},
-  serviceItemsByAircraft: {},
-
-  lastActiveFlight: {}
-};
-
 /* ============================================================
    🟦 FASE 4.1 — ARRIVAL REGISTRY (MEMORY ONLY)
    ------------------------------------------------------------
