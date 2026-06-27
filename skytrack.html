@@ -1330,13 +1330,68 @@ if (m && m.__acsMarkerKey && m.__acsMarkerKey !== markerKey) {
 
     render(window.__ACS_LAST_SKYTRACK_SNAPSHOT__);
 
-    window.addEventListener("ACS_SKYTRACK_SNAPSHOT", e => {
-      render(e.detail);
-    });
+   window.addEventListener("ACS_SKYTRACK_SNAPSHOT", e => {
+  render(e.detail);
+});
 
-    console.log("🟦 A3 FIXED — ATC marker + live popup");
+/* ============================================================
+   🌍 GLOBAL REFRESH → FORCE RERENDER
+   ============================================================ */
 
-  });
+window.addEventListener(
+  "ACS_GLOBAL_SKYTRACK_UPDATED",
+  () => {
+
+    if (
+      Array.isArray(
+        window.__ACS_LAST_SKYTRACK_SNAPSHOT__
+      )
+    ) {
+
+      render(
+        window.__ACS_LAST_SKYTRACK_SNAPSHOT__
+      );
+
+    }
+
+  }
+);
+
+/* ============================================================
+   📡 LIVE RENDER LOOP (FR24 STYLE)
+   ============================================================ */
+
+if (!window.__ACS_SKYTRACK_RENDER_LOOP__) {
+
+  window.__ACS_SKYTRACK_RENDER_LOOP__ = true;
+
+  setInterval(() => {
+
+    if (
+      Array.isArray(
+        window.__ACS_LAST_SKYTRACK_SNAPSHOT__
+      )
+    ) {
+
+      render(
+        window.__ACS_LAST_SKYTRACK_SNAPSHOT__
+      );
+
+    }
+
+  }, 1000);
+
+  console.log(
+    "📡 SkyTrack live render loop active"
+  );
+
+}
+
+console.log(
+  "🟦 A3 FIXED — ATC marker + live popup"
+);
+
+});
 
 })();
    
