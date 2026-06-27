@@ -35,9 +35,25 @@
 
 window.ACS_SkyTrack = {
   initialized: false,
+
+  // Server authority
   nowAbsMin: null,
+  currentSimTime: null,
 
   aircraftIndex: {},
+
+  airlineId: null,
+  baseICAO: null,
+
+  // Raw global PostgreSQL rows from /v1/skytrack/global
+  globalRows: [],
+
+  itemsByAircraft: {},
+  flightItemsByAircraft: {},
+  serviceItemsByAircraft: {},
+
+  lastActiveFlight: {}
+};
    
    airlineId: null,
    
@@ -191,6 +207,165 @@ function ACS_SkyTrack_hookTimeEngine() {
   );
 
 })();
+
+function ACS_SkyTrack_convertGlobalRow(row) {
+  if (!row) return null;
+
+  const now =
+    Number(ACS_SkyTrack.nowAbsMin);
+
+  if (!Number.isFinite(now)) return null;
+
+  const airlineId =
+    String(row.airline_id || "");
+
+  const rawAircraftId =
+    row.aircraft_id || row.id || null;
+
+  if (!airlineId || !rawAircraftId) return null;
+
+  const aircraftId =
+    `GLOBAL_${airlineId}_${rawAircraftId}`;
+
+  const dep =
+    Number(row.dep_abs_min);
+
+  const arr =
+    Number(row.arr_abs_min);
+
+  const origin =
+    String(row.origin || row.base_icao || row.current_airport || "").toUpperCase();
+
+  const destination =
+    String(row.destination || row.current_airport || row.base_icao || "").toUpperCase();
+
+  const currentAirport =
+    String(row.current_airport || row.base_icao || origin || "").toUpperCase();
+
+  const maintenanceControlStatus =
+    String(row.maintenance_control_status || "").toUpperCase();
+
+  const maintenanceControlReason =
+    String(row.maintenance_control_reason || "").toUpperCase();
+
+  let state = "GROUND";
+  let position = {
+    airport: currentAirport || origin || null
+  };
+
+  if (
+    maintenanceControlStatus === "IN_MAINTENANCE" ||
+    maintenanceControlStatus === "UNSERVICEABLE"
+  ) {
+    state =
+      maintenanceControlReason ||
+      maintenanceControlStatus ||
+      "MAINTENANCE";
+
+    position = {
+      airport: currentAirport || row.base_icao || null
+    };
+
+  } else if (
+    Number.isFinite(dep) &&
+    Number.isFinite(arr) &&
+    arr > dep &&
+    now >= dep &&
+    now < arr
+  ) {
+    state = "EN_ROUTE";
+
+    position = {
+      progress: Math.max(
+        0,
+        Math.min(
+          1,
+          (now - dep) / (arr - dep)
+        )
+      )
+    };
+  }
+
+  return {
+    aircraftId,
+    rawAircraftId,
+
+    airlineId,
+    airline_id: airlineId,
+
+    canonicalAircraftKey:
+      `${airlineId}:${rawAircraftId}`,
+
+    airlineName:
+      row.airline_name || null,
+
+    airlineIata:
+      row.iata || null,
+
+    airlineIcao:
+      row.icao || null,
+
+    airlineColorHex:
+      row.color_hex || "#3A5FFF",
+
+    airlineColorHsl:
+      row.color_hsl || "hsl(220,70%,50%)",
+
+    airlineColorIndex:
+      Number(row.color_index || 0),
+
+    registration:
+      row.registration || "—",
+
+    model:
+      row.aircraft_name ||
+      row.model_key ||
+      "—",
+
+    aircraft:
+      row.aircraft_name ||
+      row.model_key ||
+      "—",
+
+    aircraftModel:
+      row.aircraft_name ||
+      row.model_key ||
+      "—",
+
+    modelKey:
+      row.model_key || null,
+
+    flightNumber:
+      row.flight_number || null,
+
+    pairedFlightNumber:
+      row.paired_flight_number || null,
+
+    originICAO:
+      origin || null,
+
+    destinationICAO:
+      destination || null,
+
+    state,
+    position,
+
+    depAbsMin:
+      Number.isFinite(dep) ? dep : null,
+
+    arrAbsMin:
+      Number.isFinite(arr) ? arr : null,
+
+    distanceNM:
+      Number(row.distance_nm || 0),
+
+    opsStatus: "ON_TIME",
+    delayed: false,
+    delayMinutes: 0,
+
+    __globalTraffic: true
+  };
+}
 
 /* ============================================================
    🟦 PASO 2.1 — ON TICK (CANONICAL SNAPSHOT)
@@ -412,41 +587,81 @@ function ACS_SkyTrack_onTick() {
 
   });
 
-  const globalSnapshot =
-  Array.isArray(window.__ACS_GLOBAL_SKYTRACK_CACHE__)
-    ? window.__ACS_GLOBAL_SKYTRACK_CACHE__
-    : [];
+    const myAirlineId =
+    ACS_SkyTrack.airlineId
+      ? String(ACS_SkyTrack.airlineId)
+      : null;
 
-const myAirlineId =
-  ACS_SkyTrack.airlineId
-    ? String(ACS_SkyTrack.airlineId)
-    : null;
+  const canonical = [];
+  const seen = new Set();
 
-globalSnapshot.forEach(item => {
+  function addCanonical(item) {
+    if (!item) return;
 
-  if (!item) return;
+    const airlineId =
+      String(item.airlineId || item.airline_id || "");
 
-  const itemAirlineId =
-    String(item.airline_id || item.airlineId || "");
+    const rawAircraftId =
+      item.rawAircraftId ||
+      item.aircraftId ||
+      "";
 
-  if (
-    myAirlineId &&
-    itemAirlineId === myAirlineId
-  ) {
-    return;
+    const key =
+      item.canonicalAircraftKey ||
+      `${airlineId}:${rawAircraftId}`;
+
+    if (!key || seen.has(key)) return;
+
+    seen.add(key);
+    canonical.push(item);
   }
 
-  snapshot.push(item);
+  snapshot.forEach(item => {
+    const airlineId =
+      String(item.airlineId || item.airline_id || "");
 
-});
-   
-  window.__ACS_LAST_SKYTRACK_SNAPSHOT__ = snapshot;
+    const rawAircraftId =
+      item.rawAircraftId ||
+      item.aircraftId;
+
+    addCanonical({
+      ...item,
+      rawAircraftId,
+      canonicalAircraftKey:
+        `${airlineId}:${rawAircraftId}`
+    });
+  });
+
+  const globalSnapshot =
+    Array.isArray(ACS_SkyTrack.globalRows)
+      ? ACS_SkyTrack.globalRows
+          .map(ACS_SkyTrack_convertGlobalRow)
+          .filter(Boolean)
+      : [];
+
+  globalSnapshot.forEach(item => {
+    const itemAirlineId =
+      String(item.airlineId || item.airline_id || "");
+
+    if (
+      myAirlineId &&
+      itemAirlineId === myAirlineId
+    ) {
+      return;
+    }
+
+    addCanonical(item);
+  });
+
+  window.__ACS_CANONICAL_SKYTRACK_SNAPSHOT__ = canonical;
+  window.__ACS_LAST_SKYTRACK_SNAPSHOT__ = canonical;
 
   window.dispatchEvent(
     new CustomEvent("ACS_SKYTRACK_SNAPSHOT", {
-      detail: snapshot
+      detail: canonical
     })
   );
+   
 }
 
 /* ============================================================
@@ -454,10 +669,8 @@ globalSnapshot.forEach(item => {
    ============================================================ */
 
 async function ACS_SkyTrack_loadData() {
-
   try {
-
-    const res = await fetch(
+    const contextPromise = fetch(
       "https://api.aviationcapitalsim.com/v1/skytrack/context",
       {
         method: "GET",
@@ -467,59 +680,68 @@ async function ACS_SkyTrack_loadData() {
           "Accept": "application/json"
         }
       }
-    );
+    ).then(async res => {
+      const data = await res.json();
 
-    const data = await res.json();
+      if (!res.ok || data?.ok !== true) {
+        throw new Error(data?.error || "SKYTRACK_CONTEXT_FAILED");
+      }
 
-try {
+      if (data.authority !== "POSTGRESQL_SKYTRACK_AUTHORITY") {
+        throw new Error("SKYTRACK_AUTHORITY_INVALID");
+      }
 
-  if (typeof window.ACS_buildWorldSnapshot === "function") {
+      return data;
+    });
 
-    window.__ACS_GLOBAL_SKYTRACK_CACHE__ =
-      await window.ACS_buildWorldSnapshot();
+    const globalPromise =
+      typeof window.ACS_fetchWorldFlights === "function"
+        ? window.ACS_fetchWorldFlights()
+        : Promise.resolve({
+            ok: false,
+            current_sim_time: null,
+            now_abs_min: null,
+            flights: []
+          });
 
-  } else {
+    const [data, globalData] =
+      await Promise.all([
+        contextPromise,
+        globalPromise
+      ]);
 
-    window.__ACS_GLOBAL_SKYTRACK_CACHE__ = [];
+    const contextNow =
+      Number(data.now_abs_min);
 
-  }
-
-} catch(err) {
-
-  console.warn(
-    "🌍 Global SkyTrack snapshot load failed",
-    err
-  );
-
-  window.__ACS_GLOBAL_SKYTRACK_CACHE__ = [];
-
-}
-     
-    if (!res.ok || data?.ok !== true) {
-      throw new Error(data?.error || "SKYTRACK_CONTEXT_FAILED");
-    }
-
-    if (data.authority !== "POSTGRESQL_SKYTRACK_AUTHORITY") {
-      throw new Error("SKYTRACK_AUTHORITY_INVALID");
-    }
+    const globalNow =
+      Number(globalData?.now_abs_min);
 
     ACS_SkyTrack.nowAbsMin =
-  Number.isFinite(Number(data.now_abs_min))
-    ? Number(data.now_abs_min)
-    : ACS_SkyTrack.nowAbsMin;
+      Number.isFinite(contextNow)
+        ? contextNow
+        : Number.isFinite(globalNow)
+          ? globalNow
+          : ACS_SkyTrack.nowAbsMin;
 
-ACS_SkyTrack.currentSimTime =
-  data.current_sim_time || null;
-     
+    ACS_SkyTrack.currentSimTime =
+      data.current_sim_time ||
+      globalData?.current_sim_time ||
+      null;
+
+    ACS_SkyTrack.airlineId =
+      data.airline_id ? String(data.airline_id) : null;
+
+    ACS_SkyTrack.baseICAO =
+      data.base_icao || null;
+
+    ACS_SkyTrack.globalRows =
+      Array.isArray(globalData?.flights)
+        ? globalData.flights
+        : [];
+
     ACS_SkyTrack.aircraftIndex =
       ACS_SkyTrack_buildFleetIndexFromServer(data.fleet || []);
 
-    ACS_SkyTrack.baseICAO =
-    data.base_icao || null;
-
-    ACS_SkyTrack.airlineId =
-    data.airline_id ? String(data.airline_id) : null;
-     
     const indexedSchedule =
       ACS_SkyTrack_indexScheduleItemsFromServer(
         data.schedule_items || []
@@ -534,24 +756,27 @@ ACS_SkyTrack.currentSimTime =
     ACS_SkyTrack.serviceItemsByAircraft =
       indexedSchedule.serviceItemsByAircraft;
 
-    console.log("🟢 SkyTrack PostgreSQL context loaded", {
+    console.log("🟢 SkyTrack canonical PostgreSQL context loaded", {
+      airlineId: ACS_SkyTrack.airlineId,
+      nowAbsMin: ACS_SkyTrack.nowAbsMin,
       fleet: Object.keys(ACS_SkyTrack.aircraftIndex).length,
-      scheduledAircraft: Object.keys(ACS_SkyTrack.itemsByAircraft).length
+      scheduledAircraft: Object.keys(ACS_SkyTrack.itemsByAircraft).length,
+      globalAircraft: ACS_SkyTrack.globalRows.length
     });
 
     ACS_SkyTrack_onTick();
 
   } catch (err) {
-
     console.warn("⛔ SkyTrack context load failed:", err);
 
     ACS_SkyTrack.aircraftIndex = {};
     ACS_SkyTrack.itemsByAircraft = {};
     ACS_SkyTrack.flightItemsByAircraft = {};
     ACS_SkyTrack.serviceItemsByAircraft = {};
+    ACS_SkyTrack.globalRows = [];
 
+    ACS_SkyTrack_onTick();
   }
-
 }
 
 /* ============================================================
