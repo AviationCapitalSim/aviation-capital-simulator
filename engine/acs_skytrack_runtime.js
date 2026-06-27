@@ -121,24 +121,30 @@ ACS_SkyTrack_startContextRefresh();
 
 function ACS_SkyTrack_hookTimeEngine() {
 
-  if (typeof ACS_TIME === "undefined" || !Number.isFinite(ACS_TIME.minute)) {
-    console.warn("⛔ SkyTrack: ACS_TIME not ready");
-    return;
-  }
-
-  ACS_SkyTrack.nowAbsMin = ACS_TIME.minute % 10080;
-
   if (typeof registerTimeListener !== "function") {
     console.warn("⛔ SkyTrack: registerTimeListener not available");
     return;
   }
 
   registerTimeListener(() => {
-    ACS_SkyTrack.nowAbsMin = ACS_TIME.minute % 10080;
+
+    /*
+     * ACS OCC CANONICAL RULE:
+     * ACS_TIME may tick the UI, but it must NOT overwrite
+     * SkyTrack operational authority.
+     *
+     * nowAbsMin comes only from /v1/skytrack/context.
+     */
+
+    if (!Number.isFinite(ACS_SkyTrack.nowAbsMin)) {
+      return;
+    }
+
     ACS_SkyTrack_onTick();
+
   });
 
-  console.log("⏱ SkyTrack hooked to ACS_TIME.minute (WEEKLY MODE)");
+  console.log("⏱ SkyTrack hooked to time listener WITHOUT browser authority");
 }
 
 /* ============================================================
