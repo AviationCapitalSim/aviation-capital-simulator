@@ -659,8 +659,8 @@ function ACS_SkyTrack_onTick() {
 
 async function ACS_SkyTrack_loadData() {
   try {
-    const res = await fetch(
-      "https://api.aviationcapitalsim.com/v1/skytrack/snapshot",
+    const contextPromise = fetch(
+      "https://api.aviationcapitalsim.com/v1/skytrack/context",
       {
         method: "GET",
         credentials: "include",
@@ -669,34 +669,101 @@ async function ACS_SkyTrack_loadData() {
           "Accept": "application/json"
         }
       }
-    );
+    ).then(async res => {
+      const data = await res.json();
 
-    const data = await res.json();
+      if (!res.ok || data?.ok !== true) {
+        throw new Error(data?.error || "SKYTRACK_CONTEXT_FAILED");
+      }
 
-    if (!res.ok || data?.ok !== true) {
-      throw new Error(data?.error || "SKYTRACK_SNAPSHOT_FAILED");
-    }
+      if (data.authority !== "POSTGRESQL_SKYTRACK_AUTHORITY") {
+        throw new Error("SKYTRACK_AUTHORITY_INVALID");
+      }
 
-    if (data.authority !== "POSTGRESQL_SKYTRACK_SNAPSHOT_CANONICAL") {
-      throw new Error("SKYTRACK_SNAPSHOT_AUTHORITY_INVALID");
-    }
+      return data;
+    });
 
-    ACS_SkyTrack.nowAbsMin = Number(data.now_abs_min);
-    ACS_SkyTrack.currentSimTime = data.current_sim_time || null;
-    ACS_SkyTrack.airlineId = data.airline_id ? String(data.airline_id) : null;
-    ACS_SkyTrack.snapshotItems = Array.isArray(data.flights) ? data.flights : [];
+    const globalPromise =
+      typeof window.ACS_fetchWorldFlights === "function"
+        ? window.ACS_fetchWorldFlights()
+        : Promise.resolve({
+            ok: false,
+            current_sim_time: null,
+            now_abs_min: null,
+            flights: []
+          });
 
-    console.log("🟢 SkyTrack SNAPSHOT loaded", {
+    const [data, globalData] =
+      await Promise.all([
+        contextPromise,
+        globalPromise
+      ]);
+
+    const contextNow =
+      Number(data.now_abs_min);
+
+    const globalNow =
+      Number(globalData?.now_abs_min);
+
+    ACS_SkyTrack.nowAbsMin =
+      Number.isFinite(contextNow)
+        ? contextNow
+        : Number.isFinite(globalNow)
+          ? globalNow
+          : ACS_SkyTrack.nowAbsMin;
+
+    ACS_SkyTrack.currentSimTime =
+      data.current_sim_time ||
+      globalData?.current_sim_time ||
+      null;
+
+    ACS_SkyTrack.airlineId =
+      data.airline_id ? String(data.airline_id) : null;
+
+    ACS_SkyTrack.baseICAO =
+      data.base_icao || null;
+
+    ACS_SkyTrack.globalRows =
+      Array.isArray(globalData?.flights)
+        ? globalData.flights
+        : [];
+
+    ACS_SkyTrack.aircraftIndex =
+      ACS_SkyTrack_buildFleetIndexFromServer(data.fleet || []);
+
+    const indexedSchedule =
+      ACS_SkyTrack_indexScheduleItemsFromServer(
+        data.schedule_items || []
+      );
+
+    ACS_SkyTrack.itemsByAircraft =
+      indexedSchedule.itemsByAircraft;
+
+    ACS_SkyTrack.flightItemsByAircraft =
+      indexedSchedule.flightItemsByAircraft;
+
+    ACS_SkyTrack.serviceItemsByAircraft =
+      indexedSchedule.serviceItemsByAircraft;
+
+    console.log("🟢 SkyTrack canonical PostgreSQL context loaded", {
       airlineId: ACS_SkyTrack.airlineId,
       nowAbsMin: ACS_SkyTrack.nowAbsMin,
-      aircraft: ACS_SkyTrack.snapshotItems.length
+      fleet: Object.keys(ACS_SkyTrack.aircraftIndex).length,
+      scheduledAircraft: Object.keys(ACS_SkyTrack.itemsByAircraft).length,
+      globalAircraft: ACS_SkyTrack.globalRows.length
     });
 
     ACS_SkyTrack_onTick();
 
   } catch (err) {
-    console.warn("⛔ SkyTrack snapshot load failed:", err);
-    ACS_SkyTrack.snapshotItems = [];
+    console.warn("⛔ SkyTrack context load failed:", err);
+
+    ACS_SkyTrack.aircraftIndex = {};
+    ACS_SkyTrack.itemsByAircraft = {};
+    ACS_SkyTrack.flightItemsByAircraft = {};
+    ACS_SkyTrack.serviceItemsByAircraft = {};
+    ACS_SkyTrack.globalRows = [];
+
     ACS_SkyTrack_onTick();
   }
 }
