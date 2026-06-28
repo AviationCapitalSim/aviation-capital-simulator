@@ -1361,11 +1361,6 @@ function ACS_SkyTrack_computePosition() {
     (nowAbsMin - depAbsMin) /
     (arrAbsMin - depAbsMin);
 
-  if (!ACS_SPAWNED_FLIGHTS[flightKey]) {
-    progress = 0;
-    ACS_SPAWNED_FLIGHTS[flightKey] = true;
-  }
-
   return {
     progress: Math.max(0, Math.min(1, progress))
   };
