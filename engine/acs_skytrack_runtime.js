@@ -1239,28 +1239,6 @@ function ACS_SkyTrack_resolveState() {
   return null;
 }
 
-  const ac = ACS_SkyTrack.aircraftIndex[aircraftId];
-  const flights = ACS_SkyTrack.flightItemsByAircraft[aircraftId] || [];
-  const now = ACS_SkyTrack.nowAbsMin;
-
-  if (!ac || !Number.isFinite(now)) return null;
-
-  const hardBlock = ACS_SkyTrack_getGroundBlock(ac);
-
-  if (hardBlock && hardBlock.blocked) {
-
-    return {
-      state: hardBlock.label || "MAINTENANCE",
-      position: {
-        airport:
-          ac.currentAirport ||
-          ac.baseAirport ||
-          null
-      },
-      flight: null
-    };
-  }
-
   /* ========================================================
      EN ROUTE — ACTIVE FLIGHT
      ======================================================== */
