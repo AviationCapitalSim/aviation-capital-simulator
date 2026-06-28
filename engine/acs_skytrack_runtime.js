@@ -1,10 +1,8 @@
 /* ============================================================
    ACS SKYTRACK SNAPSHOT ADAPTER — ACS OCC / AIRBUS OCC
    ------------------------------------------------------------
-   Authority:
-   - PostgreSQL
-   - /v1/skytrack/snapshot
-   - Browser only renders
+   Backend = autoridad
+   Browser = solo render
    ============================================================ */
 
 window.ACS_SkyTrack = window.ACS_SkyTrack || {
@@ -12,10 +10,81 @@ window.ACS_SkyTrack = window.ACS_SkyTrack || {
   airlineId: null,
   baseICAO: null,
   nowAbsMin: null,
-  currentSimTime: null
+  currentSimTime: null,
+
+  // Compatibilidad visual solamente
+  itemsByAircraft: {},
+  flightItemsByAircraft: {},
+  serviceItemsByAircraft: {}
 };
 
+/* ============================================================
+   AIRPORT INDEX VISUAL COMPATIBILITY
+   ============================================================ */
+
+function ACS_SkyTrack_syncAirportIndex() {
+  if (window.ACS_AIRPORT_INDEX && Object.keys(window.ACS_AIRPORT_INDEX).length) {
+    return;
+  }
+
+  if (window.__ACS_AIRPORT_INDEX__ && Object.keys(window.__ACS_AIRPORT_INDEX__).length) {
+    window.ACS_AIRPORT_INDEX = window.__ACS_AIRPORT_INDEX__;
+    console.log("🧭 SkyTrack airport index linked from HTML index");
+    return;
+  }
+
+  if (window.WorldAirportsACS) {
+    const idx = {};
+
+    Object.values(window.WorldAirportsACS).forEach(region => {
+      if (!Array.isArray(region)) return;
+
+      region.forEach(ap => {
+        if (!ap || !ap.icao) return;
+
+        const lat = Number(ap.latitude);
+        const lng = Number(ap.longitude);
+
+        if (Number.isFinite(lat) && Number.isFinite(lng)) {
+          ap.lat = lat;
+          ap.lng = lng;
+          idx[ap.icao] = ap;
+        }
+      });
+    });
+
+    window.ACS_AIRPORT_INDEX = idx;
+    window.__ACS_AIRPORT_INDEX__ = idx;
+
+    console.log("🧭 SkyTrack airport index built:", Object.keys(idx).length);
+  }
+}
+
+/* ============================================================
+   VISUAL BASE RESOLVER
+   ============================================================ */
+
+function ACS_SkyTrack_resolveBase(snapshot) {
+  if (!Array.isArray(snapshot)) return null;
+
+  const own = snapshot.find(x => x && x.scope === "OWN") || snapshot[0];
+
+  return (
+    own?.airport ||
+    own?.position?.airport ||
+    own?.originICAO ||
+    own?.destinationICAO ||
+    null
+  );
+}
+
+/* ============================================================
+   SNAPSHOT FETCH
+   ============================================================ */
+
 async function ACS_SkyTrack_fetchSnapshot() {
+  ACS_SkyTrack_syncAirportIndex();
+
   const res = await fetch(
     "https://api.aviationcapitalsim.com/v1/skytrack/snapshot",
     {
@@ -23,7 +92,7 @@ async function ACS_SkyTrack_fetchSnapshot() {
       credentials: "include",
       cache: "no-store",
       headers: {
-        "Accept": "application/json"
+        Accept: "application/json"
       }
     }
   );
@@ -38,13 +107,16 @@ async function ACS_SkyTrack_fetchSnapshot() {
     throw new Error("SKYTRACK_SNAPSHOT_AUTHORITY_INVALID");
   }
 
+  const snapshot = Array.isArray(data.flights) ? data.flights : [];
+
   ACS_SkyTrack.airlineId = String(data.airline_id || "");
   ACS_SkyTrack.nowAbsMin = Number(data.now_abs_min);
   ACS_SkyTrack.currentSimTime = data.current_sim_time || null;
 
-  const snapshot = Array.isArray(data.flights)
-    ? data.flights
-    : [];
+  const resolvedBase = ACS_SkyTrack_resolveBase(snapshot);
+  if (resolvedBase) {
+    ACS_SkyTrack.baseICAO = resolvedBase;
+  }
 
   window.__ACS_CANONICAL_SKYTRACK_SNAPSHOT__ = snapshot;
   window.__ACS_LAST_SKYTRACK_SNAPSHOT__ = snapshot;
@@ -58,10 +130,15 @@ async function ACS_SkyTrack_fetchSnapshot() {
   console.log("🟢 ACS SkyTrack snapshot loaded", {
     authority: data.authority,
     airlineId: ACS_SkyTrack.airlineId,
+    baseICAO: ACS_SkyTrack.baseICAO,
     nowAbsMin: ACS_SkyTrack.nowAbsMin,
     aircraft: snapshot.length
   });
 }
+
+/* ============================================================
+   INIT
+   ============================================================ */
 
 async function ACS_SkyTrack_init() {
   if (ACS_SkyTrack.initialized) return;
@@ -69,6 +146,8 @@ async function ACS_SkyTrack_init() {
   ACS_SkyTrack.initialized = true;
 
   console.log("✈️ SkyTrack Snapshot Adapter initialized");
+
+  ACS_SkyTrack_syncAirportIndex();
 
   await ACS_SkyTrack_fetchSnapshot();
 
@@ -86,6 +165,10 @@ async function ACS_SkyTrack_init() {
 
   console.log("🟢 SkyTrack running in SNAPSHOT ONLY mode");
 }
+
+/* ============================================================
+   BOOT
+   ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
   ACS_SkyTrack_init().catch(err => {
