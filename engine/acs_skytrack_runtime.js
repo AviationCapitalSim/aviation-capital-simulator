@@ -1239,79 +1239,6 @@ function ACS_SkyTrack_resolveState() {
   return null;
 }
 
-  /* ========================================================
-     EN ROUTE — ACTIVE FLIGHT
-     ======================================================== */
-
-  const activeFlight = flights.find(it => {
-
-    if (it.type !== "flight") return false;
-    if (!Number.isFinite(it.depAbsMin) || !Number.isFinite(it.arrAbsMin)) return false;
-
-    const prev = flights
-      .filter(f =>
-        f.type === "flight" &&
-        Number.isFinite(f.arrAbsMin) &&
-        f.arrAbsMin <= it.depAbsMin
-      )
-      .sort((a, b) => b.arrAbsMin - a.arrAbsMin)[0];
-
-    if (prev) {
-      const turnaround = Number(prev.__turnaroundMin || 0);
-      const minReady = prev.arrAbsMin + turnaround;
-
-      if (now < minReady) return false;
-    }
-
-    return now >= it.depAbsMin && now < it.arrAbsMin;
-  });
-
-  if (activeFlight) {
-    return {
-      state: "EN_ROUTE",
-      position: ACS_SkyTrack_computePosition(activeFlight, now),
-      flight: activeFlight
-    };
-  }
-
-  /* ========================================================
-     GROUND — LAST ARRIVAL POSITION
-     ======================================================== */
-
-  const lastFlight = flights
-    .filter(it =>
-      it.type === "flight" &&
-      Number.isFinite(it.arrAbsMin) &&
-      it.arrAbsMin <= now
-    )
-    .sort((a, b) => b.arrAbsMin - a.arrAbsMin)[0];
-
-if (lastFlight) {
-  return {
-    state: "GROUND",
-    position: {
-      airport:
-        ac.currentAirport ||
-        ac.baseAirport ||
-        lastFlight.destination ||
-        null
-    },
-    flight: null
-  };
-}
-
-  return {
-    state: "GROUND",
-    position: {
-      airport:
-        ac.currentAirport ||
-        ac.baseAirport ||
-        null
-    },
-    flight: null
-  };
-}
-
 /* ============================================================
    🟦 A6.2 — POSITION ENGINE (EN_ROUTE)
    ============================================================ */
@@ -1320,28 +1247,6 @@ const ACS_SPAWNED_FLIGHTS = {};
 
 function ACS_SkyTrack_computePosition() {
   return null;
-}
-
-  const { depAbsMin, arrAbsMin, aircraftId } = flight;
-
-  if (
-    !Number.isFinite(depAbsMin) ||
-    !Number.isFinite(arrAbsMin) ||
-    arrAbsMin <= depAbsMin
-  ) {
-    return null;
-  }
-
-  const flightKey =
-    `${aircraftId}|${depAbsMin}`;
-
-  let progress =
-    (nowAbsMin - depAbsMin) /
-    (arrAbsMin - depAbsMin);
-
-  return {
-    progress: Math.max(0, Math.min(1, progress))
-  };
 }
 
 /* ============================================================
