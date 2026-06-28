@@ -171,13 +171,22 @@ function ACS_SkyTrack_buildVisualIndexes(snapshot) {
 function ACS_SkyTrack_resolveBase(snapshot) {
   if (!Array.isArray(snapshot)) return null;
 
-  const own = snapshot.find(x => x && x.scope === "OWN");
+  const own =
+    snapshot.find(x => x && x.scope === "OWN") ||
+    snapshot[0];
 
   return (
     own?.baseICAO ||
     own?.base_icao ||
     window.ACS_USER_BASE_ICAO ||
     window.localStorage?.getItem?.("ACS_baseICAO") ||
+
+    // fallback histórico para no perder zoom
+    own?.airport ||
+    own?.position?.airport ||
+    own?.originICAO ||
+    own?.destinationICAO ||
+
     null
   );
 }
