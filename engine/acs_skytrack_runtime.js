@@ -200,11 +200,6 @@ function ACS_SkyTrack_hookTimeEngine() {
 function ACS_SkyTrack_convertGlobalRow(row) {
   if (!row) return null;
 
-  const now =
-    Number(ACS_SkyTrack.nowAbsMin);
-
-  if (!Number.isFinite(now)) return null;
-
   const airlineId =
     String(row.airline_id || "");
 
@@ -216,62 +211,31 @@ function ACS_SkyTrack_convertGlobalRow(row) {
   const aircraftId =
     `GLOBAL_${airlineId}_${rawAircraftId}`;
 
-  const dep =
-    Number(row.dep_abs_min);
+  const canonicalState =
+    String(row.canonical_state || "GROUND").toUpperCase();
 
-  const arr =
-    Number(row.arr_abs_min);
+  const positionType =
+    String(row.canonical_position_type || "AIRPORT").toUpperCase();
 
-  const origin =
-    String(row.origin || row.base_icao || row.current_airport || "").toUpperCase();
+  let position = null;
 
-  const destination =
-    String(row.destination || row.current_airport || row.base_icao || "").toUpperCase();
-
-  const currentAirport =
-    String(row.current_airport || row.base_icao || origin || "").toUpperCase();
-
-  const maintenanceControlStatus =
-    String(row.maintenance_control_status || "").toUpperCase();
-
-  const maintenanceControlReason =
-    String(row.maintenance_control_reason || "").toUpperCase();
-
-  let state = "GROUND";
-  let position = {
-    airport: currentAirport || origin || null
-  };
-
-  if (
-    maintenanceControlStatus === "IN_MAINTENANCE" ||
-    maintenanceControlStatus === "UNSERVICEABLE"
-  ) {
-    state =
-      maintenanceControlReason ||
-      maintenanceControlStatus ||
-      "MAINTENANCE";
+  if (positionType === "ROUTE") {
+    const progress = Number(row.canonical_progress);
 
     position = {
-      airport: currentAirport || row.base_icao || null
+      progress: Number.isFinite(progress)
+        ? Math.max(0, Math.min(1, progress))
+        : 0
     };
-
-  } else if (
-    Number.isFinite(dep) &&
-    Number.isFinite(arr) &&
-    arr > dep &&
-    now >= dep &&
-    now < arr
-  ) {
-    state = "EN_ROUTE";
-
+  } else {
     position = {
-      progress: Math.max(
-        0,
-        Math.min(
-          1,
-          (now - dep) / (arr - dep)
-        )
-      )
+      airport:
+        row.canonical_airport ||
+        row.current_airport ||
+        row.base_icao ||
+        row.canonical_origin ||
+        row.origin ||
+        null
     };
   }
 
@@ -285,26 +249,15 @@ function ACS_SkyTrack_convertGlobalRow(row) {
     canonicalAircraftKey:
       `${airlineId}:${rawAircraftId}`,
 
-    airlineName:
-      row.airline_name || null,
+    airlineName: row.airline_name || null,
+    airlineIata: row.iata || null,
+    airlineIcao: row.icao || null,
 
-    airlineIata:
-      row.iata || null,
+    airlineColorHex: row.color_hex || "#3A5FFF",
+    airlineColorHsl: row.color_hsl || "hsl(220,70%,50%)",
+    airlineColorIndex: Number(row.color_index || 0),
 
-    airlineIcao:
-      row.icao || null,
-
-    airlineColorHex:
-      row.color_hex || "#3A5FFF",
-
-    airlineColorHsl:
-      row.color_hsl || "hsl(220,70%,50%)",
-
-    airlineColorIndex:
-      Number(row.color_index || 0),
-
-    registration:
-      row.registration || "—",
+    registration: row.registration || "—",
 
     model:
       row.aircraft_name ||
@@ -321,29 +274,37 @@ function ACS_SkyTrack_convertGlobalRow(row) {
       row.model_key ||
       "—",
 
-    modelKey:
-      row.model_key || null,
+    modelKey: row.model_key || null,
 
-    flightNumber:
-      row.flight_number || null,
-
-    pairedFlightNumber:
-      row.paired_flight_number || null,
+    flightNumber: row.flight_number || null,
+    pairedFlightNumber: row.paired_flight_number || null,
 
     originICAO:
-      origin || null,
+      row.canonical_origin ||
+      row.origin ||
+      null,
 
     destinationICAO:
-      destination || null,
+      row.canonical_destination ||
+      row.destination ||
+      null,
 
-    state,
+    state: canonicalState,
     position,
 
     depAbsMin:
-      Number.isFinite(dep) ? dep : null,
+      Number.isFinite(Number(row.canonical_dep_abs_min))
+        ? Number(row.canonical_dep_abs_min)
+        : Number.isFinite(Number(row.dep_abs_min))
+          ? Number(row.dep_abs_min)
+          : null,
 
     arrAbsMin:
-      Number.isFinite(arr) ? arr : null,
+      Number.isFinite(Number(row.canonical_arr_abs_min))
+        ? Number(row.canonical_arr_abs_min)
+        : Number.isFinite(Number(row.arr_abs_min))
+          ? Number(row.arr_abs_min)
+          : null,
 
     distanceNM:
       Number(row.distance_nm || 0),
@@ -352,7 +313,8 @@ function ACS_SkyTrack_convertGlobalRow(row) {
     delayed: false,
     delayMinutes: 0,
 
-    __globalTraffic: true
+    __globalTraffic: true,
+    __canonicalBackend: true
   };
 }
 
