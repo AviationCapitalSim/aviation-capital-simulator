@@ -211,11 +211,45 @@ function ACS_SkyTrack_convertGlobalRow(row) {
   const aircraftId =
     `GLOBAL_${airlineId}_${rawAircraftId}`;
 
-  const canonicalState =
-    String(row.canonical_state || "GROUND").toUpperCase();
+  const now =
+  Number.isFinite(Number(ACS_SkyTrack.nowAbsMin))
+    ? Number(ACS_SkyTrack.nowAbsMin)
+    : null;
 
-  const positionType =
-    String(row.canonical_position_type || "AIRPORT").toUpperCase();
+const depAbsMin = Number(row.canonical_dep_abs_min ?? row.dep_abs_min);
+const arrAbsMin = Number(row.canonical_arr_abs_min ?? row.arr_abs_min);
+
+const isAirborneByLegacySchedule =
+  now !== null &&
+  Number.isFinite(depAbsMin) &&
+  Number.isFinite(arrAbsMin) &&
+  arrAbsMin > depAbsMin &&
+  now >= depAbsMin &&
+  now < arrAbsMin;
+
+const maintenanceControlStatus =
+  String(row.maintenance_control_status || "").toUpperCase();
+
+const maintenanceControlReason =
+  String(row.maintenance_control_reason || "").toUpperCase();
+
+const canonicalState =
+  String(
+    row.canonical_state ||
+    (
+      ["IN_MAINTENANCE", "UNSERVICEABLE"].includes(maintenanceControlStatus)
+        ? (maintenanceControlReason || maintenanceControlStatus)
+        : isAirborneByLegacySchedule
+          ? "EN_ROUTE"
+          : "GROUND"
+    )
+  ).toUpperCase();
+
+const positionType =
+  String(
+    row.canonical_position_type ||
+    (canonicalState === "EN_ROUTE" ? "ROUTE" : "AIRPORT")
+  ).toUpperCase();
 
   let position = null;
 
