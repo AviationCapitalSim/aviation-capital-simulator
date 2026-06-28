@@ -1,5 +1,5 @@
 /* ============================================================
-   ACS SKYTRACK SNAPSHOT ADAPTER — ACS OCC / AIRBUS OCC
+   ACS SKYTRACK RUNTIME — ACS OCC / AIRBUS OCC
    ------------------------------------------------------------
    Backend = autoridad
    Browser = render + compatibilidad visual FR24
@@ -17,8 +17,26 @@ window.ACS_SkyTrack = window.ACS_SkyTrack || {
   serviceItemsByAircraft: {}
 };
 
+function ACS_SkyTrack_num(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+function ACS_SkyTrack_absToHHMM(absMin) {
+  const n = Number(absMin);
+  if (!Number.isFinite(n)) return "—";
+
+  const m = ((n % 1440) + 1440) % 1440;
+  const hh = String(Math.floor(m / 60)).padStart(2, "0");
+  const mm = String(m % 60).padStart(2, "0");
+
+  return `${hh}:${mm}`;
+}
+
 function ACS_SkyTrack_syncAirportIndex() {
-  if (window.ACS_AIRPORT_INDEX && Object.keys(window.ACS_AIRPORT_INDEX).length) return;
+  if (window.ACS_AIRPORT_INDEX && Object.keys(window.ACS_AIRPORT_INDEX).length) {
+    return;
+  }
 
   if (window.__ACS_AIRPORT_INDEX__ && Object.keys(window.__ACS_AIRPORT_INDEX__).length) {
     window.ACS_AIRPORT_INDEX = window.__ACS_AIRPORT_INDEX__;
@@ -51,22 +69,6 @@ function ACS_SkyTrack_syncAirportIndex() {
   window.__ACS_AIRPORT_INDEX__ = idx;
 
   console.log("🧭 SkyTrack airport index built:", Object.keys(idx).length);
-}
-
-function ACS_SkyTrack_num(v) {
-  const n = Number(v);
-  return Number.isFinite(n) ? n : null;
-}
-
-function ACS_SkyTrack_absToHHMM(absMin) {
-  const n = Number(absMin);
-  if (!Number.isFinite(n)) return "—";
-
-  const m = ((n % 1440) + 1440) % 1440;
-  const hh = String(Math.floor(m / 60)).padStart(2, "0");
-  const mm = String(m % 60).padStart(2, "0");
-
-  return `${hh}:${mm}`;
 }
 
 function ACS_SkyTrack_makeFlightItem(item) {
@@ -104,6 +106,11 @@ function ACS_SkyTrack_makeFlightItem(item) {
     aircraft: item.aircraft || item.aircraftModel || item.model || null,
     registration: item.registration || null,
 
+    currentAirport: item.airport || item.position?.airport || null,
+    baseAirport: item.baseICAO || item.base_icao || null,
+
+    __snapshotState: item.state || null,
+    __snapshotAirport: item.airport || item.position?.airport || null,
     __snapshotContext: item.flightContext || null,
     __snapshotAuthority: true
   };
@@ -115,11 +122,7 @@ function ACS_SkyTrack_buildVisualIndexes(snapshot) {
   const serviceItemsByAircraft = {};
 
   if (!Array.isArray(snapshot)) {
-    return {
-      itemsByAircraft,
-      flightItemsByAircraft,
-      serviceItemsByAircraft
-    };
+    return { itemsByAircraft, flightItemsByAircraft, serviceItemsByAircraft };
   }
 
   snapshot.forEach(item => {
@@ -161,11 +164,7 @@ function ACS_SkyTrack_buildVisualIndexes(snapshot) {
     flightItemsByAircraft[acId].sort((a, b) => Number(a.depAbsMin || 0) - Number(b.depAbsMin || 0));
   });
 
-  return {
-    itemsByAircraft,
-    flightItemsByAircraft,
-    serviceItemsByAircraft
-  };
+  return { itemsByAircraft, flightItemsByAircraft, serviceItemsByAircraft };
 }
 
 function ACS_SkyTrack_resolveBase(snapshot) {
@@ -181,7 +180,8 @@ function ACS_SkyTrack_resolveBase(snapshot) {
     window.ACS_USER_BASE_ICAO ||
     window.localStorage?.getItem?.("ACS_baseICAO") ||
 
-    // fallback histórico para no perder zoom
+    own?.currentAirport ||
+    own?.current_airport ||
     own?.airport ||
     own?.position?.airport ||
     own?.originICAO ||
@@ -200,20 +200,18 @@ async function ACS_SkyTrack_fetchSnapshot() {
       method: "GET",
       credentials: "include",
       cache: "no-store",
-      headers: {
-        Accept: "application/json"
-      }
+      headers: { Accept: "application/json" }
     }
   );
 
   const data = await res.json();
 
   if (!res.ok || data?.ok !== true) {
-    throw new Error(data?.error || "SKYTRACK_SNAPSHOT_FAILED");
+    throw new Error(data?.error || "SKYTRACK_RUNTIME_SNAPSHOT_FAILED");
   }
 
   if (data.authority !== "POSTGRESQL_SKYTRACK_SNAPSHOT_CANONICAL") {
-    throw new Error("SKYTRACK_SNAPSHOT_AUTHORITY_INVALID");
+    throw new Error("SKYTRACK_RUNTIME_AUTHORITY_INVALID");
   }
 
   const snapshot = Array.isArray(data.flights) ? data.flights : [];
@@ -240,7 +238,7 @@ async function ACS_SkyTrack_fetchSnapshot() {
     })
   );
 
-  console.log("🟢 ACS SkyTrack snapshot loaded", {
+  console.log("🟢 ACS SkyTrack runtime loaded", {
     authority: data.authority,
     airlineId: ACS_SkyTrack.airlineId,
     baseICAO: ACS_SkyTrack.baseICAO,
@@ -255,29 +253,29 @@ async function ACS_SkyTrack_init() {
 
   ACS_SkyTrack.initialized = true;
 
-  console.log("✈️ SkyTrack Snapshot Adapter initialized");
+  console.log("✈️ SkyTrack Runtime initialized — ACS OCC");
 
   ACS_SkyTrack_syncAirportIndex();
 
   await ACS_SkyTrack_fetchSnapshot();
 
-  if (!window.__ACS_SKYTRACK_SNAPSHOT_REFRESH__) {
-    window.__ACS_SKYTRACK_SNAPSHOT_REFRESH__ = true;
+  if (!window.__ACS_SKYTRACK_RUNTIME_REFRESH__) {
+    window.__ACS_SKYTRACK_RUNTIME_REFRESH__ = true;
 
     setInterval(async () => {
       try {
         await ACS_SkyTrack_fetchSnapshot();
       } catch (err) {
-        console.warn("⚠️ SkyTrack snapshot refresh failed:", err);
+        console.warn("⚠️ SkyTrack runtime refresh failed:", err);
       }
-    }, 5000);
+    }, 2000);
   }
 
-  console.log("🟢 SkyTrack running in SNAPSHOT + VISUAL COMPAT mode");
+  console.log("🟢 SkyTrack running in RUNTIME VISUAL COMPAT mode");
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   ACS_SkyTrack_init().catch(err => {
-    console.error("⛔ SkyTrack snapshot adapter failed:", err);
+    console.error("⛔ SkyTrack runtime failed:", err);
   });
 });
