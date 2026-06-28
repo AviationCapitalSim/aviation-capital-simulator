@@ -366,7 +366,45 @@ function ACS_SkyTrack_convertGlobalRow(row) {
 
 function ACS_SkyTrack_onTick() {
   const snapshot = Array.isArray(ACS_SkyTrack.snapshotItems)
-    ? ACS_SkyTrack.snapshotItems
+    ? ACS_SkyTrack.snapshotItems.map(item => ({
+        aircraftId: item.aircraftId,
+        rawAircraftId: item.rawAircraftId,
+
+        airlineId: item.airlineId,
+        airline_id: item.airline_id,
+
+        airlineName: item.airlineName,
+        airlineColorHex: item.airlineColorHex,
+        airlineColorHsl: item.airlineColorHsl,
+        airlineColorIndex: item.airlineColorIndex,
+
+        registration: item.registration,
+        model: item.model,
+        aircraft: item.aircraft,
+        aircraftModel: item.aircraftModel,
+        modelKey: item.modelKey,
+
+        state: item.state,
+
+        position: item.position,
+
+        originICAO: item.originICAO,
+        destinationICAO: item.destinationICAO,
+
+        flightNumber: item.flightNumber,
+        pairedFlightNumber: item.pairedFlightNumber,
+
+        depAbsMin: item.depAbsMin,
+        arrAbsMin: item.arrAbsMin,
+        distanceNM: item.distanceNM,
+
+        opsStatus: item.opsStatus || "ON_TIME",
+        delayed: !!item.delayed,
+        delayMinutes: Number(item.delayMinutes || 0),
+
+        __canonicalBackend: true,
+        __snapshotAuthority: true
+      }))
     : [];
 
   window.__ACS_CANONICAL_SKYTRACK_SNAPSHOT__ = snapshot;
