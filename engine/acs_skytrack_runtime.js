@@ -1445,7 +1445,7 @@ function ACS_SkyTrack_startContextRefresh() {
     } catch (err) {
       console.warn("SkyTrack context refresh failed", err);
     }
-}, 5000);
+}, 2000);
 
   console.log("🔁 SkyTrack PostgreSQL context refresh active");
 }
