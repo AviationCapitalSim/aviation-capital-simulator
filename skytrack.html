@@ -1220,17 +1220,12 @@ if(counter){
   const markerKey =
 [
   item.aircraftId,
-  item.state,
-  item.position?.airport || "",
-  Number.isFinite(Number(item.position?.progress))
-    ? Number(item.position.progress).toFixed(4)
-    : "",
-  item.originICAO,
-  item.destinationICAO,
-  item.flightNumber,
+  item.originICAO || "",
+  item.destinationICAO || "",
+  item.flightNumber || "",
   item.airlineColorHex || ""
 ].join("|");
-
+         
 if (m && m.__acsMarkerKey && m.__acsMarkerKey !== markerKey) {
 
   if (map.hasLayer(m)) {
