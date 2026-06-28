@@ -1235,7 +1235,9 @@ function ACS_SkyTrack_getGroundBlock(ac) {
    🧠 STATE RESOLVER — FR24 LOGIC
    ============================================================ */
 
-function ACS_SkyTrack_resolveState(aircraftId) {
+function ACS_SkyTrack_resolveState() {
+  return null;
+}
 
   const ac = ACS_SkyTrack.aircraftIndex[aircraftId];
   const flights = ACS_SkyTrack.flightItemsByAircraft[aircraftId] || [];
@@ -1338,7 +1340,9 @@ if (lastFlight) {
 
 const ACS_SPAWNED_FLIGHTS = {};
 
-function ACS_SkyTrack_computePosition(flight, nowAbsMin) {
+function ACS_SkyTrack_computePosition() {
+  return null;
+}
 
   const { depAbsMin, arrAbsMin, aircraftId } = flight;
 
