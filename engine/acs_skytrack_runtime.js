@@ -254,7 +254,11 @@ const positionType =
   let position = null;
 
   if (positionType === "ROUTE") {
-    const progress = Number(row.canonical_progress);
+    const progress = Number.isFinite(Number(row.canonical_progress))
+  ? Number(row.canonical_progress)
+  : isAirborneByLegacySchedule
+    ? ((now - depAbsMin) / Math.max(1, arrAbsMin - depAbsMin))
+    : 0;
 
     position = {
       progress: Number.isFinite(progress)
@@ -267,6 +271,8 @@ const positionType =
         row.canonical_airport ||
         row.current_airport ||
         row.base_icao ||
+        row.canonical_destination ||
+        row.destination ||
         row.canonical_origin ||
         row.origin ||
         null
