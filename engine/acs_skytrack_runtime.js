@@ -662,17 +662,31 @@ async function ACS_SkyTrack_loadData() {
       ]);
 
     const contextNow =
-      Number(data.now_abs_min);
+  Number(data.now_abs_min);
 
-    const globalNow =
-      Number(globalData?.now_abs_min);
+const globalNow =
+  Number(globalData?.now_abs_min);
 
-    ACS_SkyTrack.nowAbsMin =
-      Number.isFinite(contextNow)
-        ? contextNow
-        : Number.isFinite(globalNow)
-          ? globalNow
-          : ACS_SkyTrack.nowAbsMin;
+/*
+ * ACS OCC CANONICAL TIME RULE
+ * ------------------------------------------------------------
+ * SkyTrack operational time must come from the newest backend
+ * snapshot available on every refresh.
+ *
+ * Context and Global are both PostgreSQL-authoritative.
+ * Prefer the highest valid now_abs_min to avoid browser drift,
+ * stale tab state, or independent refresh timing.
+ */
+
+const validTimes = [
+  contextNow,
+  globalNow
+].filter(Number.isFinite);
+
+ACS_SkyTrack.nowAbsMin =
+  validTimes.length
+    ? Math.max(...validTimes)
+    : null;
 
     ACS_SkyTrack.currentSimTime =
       data.current_sim_time ||
