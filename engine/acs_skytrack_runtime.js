@@ -818,7 +818,18 @@ async function ACS_SkyTrack_loadData() {
       data.current_sim_time || null;
 
     ACS_SkyTrack.airlineId =
-      data.airline_id ? String(data.airline_id) : null;
+  data.airline_id ? String(data.airline_id) : null;
+
+const ownBaseItem = snapshot.find(item =>
+  item.scope === "OWN" &&
+  item.position &&
+  item.position.airport
+);
+
+ACS_SkyTrack.baseICAO =
+  ownBaseItem?.position?.airport ||
+  snapshot.find(item => item.scope === "OWN")?.airport ||
+  null;
 
     ACS_SkyTrack.globalRows = [];
     ACS_SkyTrack.aircraftIndex = {};
