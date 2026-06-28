@@ -675,8 +675,8 @@ const stateObj = resolvedState || {
 
 async function ACS_SkyTrack_loadData() {
   try {
-    const contextPromise = fetch(
-      "https://api.aviationcapitalsim.com/v1/skytrack/context",
+    const res = await fetch(
+      "https://api.aviationcapitalsim.com/v1/skytrack/snapshot",
       {
         method: "GET",
         credentials: "include",
@@ -685,116 +685,174 @@ async function ACS_SkyTrack_loadData() {
           "Accept": "application/json"
         }
       }
-    ).then(async res => {
-      const data = await res.json();
+    );
 
-      if (!res.ok || data?.ok !== true) {
-        throw new Error(data?.error || "SKYTRACK_CONTEXT_FAILED");
-      }
+    const data = await res.json();
 
-      if (data.authority !== "POSTGRESQL_SKYTRACK_AUTHORITY") {
-        throw new Error("SKYTRACK_AUTHORITY_INVALID");
-      }
+    if (!res.ok || data?.ok !== true) {
+      throw new Error(data?.error || "SKYTRACK_SNAPSHOT_FAILED");
+    }
 
-      return data;
-    });
+    if (data.authority !== "POSTGRESQL_SKYTRACK_SNAPSHOT_CANONICAL") {
+      throw new Error("SKYTRACK_SNAPSHOT_AUTHORITY_INVALID");
+    }
 
-    const globalPromise =
-      typeof window.ACS_fetchWorldFlights === "function"
-        ? window.ACS_fetchWorldFlights()
-        : Promise.resolve({
-            ok: false,
-            current_sim_time: null,
-            now_abs_min: null,
-            flights: []
-          });
+    const snapshot = Array.isArray(data.flights)
+      ? data.flights.map(row => {
+          const aircraftId =
+            row.scope === "GLOBAL"
+              ? `GLOBAL_${row.airlineId || row.airline_id}_${row.rawAircraftId || row.aircraftId}`
+              : String(row.aircraftId);
 
-    const [data, globalData] =
-      await Promise.all([
-        contextPromise,
-        globalPromise
-      ]);
+          const positionType =
+            String(row.positionType || row.position_type || "").toUpperCase();
 
-    const contextNow =
-  Number(data.now_abs_min);
+          const position =
+            positionType === "ROUTE"
+              ? {
+                  progress: Number.isFinite(Number(row.progress))
+                    ? Math.max(0, Math.min(1, Number(row.progress)))
+                    : 0
+                }
+              : {
+                  airport:
+                    row.airport ||
+                    row.currentAirport ||
+                    row.current_airport ||
+                    row.baseICAO ||
+                    row.base_icao ||
+                    row.originICAO ||
+                    null
+                };
 
-const globalNow =
-  Number(globalData?.now_abs_min);
+          return {
+            aircraftId,
+            rawAircraftId: row.rawAircraftId || row.raw_aircraft_id || row.aircraftId,
 
-/*
- * ACS OCC CANONICAL TIME RULE
- * ------------------------------------------------------------
- * SkyTrack operational time must come from the newest backend
- * snapshot available on every refresh.
- *
- * Context and Global are both PostgreSQL-authoritative.
- * Prefer the highest valid now_abs_min to avoid browser drift,
- * stale tab state, or independent refresh timing.
- */
+            canonicalAircraftKey:
+              `${row.airlineId || row.airline_id || ""}:${row.rawAircraftId || row.raw_aircraft_id || row.aircraftId || ""}`,
 
-const validTimes = [
-  contextNow,
-  globalNow
-].filter(Number.isFinite);
+            scope: row.scope || "OWN",
 
-ACS_SkyTrack.nowAbsMin =
-  validTimes.length
-    ? Math.max(...validTimes)
-    : null;
+            airlineId: String(row.airlineId || row.airline_id || ""),
+            airline_id: String(row.airlineId || row.airline_id || ""),
+
+            airlineName: row.airlineName || row.airline_name || null,
+            airlineIata: row.airlineIata || row.iata || null,
+            airlineIcao: row.airlineIcao || row.icao || null,
+
+            airlineColorHex: row.airlineColorHex || row.color_hex || "#3A5FFF",
+            airlineColorHsl: row.airlineColorHsl || row.color_hsl || "hsl(220,70%,50%)",
+            airlineColorIndex: Number(row.airlineColorIndex || row.color_index || 0),
+
+            registration: row.registration || "—",
+
+            model:
+              row.model ||
+              row.aircraftName ||
+              row.aircraft_name ||
+              row.modelKey ||
+              row.model_key ||
+              "—",
+
+            aircraft:
+              row.model ||
+              row.aircraftName ||
+              row.aircraft_name ||
+              row.modelKey ||
+              row.model_key ||
+              "—",
+
+            aircraftModel:
+              row.model ||
+              row.aircraftName ||
+              row.aircraft_name ||
+              row.modelKey ||
+              row.model_key ||
+              "—",
+
+            modelKey: row.modelKey || row.model_key || null,
+
+            state: String(row.state || "GROUND").toUpperCase(),
+            position,
+
+            positionType,
+
+            airport: row.airport || null,
+            progress: Number.isFinite(Number(row.progress))
+              ? Number(row.progress)
+              : null,
+
+            flightNumber: row.flightNumber || row.flight_number || null,
+            pairedFlightNumber: row.pairedFlightNumber || row.paired_flight_number || null,
+
+            originICAO: row.originICAO || row.origin || null,
+            destinationICAO: row.destinationICAO || row.destination || null,
+
+            depAbsMin: Number.isFinite(Number(row.depAbsMin || row.dep_abs_min))
+              ? Number(row.depAbsMin || row.dep_abs_min)
+              : null,
+
+            arrAbsMin: Number.isFinite(Number(row.arrAbsMin || row.arr_abs_min))
+              ? Number(row.arrAbsMin || row.arr_abs_min)
+              : null,
+
+            distanceNM: Number(row.distanceNM || row.distance_nm || 0),
+
+            opsStatus: row.opsStatus || row.ops_status || "ON_TIME",
+            delayed: !!row.delayed,
+            delayMinutes: Number(row.delayMinutes || row.delay_minutes || 0),
+
+            __canonicalBackend: true,
+            __snapshotAuthority: true
+          };
+        })
+      : [];
+
+    ACS_SkyTrack.nowAbsMin =
+      Number.isFinite(Number(data.now_abs_min))
+        ? Number(data.now_abs_min)
+        : null;
 
     ACS_SkyTrack.currentSimTime =
-      data.current_sim_time ||
-      globalData?.current_sim_time ||
-      null;
+      data.current_sim_time || null;
 
     ACS_SkyTrack.airlineId =
       data.airline_id ? String(data.airline_id) : null;
 
-    ACS_SkyTrack.baseICAO =
-      data.base_icao || null;
-
-    ACS_SkyTrack.globalRows =
-      Array.isArray(globalData?.flights)
-        ? globalData.flights
-        : [];
-
-    ACS_SkyTrack.aircraftIndex =
-      ACS_SkyTrack_buildFleetIndexFromServer(data.fleet || []);
-
-    const indexedSchedule =
-      ACS_SkyTrack_indexScheduleItemsFromServer(
-        data.schedule_items || []
-      );
-
-    ACS_SkyTrack.itemsByAircraft =
-      indexedSchedule.itemsByAircraft;
-
-    ACS_SkyTrack.flightItemsByAircraft =
-      indexedSchedule.flightItemsByAircraft;
-
-    ACS_SkyTrack.serviceItemsByAircraft =
-      indexedSchedule.serviceItemsByAircraft;
-
-    console.log("🟢 SkyTrack canonical PostgreSQL context loaded", {
-      airlineId: ACS_SkyTrack.airlineId,
-      nowAbsMin: ACS_SkyTrack.nowAbsMin,
-      fleet: Object.keys(ACS_SkyTrack.aircraftIndex).length,
-      scheduledAircraft: Object.keys(ACS_SkyTrack.itemsByAircraft).length,
-      globalAircraft: ACS_SkyTrack.globalRows.length
-    });
-
-    ACS_SkyTrack_onTick();
-
-  } catch (err) {
-    console.warn("⛔ SkyTrack context load failed:", err);
-
+    ACS_SkyTrack.globalRows = [];
     ACS_SkyTrack.aircraftIndex = {};
     ACS_SkyTrack.itemsByAircraft = {};
     ACS_SkyTrack.flightItemsByAircraft = {};
     ACS_SkyTrack.serviceItemsByAircraft = {};
-    ACS_SkyTrack.globalRows = [];
 
-    ACS_SkyTrack_onTick();
+    window.__ACS_CANONICAL_SKYTRACK_SNAPSHOT__ = snapshot;
+    window.__ACS_LAST_SKYTRACK_SNAPSHOT__ = snapshot;
+
+    window.dispatchEvent(
+      new CustomEvent("ACS_SKYTRACK_SNAPSHOT", {
+        detail: snapshot
+      })
+    );
+
+    console.log("🟢 SkyTrack snapshot loaded", {
+      airlineId: ACS_SkyTrack.airlineId,
+      nowAbsMin: ACS_SkyTrack.nowAbsMin,
+      aircraft: snapshot.length,
+      authority: data.authority
+    });
+
+  } catch (err) {
+    console.warn("⛔ SkyTrack snapshot load failed:", err);
+
+    window.__ACS_CANONICAL_SKYTRACK_SNAPSHOT__ = [];
+    window.__ACS_LAST_SKYTRACK_SNAPSHOT__ = [];
+
+    window.dispatchEvent(
+      new CustomEvent("ACS_SKYTRACK_SNAPSHOT", {
+        detail: []
+      })
+    );
   }
 }
 
