@@ -339,8 +339,11 @@ function ACS_SkyTrack_onTick() {
     const items = ACS_SkyTrack.itemsByAircraft[acId] || [];
     const flights = ACS_SkyTrack.flightItemsByAircraft[acId] || [];
 
-    const stateObj = ACS_SkyTrack_resolveState(acId);
-    if (!stateObj) return;
+    const stateObj = {
+    state: ac.canonicalState || "GROUND",
+    position: ac.canonicalPosition || null,
+    flight: ac.canonicalFlight || null
+    };
 
     const activeFlight = stateObj.flight || null;
     const prev = ACS_SkyTrack.lastActiveFlight[acId];
