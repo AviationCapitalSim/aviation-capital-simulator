@@ -339,11 +339,22 @@ function ACS_SkyTrack_onTick() {
     const items = ACS_SkyTrack.itemsByAircraft[acId] || [];
     const flights = ACS_SkyTrack.flightItemsByAircraft[acId] || [];
 
-    const stateObj = {
-    state: ac.canonicalState || "GROUND",
-    position: ac.canonicalPosition || null,
-    flight: ac.canonicalFlight || null
-    };
+    const resolvedState =
+  typeof ACS_SkyTrack_resolveState === "function"
+    ? ACS_SkyTrack_resolveState(acId)
+    : null;
+
+const stateObj = resolvedState || {
+  state: ac.canonicalState || "GROUND",
+  position:
+    ac.canonicalPosition || {
+      airport:
+        ac.currentAirport ||
+        ac.baseAirport ||
+        null
+    },
+  flight: ac.canonicalFlight || null
+};
 
     const activeFlight = stateObj.flight || null;
     const prev = ACS_SkyTrack.lastActiveFlight[acId];
