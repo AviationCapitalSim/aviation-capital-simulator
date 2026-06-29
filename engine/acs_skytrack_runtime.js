@@ -5,7 +5,7 @@
 
 (function () {
   const SNAPSHOT_URL = "https://api.aviationcapitalsim.com/v1/skytrack/snapshot";
-  const REFRESH_MS = 1000;
+  const REFRESH_MS = 5000;
   let ACS_SkyTrack_fetchInProgress = false;
 
   function ACS_SkyTrack_buildAirportIndex() {
