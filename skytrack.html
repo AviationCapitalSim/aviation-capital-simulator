@@ -270,10 +270,137 @@ body {
   font-weight: 800;
 }
 
+.skytrack-map-shell {
+  position: relative;
+  width: 100%;
+  height: 460px;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.skytrack-map-shell #skytrack-map {
+  width: 100%;
+  height: 100%;
+}
+
+#skytrackTrafficBar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  min-height: 58px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 10px 14px;
+
+  background: rgba(8, 20, 48, 0.92);
+  border-top: 1px solid rgba(255,179,0,0.28);
+  backdrop-filter: blur(8px);
+
+  z-index: 4000;
+}
+
+.stb-label {
+  color: #8aa2ff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .6px;
+  white-space: nowrap;
+}
+
+.stb-btn {
+  border: 1px solid rgba(138,180,255,.32);
+  background: rgba(138,180,255,.08);
+  color: #dbe4ff;
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.stb-btn.active {
+  background: rgba(0,255,128,.20);
+  border-color: rgba(0,255,128,.55);
+  color: #7CFFB2;
+}
+
+.stb-plus {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(138,180,255,.45);
+  background: rgba(138,180,255,.10);
+  color: #dbe4ff;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.stb-sep {
+  width: 1px;
+  height: 34px;
+  background: rgba(255,179,0,.25);
+}
+
+.stb-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  min-width: 260px;
+  flex: 1;
+
+  border: 1px solid rgba(138,180,255,.28);
+  background: rgba(0,0,0,.20);
+  border-radius: 12px;
+  padding: 7px 10px;
+}
+
+.stb-search input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #dbe4ff;
+  font-weight: 600;
+}
+
+.stb-search input::placeholder {
+  color: rgba(219,228,255,.55);
+}
+
+.stb-recent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  max-width: 360px;
+}
+
+.stb-chip {
+  border: 1px solid rgba(138,180,255,.30);
+  background: rgba(138,180,255,.08);
+  color: #dbe4ff;
+  border-radius: 10px;
+  padding: 7px 12px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.stb-chip.active {
+  border-color: rgba(0,255,128,.55);
+  color: #7CFFB2;
+}
+     
 .badge-ground { background: rgba(0,135,255,0.25); color:#9cc9ff; }
 .badge-air    { background: rgba(0,255,160,0.25); color:#8fffd2; }
 .badge-maint  { background: rgba(255,179,0,0.30); color:#ffe7a0; }
-    
+     
 </style>
 
 </head>
@@ -317,11 +444,48 @@ body {
 
   <p class="sub">Real-time aircraft tracking based on your operational schedule.</p>
 
-  <!-- ========================= MAP PANEL ========================= -->
+ <!-- ========================= MAP PANEL ========================= -->
 
 <div class="panel">
   <h3>🌍 World Map</h3>
-  <div id="skytrack-map"></div>
+
+  <div class="skytrack-map-shell">
+    <div id="skytrack-map"></div>
+
+    <div id="skytrackTrafficBar">
+      <div class="stb-label">VIEWING</div>
+
+      <button class="stb-btn active" id="stbMyAirlineBtn">
+        MY AIRLINE
+      </button>
+
+      <button class="stb-btn" id="stbGlobalBtn">
+        🌍 GLOBAL
+      </button>
+
+      <div class="stb-sep"></div>
+
+      <div class="stb-label">ADD AIRLINE</div>
+
+      <button class="stb-plus" id="stbAddAirlineBtn">
+        +
+      </button>
+
+      <div class="stb-search">
+        🔍
+        <input
+          id="stbAirlineSearch"
+          type="text"
+          placeholder="Search airline or code..."
+          autocomplete="off"
+        />
+      </div>
+
+      <div class="stb-label">RECENT</div>
+
+      <div id="stbRecentAirlines" class="stb-recent"></div>
+    </div>
+  </div>
 </div>
 
 <!-- ========================= GRID ========================= -->
@@ -545,6 +709,143 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </script>
 
+<script>
+   
+/* ============================================================
+   ACS OCC — SKYTRACK BOTTOM TRAFFIC BAR
+   ============================================================ */
+
+window.ACS_SKYTRACK_FILTER = {
+  mode: "my",
+  selectedAirlineIds: new Set()
+};
+
+function ACS_ST_getAirlinesFromSnapshot(snapshot) {
+  const map = new Map();
+
+  (snapshot || []).forEach(item => {
+    const id = String(item.airlineId || item.airline_id || "");
+    if (!id) return;
+
+    if (!map.has(id)) {
+      map.set(id, {
+        id,
+        name: item.airlineName || item.airlineIcao || item.airlineIata || id,
+        iata: item.airlineIata || "",
+        icao: item.airlineIcao || "",
+        color: item.airlineColorHex || "#3A5FFF"
+      });
+    }
+  });
+
+  return Array.from(map.values());
+}
+
+function ACS_ST_renderTrafficBar(snapshot) {
+  const recentEl = document.getElementById("stbRecentAirlines");
+  if (!recentEl) return;
+
+  const airlines = ACS_ST_getAirlinesFromSnapshot(snapshot).slice(0, 8);
+
+  recentEl.innerHTML = "";
+
+  airlines.forEach(al => {
+    const chip = document.createElement("button");
+    chip.className = "stb-chip";
+    chip.textContent = al.name;
+
+    if (window.ACS_SKYTRACK_FILTER.selectedAirlineIds.has(al.id)) {
+      chip.classList.add("active");
+    }
+
+    chip.onclick = () => {
+      window.ACS_SKYTRACK_FILTER.mode = "selected";
+
+      if (window.ACS_SKYTRACK_FILTER.selectedAirlineIds.has(al.id)) {
+        window.ACS_SKYTRACK_FILTER.selectedAirlineIds.delete(al.id);
+      } else {
+        window.ACS_SKYTRACK_FILTER.selectedAirlineIds.add(al.id);
+      }
+
+      window.dispatchEvent(new CustomEvent("ACS_SKYTRACK_FILTER_CHANGED"));
+    };
+
+    recentEl.appendChild(chip);
+  });
+}
+
+function ACS_ST_applyTrafficFilter(snapshot) {
+  if (!Array.isArray(snapshot)) return [];
+
+  const filter = window.ACS_SKYTRACK_FILTER;
+  const myAirlineId = String(window.ACS_SkyTrack?.airlineId || "");
+
+  if (filter.mode === "global") {
+    return snapshot;
+  }
+
+  if (filter.mode === "selected") {
+    return snapshot.filter(item => {
+      const airlineId = String(item.airlineId || item.airline_id || "");
+
+      return (
+        airlineId === myAirlineId ||
+        filter.selectedAirlineIds.has(airlineId)
+      );
+    });
+  }
+
+  return snapshot.filter(item => {
+    const airlineId = String(item.airlineId || item.airline_id || "");
+    return airlineId === myAirlineId;
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const myBtn = document.getElementById("stbMyAirlineBtn");
+  const globalBtn = document.getElementById("stbGlobalBtn");
+  const search = document.getElementById("stbAirlineSearch");
+
+  if (myBtn) {
+    myBtn.onclick = () => {
+      window.ACS_SKYTRACK_FILTER.mode = "my";
+      myBtn.classList.add("active");
+      globalBtn?.classList.remove("active");
+      window.dispatchEvent(new CustomEvent("ACS_SKYTRACK_FILTER_CHANGED"));
+    };
+  }
+
+  if (globalBtn) {
+    globalBtn.onclick = () => {
+      window.ACS_SKYTRACK_FILTER.mode = "global";
+      globalBtn.classList.add("active");
+      myBtn?.classList.remove("active");
+      window.dispatchEvent(new CustomEvent("ACS_SKYTRACK_FILTER_CHANGED"));
+    };
+  }
+
+  if (search) {
+    search.addEventListener("input", () => {
+      const q = search.value.trim().toLowerCase();
+      const snapshot = window.__ACS_LAST_SKYTRACK_SNAPSHOT__ || [];
+      const airlines = ACS_ST_getAirlinesFromSnapshot(snapshot);
+
+      const match = airlines.find(al =>
+        al.name.toLowerCase().includes(q) ||
+        al.iata.toLowerCase().includes(q) ||
+        al.icao.toLowerCase().includes(q)
+      );
+
+      if (match && q.length >= 2) {
+        window.ACS_SKYTRACK_FILTER.mode = "selected";
+        window.ACS_SKYTRACK_FILTER.selectedAirlineIds.add(match.id);
+        window.dispatchEvent(new CustomEvent("ACS_SKYTRACK_FILTER_CHANGED"));
+      }
+    });
+  }
+});
+</script>
+ 
 <!-- ============================================================
      🟦 A3 — SKYTRACK MARKER ENGINE (ATC FIXED)
      Solo visualiza — NO calcula
@@ -749,6 +1050,7 @@ function ACS_ST_resolveTimesFromRuntime(snapshotItem) {
 // 🟦 A9.2 — Render Flight Details (FR24)
 
 function renderFlightDetails(snapshot) {
+   
   if (!detailsEl) return;
 
   const id = window.ACS_ACTIVE_FLIGHT_ID;
