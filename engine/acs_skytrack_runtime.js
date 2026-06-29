@@ -93,18 +93,28 @@
   }
 
   function ACS_SkyTrack_resolveBaseICAO(flights) {
-    if (!Array.isArray(flights)) return null;
+  if (!Array.isArray(flights)) return null;
 
-    const own = flights.filter(f => String(f.scope || "") === "OWN");
+  const own = flights.filter(f => String(f.scope || "") === "OWN");
 
-    return (
-      own.find(f => f.position?.airport)?.position?.airport ||
-      own.find(f => f.airport)?.airport ||
-      own.find(f => f.originICAO)?.originICAO ||
-      own.find(f => f.destinationICAO)?.destinationICAO ||
-      null
-    );
-  }
+  const counts = {};
+
+  own.forEach(f => {
+    const origin = String(f.originICAO || "").toUpperCase();
+    if (!origin) return;
+    counts[origin] = (counts[origin] || 0) + 1;
+  });
+
+  const bestOrigin = Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])[0]?.[0];
+
+  return (
+    bestOrigin ||
+    own.find(f => f.baseICAO)?.baseICAO ||
+    own.find(f => f.base_icao)?.base_icao ||
+    null
+  );
+}
 
   function ACS_SkyTrack_publishSnapshot(data) {
     ACS_SkyTrack_buildAirportIndex();
