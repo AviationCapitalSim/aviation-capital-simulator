@@ -1320,9 +1320,13 @@ function renderFlightDetails(snapshot) {
        
     renderFlightDetails(snapshot);
 
-      if (!Array.isArray(snapshot)) return;
+     if (!Array.isArray(snapshot)) return;
 
-      centerMapOnce(snapshot);
+ACS_ST_renderTrafficBar(snapshot);
+
+snapshot = ACS_ST_applyTrafficFilter(snapshot);
+
+centerMapOnce(snapshot);
 
       const visibleIds = new Set(
   snapshot.map(item => String(item.aircraftId))
@@ -1505,6 +1509,10 @@ m.__acsMarkerKey = markerKey;
   render(e.detail);
 });
 
+window.addEventListener("ACS_SKYTRACK_FILTER_CHANGED", () => {
+  render(window.__ACS_LAST_SKYTRACK_SNAPSHOT__);
+});
+     
 /* ============================================================
    🌍 GLOBAL REFRESH → FORCE RERENDER
    ============================================================ */
