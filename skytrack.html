@@ -894,38 +894,23 @@ function ACS_ST_nowAbsMin() {
 }
 
 function ACS_ST_resolveTimesFromRuntime(snapshotItem) {
-   
-  const acId = snapshotItem?.aircraftId;
-  if (!acId) return null;
+  if (!snapshotItem) return null;
 
-  const now = ACS_ST_nowAbsMin();
-  const items = window.ACS_SkyTrack?.itemsByAircraft?.[acId];
-  if (!Array.isArray(items) || now == null) return null;
+  return {
+    depAbsMin: Number.isFinite(Number(snapshotItem.depAbsMin))
+      ? Number(snapshotItem.depAbsMin)
+      : null,
 
-  const flights = items.filter(it => it && it.type === "flight" && Number.isFinite(it.depAbsMin) && Number.isFinite(it.arrAbsMin));
-  if (!flights.length) return null;
+    arrAbsMin: Number.isFinite(Number(snapshotItem.arrAbsMin))
+      ? Number(snapshotItem.arrAbsMin)
+      : null,
 
-  // 1) Si está EN_ROUTE, buscamos el vuelo activo por ventana de tiempo
-  if (snapshotItem.state === "EN_ROUTE") {
-    const active = flights.find(f =>
-      now >= f.depAbsMin && now < f.arrAbsMin &&
-      (!snapshotItem.flightNumber || f.flightNumber === snapshotItem.flightNumber)
-    );
-    if (active) return active;
-  }
-
-  // 2) Si está en GROUND: contexto FR24 (próximo si existe; si no, último)
-  const future = flights
-    .filter(f => f.depAbsMin > now)
-    .sort((a, b) => a.depAbsMin - b.depAbsMin)[0];
-
-  if (future) return future;
-
-  const past = flights
-    .filter(f => f.arrAbsMin < now)
-    .sort((a, b) => b.arrAbsMin - a.arrAbsMin)[0];
-
-  return past || null;
+    origin: snapshotItem.originICAO || null,
+    destination: snapshotItem.destinationICAO || null,
+    flightNumber: snapshotItem.flightNumber || null,
+    flightDirection: snapshotItem.flightDirection || null,
+    flightContext: snapshotItem.flightContext || null
+  };
 }
         
 // 🟦 A9.2 — Render Flight Details (FR24)
