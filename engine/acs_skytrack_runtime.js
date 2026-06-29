@@ -164,8 +164,7 @@ try {
 
   async function ACS_SkyTrack_refreshOnce() {
 
-  if (ACS_SkyTrack_fetchInProgress)
-    return;
+  if (ACS_SkyTrack_fetchInProgress) return;
 
   ACS_SkyTrack_fetchInProgress = true;
 
@@ -175,6 +174,15 @@ try {
       await ACS_SkyTrack_fetchSnapshot();
 
     ACS_SkyTrack_publishSnapshot(data);
+
+    console.log(
+      "✈️ Snapshot updated",
+      {
+        nowAbsMin: ACS_SkyTrack.nowAbsMin,
+        flights: ACS_SkyTrack.lastSnapshot.length,
+        baseICAO: ACS_SkyTrack.baseICAO
+      }
+    );
 
   } catch(err) {
 
@@ -193,17 +201,22 @@ try {
 
   }
 }
-    console.log("🟢 SkyTrack OCC ready — snapshot authority only");
-  }
 
-console.log(
-  "✈️ Snapshot updated",
-  {
-    nowAbsMin: ACS_SkyTrack.nowAbsMin,
-    flights: ACS_SkyTrack.lastSnapshot.length,
-    baseICAO: ACS_SkyTrack.baseICAO
-  }
-);
+async function ACS_SkyTrack_init(headless = false) {
+  if (ACS_SkyTrack.initialized) return;
+
+  ACS_SkyTrack.initialized = true;
+
+  ACS_SkyTrack_buildAirportIndex();
+
+  await ACS_SkyTrack_refreshOnce();
+
+  ACS_SkyTrack.refreshTimer = setInterval(() => {
+    ACS_SkyTrack_refreshOnce();
+  }, REFRESH_MS);
+
+  console.log("🟢 SkyTrack OCC ready — snapshot authority only");
+}
  
   function ACS_SkyTrack_stop() {
     if (ACS_SkyTrack.refreshTimer) {
