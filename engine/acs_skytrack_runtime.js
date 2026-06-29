@@ -1,33 +1,59 @@
 /* ============================================================
    ✈️ ACS SKYTRACK RUNTIME — SNAPSHOT CANONICAL ADAPTER
-   ------------------------------------------------------------
-   ACS OCC / AIRBUS OCC
-
-   PASO 1:
-   - Coordinación entre navegadores
-   - Velocidad/movimiento de aviones
-   - Preserva baseICAO para zoom por base en skytrack.html
-
-   Authority:
-   - PostgreSQL
-   - /v1/skytrack/snapshot
-   - Backend-resolved state/progress/airport/colors
-
-   Frontend:
-   - Fetch snapshot
-   - Publish ACS_SKYTRACK_SNAPSHOT
-   - NO /context
-   - NO /global
-   - NO computePosition
-   - NO resolveState
-   - NO ACS_SPAWNED_FLIGHTS
+   ACS OCC / AIRBUS OCC — PASO 1
    ============================================================ */
 
 (function () {
-  const SNAPSHOT_URL =
-    "https://api.aviationcapitalsim.com/v1/skytrack/snapshot";
-
+  const SNAPSHOT_URL = "https://api.aviationcapitalsim.com/v1/skytrack/snapshot";
   const REFRESH_MS = 1000;
+
+  function ACS_SkyTrack_buildAirportIndex() {
+    if (window.ACS_AIRPORT_INDEX && Object.keys(window.ACS_AIRPORT_INDEX).length) {
+      return window.ACS_AIRPORT_INDEX;
+    }
+
+    const index = {};
+
+    if (!window.WorldAirportsACS) {
+      window.ACS_AIRPORT_INDEX = index;
+      return index;
+    }
+
+    Object.values(window.WorldAirportsACS).forEach(region => {
+      if (!Array.isArray(region)) return;
+
+      region.forEach(ap => {
+        if (!ap || !ap.icao) return;
+
+        const lat = Number(ap.latitude);
+        const lng = Number(ap.longitude);
+
+        if (Number.isFinite(lat) && Number.isFinite(lng)) {
+          ap.lat = lat;
+          ap.lng = lng;
+
+          index[String(ap.icao).toUpperCase()] = ap;
+        }
+      });
+    });
+
+    window.ACS_AIRPORT_INDEX = index;
+    window.__ACS_AIRPORT_INDEX__ = index;
+
+    document.dispatchEvent(
+      new CustomEvent("ACS_AIRPORTS_READY", {
+        detail: { count: Object.keys(index).length }
+      })
+    );
+
+    console.log(
+      "🧭 SkyTrack AirportIndex ready:",
+      Object.keys(index).length,
+      "airports"
+    );
+
+    return index;
+  }
 
   window.ACS_SkyTrack = {
     initialized: false,
@@ -50,9 +76,7 @@
       method: "GET",
       credentials: "include",
       cache: "no-store",
-      headers: {
-        Accept: "application/json"
-      }
+      headers: { Accept: "application/json" }
     });
 
     const data = await res.json();
@@ -83,22 +107,19 @@
   }
 
   function ACS_SkyTrack_publishSnapshot(data) {
-    const flights = Array.isArray(data.flights)
-      ? data.flights
-      : [];
+    ACS_SkyTrack_buildAirportIndex();
+
+    const flights = Array.isArray(data.flights) ? data.flights : [];
 
     ACS_SkyTrack.nowAbsMin =
       Number.isFinite(Number(data.now_abs_min))
         ? Number(data.now_abs_min)
         : null;
 
-    ACS_SkyTrack.currentSimTime =
-      data.current_sim_time || null;
+    ACS_SkyTrack.currentSimTime = data.current_sim_time || null;
 
     ACS_SkyTrack.airlineId =
-      data.airline_id != null
-        ? String(data.airline_id)
-        : null;
+      data.airline_id != null ? String(data.airline_id) : null;
 
     ACS_SkyTrack.baseICAO =
       data.base_icao ||
@@ -136,9 +157,7 @@
 
     ACS_SkyTrack.initialized = true;
 
-    console.log(
-      "✈️ SkyTrack Runtime initialized — SNAPSHOT CANONICAL ADAPTER"
-    );
+    ACS_SkyTrack_buildAirportIndex();
 
     await ACS_SkyTrack_refreshOnce();
 
@@ -146,7 +165,7 @@
       ACS_SkyTrack_refreshOnce();
     }, REFRESH_MS);
 
-    console.log("🟢 SkyTrack OCC runtime ready — backend authority only");
+    console.log("🟢 SkyTrack OCC ready — snapshot authority only");
   }
 
   function ACS_SkyTrack_stop() {
@@ -166,6 +185,7 @@
       nowAbsMin: ACS_SkyTrack.nowAbsMin,
       currentSimTime: ACS_SkyTrack.currentSimTime,
       count: ACS_SkyTrack.lastSnapshot.length,
+      airports: Object.keys(window.ACS_AIRPORT_INDEX || {}).length,
       lastFetchAt: ACS_SkyTrack.lastFetchAt
         ? new Date(ACS_SkyTrack.lastFetchAt).toISOString()
         : null,
@@ -178,6 +198,7 @@
   window.ACS_SkyTrack_init = ACS_SkyTrack_init;
   window.ACS_SkyTrack_stop = ACS_SkyTrack_stop;
   window.ACS_SkyTrack_debugDump = ACS_SkyTrack_debugDump;
+  window.ACS_SkyTrack_buildAirportIndex = ACS_SkyTrack_buildAirportIndex;
 
   if (!window.__ACS_RUNTIME_ACTIVE__) {
     window.__ACS_RUNTIME_ACTIVE__ = true;
