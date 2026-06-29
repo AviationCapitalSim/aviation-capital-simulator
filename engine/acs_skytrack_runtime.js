@@ -6,6 +6,7 @@
 (function () {
   const SNAPSHOT_URL = "https://api.aviationcapitalsim.com/v1/skytrack/snapshot";
   const REFRESH_MS = 1000;
+  let ACS_SkyTrack_fetchInProgress = false;
 
   function ACS_SkyTrack_buildAirportIndex() {
     if (window.ACS_AIRPORT_INDEX && Object.keys(window.ACS_AIRPORT_INDEX).length) {
@@ -79,7 +80,17 @@
       headers: { Accept: "application/json" }
     });
 
-    const data = await res.json();
+    const text = await res.text();
+
+let data = null;
+
+try {
+  data = JSON.parse(text);
+} catch {
+  throw new Error(
+    `SKYTRACK_SNAPSHOT_NON_JSON_RESPONSE_${res.status}`
+  );
+}
 
     if (!res.ok || data?.ok !== true) {
       throw new Error(data?.error || "SKYTRACK_SNAPSHOT_FAILED");
@@ -93,6 +104,7 @@
   }
 
   function ACS_SkyTrack_resolveBaseICAO(flights) {
+     
   if (!Array.isArray(flights)) return null;
 
   const own = flights.filter(f => String(f.scope || "") === "OWN");
@@ -151,33 +163,48 @@
   }
 
   async function ACS_SkyTrack_refreshOnce() {
-    try {
-      const data = await ACS_SkyTrack_fetchSnapshot();
-      ACS_SkyTrack_publishSnapshot(data);
-    } catch (err) {
-      ACS_SkyTrack.error =
-        err?.message || "SKYTRACK_SNAPSHOT_REFRESH_FAILED";
 
-      console.warn("⛔ SkyTrack snapshot refresh failed:", err);
-    }
+  if (ACS_SkyTrack_fetchInProgress)
+    return;
+
+  ACS_SkyTrack_fetchInProgress = true;
+
+  try {
+
+    const data =
+      await ACS_SkyTrack_fetchSnapshot();
+
+    ACS_SkyTrack_publishSnapshot(data);
+
+  } catch(err) {
+
+    ACS_SkyTrack.error =
+      err?.message ||
+      "SKYTRACK_SNAPSHOT_REFRESH_FAILED";
+
+    console.warn(
+      "⛔ SkyTrack snapshot refresh failed:",
+      ACS_SkyTrack.error
+    );
+
+  } finally {
+
+    ACS_SkyTrack_fetchInProgress = false;
+
   }
-
-  async function ACS_SkyTrack_init(headless = false) {
-    if (ACS_SkyTrack.initialized) return;
-
-    ACS_SkyTrack.initialized = true;
-
-    ACS_SkyTrack_buildAirportIndex();
-
-    await ACS_SkyTrack_refreshOnce();
-
-    ACS_SkyTrack.refreshTimer = setInterval(() => {
-      ACS_SkyTrack_refreshOnce();
-    }, REFRESH_MS);
-
+}
     console.log("🟢 SkyTrack OCC ready — snapshot authority only");
   }
 
+console.log(
+  "✈️ Snapshot updated",
+  {
+    nowAbsMin: ACS_SkyTrack.nowAbsMin,
+    flights: ACS_SkyTrack.lastSnapshot.length,
+    baseICAO: ACS_SkyTrack.baseICAO
+  }
+);
+ 
   function ACS_SkyTrack_stop() {
     if (ACS_SkyTrack.refreshTimer) {
       clearInterval(ACS_SkyTrack.refreshTimer);
