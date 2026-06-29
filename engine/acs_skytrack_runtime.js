@@ -5,7 +5,7 @@
 
 (function () {
   const SNAPSHOT_URL = "https://api.aviationcapitalsim.com/v1/skytrack/snapshot";
-  const REFRESH_MS = 2000;
+  const REFRESH_MS = 5000;
   let ACS_SkyTrack_fetchInProgress = false;
 
   function ACS_SkyTrack_buildAirportIndex() {
@@ -131,7 +131,23 @@ try {
   function ACS_SkyTrack_publishSnapshot(data) {
     ACS_SkyTrack_buildAirportIndex();
 
-    const flights = Array.isArray(data.flights) ? data.flights : [];
+    const snapshotNowAbsMin =
+  Number.isFinite(Number(data.now_abs_min))
+    ? Number(data.now_abs_min)
+    : null;
+
+const snapshotReceivedAt =
+  Date.now();
+
+const flights =
+  Array.isArray(data.flights)
+    ? data.flights.map(item => ({
+        ...item,
+        __snapshotNowAbsMin: snapshotNowAbsMin,
+        __snapshotReceivedAt: snapshotReceivedAt,
+        __snapshotRefreshMs: REFRESH_MS
+      }))
+    : [];
 
     ACS_SkyTrack.nowAbsMin =
       Number.isFinite(Number(data.now_abs_min))
@@ -149,7 +165,7 @@ try {
       ACS_SkyTrack_resolveBaseICAO(flights);
 
     ACS_SkyTrack.lastSnapshot = flights;
-    ACS_SkyTrack.lastFetchAt = Date.now();
+    ACS_SkyTrack.lastFetchAt = snapshotReceivedAt;
     ACS_SkyTrack.error = null;
 
     window.__ACS_CANONICAL_SKYTRACK_SNAPSHOT__ = flights;
