@@ -1,6 +1,6 @@
 /* ============================================================
    ✈️ ACS SKYTRACK RUNTIME — SNAPSHOT CANONICAL ADAPTER
-   ACS OCC / AIRBUS OCC — PASO 1
+   ACS OCC / AIRBUS OCC —  PASO 1
    ============================================================ */
 
 (function () {
