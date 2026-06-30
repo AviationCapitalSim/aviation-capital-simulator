@@ -1,0 +1,778 @@
+<!-- === MARKETING CENTER MODULE — ACS / Airbus OCC === -->
+<!-- Version: v1.0 | Date: 30 JUN 2026 -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Marketing Center - Aviation Capital Simulator</title>
+
+  <link rel="stylesheet" href="styles.css?v=3.1" />
+
+  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+  <link rel="apple-touch-icon" href="acs_logo_180.png">
+  <link rel="manifest" href="manifest.json">
+
+<style>
+body {
+  margin: 0;
+  background-color: #081530;
+  color: white;
+  font-family: "Poppins", sans-serif;
+}
+
+/* HEADER ACS */
+.acs-header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  backdrop-filter: blur(9px);
+  background: rgba(12,23,50,0.45);
+  padding: 0.8rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #ffb300;
+  z-index: 5000;
+}
+
+.acs-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.acs-left img { height: 46px; }
+
+.acs-left h1 {
+  font-size: 1.15rem;
+  margin: 0;
+  color: #ffb300;
+  letter-spacing: 0.5px;
+}
+
+.acs-nav {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.acs-nav a {
+  position: relative;
+  font-size: 1rem;
+  letter-spacing: 0.4px;
+  color: #dbe4ff;
+  text-decoration: none;
+  transition: 0.25s ease;
+  padding-bottom: 6px;
+}
+
+.acs-nav a:hover,
+.acs-nav a.active {
+  color: #ffca3a;
+  text-shadow: 0 0 6px rgba(255,179,0,0.45);
+}
+
+.acs-nav a.active::after,
+.acs-nav a:hover::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, #ffb300, #ffe7a0);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(255,200,60,0.45);
+}
+
+.acs-right{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding-right:12px;
+  flex-shrink:0;
+}
+
+.support-btn{
+  padding:.45rem 1.1rem;
+  border-radius:12px;
+  font-size:.9rem;
+  font-weight:600;
+  text-decoration:none;
+  color:#8AB4FF;
+  border:1px solid rgba(138,180,255,.45);
+  background:rgba(138,180,255,.08);
+}
+
+.logout-btn{
+  padding:.45rem 1.1rem;
+  border:1px solid #ffb300;
+  border-radius:12px;
+  background:rgba(255,179,0,.05);
+  color:#ffb300;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.acs-clock-header{
+  font-family:"Orbitron",monospace;
+  font-size:.95rem;
+  color:#00ff80;
+  background:rgba(0,255,128,.08);
+  border-radius:10px;
+  padding:.45rem .8rem;
+  width:260px;
+  flex:0 0 260px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+  border:1px solid rgba(0,255,128,.18);
+  overflow:hidden;
+}
+
+/* MAIN */
+.acs-main {
+  padding: 125px 2rem 90px;
+}
+
+.marketing-hero {
+  text-align: center;
+  margin-bottom: 2.2rem;
+}
+
+.marketing-hero h2 {
+  font-size: 2.2rem;
+  color: #ffb300;
+  margin: 0;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  text-shadow: 0 0 10px rgba(255,179,0,0.35);
+}
+
+.marketing-hero p {
+  color: #cbd6ff;
+  font-size: 1rem;
+  font-style: italic;
+  margin-top: 0.8rem;
+}
+
+/* TABS */
+.marketing-tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255,179,0,0.25);
+}
+
+.marketing-tab {
+  background: transparent;
+  border: none;
+  color: #dbe4ff;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 0.9rem 1rem;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.marketing-tab.active,
+.marketing-tab:hover {
+  color: #ffb300;
+  border-bottom: 2px solid #ffb300;
+}
+
+/* PANELS */
+.panel {
+  background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
+  padding: 1.4rem;
+  border-radius: 18px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,179,0,0.15);
+}
+
+.panel h3 {
+  font-size: 1.05rem;
+  color: #ffb300;
+  margin: 0 0 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.kpi-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #62ff78;
+  margin-top: 0.4rem;
+}
+
+.kpi-money {
+  color: #ffb300;
+}
+
+.kpi-label {
+  color: #cbd6ff;
+  font-size: 0.85rem;
+}
+
+.main-grid {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1.3fr;
+  gap: 1rem;
+}
+
+.section-title {
+  color: #dbe4ff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.95rem;
+  margin: 1.2rem 0 0.6rem;
+}
+
+.campaign-types,
+.media-grid,
+.duration-grid {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.campaign-types {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.media-grid {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.duration-grid {
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.choice-card,
+.duration-btn {
+  border: 1px solid rgba(138,180,255,0.25);
+  background: rgba(15,30,60,0.55);
+  color: #dbe4ff;
+  border-radius: 10px;
+  padding: 0.8rem;
+  text-align: center;
+  cursor: pointer;
+}
+
+.choice-card.active,
+.duration-btn.active {
+  border-color: #ffb300;
+  color: #ffb300;
+  box-shadow: 0 0 12px rgba(255,179,0,0.25);
+}
+
+.choice-card strong {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 0.4rem;
+}
+
+.choice-card span {
+  display: block;
+  font-size: 0.75rem;
+  color: #cbd6ff;
+}
+
+.marketing-select,
+.marketing-input {
+  width: 100%;
+  background: rgba(15,30,60,0.7);
+  border: 1px solid rgba(138,180,255,0.35);
+  border-radius: 10px;
+  padding: 0.8rem;
+  color: #fff;
+  box-sizing: border-box;
+}
+
+.budget-row {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 1rem;
+  align-items: center;
+}
+
+input[type="range"] {
+  width: 100%;
+}
+
+.acs-btn {
+  width: 100%;
+  margin-top: 1rem;
+  background: linear-gradient(90deg, #8a5a00, #ffb300);
+  border: 1px solid rgba(255,179,0,0.65);
+  padding: 0.8rem 1.1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 800;
+  transition: 0.25s;
+  color: white;
+  letter-spacing: 1px;
+}
+
+.acs-btn:hover {
+  filter: brightness(1.15);
+}
+
+.preview-box {
+  height: 210px;
+  border-radius: 12px;
+  background:
+    linear-gradient(rgba(8,21,48,0.15), rgba(8,21,48,0.5)),
+    url("acs_logo.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 160px;
+  border: 1px solid rgba(255,179,0,0.25);
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  padding: 1rem;
+  color: #ffb300;
+  letter-spacing: 2px;
+  font-weight: 800;
+}
+
+.effect-row,
+.performance-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  border-bottom: 1px solid rgba(138,180,255,0.15);
+  padding: 0.55rem 0;
+  color: #dbe4ff;
+  font-size: 0.9rem;
+}
+
+.green { color: #62ff78; }
+.red { color: #ff5555; }
+.gold { color: #ffb300; }
+
+.total-cost {
+  text-align: center;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(255,179,0,0.35);
+  border-radius: 12px;
+  color: #ffb300;
+  font-size: 1.7rem;
+  font-weight: 800;
+}
+
+.campaign-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.campaign-table th,
+.campaign-table td {
+  padding: 0.7rem 0.4rem;
+  border-bottom: 1px solid rgba(138,180,255,0.15);
+  color: #dbe4ff;
+  text-align: left;
+}
+
+.campaign-table th {
+  color: #8ea2c8;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+}
+
+.performance-panel {
+  margin-top: 1rem;
+}
+
+.bar {
+  width: 170px;
+  height: 10px;
+  background: rgba(138,180,255,0.15);
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.bar span {
+  display: block;
+  height: 100%;
+  background: #00a86b;
+}
+
+.status-footer {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr 1fr 1fr;
+  gap: 0.8rem;
+}
+
+.status-box {
+  background: rgba(15,30,60,0.55);
+  border: 1px solid rgba(138,180,255,0.18);
+  border-radius: 12px;
+  padding: 0.8rem;
+  text-align: center;
+}
+
+.status-box small {
+  display: block;
+  color: #8ea2c8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.status-box strong {
+  display: block;
+  color: #dbe4ff;
+  margin-top: 0.35rem;
+}
+
+.acs-footer {
+  text-align: center;
+  padding: 20px;
+  margin-top: 50px;
+  color: #7c8bb8;
+  font-size: 0.9rem;
+}
+
+@media(max-width: 1200px) {
+  .kpi-grid,
+  .main-grid,
+  .status-footer {
+    grid-template-columns: 1fr;
+  }
+
+  .campaign-types,
+  .media-grid,
+  .duration-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header class="acs-header">
+  <div class="acs-left">
+    <img src="acs_logo.png" alt="ACS Logo">
+    <h1>Aviation Capital Simulator</h1>
+  </div>
+
+  <nav class="acs-nav">
+    <a href="dashboard.html">Main</a>
+    <a href="company_finance.html">Finance</a>
+    <a href="aircraft.html">Aircraft</a>
+    <a href="routes.html">Routes</a>
+    <a href="hr.html">HR</a>
+    <a href="marketing.html" class="active">Marketing</a>
+  </nav>
+
+  <div class="acs-right">
+    <a href="support.html" class="support-btn">Support</a>
+    <a class="logout-btn" onclick="handleLogout()">Logout</a>
+    <div id="acs-clock" class="acs-clock-header">00:00 — 01 JAN 1940</div>
+  </div>
+</header>
+
+<main class="acs-main">
+
+  <section class="marketing-hero">
+    <h2>📢 Marketing Center</h2>
+    <p>Airbus OCC Commercial Intelligence & Brand Management</p>
+  </section>
+
+  <div class="marketing-tabs">
+    <button class="marketing-tab active">Overview</button>
+    <button class="marketing-tab">Campaigns</button>
+    <button class="marketing-tab">Brand Image</button>
+    <button class="marketing-tab">Route Image</button>
+    <button class="marketing-tab">Demand Impact</button>
+    <button class="marketing-tab">Advertising History</button>
+  </div>
+
+  <section class="kpi-grid">
+
+    <div class="panel">
+      <h3>Network Image</h3>
+      <div class="kpi-value">72</div>
+      <div class="kpi-label">GOOD ★★★☆☆</div>
+    </div>
+
+    <div class="panel">
+      <h3>Brand Awareness</h3>
+      <div class="kpi-value">68.5</div>
+      <div class="kpi-label">GOOD vs last month</div>
+    </div>
+
+    <div class="panel">
+      <h3>Marketing Budget</h3>
+      <div class="kpi-value kpi-money">$1,250,000</div>
+      <div class="kpi-label">Monthly</div>
+    </div>
+
+    <div class="panel">
+      <h3>Demand Boost</h3>
+      <div class="kpi-value">+12.4%</div>
+      <div class="kpi-label">+1.8% vs last month</div>
+    </div>
+
+    <div class="panel">
+      <h3>Trend</h3>
+      <div class="kpi-value">↗</div>
+      <div class="kpi-label">Network Image improving</div>
+    </div>
+
+  </section>
+
+  <section class="main-grid">
+
+    <div class="panel">
+      <h3>Create New Marketing Campaign</h3>
+
+      <div class="section-title">Campaign Type</div>
+
+      <div class="campaign-types">
+        <div class="choice-card active">
+          <strong>General Campaign</strong>
+          <span>Improve company image and demand.</span>
+        </div>
+
+        <div class="choice-card">
+          <strong>Route Specific</strong>
+          <span>Boost demand on selected routes.</span>
+        </div>
+
+        <div class="choice-card">
+          <strong>Launch Campaign</strong>
+          <span>Promote new routes or services.</span>
+        </div>
+      </div>
+
+      <div class="section-title">Location / Target Area</div>
+
+      <select class="marketing-select">
+        <option>Continent — South America</option>
+        <option>Country — Venezuela</option>
+        <option>Country — Colombia</option>
+        <option>City — Caracas</option>
+        <option>Airport — SVMI</option>
+        <option>Route — BOG - MIA</option>
+      </select>
+
+      <div class="section-title">Media Channels</div>
+
+      <div class="media-grid">
+        <div class="choice-card">Newspapers</div>
+        <div class="choice-card active">Billboards</div>
+        <div class="choice-card">Radio</div>
+        <div class="choice-card">Television</div>
+        <div class="choice-card active">Internet</div>
+      </div>
+
+      <div class="section-title">Duration</div>
+
+      <div class="duration-grid">
+        <div class="duration-btn">1 Week</div>
+        <div class="duration-btn">2 Weeks</div>
+        <div class="duration-btn active">1 Month</div>
+        <div class="duration-btn">3 Months</div>
+        <div class="duration-btn">6 Months</div>
+        <div class="duration-btn">1 Year</div>
+        <div class="duration-btn">Permanent</div>
+      </div>
+
+      <div class="section-title">Budget</div>
+
+      <div class="budget-row">
+        <input class="marketing-input" value="$ 250,000">
+        <input type="range" min="10000" max="5000000" value="250000">
+      </div>
+
+      <button class="acs-btn">Estimate Campaign Cost</button>
+    </div>
+
+    <div class="panel">
+      <h3>Campaign Preview</h3>
+
+      <div class="preview-box">
+        VIACA GLOBAL CAMPAIGN
+      </div>
+
+      <div class="section-title">Estimated Effects</div>
+
+      <div class="effect-row">
+        <span>Brand Awareness</span>
+        <strong class="green">+3.6</strong>
+      </div>
+
+      <div class="effect-row">
+        <span>Demand Boost</span>
+        <strong class="green">+12.4%</strong>
+      </div>
+
+      <div class="effect-row">
+        <span>Network Image</span>
+        <strong class="green">+4.8</strong>
+      </div>
+
+      <div class="effect-row">
+        <span>Route Image</span>
+        <strong class="green">+6.2</strong>
+      </div>
+
+      <div class="effect-row">
+        <span>Load Factor Impact</span>
+        <strong class="green">+6.7%</strong>
+      </div>
+
+      <div class="effect-row">
+        <span>Weekly Cost Increase</span>
+        <strong class="red">$ -58,750</strong>
+      </div>
+
+      <div class="total-cost">
+        $ 250,000
+      </div>
+
+      <button class="acs-btn">Launch Campaign</button>
+    </div>
+
+    <div>
+      <div class="panel">
+        <h3>Active Campaigns</h3>
+
+        <table class="campaign-table">
+          <thead>
+            <tr>
+              <th>Campaign</th>
+              <th>Type</th>
+              <th>Target</th>
+              <th>Budget</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>South America Blitz</td>
+              <td>General</td>
+              <td>South America</td>
+              <td>$300,000</td>
+              <td class="green">Active</td>
+            </tr>
+
+            <tr>
+              <td>BOG-MIA Launch</td>
+              <td>Route</td>
+              <td>BOG-MIA</td>
+              <td>$150,000</td>
+              <td class="green">Active</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="panel performance-panel">
+        <h3>Top Media Performance</h3>
+
+        <div class="performance-row">
+          <span>Billboards</span>
+          <div class="bar"><span style="width:88%"></span></div>
+        </div>
+
+        <div class="performance-row">
+          <span>Newspapers</span>
+          <div class="bar"><span style="width:62%"></span></div>
+        </div>
+
+        <div class="performance-row">
+          <span>Television</span>
+          <div class="bar"><span style="width:55%"></span></div>
+        </div>
+
+        <div class="performance-row">
+          <span>Internet</span>
+          <div class="bar"><span style="width:48%"></span></div>
+        </div>
+
+        <div class="performance-row">
+          <span>Radio</span>
+          <div class="bar"><span style="width:35%"></span></div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <section class="status-footer">
+
+    <div class="status-box">
+      <small>Aircraft</small>
+      <strong>YV-1001</strong>
+    </div>
+
+    <div class="status-box">
+      <small>Status</small>
+      <strong class="green">ACTIVE</strong>
+    </div>
+
+    <div class="status-box">
+      <small>Flights Today</small>
+      <strong>2</strong>
+    </div>
+
+    <div class="status-box">
+      <small>Revenue Today</small>
+      <strong>$145,620</strong>
+    </div>
+
+    <div class="status-box">
+      <small>Load Factor</small>
+      <strong class="green">72.4%</strong>
+    </div>
+
+    <div class="status-box">
+      <small>Next Maintenance</small>
+      <strong class="gold">B-CHECK</strong>
+    </div>
+
+    <div class="status-box">
+      <small>Notifications</small>
+      <strong>7 Unread</strong>
+    </div>
+
+  </section>
+
+</main>
+
+<footer class="acs-footer">
+  © 2026 Aviation Capital Simulator. All rights reserved.
+</footer>
+
+<script>
+function handleLogout(){
+  alert("👋 Session closed. Your fleet awaits your command!");
+  window.location.href = "login.html";
+}
+</script>
+
+<script src="acs_time_recovery.js"></script>
+<script src="time_engine.js"></script>
+
+</body>
+</html>
