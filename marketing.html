@@ -337,21 +337,28 @@ body {
 }
 
 .acs-btn {
-  width: 100%;
-  margin-top: 1rem;
-  background: linear-gradient(90deg, #8a5a00, #ffb300);
+  width: auto;
+  min-width: 220px;
+  margin: 1.2rem auto 0;
+  display: block;
+
+  background: rgba(255,179,0,0.12);
   border: 1px solid rgba(255,179,0,0.65);
-  padding: 0.8rem 1.1rem;
-  border-radius: 10px;
+
+  padding: 0.7rem 1.6rem;
+  border-radius: 12px;
+
   cursor: pointer;
   font-weight: 800;
   transition: 0.25s;
-  color: white;
+  color: #ffb300;
   letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
 .acs-btn:hover {
-  filter: brightness(1.15);
+  background: rgba(255,179,0,0.22);
+  box-shadow: 0 0 14px rgba(255,179,0,0.35);
 }
 
 .preview-box {
@@ -503,7 +510,7 @@ body {
 <main class="acs-main">
 
   <section class="marketing-hero">
-    <h2>📢 Marketing Center</h2>
+    <h2>Marketing Center</h2>
     <p>Commercial Intelligence & Marketing Management</p>
   </section>
 
@@ -651,12 +658,6 @@ body {
           <span>Total Campaign Cost</span>
           <span id="totalCost" class="cost-value">$ 0</span>
         </div>
-
-        <div class="cost-line">
-          <span>Historical Year</span>
-          <span id="historicalYear" class="cost-value">—</span>
-        </div>
-      </div>
 
       <button class="acs-btn" onclick="confirmMarketingCampaign()">
         Confirm Campaign
