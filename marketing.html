@@ -878,18 +878,19 @@ function renderHistoricalMedia() {
     label.dataset.media = media.id;
 
     label.innerHTML = `
-      <input type="checkbox" class="mediaCheck" value="${media.id}">
-      <strong>${media.label}</strong>
-      <span>Available since ${media.fromYear}</span>
-    `;
+  <strong>${media.label}</strong>
+`;
+    
+   label.addEventListener("click", () => {
+  label.classList.toggle("active");
 
-    label.addEventListener("click", () => {
-      setTimeout(() => {
-        const input = label.querySelector("input");
-        label.classList.toggle("active", input.checked);
-        updateMarketingEstimate();
-      }, 0);
-    });
+  const selected = [...document.querySelectorAll(".media-card.active")]
+    .map(card => card.dataset.media);
+
+  ACS_MARKETING_STATE.media = selected;
+
+  updateMarketingEstimate();
+});
 
     box.appendChild(label);
   });
@@ -898,7 +899,9 @@ function renderHistoricalMedia() {
 }
 
 function updateMarketingEstimate() {
-  const selectedMedia = [...document.querySelectorAll(".mediaCheck:checked")].map(i => i.value);
+  
+  const selectedMedia = [...document.querySelectorAll(".media-card.active")]
+  .map(card => card.dataset.media);
   ACS_MARKETING_STATE.media = selectedMedia;
 
   let weeklyCost = 0;
