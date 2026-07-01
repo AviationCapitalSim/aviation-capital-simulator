@@ -1,5 +1,5 @@
-<!-- === MARKETING CENTER MODULE — ACS / Airbus OCC === -->
-<!-- Version: v1.0 | Date: 30 JUN 2026 -->
+<!-- === MARKETING CENTER MODULE — ACS === -->
+<!-- Version: v1.1 CLEAN | Date: 01 JUL 2026 -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -219,9 +219,7 @@ body {
   margin-top: 0.4rem;
 }
 
-.kpi-money {
-  color: #ffb300;
-}
+.kpi-money { color: #ffb300; }
 
 .kpi-label {
   color: #cbd6ff;
@@ -254,7 +252,7 @@ body {
 }
 
 .media-grid {
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
 }
 
 .duration-grid {
@@ -270,6 +268,7 @@ body {
   padding: 0.8rem;
   text-align: center;
   cursor: pointer;
+  user-select: none;
 }
 
 .choice-card.active,
@@ -277,6 +276,13 @@ body {
   border-color: #ffb300;
   color: #ffb300;
   box-shadow: 0 0 12px rgba(255,179,0,0.25);
+}
+
+.choice-card.confirmed {
+  border-color: rgba(138,180,255,0.18);
+  color: #8ea2c8;
+  box-shadow: none;
+  background: rgba(15,30,60,0.35);
 }
 
 .choice-card strong {
@@ -291,8 +297,11 @@ body {
   color: #cbd6ff;
 }
 
-.marketing-select,
-.marketing-input {
+.choice-card input {
+  margin-bottom: 6px;
+}
+
+.marketing-select {
   width: 100%;
   background: rgba(15,30,60,0.7);
   border: 1px solid rgba(138,180,255,0.35);
@@ -302,15 +311,29 @@ body {
   box-sizing: border-box;
 }
 
-.budget-row {
-  display: grid;
-  grid-template-columns: 160px 1fr;
-  gap: 1rem;
-  align-items: center;
+.cost-box {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(255,179,0,0.35);
+  border-radius: 12px;
+  color: #dbe4ff;
+  background: rgba(15,30,60,0.45);
 }
 
-input[type="range"] {
-  width: 100%;
+.cost-line {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid rgba(138,180,255,0.12);
+}
+
+.cost-line:last-child {
+  border-bottom: none;
+}
+
+.cost-value {
+  color: #ffb300;
+  font-weight: 800;
 }
 
 .acs-btn {
@@ -363,17 +386,6 @@ input[type="range"] {
 .green { color: #62ff78; }
 .red { color: #ff5555; }
 .gold { color: #ffb300; }
-
-.total-cost {
-  text-align: center;
-  margin-top: 1rem;
-  padding: 1rem;
-  border: 1px solid rgba(255,179,0,0.35);
-  border-radius: 12px;
-  color: #ffb300;
-  font-size: 1.7rem;
-  font-weight: 800;
-}
 
 .campaign-table {
   width: 100%;
@@ -505,7 +517,6 @@ input[type="range"] {
   </div>
 
   <section class="kpi-grid">
-
     <div class="panel">
       <h3>Network Image</h3>
       <div class="kpi-value">72</div>
@@ -535,227 +546,156 @@ input[type="range"] {
       <div class="kpi-value">↗</div>
       <div class="kpi-label">Network Image improving</div>
     </div>
-
   </section>
 
   <section class="main-grid">
 
     <div class="panel">
-   <h3>Create New Marketing Campaign</h3>
+      <h3>Create New Marketing Campaign</h3>
 
-<div class="section-title">Marketing Strategy</div>
+      <div class="section-title">Marketing Strategy</div>
 
-<div class="campaign-types">
+      <div class="campaign-types">
+        <div class="choice-card active" id="campaignNetwork" data-strategy="network">
+          <strong>Network Promotion</strong>
+          <span>Strengthen company image and passenger demand.</span>
+        </div>
 
-  <div class="choice-card active"
-       id="campaignNetwork">
-    <strong>Network Promotion</strong>
-    <span>
-      Strengthen company image and passenger demand.
-    </span>
-  </div>
+        <div class="choice-card" id="campaignRoute" data-strategy="route">
+          <strong>Route Promotion</strong>
+          <span>Increase visibility and traffic on selected routes.</span>
+        </div>
+      </div>
 
-  <div class="choice-card"
-       id="campaignRoute">
-    <strong>Route Promotion</strong>
-    <span>
-      Increase visibility and traffic on selected routes.
-    </span>
-  </div>
+      <div id="generalTargetBox">
+        <div class="section-title">Marketing Coverage</div>
 
-</div>
+        <div class="campaign-types">
+          <div class="choice-card coverage-card active" data-target="local">
+            <strong>Local Area</strong>
+            <span>Airports and nearby markets.</span>
+          </div>
 
-<div id="generalTargetBox">
+          <div class="choice-card coverage-card" data-target="regional">
+            <strong>Regional</strong>
+            <span>State and surrounding areas.</span>
+          </div>
 
-  <div class="section-title">
-    Marketing Coverage
-  </div>
+          <div class="choice-card coverage-card" data-target="national">
+            <strong>National</strong>
+            <span>Entire domestic market.</span>
+          </div>
 
-  <div class="campaign-types">
+          <div class="choice-card coverage-card" data-target="continental">
+            <strong>Continental</strong>
+            <span>International regional exposure.</span>
+          </div>
 
-    <div class="choice-card active"
-         data-target="local">
-      <strong>Local Area</strong>
-      <span>
-        Airports and nearby markets.
-      </span>
-    </div>
+          <div class="choice-card coverage-card" data-target="global">
+            <strong>Global</strong>
+            <span>Worldwide commercial campaign.</span>
+          </div>
+        </div>
+      </div>
 
-    <div class="choice-card"
-         data-target="regional">
-      <strong>Regional</strong>
-      <span>
-        State and surrounding areas.
-      </span>
-    </div>
+      <div id="routeTargetBox" style="display:none;">
+        <div class="section-title">Available Routes</div>
 
-    <div class="choice-card"
-         data-target="national">
-      <strong>National</strong>
-      <span>
-        Entire domestic market.
-      </span>
-    </div>
+        <div id="activeRoutesList" class="campaign-types">
+          <div class="choice-card">
+            <strong>Loading routes...</strong>
+            <span>Reading active company routes.</span>
+          </div>
+        </div>
 
-    <div class="choice-card"
-         data-target="continental">
-      <strong>Continental</strong>
-      <span>
-        International regional exposure.
-      </span>
-    </div>
+        <div class="section-title" style="margin-top:20px;">Promotion Scope</div>
 
-    <div class="choice-card"
-         data-target="global">
-      <strong>Global</strong>
-      <span>
-        Worldwide commercial campaign.
-      </span>
-    </div>
+        <div class="campaign-types">
+          <div class="choice-card scope-card active" data-scope="roundtrip">
+            <strong>Round Trip</strong>
+            <span>Promote both directions.</span>
+          </div>
 
-  </div>
+          <div class="choice-card scope-card" data-scope="outbound">
+            <strong>Outbound Only</strong>
+            <span>Promote one direction only.</span>
+          </div>
+        </div>
+      </div>
 
-</div>
+      <div class="section-title">Advertising Channels</div>
 
-<div id="routeTargetBox" style="display:none;">
-
-  <div class="section-title">
-    Available Routes
-  </div>
-
-  <div id="activeRoutesList" class="campaign-types">
-    <!-- ACS loads real active routes here from PostgreSQL -->
-  </div>
-
-  <div class="section-title" style="margin-top:20px;">
-    Promotion Scope
-  </div>
-
-  <div class="campaign-types">
-
-    <div class="choice-card scope-card active" data-scope="roundtrip">
-      <strong>Round Trip</strong>
-      <span>Promote both directions</span>
-    </div>
-
-    <div class="choice-card scope-card" data-scope="outbound">
-      <strong>Outbound Only</strong>
-      <span>Promote one direction only</span>
-    </div>
-
-  </div>
-
-</div>
-      
-<div class="section-title">
-  Advertising Channels
-</div>
-
-<div class="media-grid">
-
-  <label class="choice-card">
-    <input type="checkbox"
-           class="mediaCheck"
-           value="newspapers">
-    Newspapers
-  </label>
-
-  <label class="choice-card">
-    <input type="checkbox"
-           class="mediaCheck"
-           value="billboards">
-    Outdoor Media
-  </label>
-
-  <label class="choice-card">
-    <input type="checkbox"
-           class="mediaCheck"
-           value="radio">
-    Radio
-  </label>
-
-  <label class="choice-card">
-    <input type="checkbox"
-           class="mediaCheck"
-           value="television">
-    Television
-  </label>
-
-  <label class="choice-card">
-    <input type="checkbox"
-           class="mediaCheck"
-           value="internet">
-    Digital Media
-  </label>
-
-</div>
+      <div id="mediaChannelsBox" class="media-grid"></div>
 
       <div class="section-title">Duration</div>
 
       <div class="duration-grid">
-        <div class="duration-btn">1 Week</div>
-        <div class="duration-btn">2 Weeks</div>
-        <div class="duration-btn active">1 Month</div>
-        <div class="duration-btn">3 Months</div>
-        <div class="duration-btn">6 Months</div>
-        <div class="duration-btn">1 Year</div>
-        <div class="duration-btn">Permanent</div>
+        <div class="duration-btn" data-weeks="1">1<br>Week</div>
+        <div class="duration-btn" data-weeks="2">2<br>Weeks</div>
+        <div class="duration-btn active" data-weeks="4">1<br>Month</div>
+        <div class="duration-btn" data-weeks="12">3<br>Months</div>
+        <div class="duration-btn" data-weeks="24">6<br>Months</div>
+        <div class="duration-btn" data-weeks="52">1<br>Year</div>
+        <div class="duration-btn" data-weeks="0">Permanent</div>
       </div>
 
-      <div class="section-title">Budget</div>
+      <div class="section-title">Estimated Cost</div>
 
-      <div class="budget-row">
-        <input class="marketing-input" value="$ 250,000">
-        <input type="range" min="10000" max="5000000" value="250000">
+      <div class="cost-box">
+        <div class="cost-line">
+          <span>Weekly Cost</span>
+          <span id="weeklyCost" class="cost-value">$ 0</span>
+        </div>
+
+        <div class="cost-line">
+          <span>Total Campaign Cost</span>
+          <span id="totalCost" class="cost-value">$ 0</span>
+        </div>
+
+        <div class="cost-line">
+          <span>Historical Year</span>
+          <span id="historicalYear" class="cost-value">—</span>
+        </div>
       </div>
 
-      <button class="acs-btn">Estimate Campaign Cost</button>
+      <button class="acs-btn" onclick="confirmMarketingCampaign()">
+        Confirm Campaign
+      </button>
     </div>
 
     <div class="panel">
       <h3>Campaign Preview</h3>
 
-      <div class="preview-box">
-        VIACA GLOBAL CAMPAIGN
+      <div class="preview-box" id="campaignPreviewTitle">
+        NETWORK PROMOTION
       </div>
 
-      <div class="section-title">Estimated Effects</div>
+      <div class="section-title">Expected Effects</div>
 
       <div class="effect-row">
         <span>Brand Awareness</span>
-        <strong class="green">+3.6</strong>
+        <strong id="impactBrand" class="green">+0.0</strong>
       </div>
 
       <div class="effect-row">
         <span>Demand Boost</span>
-        <strong class="green">+12.4%</strong>
+        <strong id="impactDemand" class="green">+0.0%</strong>
       </div>
 
       <div class="effect-row">
         <span>Network Image</span>
-        <strong class="green">+4.8</strong>
+        <strong id="impactNetwork" class="green">+0.0</strong>
       </div>
 
       <div class="effect-row">
         <span>Route Image</span>
-        <strong class="green">+6.2</strong>
+        <strong id="impactRoute" class="green">+0.0</strong>
       </div>
 
       <div class="effect-row">
         <span>Load Factor Impact</span>
-        <strong class="green">+6.7%</strong>
+        <strong id="impactLoadFactor" class="green">+0.0%</strong>
       </div>
-
-      <div class="effect-row">
-        <span>Weekly Cost Increase</span>
-        <strong class="red">$ -58,750</strong>
-      </div>
-
-      <div class="total-cost">
-        $ 250,000
-      </div>
-
-      <button class="acs-btn">Launch Campaign</button>
     </div>
 
     <div>
@@ -773,21 +713,9 @@ input[type="range"] {
             </tr>
           </thead>
 
-          <tbody>
+          <tbody id="activeCampaignsBody">
             <tr>
-              <td>South America Blitz</td>
-              <td>General</td>
-              <td>South America</td>
-              <td>$300,000</td>
-              <td class="green">Active</td>
-            </tr>
-
-            <tr>
-              <td>BOG-MIA Launch</td>
-              <td>Route</td>
-              <td>BOG-MIA</td>
-              <td>$150,000</td>
-              <td class="green">Active</td>
+              <td colspan="5">No active campaigns loaded.</td>
             </tr>
           </tbody>
         </table>
@@ -797,28 +725,23 @@ input[type="range"] {
         <h3>Top Media Performance</h3>
 
         <div class="performance-row">
-          <span>Billboards</span>
-          <div class="bar"><span style="width:88%"></span></div>
+          <span>Road Billboards</span>
+          <div class="bar"><span style="width:0%"></span></div>
         </div>
 
         <div class="performance-row">
           <span>Newspapers</span>
-          <div class="bar"><span style="width:62%"></span></div>
+          <div class="bar"><span style="width:0%"></span></div>
         </div>
 
         <div class="performance-row">
           <span>Television</span>
-          <div class="bar"><span style="width:55%"></span></div>
-        </div>
-
-        <div class="performance-row">
-          <span>Internet</span>
-          <div class="bar"><span style="width:48%"></span></div>
+          <div class="bar"><span style="width:0%"></span></div>
         </div>
 
         <div class="performance-row">
           <span>Radio</span>
-          <div class="bar"><span style="width:35%"></span></div>
+          <div class="bar"><span style="width:0%"></span></div>
         </div>
       </div>
     </div>
@@ -826,10 +749,9 @@ input[type="range"] {
   </section>
 
   <section class="status-footer">
-
     <div class="status-box">
       <small>Aircraft</small>
-      <strong>YV-1001</strong>
+      <strong>—</strong>
     </div>
 
     <div class="status-box">
@@ -839,29 +761,28 @@ input[type="range"] {
 
     <div class="status-box">
       <small>Flights Today</small>
-      <strong>2</strong>
+      <strong>—</strong>
     </div>
 
     <div class="status-box">
       <small>Revenue Today</small>
-      <strong>$145,620</strong>
+      <strong>—</strong>
     </div>
 
     <div class="status-box">
       <small>Load Factor</small>
-      <strong class="green">72.4%</strong>
+      <strong class="green">—</strong>
     </div>
 
     <div class="status-box">
       <small>Next Maintenance</small>
-      <strong class="gold">B-CHECK</strong>
+      <strong class="gold">—</strong>
     </div>
 
     <div class="status-box">
       <small>Notifications</small>
-      <strong>7 Unread</strong>
+      <strong>—</strong>
     </div>
-
   </section>
 
 </main>
@@ -871,153 +792,335 @@ input[type="range"] {
 </footer>
 
 <script>
-const ACS_MARKETING_BASE_COSTS = {
-  newspapers: 12000,
-  billboards: 18000,
-  radio: 9000,
-  television: 35000,
-  internet: 15000
+const API_BASE = "https://api.aviationcapitalsim.com";
+
+const ACS_MEDIA_BY_YEAR = [
+  {
+    id: "newspapers",
+    label: "Newspapers",
+    fromYear: 1850,
+    weeklyBase: 12000
+  },
+  {
+    id: "road_billboards",
+    label: "Road Billboards",
+    fromYear: 1920,
+    weeklyBase: 18000
+  },
+  {
+    id: "radio",
+    label: "Radio",
+    fromYear: 1925,
+    weeklyBase: 9000
+  },
+  {
+    id: "television",
+    label: "Television",
+    fromYear: 1950,
+    weeklyBase: 35000
+  },
+  {
+    id: "internet",
+    label: "Digital Media",
+    fromYear: 1995,
+    weeklyBase: 15000
+  }
+];
+
+const ACS_COVERAGE_MULTIPLIER = {
+  local: 1,
+  regional: 1.8,
+  national: 3.2,
+  continental: 6.5,
+  global: 12
 };
 
-const ACS_MARKETING_TARGET_MULTIPLIER = {
-  base_city: 1,
-  base_state: 1.8,
-  base_country: 3.2,
-  base_continent: 6.5,
-  world: 12
+let ACS_MARKETING_STATE = {
+  strategy: "network",
+  target: "local",
+  routeId: null,
+  routeLabel: null,
+  scope: "roundtrip",
+  media: [],
+  durationWeeks: 4,
+  simYear: 1957,
+  weeklyCost: 0,
+  totalCost: 0
 };
 
-document.addEventListener("DOMContentLoaded", () => {
-  const campaignType = document.getElementById("campaignType");
-  const permanent = document.getElementById("permanentCampaign");
+function formatMoney(value) {
+  return "$ " + Math.round(value || 0).toLocaleString("en-US");
+}
 
-  campaignType.addEventListener("change", () => {
-    const isRoute = campaignType.value === "route";
+function getSimYear() {
+  const clock = document.getElementById("acs-clock");
+  if (!clock) return 1957;
 
-    document.getElementById("generalTargetBox").style.display = isRoute ? "none" : "block";
-    document.getElementById("routeTargetBox").style.display = isRoute ? "block" : "none";
+  const match = clock.textContent.match(/\b(19|20)\d{2}\b/);
+  if (!match) return 1957;
+
+  return Number(match[0]);
+}
+
+function renderHistoricalMedia() {
+  const box = document.getElementById("mediaChannelsBox");
+  if (!box) return;
+
+  ACS_MARKETING_STATE.simYear = getSimYear();
+
+  const available = ACS_MEDIA_BY_YEAR.filter(m => ACS_MARKETING_STATE.simYear >= m.fromYear);
+
+  box.innerHTML = "";
+
+  available.forEach(media => {
+    const label = document.createElement("label");
+    label.className = "choice-card media-card";
+    label.dataset.media = media.id;
+
+    label.innerHTML = `
+      <input type="checkbox" class="mediaCheck" value="${media.id}">
+      <strong>${media.label}</strong>
+      <span>Available since ${media.fromYear}</span>
+    `;
+
+    label.addEventListener("click", () => {
+      setTimeout(() => {
+        const input = label.querySelector("input");
+        label.classList.toggle("active", input.checked);
+        updateMarketingEstimate();
+      }, 0);
+    });
+
+    box.appendChild(label);
   });
 
-  permanent.addEventListener("change", () => {
-    document.getElementById("durationBox").style.display = permanent.checked ? "none" : "block";
+  document.getElementById("historicalYear").textContent = ACS_MARKETING_STATE.simYear;
+}
+
+function updateMarketingEstimate() {
+  const selectedMedia = [...document.querySelectorAll(".mediaCheck:checked")].map(i => i.value);
+  ACS_MARKETING_STATE.media = selectedMedia;
+
+  let weeklyCost = 0;
+
+  selectedMedia.forEach(id => {
+    const media = ACS_MEDIA_BY_YEAR.find(m => m.id === id);
+    if (media) weeklyCost += media.weeklyBase;
   });
-});
 
-function estimateMarketingCampaignCost() {
-  const type = document.getElementById("campaignType").value;
-  const selectedMedia = [...document.querySelectorAll(".mediaCheck:checked")].map(m => m.value);
-
-  if (selectedMedia.length === 0) {
-    alert("Select at least one media channel.");
-    return;
+  if (ACS_MARKETING_STATE.strategy === "network") {
+    weeklyCost *= ACS_COVERAGE_MULTIPLIER[ACS_MARKETING_STATE.target] || 1;
   }
 
-  let weeklyCost = selectedMedia.reduce((sum, media) => {
-    return sum + (ACS_MARKETING_BASE_COSTS[media] || 0);
-  }, 0);
-
-  if (type === "general") {
-    const target = document.getElementById("campaignTarget").value;
-    weeklyCost *= ACS_MARKETING_TARGET_MULTIPLIER[target] || 1;
+  if (ACS_MARKETING_STATE.strategy === "route") {
+    weeklyCost *= ACS_MARKETING_STATE.scope === "roundtrip" ? 1.75 : 1.0;
   }
 
-  if (type === "route") {
-    const route = document.getElementById("campaignRoute").value;
+  const durationWeeks = ACS_MARKETING_STATE.durationWeeks;
+  const totalCost = durationWeeks === 0 ? weeklyCost * 52 : weeklyCost * durationWeeks;
 
-    if (!route) {
-      alert("Select a route pair.");
+  ACS_MARKETING_STATE.weeklyCost = Math.round(weeklyCost);
+  ACS_MARKETING_STATE.totalCost = Math.round(totalCost);
+
+  document.getElementById("weeklyCost").textContent = formatMoney(weeklyCost);
+  document.getElementById("totalCost").textContent = formatMoney(totalCost);
+
+  updateExpectedEffects();
+}
+
+function updateExpectedEffects() {
+  const mediaCount = ACS_MARKETING_STATE.media.length;
+  const base = mediaCount * 0.8;
+
+  let brand = base;
+  let demand = base * 1.8;
+  let network = ACS_MARKETING_STATE.strategy === "network" ? base * 1.4 : base * 0.4;
+  let route = ACS_MARKETING_STATE.strategy === "route" ? base * 1.8 : base * 0.3;
+  let load = demand * 0.35;
+
+  document.getElementById("impactBrand").textContent = "+" + brand.toFixed(1);
+  document.getElementById("impactDemand").textContent = "+" + demand.toFixed(1) + "%";
+  document.getElementById("impactNetwork").textContent = "+" + network.toFixed(1);
+  document.getElementById("impactRoute").textContent = "+" + route.toFixed(1);
+  document.getElementById("impactLoadFactor").textContent = "+" + load.toFixed(1) + "%";
+
+  const preview = document.getElementById("campaignPreviewTitle");
+  if (preview) {
+    if (ACS_MARKETING_STATE.strategy === "route") {
+      preview.textContent = ACS_MARKETING_STATE.routeLabel || "ROUTE PROMOTION";
+    } else {
+      preview.textContent = "NETWORK PROMOTION";
+    }
+  }
+}
+
+function bindSelectionCards() {
+  const networkBtn = document.getElementById("campaignNetwork");
+  const routeBtn = document.getElementById("campaignRoute");
+
+  networkBtn.addEventListener("click", () => {
+    ACS_MARKETING_STATE.strategy = "network";
+
+    networkBtn.classList.add("active");
+    routeBtn.classList.remove("active");
+
+    document.getElementById("generalTargetBox").style.display = "block";
+    document.getElementById("routeTargetBox").style.display = "none";
+
+    updateMarketingEstimate();
+  });
+
+  routeBtn.addEventListener("click", () => {
+    ACS_MARKETING_STATE.strategy = "route";
+
+    routeBtn.classList.add("active");
+    networkBtn.classList.remove("active");
+
+    document.getElementById("generalTargetBox").style.display = "none";
+    document.getElementById("routeTargetBox").style.display = "block";
+
+    loadMarketingRoutes();
+    updateMarketingEstimate();
+  });
+
+  document.querySelectorAll(".coverage-card").forEach(card => {
+    card.addEventListener("click", () => {
+      document.querySelectorAll(".coverage-card").forEach(c => c.classList.remove("active"));
+      card.classList.add("active");
+      ACS_MARKETING_STATE.target = card.dataset.target;
+      updateMarketingEstimate();
+    });
+  });
+
+  document.querySelectorAll(".scope-card").forEach(card => {
+    card.addEventListener("click", () => {
+      document.querySelectorAll(".scope-card").forEach(c => c.classList.remove("active"));
+      card.classList.add("active");
+      ACS_MARKETING_STATE.scope = card.dataset.scope;
+      updateMarketingEstimate();
+    });
+  });
+
+  document.querySelectorAll(".duration-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".duration-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      ACS_MARKETING_STATE.durationWeeks = Number(btn.dataset.weeks);
+      updateMarketingEstimate();
+    });
+  });
+}
+
+async function loadMarketingRoutes() {
+  const box = document.getElementById("activeRoutesList");
+  if (!box) return;
+
+  box.innerHTML = `
+    <div class="choice-card">
+      <strong>Loading routes...</strong>
+      <span>Reading active company routes.</span>
+    </div>
+  `;
+
+  try {
+    const res = await fetch(`${API_BASE}/v1/routes/active`, {
+      credentials: "include"
+    });
+
+    if (!res.ok) throw new Error("ROUTES_HTTP_" + res.status);
+
+    const data = await res.json();
+    const routes = data.routes || data.items || data.data || [];
+
+    if (!routes.length) {
+      box.innerHTML = `
+        <div class="choice-card">
+          <strong>No active routes</strong>
+          <span>Create an operational route first.</span>
+        </div>
+      `;
       return;
     }
 
-    weeklyCost *= 1.7;
+    box.innerHTML = "";
+
+    routes.forEach(route => {
+      const from = route.origin_icao || route.from_icao || route.origin || route.from;
+      const to = route.destination_icao || route.to_icao || route.destination || route.to;
+      const routeId = route.route_id || route.id || `${from}-${to}`;
+
+      if (!from || !to) return;
+
+      const card = document.createElement("div");
+      card.className = "choice-card route-card";
+      card.dataset.routeId = routeId;
+
+      card.innerHTML = `
+        <strong>${from} ⇄ ${to}</strong>
+        <span>${route.origin_city || from} — ${route.destination_city || to}</span>
+      `;
+
+      card.addEventListener("click", () => {
+        document.querySelectorAll(".route-card").forEach(c => c.classList.remove("active"));
+        card.classList.add("active");
+
+        ACS_MARKETING_STATE.routeId = routeId;
+        ACS_MARKETING_STATE.routeLabel = `${from} ⇄ ${to}`;
+
+        updateMarketingEstimate();
+      });
+
+      box.appendChild(card);
+    });
+
+  } catch (err) {
+    console.error("Marketing routes load failed:", err);
+
+    box.innerHTML = `
+      <div class="choice-card">
+        <strong>Routes unavailable</strong>
+        <span>Unable to load active routes from ACS.</span>
+      </div>
+    `;
   }
-
-  const permanent = document.getElementById("permanentCampaign").checked;
-  const years = Number(document.getElementById("campaignYears").value || 0);
-  const months = Number(document.getElementById("campaignMonths").value || 0);
-
-  let totalWeeks;
-
-  if (permanent) {
-    totalWeeks = 52;
-  } else {
-    totalWeeks = Math.max(1, (years * 12 + months) * 4);
-  }
-
-  const totalCost = Math.round(weeklyCost * totalWeeks);
-
-  document.getElementById("estimatedCampaignCost").innerHTML =
-    `$ ${totalCost.toLocaleString("en-US")}<br>
-     <span style="font-size:.85rem;color:#cbd6ff;">
-       Estimated weekly cost: $ ${Math.round(weeklyCost).toLocaleString("en-US")}
-     </span>`;
-
-  return {
-    type,
-    selectedMedia,
-    weeklyCost: Math.round(weeklyCost),
-    totalCost,
-    totalWeeks,
-    permanent
-  };
 }
 
-function launchMarketingCampaign() {
-  const estimate = estimateMarketingCampaignCost();
+function confirmMarketingCampaign() {
+  if (!ACS_MARKETING_STATE.media.length) {
+    alert("Select at least one advertising channel.");
+    return;
+  }
 
-  if (!estimate) return;
+  if (ACS_MARKETING_STATE.strategy === "route" && !ACS_MARKETING_STATE.routeId) {
+    alert("Select one active route.");
+    return;
+  }
+
+  document.querySelectorAll(".choice-card.active").forEach(card => {
+    card.classList.remove("active");
+    card.classList.add("confirmed");
+  });
 
   alert(
-    "Marketing campaign ready.\n\n" +
-    "Type: " + estimate.type + "\n" +
-    "Weekly cost: $" + estimate.weeklyCost.toLocaleString("en-US") + "\n" +
-    "Total estimated cost: $" + estimate.totalCost.toLocaleString("en-US") + "\n\n" +
-    "Next step: connect this to PostgreSQL, company_finance and finance_log."
+    "Campaign confirmed.\n\n" +
+    "Weekly cost: " + formatMoney(ACS_MARKETING_STATE.weeklyCost) + "\n" +
+    "Total cost: " + formatMoney(ACS_MARKETING_STATE.totalCost) + "\n\n" +
+    "Next step: connect confirmation to PostgreSQL, company_finance and finance_log."
   );
 }
-</script>
-  
-<script>
+
 function handleLogout(){
   alert("👋 Session closed. Your fleet awaits your command!");
   window.location.href = "login.html";
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  bindSelectionCards();
+  renderHistoricalMedia();
+  updateMarketingEstimate();
+});
 </script>
 
-<script>
-
-document.querySelectorAll(".route-card")
-.forEach(card => {
-
-    card.addEventListener("click", () => {
-
-        document
-            .querySelectorAll(".route-card")
-            .forEach(c => c.classList.remove("active"));
-
-        card.classList.add("active");
-
-    });
-
-});
-
-document.querySelectorAll(".scope-card")
-.forEach(card => {
-
-    card.addEventListener("click", () => {
-
-        document
-            .querySelectorAll(".scope-card")
-            .forEach(c => c.classList.remove("active"));
-
-        card.classList.add("active");
-
-    });
-
-});
-
-</script>
-  
 <script src="acs_time_recovery.js"></script>
 <script src="time_engine.js"></script>
 
