@@ -543,63 +543,150 @@ input[type="range"] {
     <div class="panel">
    <h3>Create New Marketing Campaign</h3>
 
-<div class="section-title">Campaign Type</div>
+<div class="section-title">Marketing Strategy</div>
 
-<select id="campaignType" class="marketing-select">
-  <option value="general">General Campaign</option>
-  <option value="route">Route Specific Campaign</option>
-</select>
+<div class="campaign-types">
+
+  <div class="choice-card active"
+       id="campaignNetwork">
+    <strong>Network Promotion</strong>
+    <span>
+      Strengthen company image and passenger demand.
+    </span>
+  </div>
+
+  <div class="choice-card"
+       id="campaignRoute">
+    <strong>Route Promotion</strong>
+    <span>
+      Increase visibility and traffic on selected routes.
+    </span>
+  </div>
+
+</div>
 
 <div id="generalTargetBox">
-  <div class="section-title">Location / Target Area</div>
 
-  <select id="campaignTarget" class="marketing-select">
-    <option value="base_city">My base city and nearby cities only</option>
-    <option value="base_state">Municipality / state of my base city</option>
-    <option value="base_country">My base country</option>
-    <option value="base_continent">Continent of my base country</option>
-    <option value="world">Whole world</option>
-  </select>
+  <div class="section-title">
+    Marketing Coverage
+  </div>
+
+  <div class="campaign-types">
+
+    <div class="choice-card active"
+         data-target="local">
+      <strong>Local Area</strong>
+      <span>
+        Airports and nearby markets.
+      </span>
+    </div>
+
+    <div class="choice-card"
+         data-target="regional">
+      <strong>Regional</strong>
+      <span>
+        State and surrounding areas.
+      </span>
+    </div>
+
+    <div class="choice-card"
+         data-target="national">
+      <strong>National</strong>
+      <span>
+        Entire domestic market.
+      </span>
+    </div>
+
+    <div class="choice-card"
+         data-target="continental">
+      <strong>Continental</strong>
+      <span>
+        International regional exposure.
+      </span>
+    </div>
+
+    <div class="choice-card"
+         data-target="global">
+      <strong>Global</strong>
+      <span>
+        Worldwide commercial campaign.
+      </span>
+    </div>
+
+  </div>
+
 </div>
 
 <div id="routeTargetBox" style="display:none;">
-  <div class="section-title">Route Pair</div>
 
-  <select id="campaignRoute" class="marketing-select">
-    <option value="">--- Select route ---</option>
-    <option value="SVMI-SKBO">SVMI Caracas - SKBO Bogotá</option>
-    <option value="SVMI-MPTO">SVMI Caracas - MPTO Panamá</option>
-    <option value="SKBO-KMIA">SKBO Bogotá - KMIA Miami</option>
+  <div class="section-title">
+    Route Selection
+  </div>
+
+  <select id="campaignRouteSelect"
+          class="marketing-select">
+
+    <option value="">
+      Select operational route
+    </option>
+
+    <option value="SVMI-SKBO">
+      SVMI Caracas — SKBO Bogotá
+    </option>
+
+    <option value="SVMI-MPTO">
+      SVMI Caracas — MPTO Panamá
+    </option>
+
+    <option value="SKBO-KMIA">
+      SKBO Bogotá — KMIA Miami
+    </option>
+
   </select>
+
 </div>
 
-<div class="section-title">Media Channels</div>
+<div class="section-title">
+  Advertising Channels
+</div>
 
 <div class="media-grid">
+
   <label class="choice-card">
-    <input type="checkbox" class="mediaCheck" value="newspapers">
+    <input type="checkbox"
+           class="mediaCheck"
+           value="newspapers">
     Newspapers
   </label>
 
   <label class="choice-card">
-    <input type="checkbox" class="mediaCheck" value="billboards">
-    Billboards
+    <input type="checkbox"
+           class="mediaCheck"
+           value="billboards">
+    Outdoor Media
   </label>
 
   <label class="choice-card">
-    <input type="checkbox" class="mediaCheck" value="radio">
+    <input type="checkbox"
+           class="mediaCheck"
+           value="radio">
     Radio
   </label>
 
   <label class="choice-card">
-    <input type="checkbox" class="mediaCheck" value="television">
+    <input type="checkbox"
+           class="mediaCheck"
+           value="television">
     Television
   </label>
 
   <label class="choice-card">
-    <input type="checkbox" class="mediaCheck" value="internet">
-    Internet
+    <input type="checkbox"
+           class="mediaCheck"
+           value="internet">
+    Digital Media
   </label>
+
 </div>
 
       <div class="section-title">Duration</div>
