@@ -620,32 +620,33 @@ input[type="range"] {
 <div id="routeTargetBox" style="display:none;">
 
   <div class="section-title">
-    Route Selection
+    Available Routes
   </div>
 
-  <select id="campaignRouteSelect"
-          class="marketing-select">
+  <div id="activeRoutesList" class="campaign-types">
+    <!-- ACS loads real active routes here from PostgreSQL -->
+  </div>
 
-    <option value="">
-      Select operational route
-    </option>
+  <div class="section-title" style="margin-top:20px;">
+    Promotion Scope
+  </div>
 
-    <option value="SVMI-SKBO">
-      SVMI Caracas — SKBO Bogotá
-    </option>
+  <div class="campaign-types">
 
-    <option value="SVMI-MPTO">
-      SVMI Caracas — MPTO Panamá
-    </option>
+    <div class="choice-card scope-card active" data-scope="roundtrip">
+      <strong>Round Trip</strong>
+      <span>Promote both directions</span>
+    </div>
 
-    <option value="SKBO-KMIA">
-      SKBO Bogotá — KMIA Miami
-    </option>
+    <div class="choice-card scope-card" data-scope="outbound">
+      <strong>Outbound Only</strong>
+      <span>Promote one direction only</span>
+    </div>
 
-  </select>
+  </div>
 
 </div>
-
+      
 <div class="section-title">
   Advertising Channels
 </div>
@@ -983,6 +984,40 @@ function handleLogout(){
 }
 </script>
 
+<script>
+
+document.querySelectorAll(".route-card")
+.forEach(card => {
+
+    card.addEventListener("click", () => {
+
+        document
+            .querySelectorAll(".route-card")
+            .forEach(c => c.classList.remove("active"));
+
+        card.classList.add("active");
+
+    });
+
+});
+
+document.querySelectorAll(".scope-card")
+.forEach(card => {
+
+    card.addEventListener("click", () => {
+
+        document
+            .querySelectorAll(".scope-card")
+            .forEach(c => c.classList.remove("active"));
+
+        card.classList.add("active");
+
+    });
+
+});
+
+</script>
+  
 <script src="acs_time_recovery.js"></script>
 <script src="time_engine.js"></script>
 
