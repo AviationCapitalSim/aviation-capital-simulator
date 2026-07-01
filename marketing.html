@@ -541,47 +541,66 @@ input[type="range"] {
   <section class="main-grid">
 
     <div class="panel">
-      <h3>Create New Marketing Campaign</h3>
+   <h3>Create New Marketing Campaign</h3>
 
-      <div class="section-title">Campaign Type</div>
+<div class="section-title">Campaign Type</div>
 
-      <div class="campaign-types">
-        <div class="choice-card active">
-          <strong>General Campaign</strong>
-          <span>Improve company image and demand.</span>
-        </div>
+<select id="campaignType" class="marketing-select">
+  <option value="general">General Campaign</option>
+  <option value="route">Route Specific Campaign</option>
+</select>
 
-        <div class="choice-card">
-          <strong>Route Specific</strong>
-          <span>Boost demand on selected routes.</span>
-        </div>
+<div id="generalTargetBox">
+  <div class="section-title">Location / Target Area</div>
 
-        <div class="choice-card">
-          <strong>Launch Campaign</strong>
-          <span>Promote new routes or services.</span>
-        </div>
-      </div>
+  <select id="campaignTarget" class="marketing-select">
+    <option value="base_city">My base city and nearby cities only</option>
+    <option value="base_state">Municipality / state of my base city</option>
+    <option value="base_country">My base country</option>
+    <option value="base_continent">Continent of my base country</option>
+    <option value="world">Whole world</option>
+  </select>
+</div>
 
-      <div class="section-title">Location / Target Area</div>
+<div id="routeTargetBox" style="display:none;">
+  <div class="section-title">Route Pair</div>
 
-      <select class="marketing-select">
-        <option>Continent — South America</option>
-        <option>Country — Venezuela</option>
-        <option>Country — Colombia</option>
-        <option>City — Caracas</option>
-        <option>Airport — SVMI</option>
-        <option>Route — BOG - MIA</option>
-      </select>
+  <select id="campaignRoute" class="marketing-select">
+    <option value="">--- Select route ---</option>
+    <option value="SVMI-SKBO">SVMI Caracas - SKBO Bogotá</option>
+    <option value="SVMI-MPTO">SVMI Caracas - MPTO Panamá</option>
+    <option value="SKBO-KMIA">SKBO Bogotá - KMIA Miami</option>
+  </select>
+</div>
 
-      <div class="section-title">Media Channels</div>
+<div class="section-title">Media Channels</div>
 
-      <div class="media-grid">
-        <div class="choice-card">Newspapers</div>
-        <div class="choice-card active">Billboards</div>
-        <div class="choice-card">Radio</div>
-        <div class="choice-card">Television</div>
-        <div class="choice-card active">Internet</div>
-      </div>
+<div class="media-grid">
+  <label class="choice-card">
+    <input type="checkbox" class="mediaCheck" value="newspapers">
+    Newspapers
+  </label>
+
+  <label class="choice-card">
+    <input type="checkbox" class="mediaCheck" value="billboards">
+    Billboards
+  </label>
+
+  <label class="choice-card">
+    <input type="checkbox" class="mediaCheck" value="radio">
+    Radio
+  </label>
+
+  <label class="choice-card">
+    <input type="checkbox" class="mediaCheck" value="television">
+    Television
+  </label>
+
+  <label class="choice-card">
+    <input type="checkbox" class="mediaCheck" value="internet">
+    Internet
+  </label>
+</div>
 
       <div class="section-title">Duration</div>
 
@@ -763,6 +782,113 @@ input[type="range"] {
   © 2026 Aviation Capital Simulator. All rights reserved.
 </footer>
 
+<script>
+const ACS_MARKETING_BASE_COSTS = {
+  newspapers: 12000,
+  billboards: 18000,
+  radio: 9000,
+  television: 35000,
+  internet: 15000
+};
+
+const ACS_MARKETING_TARGET_MULTIPLIER = {
+  base_city: 1,
+  base_state: 1.8,
+  base_country: 3.2,
+  base_continent: 6.5,
+  world: 12
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+  const campaignType = document.getElementById("campaignType");
+  const permanent = document.getElementById("permanentCampaign");
+
+  campaignType.addEventListener("change", () => {
+    const isRoute = campaignType.value === "route";
+
+    document.getElementById("generalTargetBox").style.display = isRoute ? "none" : "block";
+    document.getElementById("routeTargetBox").style.display = isRoute ? "block" : "none";
+  });
+
+  permanent.addEventListener("change", () => {
+    document.getElementById("durationBox").style.display = permanent.checked ? "none" : "block";
+  });
+});
+
+function estimateMarketingCampaignCost() {
+  const type = document.getElementById("campaignType").value;
+  const selectedMedia = [...document.querySelectorAll(".mediaCheck:checked")].map(m => m.value);
+
+  if (selectedMedia.length === 0) {
+    alert("Select at least one media channel.");
+    return;
+  }
+
+  let weeklyCost = selectedMedia.reduce((sum, media) => {
+    return sum + (ACS_MARKETING_BASE_COSTS[media] || 0);
+  }, 0);
+
+  if (type === "general") {
+    const target = document.getElementById("campaignTarget").value;
+    weeklyCost *= ACS_MARKETING_TARGET_MULTIPLIER[target] || 1;
+  }
+
+  if (type === "route") {
+    const route = document.getElementById("campaignRoute").value;
+
+    if (!route) {
+      alert("Select a route pair.");
+      return;
+    }
+
+    weeklyCost *= 1.7;
+  }
+
+  const permanent = document.getElementById("permanentCampaign").checked;
+  const years = Number(document.getElementById("campaignYears").value || 0);
+  const months = Number(document.getElementById("campaignMonths").value || 0);
+
+  let totalWeeks;
+
+  if (permanent) {
+    totalWeeks = 52;
+  } else {
+    totalWeeks = Math.max(1, (years * 12 + months) * 4);
+  }
+
+  const totalCost = Math.round(weeklyCost * totalWeeks);
+
+  document.getElementById("estimatedCampaignCost").innerHTML =
+    `$ ${totalCost.toLocaleString("en-US")}<br>
+     <span style="font-size:.85rem;color:#cbd6ff;">
+       Estimated weekly cost: $ ${Math.round(weeklyCost).toLocaleString("en-US")}
+     </span>`;
+
+  return {
+    type,
+    selectedMedia,
+    weeklyCost: Math.round(weeklyCost),
+    totalCost,
+    totalWeeks,
+    permanent
+  };
+}
+
+function launchMarketingCampaign() {
+  const estimate = estimateMarketingCampaignCost();
+
+  if (!estimate) return;
+
+  alert(
+    "Marketing campaign ready.\n\n" +
+    "Type: " + estimate.type + "\n" +
+    "Weekly cost: $" + estimate.weeklyCost.toLocaleString("en-US") + "\n" +
+    "Total estimated cost: $" + estimate.totalCost.toLocaleString("en-US") + "\n\n" +
+    "Next step: connect this to PostgreSQL, company_finance and finance_log."
+  );
+}
+</script>
+  
 <script>
 function handleLogout(){
   alert("👋 Session closed. Your fleet awaits your command!");
