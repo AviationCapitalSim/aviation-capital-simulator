@@ -458,6 +458,41 @@ body {
     padding-top: 110px;
   }
 }
+
+/* ============================================================
+   ACS OCC iPAD PORTRAIT FIX v3
+   Solo iPad vertical
+   ============================================================ */
+
+@media (max-width: 900px) and (min-width: 769px) {
+
+  .acs-header {
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+
+  .acs-left {
+    order: 1;
+    flex: 1 1 auto;
+  }
+
+  .acs-right {
+    order: 2;
+    flex: 0 0 auto;
+  }
+
+  .acs-nav {
+    order: 3;
+    flex: 0 0 100%;
+    width: 100%;
+    justify-content: center;
+    gap: 1.6rem;
+  }
+
+  .acs-main {
+    padding-top: 145px;
+  }
+}
   
 </style>
 </head>
