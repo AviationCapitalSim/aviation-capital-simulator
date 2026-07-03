@@ -204,6 +204,12 @@ async function ACS_FINANCE_syncFromServer(){
         new_aircraft_purchase: Number(f.cost_new_aircraft_purchase || 0)
       },
 
+      leasing: {
+      contracts: Array.isArray(data.leasing_contracts)
+      ? data.leasing_contracts
+      : []
+      },
+       
       history: [],
       current_month: ACS_getMonthKey(Date.now())
     };
