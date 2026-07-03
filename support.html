@@ -1,0 +1,807 @@
+<!-- ============================================================
+     === ACS TUTORIAL — Qatar Luxury Edition =====================
+     === Version: v1 | Date: 03 JUL 2026 ==========================
+     ============================================================ -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ACS Tutorial Guide</title>
+
+  <!-- ======== ACS Main Styles ======== -->
+  <link rel="stylesheet" href="styles.css?v=3.1">
+
+  <!-- ======== ACS Favicons ======== -->
+  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+  <link rel="apple-touch-icon" href="acs_logo_180.png">
+
+  <style>
+    body {
+      margin: 0;
+      background-color: #081530;
+      color: white;
+      font-family: "Poppins", sans-serif;
+      padding-bottom: 80px;
+    }
+
+    /* ===== HEADER EXACT COPY ===== */
+    .acs-header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      backdrop-filter: blur(9px);
+      background: rgba(12,23,50,0.45);
+      padding: 0.8rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #ffb300;
+      z-index: 5000;
+      box-sizing: border-box;
+    }
+
+    .acs-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .acs-left img {
+      height: 46px;
+    }
+
+    .acs-left h1 {
+      font-size: 1.15rem;
+      margin: 0;
+      color: #ffb300;
+      letter-spacing: 0.5px;
+    }
+
+    .acs-nav {
+      flex: 1;
+      display: none !important;
+      justify-content: center;
+      gap: 2rem;
+    }
+
+    .acs-clock-header {
+      display: none !important;
+    }
+
+    .acs-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logout-btn, .support-btn {
+      padding: 0.45rem 1.1rem;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      color: #8AB4FF;
+      border: 1px solid rgba(138,180,255,0.45);
+      background: rgba(138,180,255,0.08);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      box-shadow: inset 0 0 0 1px rgba(138,180,255,0.2), 0 0 10px rgba(0,0,0,0.25);
+      transition: 0.25s ease;
+    }
+
+    .logout-btn:hover,
+    .support-btn:hover {
+      background: rgba(138,180,255,0.20);
+      box-shadow: 0 0 14px rgba(138,180,255,0.55);
+      color: #dfe9ff;
+    }
+
+    /* === Qatar Luxury Back Button === */
+    .back-btn {
+      padding: 0.45rem 1.2rem;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: #8AB4FF;
+      background: rgba(138,180,255,0.08);
+      border: 1px solid rgba(138,180,255,0.45);
+      text-decoration: none;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      transition: 0.25s ease;
+    }
+
+    .back-btn:hover {
+      background: rgba(138,180,255,0.20);
+      box-shadow: 0 0 12px rgba(138,180,255,0.55);
+      color: #dfe9ff;
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .tutorial-main {
+      padding: 120px 2rem 20px;
+      max-width: 1120px;
+      margin: auto;
+      text-align: center;
+    }
+
+    .tutorial-main h2 {
+      color: #ffca3a;
+      font-size: 2rem;
+      text-shadow: 0 0 10px rgba(255,202,58,0.45);
+      margin-bottom: 0.5rem;
+    }
+
+    .tutorial-main p.sub {
+      color: #cbd6ff;
+      font-size: 1.05rem;
+      margin-bottom: 2rem;
+    }
+
+    /* ===== ACS INTRO CARD ===== */
+    .acs-intro-card {
+      text-align: left;
+      margin: 0 auto 2.4rem;
+      padding: 2rem;
+      border-radius: 22px;
+      background:
+        radial-gradient(circle at top left, rgba(255,179,0,0.16), transparent 35%),
+        linear-gradient(180deg, rgba(20,35,70,0.78), rgba(7,14,32,0.92));
+      border: 1px solid rgba(255,179,0,0.35);
+      box-shadow: 0 0 28px rgba(0,0,0,0.40);
+    }
+
+    .acs-intro-card h2 {
+      margin-top: 0;
+      font-size: 1.8rem;
+    }
+
+    .acs-intro-card h3 {
+      color: #ffca3a;
+      margin: 1.35rem 0 0.45rem;
+      font-size: 1.1rem;
+    }
+
+    .acs-intro-card p {
+      color: #dfe4ff;
+      line-height: 1.65;
+      font-size: 0.98rem;
+      margin: 0.5rem 0;
+    }
+
+    .acs-mission-box {
+      margin-top: 1.4rem;
+      padding: 1rem 1.2rem;
+      border-radius: 16px;
+      color: #fff7d6;
+      font-weight: 700;
+      text-align: center;
+      background: rgba(255,179,0,0.10);
+      border: 1px solid rgba(255,179,0,0.35);
+      box-shadow: inset 0 0 18px rgba(255,179,0,0.08);
+    }
+
+    /* ===== TUTORIAL PANELS ===== */
+    .tutorial-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-top: 1.5rem;
+    }
+
+    .tutorial-panel {
+      background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
+      border: 1px solid rgba(255,179,0,0.25);
+      border-radius: 18px;
+      padding: 1.6rem 1.3rem;
+      text-align: left;
+      box-shadow: 0 0 20px rgba(0,0,0,0.35);
+      transition: 0.25s ease;
+      cursor: pointer;
+      min-height: 145px;
+    }
+
+    .tutorial-panel:hover {
+      transform: translateY(-6px);
+      border-color: rgba(255,179,0,0.55);
+      box-shadow: 0 8px 30px rgba(255,179,0,0.25);
+    }
+
+    .tutorial-panel h3 {
+      color: #ffca3a;
+      font-size: 1.25rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .tutorial-panel p {
+      color: #dfe4ff;
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    .tutorial-panel small {
+      color: #8ab4ff;
+      display: inline-block;
+      margin-top: 0.7rem;
+      font-weight: 700;
+    }
+
+    /* ===== MODAL ===== */
+    .tutorial-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 9000;
+      padding: 24px;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+
+    .tutorial-modal.show {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    .tutorial-modal-content {
+      width: min(920px, 100%);
+      margin: 70px auto 40px;
+      border-radius: 24px;
+      background:
+        radial-gradient(circle at top left, rgba(255,179,0,0.14), transparent 32%),
+        linear-gradient(180deg, rgba(18,33,68,0.98), rgba(6,13,31,0.98));
+      border: 1px solid rgba(255,179,0,0.42);
+      box-shadow: 0 0 45px rgba(0,0,0,0.65), 0 0 22px rgba(255,179,0,0.16);
+      overflow: hidden;
+      position: relative;
+      animation: modalIn 0.22s ease;
+    }
+
+    @keyframes modalIn {
+      from { transform: translateY(16px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .tutorial-close {
+      position: absolute;
+      top: 16px;
+      right: 18px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,179,0,0.45);
+      background: rgba(255,179,0,0.08);
+      color: #ffca3a;
+      font-size: 1.7rem;
+      line-height: 1;
+      cursor: pointer;
+      transition: 0.25s ease;
+      z-index: 2;
+    }
+
+    .tutorial-close:hover {
+      background: rgba(255,179,0,0.20);
+      box-shadow: 0 0 14px rgba(255,179,0,0.45);
+      color: white;
+    }
+
+    .modal-hero {
+      padding: 2rem 2.2rem 1.2rem;
+      border-bottom: 1px solid rgba(255,179,0,0.20);
+      background: rgba(255,179,0,0.05);
+    }
+
+    .modal-hero .kicker {
+      color: #8ab4ff;
+      text-transform: uppercase;
+      letter-spacing: 1.4px;
+      font-size: 0.76rem;
+      font-weight: 800;
+      margin-bottom: 0.55rem;
+    }
+
+    .modal-hero h2 {
+      margin: 0;
+      color: #ffca3a;
+      font-size: 1.85rem;
+      text-shadow: 0 0 12px rgba(255,202,58,0.35);
+    }
+
+    .modal-hero p {
+      color: #dfe4ff;
+      line-height: 1.6;
+      margin: 0.75rem 0 0;
+      max-width: 780px;
+    }
+
+    .modal-body {
+      padding: 1.5rem 2.2rem 2rem;
+      text-align: left;
+    }
+
+    .modal-body h3 {
+      color: #ffca3a;
+      margin: 1.2rem 0 0.55rem;
+      font-size: 1.08rem;
+    }
+
+    .modal-body p,
+    .modal-body li {
+      color: #dfe4ff;
+      line-height: 1.62;
+      font-size: 0.96rem;
+    }
+
+    .modal-body ul,
+    .modal-body ol {
+      padding-left: 1.25rem;
+      margin: 0.4rem 0 1rem;
+    }
+
+    .mission-objective,
+    .acs-recommendation,
+    .mission-complete {
+      border-radius: 16px;
+      padding: 1rem 1.1rem;
+      margin: 1rem 0;
+      border: 1px solid rgba(255,179,0,0.28);
+      background: rgba(255,179,0,0.08);
+      color: #fff7d6;
+    }
+
+    .acs-recommendation {
+      border-color: rgba(138,180,255,0.38);
+      background: rgba(138,180,255,0.08);
+    }
+
+    .mission-complete {
+      text-align: center;
+      font-weight: 800;
+    }
+
+    .step-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .step-card {
+      border-radius: 16px;
+      padding: 1rem;
+      background: rgba(255,255,255,0.045);
+      border: 1px solid rgba(138,180,255,0.18);
+    }
+
+    .step-card strong {
+      display: block;
+      color: #ffca3a;
+      margin-bottom: 0.35rem;
+    }
+
+    .step-card span {
+      color: #dfe4ff;
+      line-height: 1.5;
+      font-size: 0.92rem;
+    }
+
+    /* ===== FOOTER ===== */
+    .acs-footer {
+      text-align: center;
+      padding: 40px;
+      margin-top: 40px;
+      color: #7c8bb8;
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 680px) {
+      .acs-left h1 { font-size: 0.95rem; }
+      .acs-left img { height: 38px; }
+      .tutorial-main { padding: 105px 1rem 20px; }
+      .acs-intro-card { padding: 1.3rem; }
+      .modal-hero, .modal-body { padding-left: 1.2rem; padding-right: 1.2rem; }
+      .tutorial-modal { padding: 12px; }
+      .tutorial-modal-content { margin-top: 64px; }
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- ============================================================
+     === HEADER — Minimal Tutorial Version (Qatar Luxury) =======
+   ============================================================ -->
+<header class="acs-header">
+  <div class="acs-left">
+    <img src="acs_logo.png" alt="ACS Logo">
+    <h1>Aviation Capital Simulator</h1>
+  </div>
+
+  <div class="acs-right">
+    <a href="dashboard.html" class="back-btn">Main</a>
+  </div>
+</header>
+
+<!-- ============================================================
+     === MAIN TUTORIAL CONTENT ==================================
+     ============================================================ -->
+
+<main class="tutorial-main">
+
+  <h2>ACS Tutorial Guide</h2>
+  <p class="sub">Learn how to command your airline step by step.</p>
+
+  <!-- INTRO / WHAT IS ACS -->
+  <section class="acs-intro-card">
+    <h2>✈️ Welcome to Aviation Capital Simulator</h2>
+
+    <p>
+      Aviation Capital Simulator is a real-time airline management and operational simulation platform.
+      In ACS, you become the founder, CEO, and Operations Director of your own airline.
+    </p>
+
+    <p>
+      Your mission is to build, operate, and expand a profitable aviation company inside a dynamic global aviation world.
+      Every decision matters: fleet acquisition, route planning, maintenance, finance, leasing, airport slots, and live operations.
+    </p>
+
+    <h3>🏛 ACS OCC Experience</h3>
+    <p>
+      ACS is designed around an Airbus OCC philosophy. You are not only buying aircraft;
+      you are commanding an airline operation through finance, operations, maintenance, scheduling, and strategic control.
+    </p>
+
+    <h3>💰 Credits & ACS Tokens</h3>
+    <p>
+      ACS uses an economic system based on operational credits and ACS Tokens. Credits are used for airline operations such as
+      aircraft acquisition, leasing, maintenance, payroll, route development, and company growth.
+    </p>
+
+    <p>
+      ACS Tokens are part of the premium ACS ecosystem and may be used for future services, strategic features, special events,
+      marketplace activity, and platform expansion.
+    </p>
+
+    <h3>🎯 Your Objective</h3>
+    <p>
+      Start with one airline. Build your fleet. Open routes. Manage your finances. Control your operations through ACS OCC
+      and grow into a global aviation empire.
+    </p>
+
+    <div class="acs-mission-box">
+      Welcome aboard, CEO. Your airline begins now.
+    </div>
+  </section>
+
+  <div class="tutorial-grid">
+
+    <!-- SECTION 1 -->
+    <div class="tutorial-panel" onclick="openTutorial('create_airline')">
+      <h3>🛫 Create Your Airline</h3>
+      <p>Learn how to name your airline, choose ICAO/IATA, set your slogan, and select the operational model.</p>
+      <small>Open mission briefing →</small>
+    </div>
+
+    <!-- SECTION 2 -->
+    <div class="tutorial-panel" onclick="openTutorial('choose_base')">
+      <h3>🌍 Choose Your Base Airport</h3>
+      <p>Pick any airport in the world based on city, region, capacity, runway length, and operational slots available.</p>
+      <small>Open mission briefing →</small>
+    </div>
+
+    <!-- SECTION 3 -->
+    <div class="tutorial-panel" onclick="openTutorial('dashboard')">
+      <h3>📊 Understanding the Dashboard</h3>
+      <p>Your central command: Top Earning Aircraft, Company Value, Operational Alerts, Global News, and Settings.</p>
+      <small>Open mission briefing →</small>
+    </div>
+
+    <!-- SECTION 4 -->
+    <div class="tutorial-panel" onclick="openTutorial('buy_new')">
+      <h3>✈️ Buying New Aircraft</h3>
+      <p>Explore manufacturers and buy or lease aircraft directly from the factory.</p>
+      <small>Open mission briefing →</small>
+    </div>
+
+    <!-- SECTION 5 -->
+    <div class="tutorial-panel" onclick="openTutorial('used_market')">
+      <h3>🛠 Used Market</h3>
+      <p>Purchase second-hand aircraft, compare prices, flight hours, cycles, and remaining life.</p>
+      <small>Open mission briefing →</small>
+    </div>
+
+    <!-- SECTION 6 -->
+    <div class="tutorial-panel" onclick="openTutorial('routes')">
+      <h3>📅 Routes & Scheduling</h3>
+      <p>Create routes, set weekly frequencies, manage slots, and optimize your aircraft utilization.</p>
+      <small>Open mission briefing →</small>
+    </div>
+
+    <!-- SECTION 7 -->
+    <div class="tutorial-panel" onclick="openTutorial('hr')">
+      <h3>👥 HR & Payroll</h3>
+      <p>Manage staff morale, salaries, departments, and bonus systems that affect airline performance.</p>
+      <small>Open mission briefing →</small>
+    </div>
+
+    <!-- SECTION 8 -->
+    <div class="tutorial-panel" onclick="openTutorial('bank')">
+      <h3>💠 Bank & Credits</h3>
+      <p>Buy ACS Credits, handle monthly growth, financial reports, and loan management.</p>
+      <small>Open mission briefing →</small>
+    </div>
+
+    <!-- SECTION 9 -->
+    <div class="tutorial-panel" onclick="openTutorial('events')">
+      <h3>🌐 Events & News</h3>
+      <p>External events like fuel spikes, weather, strikes and economic changes dynamically affect your revenue.</p>
+      <small>Open mission briefing →</small>
+    </div>
+
+    <!-- SECTION 10 -->
+    <div class="tutorial-panel" onclick="openTutorial('settings')">
+      <h3>⚙️ Settings & Sync</h3>
+      <p>Control game preferences, language, notifications and cloud synchronization.</p>
+      <small>Open mission briefing →</small>
+    </div>
+
+  </div>
+
+</main>
+
+<!-- ============================================================
+     === MODAL ==================================================
+     ============================================================ -->
+<div id="tutorialModal" class="tutorial-modal" onclick="closeTutorialFromBackdrop(event)">
+  <div class="tutorial-modal-content">
+    <button class="tutorial-close" onclick="closeTutorial()">×</button>
+    <div id="tutorialModalBody"></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     === FOOTER =================================================
+     ============================================================ -->
+
+<footer class="acs-footer">
+  © 2025 Aviation Capital Simulator. All rights reserved.
+</footer>
+
+<script>
+  const tutorialContent = {
+    create_airline: `
+      <div class="modal-hero">
+        <div class="kicker">ACS OCC Mission 01</div>
+        <h2>🛫 Create Your Airline</h2>
+        <p>Your airline identity is the foundation of your company. Before purchasing aircraft or opening routes, you must establish who you are as an operator.</p>
+      </div>
+      <div class="modal-body">
+        <div class="mission-objective"><strong>Mission Objective:</strong> Create your airline and define its operational identity.</div>
+        <div class="step-grid">
+          <div class="step-card"><strong>Airline Name</strong><span>Choose the official name of your airline. Example: Atlantic Cargo Airways, EuroSky Airways, Pacific Regional Airlines.</span></div>
+          <div class="step-card"><strong>ICAO Code</strong><span>Select a unique three-letter operational code used by air traffic control.</span></div>
+          <div class="step-card"><strong>IATA Code</strong><span>Select a commercial two-letter airline code used for passenger and cargo identity.</span></div>
+          <div class="step-card"><strong>Country</strong><span>Choose where your airline is legally established and operationally represented.</span></div>
+          <div class="step-card"><strong>Slogan</strong><span>Create a short brand message that represents your company vision.</span></div>
+          <div class="step-card"><strong>Operational Model</strong><span>Choose Legacy, Low Cost, Cargo, or Regional depending on your strategy.</span></div>
+        </div>
+        <div class="acs-recommendation"><strong>ACS OCC Recommendation:</strong> For your first airline, Cargo operations are recommended because they provide flexibility and simpler initial route planning.</div>
+        <div class="mission-complete">✅ Mission Complete: Create your airline and continue to Choose Your Base Airport.</div>
+      </div>
+    `,
+
+    choose_base: `
+      <div class="modal-hero">
+        <div class="kicker">ACS OCC Mission 02</div>
+        <h2>🌍 Choose Your Base Airport</h2>
+        <p>Your base airport is the operational heart of your airline. It determines where your aircraft begin, where your network grows, and how your strategy develops.</p>
+      </div>
+      <div class="modal-body">
+        <div class="mission-objective"><strong>Mission Objective:</strong> Select the airport that will become your first operational base.</div>
+        <h3>What to review before choosing:</h3>
+        <ul>
+          <li><strong>Runway length:</strong> Make sure your future aircraft can safely operate from the airport.</li>
+          <li><strong>Slot capacity:</strong> More slots allow more departures and better expansion.</li>
+          <li><strong>Region:</strong> Choose a strategic location for your first route network.</li>
+          <li><strong>Market potential:</strong> Large cities may provide better demand but also more competition.</li>
+        </ul>
+        <div class="acs-recommendation"><strong>ACS OCC Recommendation:</strong> Start with a base that has enough runway, available slots, and good regional connections.</div>
+        <div class="mission-complete">✅ Mission Complete: Choose your base and continue to Dashboard orientation.</div>
+      </div>
+    `,
+
+    dashboard: `
+      <div class="modal-hero">
+        <div class="kicker">ACS OCC Mission 03</div>
+        <h2>📊 Understanding the Dashboard</h2>
+        <p>The Dashboard is your executive command center. It gives you the first picture of your company health, operations, and alerts.</p>
+      </div>
+      <div class="modal-body">
+        <div class="mission-objective"><strong>Mission Objective:</strong> Learn how to read your airline from the main command screen.</div>
+        <ul>
+          <li><strong>Company Value:</strong> Overall financial and operational value of your airline.</li>
+          <li><strong>Cash / Credits:</strong> Available money for aircraft, routes, maintenance, and growth.</li>
+          <li><strong>Fleet:</strong> Aircraft owned, leased, active, in maintenance, or pending delivery.</li>
+          <li><strong>Operational Alerts:</strong> Warnings that require CEO or OCC attention.</li>
+          <li><strong>Top Earning Aircraft:</strong> Aircraft generating the strongest revenue.</li>
+        </ul>
+        <div class="acs-recommendation"><strong>ACS OCC Recommendation:</strong> Check the Dashboard before making major decisions. It is your daily airline briefing.</div>
+        <div class="mission-complete">✅ Mission Complete: Understand your command center and prepare to acquire aircraft.</div>
+      </div>
+    `,
+
+    buy_new: `
+      <div class="modal-hero">
+        <div class="kicker">ACS OCC Mission 04</div>
+        <h2>✈️ Buying New Aircraft</h2>
+        <p>New aircraft are acquired directly from manufacturers. Delivery time, price, range, capacity, and historical availability all matter.</p>
+      </div>
+      <div class="modal-body">
+        <div class="mission-objective"><strong>Mission Objective:</strong> Select your first aircraft carefully and align it with your base and business model.</div>
+        <ul>
+          <li><strong>Manufacturer:</strong> Choose from aircraft available in the current ACS historical era.</li>
+          <li><strong>Aircraft performance:</strong> Review range, capacity, runway requirements, and operating cost.</li>
+          <li><strong>Purchase vs Lease:</strong> Buying gives ownership; leasing protects cash but creates monthly obligations.</li>
+          <li><strong>Factory slots:</strong> Aircraft are delivered according to production availability.</li>
+        </ul>
+        <div class="acs-recommendation"><strong>ACS OCC Recommendation:</strong> Do not buy only because an aircraft looks powerful. Match the aircraft to your first route network.</div>
+        <div class="mission-complete">✅ Mission Complete: Acquire or lease aircraft and prepare for operations.</div>
+      </div>
+    `,
+
+    used_market: `
+      <div class="modal-hero">
+        <div class="kicker">ACS OCC Mission 05</div>
+        <h2>🛠 Used Market</h2>
+        <p>The used market allows faster fleet growth, but every aircraft has a history. Price, hours, cycles, and maintenance condition must be reviewed.</p>
+      </div>
+      <div class="modal-body">
+        <div class="mission-objective"><strong>Mission Objective:</strong> Learn how to evaluate second-hand aircraft before purchase.</div>
+        <ul>
+          <li><strong>Flight hours:</strong> More hours may reduce value and increase maintenance risk.</li>
+          <li><strong>Cycles:</strong> High cycles can affect aging and maintenance planning.</li>
+          <li><strong>Remaining life:</strong> Estimate how long the aircraft can remain productive.</li>
+          <li><strong>Broker serviced:</strong> Some aircraft may be better prepared for immediate operation.</li>
+        </ul>
+        <div class="acs-recommendation"><strong>ACS OCC Recommendation:</strong> Used aircraft can be excellent for beta growth, but avoid building your entire airline on poor-condition assets.</div>
+        <div class="mission-complete">✅ Mission Complete: Compare aircraft and choose only what fits your strategy.</div>
+      </div>
+    `,
+
+    routes: `
+      <div class="modal-hero">
+        <div class="kicker">ACS OCC Mission 06</div>
+        <h2>📅 Routes & Scheduling</h2>
+        <p>Routes generate revenue. Scheduling transforms your aircraft from assets into working machines.</p>
+      </div>
+      <div class="modal-body">
+        <div class="mission-objective"><strong>Mission Objective:</strong> Create routes, assign aircraft, and build a sustainable weekly operation.</div>
+        <ul>
+          <li><strong>Origin and destination:</strong> Build routes that match aircraft range and demand.</li>
+          <li><strong>Frequency:</strong> More flights can generate more revenue but require more aircraft utilization.</li>
+          <li><strong>Slots:</strong> Airport capacity controls how many flights can be scheduled.</li>
+          <li><strong>Aircraft assignment:</strong> Assign the right aircraft to the right route.</li>
+          <li><strong>Schedule Table:</strong> Monitor your planned flights and maintenance windows.</li>
+        </ul>
+        <div class="acs-recommendation"><strong>ACS OCC Recommendation:</strong> Start with simple routes and stable frequencies before expanding aggressively.</div>
+        <div class="mission-complete">✅ Mission Complete: Create your first route and monitor it through Schedule and SkyTrack.</div>
+      </div>
+    `,
+
+    hr: `
+      <div class="modal-hero">
+        <div class="kicker">ACS OCC Mission 07</div>
+        <h2>👥 HR & Payroll</h2>
+        <p>Your airline is not only aircraft. People, salaries, departments, and morale affect operational performance.</p>
+      </div>
+      <div class="modal-body">
+        <div class="mission-objective"><strong>Mission Objective:</strong> Understand how human resources support airline operations.</div>
+        <ul>
+          <li><strong>Departments:</strong> Operations, maintenance, finance, support, and administration.</li>
+          <li><strong>Salaries:</strong> Payroll affects monthly expenses.</li>
+          <li><strong>Morale:</strong> Staff morale can influence efficiency and stability.</li>
+          <li><strong>Bonuses:</strong> Incentives may help performance but increase cost.</li>
+        </ul>
+        <div class="acs-recommendation"><strong>ACS OCC Recommendation:</strong> Keep payroll under control during early growth. Expand staff as operations expand.</div>
+        <div class="mission-complete">✅ Mission Complete: Review HR before scaling your airline.</div>
+      </div>
+    `,
+
+    bank: `
+      <div class="modal-hero">
+        <div class="kicker">ACS OCC Mission 08</div>
+        <h2>💠 Bank & Credits</h2>
+        <p>Financial control is the backbone of ACS. Credits support operations, growth, aircraft acquisition, maintenance, and strategic expansion.</p>
+      </div>
+      <div class="modal-body">
+        <div class="mission-objective"><strong>Mission Objective:</strong> Understand the financial tools available to your airline.</div>
+        <ul>
+          <li><strong>ACS Credits:</strong> Operational currency used for company activity and growth.</li>
+          <li><strong>Loans:</strong> Useful for expansion but create repayment obligations.</li>
+          <li><strong>Leasing:</strong> Reduces initial cost but adds monthly payments.</li>
+          <li><strong>Financial reports:</strong> Track revenue, expenses, and company performance.</li>
+          <li><strong>ACS Tokens:</strong> Premium ecosystem asset for future ACS services and strategic features.</li>
+        </ul>
+        <div class="acs-recommendation"><strong>ACS OCC Recommendation:</strong> Protect cash flow. A profitable airline can still fail if monthly obligations are too high.</div>
+        <div class="mission-complete">✅ Mission Complete: Manage credits, loans, leasing, and long-term growth carefully.</div>
+      </div>
+    `,
+
+    events: `
+      <div class="modal-hero">
+        <div class="kicker">ACS OCC Mission 09</div>
+        <h2>🌐 Events & News</h2>
+        <p>The ACS world is dynamic. External events may affect revenue, costs, airports, routes, and company strategy.</p>
+      </div>
+      <div class="modal-body">
+        <div class="mission-objective"><strong>Mission Objective:</strong> Learn how global events can impact your airline.</div>
+        <ul>
+          <li><strong>Fuel changes:</strong> Fuel spikes can reduce route profitability.</li>
+          <li><strong>Weather:</strong> Severe weather may disrupt operations.</li>
+          <li><strong>Economic changes:</strong> Demand and financial performance may change by region.</li>
+          <li><strong>Strikes and disruptions:</strong> Airports or regions may become operationally difficult.</li>
+          <li><strong>News:</strong> Use global information to make better CEO decisions.</li>
+        </ul>
+        <div class="acs-recommendation"><strong>ACS OCC Recommendation:</strong> Review events before expanding into new markets.</div>
+        <div class="mission-complete">✅ Mission Complete: Monitor global news and adapt your airline strategy.</div>
+      </div>
+    `,
+
+    settings: `
+      <div class="modal-hero">
+        <div class="kicker">ACS OCC Mission 10</div>
+        <h2>⚙️ Settings & Sync</h2>
+        <p>Settings help control your ACS experience and keep your operation aligned across devices and sessions.</p>
+      </div>
+      <div class="modal-body">
+        <div class="mission-objective"><strong>Mission Objective:</strong> Understand where to manage preferences, notifications, and future platform options.</div>
+        <ul>
+          <li><strong>Preferences:</strong> Adjust the ACS experience as options become available.</li>
+          <li><strong>Notifications:</strong> Stay informed about operational events and alerts.</li>
+          <li><strong>Cloud synchronization:</strong> ACS is designed around server authority and persistent data.</li>
+          <li><strong>Language:</strong> Future localization may expand the ACS experience.</li>
+        </ul>
+        <div class="acs-recommendation"><strong>ACS OCC Recommendation:</strong> ACS should always be treated as a live operational platform, not a local-only game.</div>
+        <div class="mission-complete">✅ Mission Complete: Return to the Dashboard and continue building your airline.</div>
+      </div>
+    `
+  };
+
+  function openTutorial(section) {
+    const modal = document.getElementById('tutorialModal');
+    const body = document.getElementById('tutorialModalBody');
+    body.innerHTML = tutorialContent[section] || tutorialContent.create_airline;
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeTutorial() {
+    const modal = document.getElementById('tutorialModal');
+    modal.classList.remove('show');
+    document.body.style.overflow = '';
+  }
+
+  function closeTutorialFromBackdrop(event) {
+    if (event.target.id === 'tutorialModal') {
+      closeTutorial();
+    }
+  }
+
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+      closeTutorial();
+    }
+  });
+</script>
+
+</body>
+</html>
