@@ -1108,12 +1108,19 @@ function loadLeasing() {
       card.className = "leasing-card";
 
       card.innerHTML = `
-        <h4>${c.model}</h4>
-        <p>Type: ${c.type}</p>
-        <p>Monthly: $${Number(c.monthlyRate || 0).toLocaleString()}</p>
-        <p>Months Left: ${c.monthsRemaining}</p>
-        <p>Status: ${c.status}</p>
-      `;
+      <h4>${c.aircraft_name || c.model_key || "Aircraft Lease"}</h4>
+      <p>Manufacturer: ${c.manufacturer || "-"}</p>
+      <p>Model: ${c.model_key || "-"}</p>
+      <p>Monthly Payment: $${Number(c.monthly_payment || 0).toLocaleString()}</p>
+      <p>Lease Start: ${c.lease_start_date ? new Date(c.lease_start_date).toLocaleDateString("en-GB") : "-"}</p>
+      <p>Lease End: ${c.lease_end_date ? new Date(c.lease_end_date).toLocaleDateString("en-GB") : "-"}</p>
+      <p>Term: ${c.lease_years || "-"} years</p>
+      <p>Status: ${c.status || "-"}</p>
+      <p style="margin-top:8px; color:#ffca5c;">
+      This aircraft is leased. At contract end, it is not owned by the airline.
+      Options: extend lease, buyout if available, or return to market.
+  </p>
+`;
 
       container.appendChild(card);
 
