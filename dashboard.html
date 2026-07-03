@@ -401,6 +401,37 @@ body {
   margin-top:28px;
   margin-bottom:48px;
 }
+
+/* ============================================================
+   ACS OCC RESPONSIVE HEADER v1
+   iPad/tablet only — NO toca el reloj
+   ============================================================ */
+
+@media (max-width: 1180px) and (min-width: 769px) {
+
+  .acs-header {
+    flex-wrap: wrap;
+    padding: 0.75rem 1rem;
+    row-gap: 10px;
+  }
+
+  .acs-left {
+    flex: 1 1 auto;
+  }
+
+  .acs-nav {
+    order: 3;
+    width: 100%;
+    flex: 0 0 100%;
+    justify-content: center;
+    gap: 1.6rem;
+    padding-top: 4px;
+  }
+
+  .acs-main {
+    padding-top: 145px;
+  }
+}
   
 </style>
 </head>
