@@ -455,15 +455,23 @@ body {
     padding-right: 1.2rem;
   }
 
-   .acs-clock-header {
-    width: 340px;
-    flex: 0 0 340px;
-    max-width: 340px;
-    font-size: 0.82rem;
-    letter-spacing: 0;
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
+  .acs-clock-header{
+  font-family:"Orbitron",monospace;
+  font-size:.95rem;
+  color:#00ff80;
+  background:rgba(0,255,128,.08);
+  border-radius:10px;
+  padding:.45rem .8rem;
+  width:260px;
+  flex:0 0 260px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+  border:1px solid rgba(0,255,128,.18);
+  overflow:hidden;
+}
 }
 
 /* móviles: el header baja ordenado, sin sobremontarse */
