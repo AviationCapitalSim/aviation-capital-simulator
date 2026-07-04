@@ -1909,9 +1909,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     // 🧠 3. OPS ENGINE (SI EXISTE)
     // ============================================================
 
-    if (typeof ACS_OPS_recalculateAllRequired === "function") {
-      ACS_OPS_recalculateAllRequired();
-    }
+    console.log(
+  "%c🛑 OPS frontend required recalculation disabled — backend HR required is authority",
+  "color:#ffcf66;font-weight:800"
+);
 
     // ============================================================
     // 🖥️ 4. RENDER
@@ -2211,9 +2212,10 @@ function ACS_HR_liveSync() {
     "color:#00ffcc;font-weight:700"
   );
 
-  if (typeof ACS_OPS_recalculateAllRequired === "function") {
-    ACS_OPS_recalculateAllRequired();
-  }
+  console.log(
+  "%c🛑 OPS frontend required recalculation disabled — backend HR required is authority",
+  "color:#ffcf66;font-weight:800"
+);
 
   loadDepartments();
   HR_updateKPI();
