@@ -1711,14 +1711,13 @@ function ACS_getAircraftStatusBadge(ac) {
   }
 
   if (
-    ac.status === "Active" &&
-    ac.canFly === true
-  ) {
-    return {
-      label: "ACTIVE",
-      class: "badge-active"
-    };
-  }
+  String(ac.status || "").trim().toUpperCase() === "ACTIVE"
+) {
+  return {
+    label: "ACTIVE",
+    class: "badge-active"
+  };
+}
 
   return {
     label: (
