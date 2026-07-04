@@ -2173,24 +2173,27 @@ function openFireMiniModal(depId) {
 
 let __ACS_HR_LAST_SYNC = 0;
 
-function ACS_HR_liveSync() {
+async function ACS_HR_liveSync() {
 
   const now = Date.now();
 
-  // ⛔ evitar loops continuos
   if (now - __ACS_HR_LAST_SYNC < 5000) return;
 
   __ACS_HR_LAST_SYNC = now;
 
   console.log(
-    "%c🟢 HR LIVE SYNC (THROTTLED)",
+    "%c🟢 HR LIVE SYNC FROM BACKEND (THROTTLED)",
     "color:#00ffcc;font-weight:700"
   );
 
-  console.log(
-  "%c🛑 OPS frontend required recalculation disabled — backend HR required is authority",
-  "color:#ffcf66;font-weight:800"
-);
+  if (typeof ACS_HR_syncFromServer === "function") {
+    await ACS_HR_syncFromServer();
+  }
+
+  if (typeof loadDepartments === "function") loadDepartments();
+  if (typeof HR_updateKPI === "function") HR_updateKPI();
+
+}
 
   loadDepartments();
   HR_updateKPI();
