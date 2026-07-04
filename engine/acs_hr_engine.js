@@ -654,22 +654,10 @@ const ACS_HR_PILOT_BASE_5Y = {
   2025: 10200
 };
 
-/* ============================================================
-   🟧 AUTO SALARY — YEAR CHANGE HOOK
-   ------------------------------------------------------------
-   • Se ejecuta SOLO si Auto Salary = ON
-   • Corre 1 vez por cambio de año
-   ============================================================ */
-
-registerTimeListener((time) => {
-
-    if (!time || typeof time.getUTCFullYear !== "function") return;
-
-    const year = time.getUTCFullYear();
-
-    if (localStorage.getItem("ACS_AutoSalary") !== "ON") return;
-
-});
+console.log(
+  "%c🛑 HR localStorage AutoSalary listener disabled — company_settings is authority",
+  "color:#ffcf66;font-weight:800"
+);
 
 /* ============================================================
    🔵 B2 — Obtener bloque 5-year del año real
