@@ -1436,8 +1436,9 @@ const delayMin = opsDisplay.delayMinutes;
     renderLiveTrackPanel(snapshot);
        
    // 🟦 A9.3 — Update Flight Details Panel
-       
-    renderFlightDetails(snapshot);
+        
+      ACS_ST_loadOpsImpacts();
+      renderFlightDetails(snapshot);
 
      if (!Array.isArray(snapshot)) return;
 
