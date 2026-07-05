@@ -15,7 +15,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ACS SkyTrack - Aviation Capital Simulator</title>
+  <title>SkyTrack Command - ACS OCC</title>
 
   <!-- ======== ACS GLOBAL STYLE (MISMO QUE DASHBOARD) ======== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
@@ -201,11 +201,62 @@ body {
   letter-spacing: 0.4px;
 }
 
-.sub {
-  color: #cbd6ff;
+.skytrack-command-hero {
   text-align: center;
-  margin-top: 0.4rem;
-  margin-bottom: 1.2rem;
+  margin: 0 auto 1.4rem;
+  padding: 1.2rem 1rem 1.4rem;
+}
+
+.skytrack-kicker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.7rem;
+  padding: 0.28rem 0.75rem;
+  border: 1px solid rgba(0,255,128,0.35);
+  border-radius: 999px;
+  color: #7CFFB2;
+  background: rgba(0,255,128,0.08);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  box-shadow: 0 0 18px rgba(0,255,128,0.18);
+}
+
+#welcomeMessage {
+  margin: 0;
+  line-height: 1.05;
+}
+
+#welcomeMessage .w-welcome {
+  display: block;
+  color: #ffffff;
+  font-size: clamp(2.2rem, 5vw, 4.4rem);
+  font-weight: 950;
+  letter-spacing: 0;
+  text-shadow:
+    0 0 18px rgba(255,255,255,0.18),
+    0 0 28px rgba(255,179,0,0.18);
+}
+
+#welcomeMessage .w-airline {
+  display: block;
+  margin-top: 0.35rem;
+  color: #ffca3a;
+  font-size: clamp(1.25rem, 2.6vw, 2.15rem);
+  font-weight: 900;
+  letter-spacing: 0;
+  text-shadow: 0 0 16px rgba(255,179,0,0.45);
+}
+
+.sub {
+  color: #dbe4ff;
+  text-align: center;
+  margin: 0.85rem auto 0;
+  max-width: 760px;
+  font-size: 1.05rem;
+  line-height: 1.45;
 }
 
 /* ===== Footer ===== */
@@ -432,17 +483,23 @@ body {
 </header>
 
 <!-- ============================================================
-     MAIN CONTENT — SKYTRACK AS DASHBOARD MODULE
+     MAIN CONTENT — SKYTRACK AS DASHBOARD MODULE ACS OCC
      ============================================================ -->
+
 <main class="acs-main">
 
+  <section class="skytrack-command-hero">
+  <div class="skytrack-kicker">ACS OCC</div>
+
   <h2 id="welcomeMessage">
-    <span class="w-welcome">SKYTRACK</span>
-    &nbsp;
-    <span class="w-airline">Live World Traffic</span>
+    <span class="w-welcome">SkyTrack Command</span>
+    <span class="w-airline">Live Operations Control</span>
   </h2>
 
-  <p class="sub">Real-time aircraft tracking based on your operational schedule.</p>
+  <p class="sub">
+    Track your fleet, monitor delays, and command your airline network in real time.
+  </p>
+</section>
 
  <!-- ========================= MAP PANEL ========================= -->
 
