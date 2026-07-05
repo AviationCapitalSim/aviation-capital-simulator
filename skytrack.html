@@ -201,62 +201,86 @@ body {
   letter-spacing: 0.4px;
 }
 
-.skytrack-command-hero {
+/* ============================================================
+   ACS GLOBAL TITLE SYSTEM — SKYTRACK (QATAR / AIRBUS OCC)
+============================================================ */
+
+.acs-title-global {
   text-align: center;
-  margin: 0 auto 1.4rem;
-  padding: 1.2rem 1rem 1.4rem;
+  margin: 0 auto 18px;
+  padding: 18px 40px;
+  max-width: 980px;
+  position: relative;
 }
 
-.skytrack-kicker {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 0.7rem;
-  padding: 0.28rem 0.75rem;
-  border: 1px solid rgba(0,255,128,0.35);
-  border-radius: 999px;
-  color: #7CFFB2;
-  background: rgba(0,255,128,0.08);
-  font-size: 0.78rem;
-  font-weight: 900;
-  letter-spacing: 0.16em;
+/* lateral brackets tipo OCC */
+.acs-title-global::before,
+.acs-title-global::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  width: 26px;
+  border: 2px solid #ffb300;
+  opacity: 0.85;
+}
+
+.acs-title-global::before {
+  left: 0;
+  border-right: none;
+}
+
+.acs-title-global::after {
+  right: 0;
+  border-left: none;
+}
+
+/* ================= MAIN TITLE ================= */
+
+.acs-title-main {
+  font-family: "Orbitron", "Eurostile", sans-serif;
+  font-size: clamp(30px, 4vw, 56px);
+  font-weight: 800;
+  letter-spacing: 0.32em;
   text-transform: uppercase;
-  box-shadow: 0 0 18px rgba(0,255,128,0.18);
-}
-
-#welcomeMessage {
-  margin: 0;
-  line-height: 1.05;
-}
-
-#welcomeMessage .w-welcome {
-  display: block;
   color: #ffffff;
-  font-size: clamp(2.2rem, 5vw, 4.4rem);
-  font-weight: 950;
-  letter-spacing: 0;
   text-shadow:
-    0 0 18px rgba(255,255,255,0.18),
-    0 0 28px rgba(255,179,0,0.18);
+    0 0 14px rgba(255,255,255,0.18),
+    0 0 30px rgba(255,179,0,0.15);
+  line-height: 1;
 }
 
-#welcomeMessage .w-airline {
-  display: block;
-  margin-top: 0.35rem;
-  color: #ffca3a;
-  font-size: clamp(1.25rem, 2.6vw, 2.15rem);
-  font-weight: 900;
-  letter-spacing: 0;
-  text-shadow: 0 0 16px rgba(255,179,0,0.45);
+/* ================= SUB TITLE ================= */
+
+.acs-title-sub {
+  margin-top: 10px;
+  font-family: "Orbitron", sans-serif;
+  font-size: clamp(13px, 1.4vw, 20px);
+  letter-spacing: 0.45em;
+  text-transform: uppercase;
+  color: #ffb300;
+  font-weight: 700;
 }
 
-.sub {
-  color: #dbe4ff;
-  text-align: center;
-  margin: 0.85rem auto 0;
-  max-width: 760px;
-  font-size: 1.05rem;
-  line-height: 1.45;
+/* líneas estilo cockpit */
+.acs-title-sub::before,
+.acs-title-sub::after {
+  content: "";
+  display: inline-block;
+  width: 90px;
+  height: 2px;
+  background: linear-gradient(to right, transparent, #ffb300, transparent);
+  margin: 0 12px;
+  vertical-align: middle;
+}
+
+/* ================= TAG ================= */
+
+.acs-title-tag {
+  margin-top: 8px;
+  font-size: 13px;
+  letter-spacing: 0.22em;
+  color: rgba(219,228,255,0.85);
 }
 
 /* ===== Footer ===== */
@@ -488,92 +512,83 @@ body {
 
 <main class="acs-main">
 
-  <section class="skytrack-command-hero">
-  <div class="skytrack-kicker">ACS OCC</div>
+  <!-- ============================================================
+       ACS GLOBAL TITLE SYSTEM — SKYTRACK
+  ============================================================ -->
 
-  <h2 id="welcomeMessage">
-    <span class="w-welcome">SkyTrack Command</span>
-    <span class="w-airline">Live Operations Control</span>
-  </h2>
+  <section class="acs-title-global">
+    <div class="acs-title-main">LIVE SKYTRACK</div>
+    <div class="acs-title-sub">OPERATIONS COMMAND</div>
+    <div class="acs-title-tag">Global Fleet Intelligence</div>
+  </section>
 
-  <p class="sub">
-    Track your fleet, monitor delays, and command your airline network in real time.
-  </p>
-</section>
+  <!-- ========================= MAP PANEL ========================= -->
 
- <!-- ========================= MAP PANEL ========================= -->
+  <div class="panel">
+    <h3>🌍 World Map</h3>
 
-<div class="panel">
-  <h3>🌍 World Map</h3>
+    <div class="skytrack-map-shell">
+      <div id="skytrack-map"></div>
 
-  <div class="skytrack-map-shell">
-    <div id="skytrack-map"></div>
+      <div id="skytrackTrafficBar">
+        <div class="stb-label">VIEWING</div>
 
-    <div id="skytrackTrafficBar">
-      <div class="stb-label">VIEWING</div>
+        <button class="stb-btn active" id="stbMyAirlineBtn">
+          MY AIRLINE
+        </button>
 
-      <button class="stb-btn active" id="stbMyAirlineBtn">
-        MY AIRLINE
-      </button>
+        <button class="stb-btn" id="stbGlobalBtn">
+          🌍 GLOBAL
+        </button>
 
-      <button class="stb-btn" id="stbGlobalBtn">
-        🌍 GLOBAL
-      </button>
+        <div class="stb-sep"></div>
 
-      <div class="stb-sep"></div>
+        <div class="stb-label">ADD AIRLINE</div>
 
-      <div class="stb-label">ADD AIRLINE</div>
+        <button class="stb-plus" id="stbAddAirlineBtn">
+          +
+        </button>
 
-      <button class="stb-plus" id="stbAddAirlineBtn">
-        +
-      </button>
+        <div class="stb-search">
+          🔍
+          <input
+            id="stbAirlineSearch"
+            type="text"
+            placeholder="Search airline or code..."
+            autocomplete="off"
+          />
+        </div>
 
-      <div class="stb-search">
-        🔍
-        <input
-          id="stbAirlineSearch"
-          type="text"
-          placeholder="Search airline or code..."
-          autocomplete="off"
-        />
+        <div class="stb-label">RECENT</div>
+
+        <div id="stbRecentAirlines" class="stb-recent"></div>
       </div>
-
-      <div class="stb-label">RECENT</div>
-
-      <div id="stbRecentAirlines" class="stb-recent"></div>
-    </div>
-  </div>
-</div>
-
-<!-- ========================= GRID ========================= -->
-
-<div class="skytrack-grid">
-
-  <!-- ===== LEFT: LIVE TRAFFIC ===== -->
-
-  <div class="panel">
-    <h3>✈️ Live Traffic</h3>
-
-    <div class="skytrack-list" id="skytrackLiveList">
-
-      <!-- Live traffic rendered by JS -->
-
     </div>
   </div>
 
-  <!-- ===== RIGHT: DETAILS / FUTURE ===== -->
-   
-  <div class="panel">
-    <h3>📊 Flight Details</h3>
-    <p>Select a flight to view detailed information.</p>
-  </div>
+  <!-- ========================= GRID ========================= -->
 
-</div>
+  <div class="skytrack-grid">
+
+    <div class="panel">
+      <h3>✈️ Live Traffic</h3>
+
+      <div class="skytrack-list" id="skytrackLiveList">
+        <!-- Live traffic rendered by JS -->
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>📊 Flight Details</h3>
+      <p>Select a flight to view detailed information.</p>
+    </div>
+
+  </div>
 
 </main>
 
 <footer class="acs-footer">
-  © 2026 Aviation Capital Simulator — SkyTrack Module
+  © 2026 Aviation Capital Simulator. All rights reserved. aviationcapitalsim@gmail.com
 </footer>
 
 <!-- ============================================================
