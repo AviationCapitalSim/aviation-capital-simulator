@@ -881,15 +881,22 @@ document.addEventListener("DOMContentLoaded", () => {
    Source: public.skytrack_ops_impacts
 ============================================================ */
 
-window.ACS_SKYTRACK_OPS_IMPACTS = new Map();
+window.ACS_SKYTRACK_OPS_IMPACTS = window.ACS_SKYTRACK_OPS_IMPACTS || new Map();
+window.ACS_SKYTRACK_OPS_IMPACTS_LOADED = false;
+window.ACS_SKYTRACK_OPS_IMPACTS_LOADING = false;
 
 async function ACS_ST_loadOpsImpacts() {
+  if (window.ACS_SKYTRACK_OPS_IMPACTS_LOADED) return;
+  if (window.ACS_SKYTRACK_OPS_IMPACTS_LOADING) return;
+
   const airlineId =
     window.ACS_SkyTrack?.airlineId ||
     window.ACS_SERVER_SESSION?.airline_id ||
     window.ACS_activeUser?.airline_id;
 
   if (!airlineId) return;
+
+  window.ACS_SKYTRACK_OPS_IMPACTS_LOADING = true;
 
   try {
     const res = await fetch(
@@ -916,6 +923,8 @@ async function ACS_ST_loadOpsImpacts() {
       ])
     );
 
+    window.ACS_SKYTRACK_OPS_IMPACTS_LOADED = true;
+
     console.log(
       "%c🟢 SkyTrack OPS impacts loaded",
       "color:#7CFFB2;font-weight:800",
@@ -924,6 +933,8 @@ async function ACS_ST_loadOpsImpacts() {
 
   } catch (err) {
     console.warn("SkyTrack OPS impacts load failed:", err);
+  } finally {
+    window.ACS_SKYTRACK_OPS_IMPACTS_LOADING = false;
   }
 }
 
@@ -942,6 +953,21 @@ function ACS_ST_getOpsImpactForItem(item, rt) {
   for (const id of ids) {
     const impact = window.ACS_SKYTRACK_OPS_IMPACTS?.get(id);
     if (impact) return impact;
+  }
+
+  const flightNumber = String(rt?.flightNumber || item?.flightNumber || "");
+  const registration = String(item?.registration || rt?.registration || "");
+
+  if (flightNumber && registration) {
+    for (const impact of window.ACS_SKYTRACK_OPS_IMPACTS?.values?.() || []) {
+      const sameFlight =
+        String(impact.flight_number || "") === flightNumber;
+
+      const sameAircraft =
+        String(impact.aircraft_registration || "") === registration;
+
+      if (sameFlight && sameAircraft) return impact;
+    }
   }
 
   return null;
