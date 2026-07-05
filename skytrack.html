@@ -873,7 +873,108 @@ document.addEventListener("DOMContentLoaded", () => {
      
     // 🟦 A8.1 — ACTIVE FLIGHT CONTEXT (FR24)
     window.ACS_ACTIVE_FLIGHT_ID = null;
-     
+
+/* ============================================================
+   ACS SKYTRACK OPS IMPACTS — HR PERSONNEL AUTHORITY
+   ------------------------------------------------------------
+   Reads persisted operational impacts from backend.
+   Source: public.skytrack_ops_impacts
+============================================================ */
+
+window.ACS_SKYTRACK_OPS_IMPACTS = new Map();
+
+async function ACS_ST_loadOpsImpacts() {
+  const airlineId =
+    window.ACS_SkyTrack?.airlineId ||
+    window.ACS_SERVER_SESSION?.airline_id ||
+    window.ACS_activeUser?.airline_id;
+
+  if (!airlineId) return;
+
+  try {
+    const res = await fetch(
+      `https://api.aviationcapitalsim.com/v1/hr/ops-impact/${airlineId}`,
+      { credentials: "include" }
+    );
+
+    if (!res.ok) {
+      console.warn("SkyTrack OPS impacts HTTP error:", res.status);
+      return;
+    }
+
+    const data = await res.json();
+
+    if (!data?.ok || !Array.isArray(data.impacts)) {
+      console.warn("SkyTrack OPS impacts invalid payload:", data);
+      return;
+    }
+
+    window.ACS_SKYTRACK_OPS_IMPACTS = new Map(
+      data.impacts.map(row => [
+        String(row.schedule_item_id),
+        row
+      ])
+    );
+
+    console.log(
+      "%c🟢 SkyTrack OPS impacts loaded",
+      "color:#7CFFB2;font-weight:800",
+      window.ACS_SKYTRACK_OPS_IMPACTS.size
+    );
+
+  } catch (err) {
+    console.warn("SkyTrack OPS impacts load failed:", err);
+  }
+}
+
+function ACS_ST_getOpsImpactForItem(item, rt) {
+  const ids = [
+    item?.schedule_item_id,
+    item?.scheduleItemId,
+    item?.id,
+    rt?.schedule_item_id,
+    rt?.scheduleItemId,
+    rt?.id
+  ]
+    .filter(v => v !== undefined && v !== null)
+    .map(v => String(v));
+
+  for (const id of ids) {
+    const impact = window.ACS_SKYTRACK_OPS_IMPACTS?.get(id);
+    if (impact) return impact;
+  }
+
+  return null;
+}
+
+function ACS_ST_resolveOpsDisplay(item, rt) {
+  const impact = ACS_ST_getOpsImpactForItem(item, rt);
+
+  const opsStatus = impact?.ops_status || item?.opsStatus || "ON TIME";
+  const delayMinutes = Number(
+    impact?.delay_minutes ??
+    item?.delayMinutes ??
+    0
+  );
+
+  let color = "#7CFFB2";
+
+  if (String(opsStatus).startsWith("CANCELLED")) {
+    color = "#ff4d4d";
+  } else if (delayMinutes >= 30) {
+    color = "#ff4d4d";
+  } else if (delayMinutes > 0) {
+    color = "#ffca3a";
+  }
+
+  return {
+    opsStatus,
+    delayMinutes: Math.max(0, delayMinutes),
+    color,
+    impact
+  };
+}
+    
     // 🟦 A7.1 — LIVE TRACK PANEL RENDER (FR24)
 const liveListEl = document.getElementById("skytrackLiveList");
      
