@@ -1074,6 +1074,32 @@ card.addEventListener("click", () => {
       item.state === "GROUND" ? "badge-ground" :
       "badge-maint";
 
+    const opsDisplay = ACS_ST_resolveOpsDisplay(item, item);
+const opsStatus = String(opsDisplay.opsStatus || "ON TIME")
+  .replace("ON_TIME", "ON TIME");
+
+const delayMin = Number(opsDisplay.delayMinutes || 0);
+
+let opsBadge = "";
+
+if (opsStatus.startsWith("CANCELLED")) {
+  opsBadge = `
+    <span class="badge" style="
+      background:rgba(255,77,77,0.28);
+      color:#ff4d4d;
+      border:1px solid rgba(255,77,77,0.55);
+    ">CANCELLED</span>
+  `;
+} else if (opsStatus.startsWith("DELAYED") || delayMin > 0) {
+  opsBadge = `
+    <span class="badge" style="
+      background:rgba(255,77,77,0.25);
+      color:#ff4d4d;
+      border:1px solid rgba(255,77,77,0.55);
+    ">DELAYED ${delayMin}m</span>
+  `;
+}
+     
     let extra = "";
     const now = window.ACS_TIME?.absMin;
 
@@ -1105,6 +1131,7 @@ card.addEventListener("click", () => {
       <div class="flight-meta">
         <span>${item.flightNumber}</span>
         <span class="badge ${stateClass}">${item.state}</span>
+        ${opsBadge}
       </div>
       ${extra}
     `;
