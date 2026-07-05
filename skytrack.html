@@ -844,6 +844,41 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
+function ACS_ST_getMyAirlineId() {
+  return String(
+    window.ACS_SkyTrack?.airlineId ||
+    window.ACS_SERVER_SESSION?.airline_id ||
+    window.ACS_activeUser?.airline_id ||
+    ""
+  );
+}
+
+function ACS_ST_isMyAirlineFlight(item) {
+  const myAirlineId = ACS_ST_getMyAirlineId();
+
+  if (String(item?.scope || "").toUpperCase() === "OWN") {
+    return true;
+  }
+
+  const itemAirlineId = String(
+    item?.airlineId ||
+    item?.airline_id ||
+    ""
+  );
+
+  return Boolean(myAirlineId && itemAirlineId === myAirlineId);
+}
+
+function ACS_ST_getMyLiveTraffic(snapshot) {
+  if (!Array.isArray(snapshot)) return [];
+
+  return snapshot.filter(item =>
+    item?.flightNumber &&
+    ACS_ST_isMyAirlineFlight(item)
+  );
+}
+   
 </script>
  
 <!-- ============================================================
@@ -1458,8 +1493,9 @@ const delayMin = opsDisplay.delayMinutes;
     function render(snapshot) {
 
     // 🟦 A7.2 — Update Live Track Panel
+    // ACS OCC: Live Traffic is always my airline only.
        
-    renderLiveTrackPanel(snapshot);
+    renderLiveTrackPanel(ACS_ST_getMyLiveTraffic(snapshot));
        
    // 🟦 A9.3 — Update Flight Details Panel
         
