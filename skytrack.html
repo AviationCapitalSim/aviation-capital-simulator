@@ -1183,26 +1183,12 @@ function renderFlightDetails(snapshot) {
   // Fuente: snapshot item (inyectado por runtime desde registry)
   // ============================================================
 
-  const opsStatusRaw = String(item.opsStatus || "ON_TIME");
-  const delayMin = Number(item.delayMinutes || 0);
+  const opsDisplay = ACS_ST_resolveOpsDisplay(item, rt || item);
 
-  // Reglas visuales:
-  // - ON_TIME o delay 0  → verde
-  // - delay 1..29        → amarillo
-  // - delay >= 30        → rojo
-  let opsLabel = "ON TIME";
-  let opsColor = "#7CFFB2"; // verde (mismo tono del dashboard clock)
-
-  if (opsStatusRaw !== "ON_TIME" || delayMin > 0) {
-    opsLabel = "DELAYED";
-
-    if (delayMin >= 30) {
-      opsColor = "#ff4d4d"; // rojo
-    } else {
-      opsColor = "#ffca3a"; // amarillo
-    }
-  }
-
+const opsLabel = opsDisplay.opsStatus;
+const opsColor = opsDisplay.color;
+const delayMin = opsDisplay.delayMinutes;
+   
   // Extra EN_ROUTE: % + remaining (NO Finance)
    
   const now = ACS_ST_nowAbsMin();
