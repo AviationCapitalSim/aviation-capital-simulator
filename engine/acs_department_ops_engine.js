@@ -395,66 +395,16 @@ function OPS_calculateAircraftUtilization(scheduleItems) {
 }
 
 // ============================================================
-// 🧮 CALCULATE REQUIRED STAFF — CANONICAL AIRLINE MODEL (FASE 2)
+// 🧮 CALCULATE REQUIRED STAFF — CANONICAL AIRLINE MODEL
 // ============================================================
+
 function calculateRequiredStaff() {
-
-  const scheduleItems = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-  const utilization = JSON.parse(localStorage.getItem("ACS_AIRCRAFT_UTILIZATION") || "{}");
-
-  const aircraftSet = new Set(
-    scheduleItems
-      .filter(f => f && f.assigned === true && f.aircraftId)
-      .map(f => f.aircraftId)
-  );
-
-  let totals = {
-    pilotsSmall: 0,
-    pilotsMedium: 0,
-    pilotsLarge: 0,
-    pilotsVeryLarge: 0,
-    cabinCrew: 0,
-    flightEngineers: 0,
-    groundHandling: 0,
-    technicalMaintenance: 0,
-    flightOpsDivision: 0,
-    routeStrategies: 0
-  };
-
-  aircraftSet.forEach(aircraftId => {
-
-    const u = utilization[aircraftId];
-    if (!u) return;
-
-    let crews = 2;
-    if (u.utilizationLevel === "MEDIUM") crews = 3;
-    if (u.utilizationLevel === "HIGH") crews = 4;
-
-    // ✈️ SMALL AIRCRAFT — 1940 MODEL
-    totals.pilotsSmall += crews * 2;
-    totals.cabinCrew += crews * 2;
-    totals.flightEngineers += crews * 1;
-
-    totals.groundHandling += crews * 0.5;
-    totals.technicalMaintenance += crews * 0.25;
-    totals.flightOpsDivision += crews * 0.25;
-  });
-
-  // Route strategy is company-wide, not per aircraft
-  totals.routeStrategies = Math.max(1, Math.ceil(aircraftSet.size / 2));
-
-  // 🔒 Round & normalize
-  Object.keys(totals).forEach(k => {
-    totals[k] = Math.max(0, Math.ceil(totals[k]));
-  });
-
   console.log(
-    "%c🟢 HR REQUIRED STAFF (CANONICAL):",
-    "color:#00ffcc;font-weight:700",
-    totals
+    "%c🛑 calculateRequiredStaff disabled — PostgreSQL HR required is authority",
+    "color:#ffcf66;font-weight:800"
   );
 
-  return totals;
+  return null;
 }
 
 /* ============================================================
@@ -558,172 +508,22 @@ function ACS_OPS_classifyAircraftFromDB(aircraft) {
   };
 }
 
-/* ============================================================
-   🟢 PHASE B1 — OPS REQUIRED STAFF REBUILD (CANONICAL CORE)
-   ------------------------------------------------------------
-   Function: ACS_OPS_recalculateAllRequired()
-   Purpose:
-   • Rebuild REQUIRED staff for all departments
-   • Source of truth:
-       - scheduleItems (assigned flights)
-       - ACS_MyAircraft
-   • Applies:
-       - Aircraft Utilization (AUL)
-       - Historical staffing logic (1940–2026)
-       - Startup operation caps
-       - Management load
-   • Does NOT:
-       - Modify staff
-       - Modify Finance
-       - Modify SkyTrack
-   • Output:
-       - HR[dep].required (absolute)
-   ============================================================ */
-
-function ACS_OPS_recalculateAllRequired() {
-
-  console.log("%c🧠 OPS REQUIRED REBUILD — START", "color:#00ffcc;font-weight:700");
-
-  const HR = ACS_HR_load();
-  if (!HR) return;
-
-  let scheduleItems = [];
-  try {
-    scheduleItems = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-  } catch (e) {
-    scheduleItems = [];
-  }
-
-  const activeFlights = Array.isArray(scheduleItems)
-    ? scheduleItems.filter(f => f && f.assigned === true && f.aircraftId && f.day)
-    : [];
-
-  // 🟢 Si no hay vuelos → required = 0 en todo
-  if (activeFlights.length === 0) {
-
-    Object.keys(HR).forEach(id => {
-      if (HR[id] && typeof HR[id].required === "number") {
-        HR[id].required = 0;
-      }
-    });
-
-    ACS_HR_save(HR);
-
-    if (typeof loadDepartments === "function") loadDepartments();
-    if (typeof HR_updateKPI === "function") HR_updateKPI();
-
-    console.log("%c🟢 OPS REQUIRED REBUILD — NO FLIGHTS (ALL ZERO)", "color:#7CFFB2;font-weight:700");
-    return;
-  }
-
-  // ============================================================
-  // 🟢 FASE 1.2 — AIRCRAFT UTILIZATION (SAFE)
-  // ============================================================
-  const aircraftUtilization = OPS_calculateAircraftUtilization(scheduleItems);
-
-  localStorage.setItem(
-    "ACS_AIRCRAFT_UTILIZATION",
-    JSON.stringify(aircraftUtilization)
-  );
-
+  function ACS_OPS_recalculateAllRequired() {
+     
   console.log(
-    "%c🟢 OPS AUL UPDATED",
-    "color:#00ffcc;font-weight:700",
-    aircraftUtilization
+    "%c🛑 OPS required frontend calculation disabled — backend HR required is authority",
+    "color:#ffcf66;font-weight:800"
   );
 
-  // ============================================================
-  // ✅ IDEAL STAFF
-  // ============================================================
-  const ideal = calculateRequiredStaff();
-  if (!ideal) {
-    console.warn("❌ OPS REQUIRED REBUILD — calculateRequiredStaff returned null");
-    return;
-  }
+  return null;
+}
 
-  const MAP = [
-    ["pilots_small",   ideal.pilotsSmall],
-    ["pilots_medium",  ideal.pilotsMedium],
-    ["pilots_large",   ideal.pilotsLarge],
-    ["pilots_vlarge",  ideal.pilotsVeryLarge],
-    ["cabin",          ideal.cabinCrew],
-    ["maintenance",    ideal.technicalMaintenance],
-    ["ground",         ideal.groundHandling],
-    ["flightops",      ideal.flightOpsDivision],
-    ["routes",         ideal.routeStrategies],
-    ["flight_engineers", ideal.flightEngineers]
-  ];
-
-  MAP.forEach(([depId, value]) => {
-    if (!HR[depId]) return;
-    HR[depId].required = Math.max(0, Math.ceil(Number(value || 0)));
-  });
-
-// ============================================================
-// 🟢 FASE 2 — OPS AUTO RECALC WATCHER (SCHEDULE → HR)
-// ------------------------------------------------------------
-// Purpose:
-// • Detect changes in scheduleItems (routes added/removed)
-// • Auto-trigger OPS → HR recalculation
-// • NO dependency on Schedule UI
-// • DOES NOT modify scheduleItems
-// • DOES NOT touch Delete logic
-// ============================================================
-
-(function ACS_OPS_ScheduleWatcher() {
-
-  let _lastScheduleHash = null;
-
-  function hashSchedule(items) {
-    try {
-      return JSON.stringify(items.map(f => f.id)).length;
-    } catch {
-      return null;
-    }
-  }
-
-  setInterval(() => {
-
-    if (typeof ACS_OPS_recalculateAllRequired !== "function") return;
-
-    const raw = localStorage.getItem("scheduleItems");
-    if (!raw) return;
-
-    let items;
-    try {
-      items = JSON.parse(raw);
-    } catch {
-      return;
-    }
-
-    if (!Array.isArray(items)) return;
-
-    const currentHash = hashSchedule(items);
-
-    if (_lastScheduleHash === null) {
-      _lastScheduleHash = currentHash;
-      return;
-    }
-
-    if (currentHash !== _lastScheduleHash) {
-      _lastScheduleHash = currentHash;
-
-      ACS_OPS_recalculateAllRequired();
-
-      console.log(
-        "%c🟢 OPS AUTO RECALC — scheduleItems changed",
-        "color:#00ffcc;font-weight:700",
-        { flights: items.length }
-      );
-    }
-
-  }, 3000); // every 3s — light & safe
-
-})();
+window.ACS_OPS_recalculateAllRequired = ACS_OPS_recalculateAllRequired;
    
   // ============================================================
   // 🟦 A5 — STARTUP OPERATION CAPS (MOVED INSIDE OPS)
   // ============================================================
+
   (function applyStartupCaps(){
 
     const totalFlights = activeFlights.length;
