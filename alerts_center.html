@@ -250,43 +250,27 @@ table.alerts-table {
 
 .alerts-table td:nth-child(1),
 .alerts-table th:nth-child(1) {
-  width: 7%;
+  width: 8%;
 }
 
 .alerts-table td:nth-child(2),
 .alerts-table th:nth-child(2) {
-  width: 43%;
+  width: 47%;
 }
 
 .alerts-table td:nth-child(3),
 .alerts-table th:nth-child(3) {
-  width: 14%;
+  width: 15%;
 }
 
 .alerts-table td:nth-child(4),
 .alerts-table th:nth-child(4) {
-  width: 11%;
+  width: 12%;
 }
 
 .alerts-table td:nth-child(5),
 .alerts-table th:nth-child(5) {
-  width: 17%;
-}
-
-.alerts-table td:nth-child(6),
-.alerts-table th:nth-child(6) {
-  width: 8%;
-}
-
-.alerts-table td:last-child {
-  display:flex !important;
-  justify-content:center;
-  align-items:center;
-  min-width:110px;
-}
-
-.alerts-table td:last-child button {
-  flex-shrink:0 !important;
+  width: 18%;
 }
 
 .alert-chip {
@@ -424,18 +408,44 @@ table.alerts-table {
   gap: 1rem;
 }
 
-.occ-alert-status {
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  color: #ffb300;
-  text-transform: uppercase;
+.occ-alert-panel {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,179,0,0.28);
+  background: rgba(13,28,60,0.52);
+  box-shadow: inset 0 0 10px rgba(255,179,0,0.045);
 }
 
-.occ-alert-status span {
-  color: rgba(220,226,238,0.72);
-  font-weight: 600;
-  letter-spacing: 0.08em;
+.occ-alert-label {
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: #ffb300;
+}
+
+.occ-alert-state {
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.occ-clear {
+  color: #00ff80;
+  border: 1px solid rgba(0,255,128,0.45);
+  background: rgba(0,255,128,0.08);
+  text-shadow: 0 0 8px rgba(0,255,128,0.35);
+}
+
+.occ-active {
+  color: #ff8080;
+  border: 1px solid rgba(255,80,80,0.55);
+  background: rgba(255,80,80,0.10);
+  text-shadow: 0 0 8px rgba(255,80,80,0.30);
 }
 
 .occ-alert-actions {
@@ -465,19 +475,6 @@ table.alerts-table {
   border-color: rgba(255,80,80,0.55);
   background: rgba(255,80,80,0.08);
   color: #ff9b9b;
-}
-
-.occ-alert-actions .occ-delete-selected:hover {
-  border-color: rgba(255,120,120,0.85);
-  background: rgba(255,80,80,0.16);
-  color: #ffc0c0;
-}
-
-.occ-alert-check {
-  width: 15px;
-  height: 15px;
-  accent-color: #ffb300;
-  cursor: pointer;
 }
   
 </style>
@@ -527,6 +524,12 @@ table.alerts-table {
     OCC ALERTS <span id="occAlertState">CLEAR</span>
   </div>
 
+  <div class="occ-alert-toolbar">
+  <div class="occ-alert-panel">
+    <span class="occ-alert-label">OCC STATUS</span>
+    <span id="occAlertState" class="occ-alert-state occ-clear">CLEAR</span>
+  </div>
+
   <div class="occ-alert-actions">
     <button onclick="ACS_selectAllAlerts()">Select All</button>
     <button onclick="ACS_clearAlertSelection()">Clear</button>
@@ -537,15 +540,14 @@ table.alerts-table {
 <div class="alerts-table-wrapper">
   <table class="alerts-table">
     <thead>
-      <tr>
-        <th class="th-center">Select</th>
-        <th class="th-center">Message</th>
-        <th class="th-center">Category</th>
-        <th class="th-center">Level</th>
-        <th class="th-center">Date</th>
-        <th class="th-center">Action</th>
-      </tr>
-    </thead>
+  <tr>
+    <th class="th-center">Select</th>
+    <th class="th-center">Message</th>
+    <th class="th-center">Category</th>
+    <th class="th-center">Level</th>
+    <th class="th-center">Date</th>
+  </tr>
+</thead>
 
     <tbody id="alertsTableBody"></tbody>
   </table>
@@ -620,7 +622,7 @@ if (alerts.length === 0) {
 
     const row = document.createElement("tr");
 
-  row.innerHTML = `
+row.innerHTML = `
   <td>
     <input
       type="checkbox"
@@ -640,13 +642,8 @@ if (alerts.length === 0) {
   <td><span class="${levelClass}">${level}</span></td>
 
   <td>${alert.timestamp ? new Date(alert.timestamp).toUTCString() : "-"}</td>
-
-  <td style="text-align:center;">
-    <button class="alert-delete-btn"
-      onclick="ACS_deleteAlert('${alert.id || alert.alert_id || ""}')">🗑</button>
-  </td>
 `;
-
+    
     tbody.appendChild(row);
   });
 }
@@ -663,9 +660,17 @@ function ACS_updateOccAlertState(count) {
   const state = document.getElementById("occAlertState");
   if (!state) return;
 
-  state.textContent = count > 0 ? `${count} ACTIVE` : "CLEAR";
-}
+  state.classList.remove("occ-clear", "occ-active");
 
+  if (count > 0) {
+    state.textContent = `${count} ACTIVE`;
+    state.classList.add("occ-active");
+  } else {
+    state.textContent = "CLEAR";
+    state.classList.add("occ-clear");
+  }
+}
+  
 function ACS_getSelectedAlertIds() {
   return Array.from(document.querySelectorAll(".occ-alert-check:checked"))
     .map(input => input.dataset.alertId)
