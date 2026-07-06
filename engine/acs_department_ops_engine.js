@@ -2056,6 +2056,10 @@ if (HR_FINANCE_METRICS) {
 
 (function () {
 
+  if (typeof ACS_HR_load !== "function") return;
+  if (typeof ACS_HR_getGameYear !== "function") return;
+  if (typeof ACS_HR_getHistoricalMarketBase !== "function") return;
+
   const HR = ACS_HR_load();
   if (!HR) return;
 
@@ -2103,6 +2107,7 @@ function ACS_HR_getCurrentYear_SAFE() {
    • Si existe dep.marketSalary -> usa eso
    • Si no, estima con multiplicador estable (2.6x)
    ============================================================ */
+
 function ACS_HR_getMarketSalary(depId) {
   const HR = ACS_HR_load();
   if (!HR || !HR[depId]) return 0;
@@ -2130,6 +2135,7 @@ function openSalaryInline(depId) {
   // ============================================================
   // 🟢 REGISTRO CANÓNICO DEL DEPARTAMENTO ACTIVO (CRÍTICO)
   // ============================================================
+   
   window.__ACS_ACTIVE_SALARY_DEPT = depId;
   __SAL_currentDep = depId;
 
@@ -2169,6 +2175,7 @@ function openSalaryInline(depId) {
     // ============================================================
   // 🟢 REBIND SLIDER EVENTS (SAFARI / MODAL SAFE FIX)
   // ============================================================
+   
   slider.oninput = updateSalaryPreview;
   slider.onchange = updateSalaryPreview;
    
