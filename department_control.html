@@ -2370,24 +2370,29 @@ async function ACS_HR_liveSync() {
     await ACS_HR_syncFromServer();
   }
 
-  if (typeof loadDepartments === "function") loadDepartments();
-  if (typeof HR_updateKPI === "function") HR_updateKPI();
+  if (typeof loadDepartments === "function") {
+    loadDepartments();
+  }
 
-}
-
-  loadDepartments();
-  HR_updateKPI();
-
+  if (typeof HR_updateKPI === "function") {
+    HR_updateKPI();
+  }
 }
 
 // Cuando vuelves a la pestaña
 document.addEventListener("visibilitychange", () => {
-  if (!document.hidden) ACS_HR_liveSync();
+  if (!document.hidden && typeof ACS_HR_liveSync === "function") {
+    ACS_HR_liveSync();
+  }
 });
 
 // Cuando vuelves a la ventana
-window.addEventListener("focus", ACS_HR_liveSync);
-
+window.addEventListener("focus", () => {
+  if (typeof ACS_HR_liveSync === "function") {
+    ACS_HR_liveSync();
+  }
+});
+     
 /* ========== LOGOUT ========== */
   
 function handleLogout(){
