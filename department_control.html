@@ -1378,7 +1378,42 @@ tr:nth-child(even) {
 
   </div>
 </div>
-       
+
+<div class="acs-modal" id="hrBonusModal">
+  <div class="acs-modal-content" style="max-width:460px;background:#07142c;border:1px solid #ffd77a;border-radius:16px;padding:26px;text-align:center;box-shadow:0 0 25px rgba(255,215,120,0.35);">
+    <button class="close-modal" onclick="window.closeBonusModal()">✖</button>
+
+    <h2 style="color:#ffd77a;margin-top:0;">🎁 OCC Department Bonus</h2>
+
+    <h3 id="bonusDeptName" style="color:#00ffcc;">Department</h3>
+
+    <p>Current Morale: <b id="bonusCurrentMorale">0%</b></p>
+    <p>Staff: <b id="bonusStaff">0</b></p>
+    <p>Salary: <b id="bonusSalary">$0</b></p>
+
+    <label class="hr-label">Bonus Authorization</label>
+    <select id="bonusPercent" class="hr-select" onchange="window.updateBonusPreview()">
+      <option value="5">5%</option>
+      <option value="10">10%</option>
+      <option value="15">15%</option>
+      <option value="20">20%</option>
+      <option value="25">25%</option>
+    </select>
+
+    <p style="margin-top:14px;">Estimated Cost: <b id="bonusCost">$0</b></p>
+    <p>New Morale: <b id="bonusNewMorale">0%</b></p>
+
+    <p style="color:#ffcf66;font-weight:700;">
+      One bonus per department per sim month.
+    </p>
+
+    <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+      <button class="hr-btn-close" style="flex:1;" onclick="window.closeBonusModal()">Cancel</button>
+      <button class="hr-btn-danger" style="flex:1;" onclick="window.confirmBonusModal()">Authorize</button>
+    </div>
+  </div>
+</div>
+     
 <footer class="acs-footer">
   © 2026 Aviation Capital Simulator. All rights reserved.
   <a href="mailto:aviationcapitalsim@gmail.com" class="acs-footer-email">
@@ -1601,7 +1636,7 @@ if (balance < 0) {
 
       <!-- Bonus -->
       <button class="btn btn-bonus" title="Give Bonus"
-        onclick="openBonusModal('${dep.id}')">
+        onclick="window.openBonusModal('${dep.id}')"
         🎁
       </button>
 
@@ -2111,7 +2146,126 @@ function HR_fillDepartmentSelector() {
 </script>
        
 <script>
-     
+
+window.__ACS_ACTIVE_BONUS_DEPT = null;
+
+window.ACS_getBonusMoraleGain = function(percent) {
+  return ({ 5:2, 10:4, 15:6, 20:8, 25:10 })[Number(percent)] || 0;
+};
+
+window.openBonusModal = function(depId) {
+  const HR = window.ACS_HR_SERVER_STATE;
+
+  if (!HR || !HR[depId]) return;
+
+  const dep = HR[depId];
+  const staff = Number(dep.staff || 0);
+
+  if (staff <= 0) {
+    alert("No staff available for bonus in this department.");
+    return;
+  }
+
+  window.__ACS_ACTIVE_BONUS_DEPT = depId;
+
+  document.getElementById("bonusDeptName").textContent = dep.name || depId;
+  document.getElementById("bonusCurrentMorale").textContent = `${Number(dep.morale || 100)}%`;
+  document.getElementById("bonusStaff").textContent = staff;
+  document.getElementById("bonusSalary").textContent = "$" + Number(dep.salary || 0).toLocaleString();
+
+  document.getElementById("bonusPercent").value = "10";
+
+  window.updateBonusPreview();
+
+  document.getElementById("hrBonusModal").style.display = "flex";
+};
+
+window.updateBonusPreview = function() {
+  const depId = window.__ACS_ACTIVE_BONUS_DEPT;
+  const HR = window.ACS_HR_SERVER_STATE;
+  if (!depId || !HR || !HR[depId]) return;
+
+  const dep = HR[depId];
+  const staff = Number(dep.staff || 0);
+  const salary = Number(dep.salary || 0);
+  const morale = Number(dep.morale || 100);
+  const percent = Number(document.getElementById("bonusPercent")?.value || 10);
+
+  const cost = Math.round(staff * salary * (percent / 100));
+  const gain = window.ACS_getBonusMoraleGain(percent);
+  const newMorale = Math.min(100, morale + gain);
+
+  document.getElementById("bonusCost").textContent = "$" + cost.toLocaleString();
+  document.getElementById("bonusNewMorale").textContent = `${newMorale}%`;
+};
+
+window.closeBonusModal = function() {
+  const modal = document.getElementById("hrBonusModal");
+  if (modal) modal.style.display = "none";
+  window.__ACS_ACTIVE_BONUS_DEPT = null;
+};
+
+window.confirmBonusModal = async function() {
+  const API_BASE = "https://api.aviationcapitalsim.com";
+  const depId = window.__ACS_ACTIVE_BONUS_DEPT;
+  const percent = Number(document.getElementById("bonusPercent")?.value || 10);
+
+  if (!depId) return;
+
+  const proceed = confirm(
+    "Authorize department bonus?\n\n" +
+    "This will increase morale and deduct Company Finance.\n" +
+    "This department cannot receive another bonus until next month."
+  );
+
+  if (!proceed) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/v1/finance/hr-bonus`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        dept_id: depId,
+        bonus_percent: percent
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data?.ok) {
+      if (data?.error === "BONUS_ALREADY_APPLIED_THIS_MONTH") {
+        alert("This department already received a bonus this month.");
+      } else if (data?.error === "INSUFFICIENT_FUNDS") {
+        alert("Insufficient Company Finance for this bonus.");
+      } else {
+        alert("Bonus could not be applied.");
+      }
+
+      console.warn("❌ HR BONUS REJECTED", data);
+      return;
+    }
+
+    console.log("🎁 HR BONUS APPLIED — BACKEND CANONICAL", data);
+
+    if (typeof ACS_HR_syncFromServer === "function") {
+      await ACS_HR_syncFromServer();
+    }
+
+    if (typeof ACS_FINANCE_syncFromServer === "function") {
+      await ACS_FINANCE_syncFromServer();
+    }
+
+    if (typeof loadDepartments === "function") loadDepartments();
+    if (typeof HR_updateKPI === "function") HR_updateKPI();
+
+    window.closeBonusModal();
+
+  } catch (err) {
+    console.warn("❌ HR BONUS ERROR", err);
+  }
+};
+    
 window.__ACS_ACTIVE_FIRE_DEPT = null;
 
 window.openFireMiniModal = function(depId) {
