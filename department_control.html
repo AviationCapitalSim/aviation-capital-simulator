@@ -1886,12 +1886,7 @@ async function HR_hireOne(depId) {
   }
 
 }
-     
-function handleLogout() {
-  alert("👋 Session closed. See you soon, Boss!");
-  window.location.href = "login.html";
-}
-     
+          
 /* ============================================================
    🟦 HR BACKEND SYNC — ACS API CANONICAL
    ------------------------------------------------------------
@@ -2394,6 +2389,55 @@ function handleLogout(){
   alert("👋 Session closed. Your fleet awaits your command!");
   window.location.href = "login.html";
 } 
+
+let __ACS_ACTIVE_FIRE_DEPT = null;
+
+function openFireMiniModal(depId) {
+
+  const HR = window.ACS_HR_SERVER_STATE;
+
+  if (!HR || !HR[depId]) {
+    console.warn("❌ FIRE MODAL — Department not found:", depId);
+    return;
+  }
+
+  const dep = HR[depId];
+
+  if (dep.id === "ceo") {
+    alert("⚠️ The CEO cannot be dismissed.");
+    return;
+  }
+
+  if (Number(dep.staff || 0) <= 0) {
+    alert("⚠️ There is no staff to dismiss in this department.");
+    return;
+  }
+
+  __ACS_ACTIVE_FIRE_DEPT = depId;
+
+  document.getElementById("fireMiniDeptName").textContent = dep.name;
+
+  const select = document.getElementById("fireMiniQty");
+  select.innerHTML = "";
+
+  const max = Number(dep.staff || 0);
+
+  for (let i = 1; i <= max; i++) {
+    const opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = i;
+    select.appendChild(opt);
+  }
+
+  document.getElementById("hrFireMiniModal").style.display = "flex";
+
+  console.log("🔥 FIRE MODAL OPENED", dep.name);
+}
+
+function closeFireMiniModal() {
+  const modal = document.getElementById("hrFireMiniModal");
+  if (modal) modal.style.display = "none";
+}
      
 </script>
        
