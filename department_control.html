@@ -1517,35 +1517,43 @@ const depts =
     //   • NUNCA muestra +X (exceso NO se muestra aquí)
     // ============================================================
 
-    const missing = Math.max(0, requiredAbsolute - staff);
+const balance = staff - requiredAbsolute;
 
-    let requiredClass = "required-ok";
-    let requiredText  = "0";
+let requiredClass = "required-ok";
+let requiredText = "0";
 
-    if (missing > 0) {
+if (balance < 0) {
 
-      requiredClass = "required-missing";
-      requiredText  = `-${missing}`; // 🔴 ej: -10
+  const missing = Math.abs(balance);
 
-      // 🔔 ALERTA SOLO SI FALTA PERSONAL (sin spam)
-      if (window.ACS_Alerts && typeof window.ACS_Alerts.push === "function") {
+  requiredClass = "required-missing";
+  requiredText = `-${missing}`; // 🔴 falta personal
 
-        const alertKey = `HR_MISSING_${dep.id}`;
-        if (!window.__ACS_HR_ALERTS) window.__ACS_HR_ALERTS = {};
+  // 🔔 ALERTA SOLO SI FALTA PERSONAL (sin spam)
+  if (window.ACS_Alerts && typeof window.ACS_Alerts.push === "function") {
 
-        if (!window.__ACS_HR_ALERTS[alertKey]) {
-          window.__ACS_HR_ALERTS[alertKey] = true;
+    const alertKey = `HR_MISSING_${dep.id}`;
+    if (!window.__ACS_HR_ALERTS) window.__ACS_HR_ALERTS = {};
 
-          window.ACS_Alerts.push({
-            title: "Department Understaffed",
-            message: `${dep.name} is missing ${missing} staff.`,
-            level: "warning",
-            source: "Department Control"
-          });
-        }
-      }
+    if (!window.__ACS_HR_ALERTS[alertKey]) {
+      window.__ACS_HR_ALERTS[alertKey] = true;
+
+      window.ACS_Alerts.push({
+        title: "Department Understaffed",
+        message: `${dep.name} is missing ${missing} staff.`,
+        level: "warning",
+        source: "Department Control"
+      });
     }
+  }
 
+} else if (balance > 0) {
+
+  requiredClass = "required-ok";
+  requiredText = `+${balance}`; // 🟢 overstaff operativo
+
+}
+       
   const canFire = dep.id !== "ceo" && staff > 0;
        
     rows.innerHTML += `
