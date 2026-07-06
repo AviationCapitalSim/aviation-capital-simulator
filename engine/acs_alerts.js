@@ -1,337 +1,216 @@
 /* ============================================================
-   === ACS ALERT ENGINE — Qatar Luxury Edition v4.0 ============
-   === Local-Only | Ultra Optimized | Game-Time Synced =========
-   === Author: ACS — 05 DEC 2025 ===============================
+   ACS OCC ALERT ENGINE
+   Backend runtime viewer | No localStorage authority
    ============================================================ */
 
-console.log("✔ ACS Alert Engine v4.0 (LOCAL-ONLY) loaded");
+(function () {
+  "use strict";
 
-/* ============================================================
-   === 🔵 LOCAL STORAGE SETUP =================================
-   ============================================================ */
+  const ACS_OCC_ALERTS_ENDPOINT = "/api/occ/alerts";
 
-if (!localStorage.getItem("ACS_GameAlerts")) {
-  localStorage.setItem("ACS_GameAlerts", JSON.stringify([]));
-}
+  let ACS_occAlerts = [];
+  let ACS_runtimeAlerts = [];
+  let ACS_alertApiAvailable = true;
 
-function ACS_getLocalAlerts() {
-  try {
-    return JSON.parse(localStorage.getItem("ACS_GameAlerts")) || [];
-  } catch {
-    return [];
-  }
-}
+  console.log("ACS OCC Alert Engine loaded");
 
-function ACS_saveLocalAlerts(list) {
-  // 🔥 Limitar a 300 alertas máximo (rendimiento y limpieza)
-  if (list.length > 300) list = list.slice(0, 300);
-  localStorage.setItem("ACS_GameAlerts", JSON.stringify(list));
-}
+  function ACS_normalizeLevel(level) {
+    const value = String(level || "info").trim().toLowerCase();
 
-/* ============================================================
-   === 🟣 GAME TIME HELPER =====================================
-   ============================================================ */
+    if (value.includes("crit")) return "critical";
+    if (value.includes("warn")) return "warning";
+    if (value.includes("high")) return "warning";
+    if (value.includes("med")) return "warning";
+    if (value.includes("low")) return "info";
 
-function ACS_simTimestamp() {
-  try {
-    if (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime) {
-      return ACS_TIME.currentTime.toISOString();
-    }
-  } catch {}
-  return new Date().toISOString();
-}
-
-/* ============================================================
-   === 🟥 CENTRAL ALERT FUNCTION — ACS_pushAlert() =============
-   === (Usado por Bankruptcy, HR, Finance, Routes, Maintenance)
-   ============================================================ */
-
-function ACS_pushAlert({ type, level, title, message, timestamp }) {
-
-  const activeUser =
-    JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-
-  if (!activeUser || !activeUser.airline_id) {
-    console.warn("⚠️ Cannot generate alert — no active airline.");
-    return;
+    return value || "info";
   }
 
-  let alerts = ACS_getLocalAlerts();
+  function ACS_normalizeType(type) {
+    const value = String(type || "system").trim().toLowerCase();
 
-  const time = timestamp || ACS_simTimestamp();
+    if (value === "slot") return "slots";
+    if (value === "schedule") return "slots";
+    if (value === "route") return "slots";
 
-  const alertObj = {
-    alert_id: "AL-" + Date.now() + "-" + Math.floor(Math.random() * 9999),
-    airline_id: activeUser.airline_id,
-    type: type || "system",
-    level: level || "info",
-    title: title || "System Alert",
-    message: message || "",
-    timestamp: time
-  };
-
-  // 🔥 Anti-duplicado: evita spamming si mismo mensaje en menos de 30 segundos sim
-  if (alerts[0] &&
-      alerts[0].message === alertObj.message &&
-      Math.abs(new Date(alerts[0].timestamp) - new Date(time)) < 30000) {
-    return;
+    return value || "system";
   }
 
-  alerts.unshift(alertObj);
-  ACS_saveLocalAlerts(alerts);
+  function ACS_simTimestamp() {
+    try {
+      if (window.ACS_TIME && window.ACS_TIME.currentTime) {
+        return new Date(window.ACS_TIME.currentTime).toISOString();
+      }
+    } catch (_) {}
 
-  console.log("🔔 ALERT ADDED:", alertObj);
-}
-
-/* ============================================================
-   🔵 NORMALIZACIÓN UNIVERSAL DE NIVELES — ACS v5
-   ------------------------------------------------------------
-   • Acepta: "CRITICAL", "Critical", "critical"
-   • Convierte: High, HIGH → high
-   • Convierte: Medium → medium, Low → low
-   • Garantiza nivel válido: info, low, medium, high, critical
-   ============================================================ */
-
-function ACS_normalizeLevel(level) {
-
-  if (!level) return "info";
-
-  const L = String(level).trim().toLowerCase();
-
-  if (L.includes("crit")) return "critical";
-  if (L.includes("high")) return "high";
-  if (L.includes("med")) return "medium";
-  if (L.includes("low")) return "low";
-
-  return "info";
-}
-
-/* ============================================================
-   🔵 WRAPPER — INTERCEPTA Y NORMALIZA LLAMADAS ANTIGUAS
-   ============================================================ */
-
-const __ACS_pushAlert = ACS_pushAlert;
-
-function ACS_addAlert(type, level, title, message) {
-
-  console.log("⚠️ ALERTA INTERCEPTADA — NORMALIZADA:", {
-    type, level, title, message
-  });
-
-  __ACS_pushAlert({
-    type: type || "system",
-    level: ACS_normalizeLevel(level),
-    title: title || "Alert",
-    message: message || "",
-    timestamp: ACS_simTimestamp()
-  });
-}
-
-
-/* ============================================================
-   === 🟧 HR SNAPSHOT ALERTS (Local Only) ======================
-   === Solo genera alertas en tiempo real por staff = 0
-   ============================================================ */
-
-function ACS_getHRAlertsSnapshot() {
-  const raw = localStorage.getItem("ACS_HR");
-  if (!raw) return [];
-
-  let hr;
-  try {
-    hr = JSON.parse(raw);
-  } catch {
-    return [];
+    return new Date().toISOString();
   }
 
-  if (!hr) return [];
-
-  const CRITICAL_DEPARTMENTS = [
-    "middle","economics","hr","quality","security","customers","flightops",
-    "maintenance","ground","routes","pilots_small","pilots_medium",
-    "pilots_large","pilots_vlarge","cabin"
-  ];
-
-  const simTime = ACS_simTimestamp();
-  const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-  const airlineId = activeUser.airline_id || "-";
-
-  const alerts = [];
-
-  CRITICAL_DEPARTMENTS.forEach(id => {
-    const dep = hr[id];
-    if (!dep) return;
-
-    if (!dep.staff || dep.staff <= 0) {
-      alerts.push({
-        alert_id: `HR-${id}-${Date.now()}`,
-        airline_id: airlineId,
-        type: "hr",
-        level: "critical",
-        title: "HR STAFF MISSING",
-        message: `${dep.name || id} has 0 assigned staff.`,
-        timestamp: simTime
-      });
-    }
-  });
-
-  return alerts;
-}
-
-/* ============================================================
-   === 🟦 MERGE REAL-TIME ALERTS (Local + HR Snapshot) =========
-   ============================================================ */
-
-function ACS_getAllAlertsMerged() {
-  const local = ACS_getLocalAlerts();
-  const hr = ACS_getHRAlertsSnapshot();
-
-  // HR snapshot NO se guarda en localStorage, solo se muestra en tiempo real
-  const merged = [...local, ...hr];
-
-  return merged.sort((a, b) =>
-    new Date(b.timestamp) - new Date(a.timestamp)
-  );
-}
-
-/* ============================================================
-   === ACS BANKRUPTCY ENGINE — v1.0 (GAME TIME REAL) ==========
-   === Author: ACS — 05 DEC 2025 ===============================
-   ============================================================ */
-
-console.log("⚠️ ACS Bankruptcy Engine loaded");
-
-function ACS_checkBankruptcy() {
-
-  const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-  const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-
-  if (!activeUser || !activeUser.airline_id) return;
-
-  // Tiempo del juego
-  const simTime = (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime)
-    ? new Date(ACS_TIME.currentTime)
-    : new Date();
-
-  // Si capital está OK → limpiar contador
-  if (!f || typeof f.capital !== "number") return;
-  if (f.capital >= 0) {
-    localStorage.removeItem("ACS_BankruptcyStart");
-    return;
-  }
-
-  // Registrar primer día en negativo
-  let start = localStorage.getItem("ACS_BankruptcyStart");
-  if (!start) {
-    localStorage.setItem("ACS_BankruptcyStart", simTime.toISOString());
-
-    ACS_addAlert(
-      "finance",
-      "critical",
-      "❗Your company capital has gone negative. You must resolve this immediately."
-    );
-
-    return;
-  }
-
-  // Calcular días en negativo
-  const startDate = new Date(start);
-  const diffMs = simTime - startDate;
-  const daysNegative = diffMs / (1000 * 60 * 60 * 24);
-
-  // Cada semana: repetir alerta crítica
-  if (daysNegative > 7 && daysNegative % 7 < 0.1) {
-    ACS_addAlert(
-      "finance",
-      "high",
-      `⚠️ Capital has been negative for ${Math.floor(daysNegative)} days. Immediate action required.`
+  function ACS_makeAlertId(alert) {
+    return String(
+      alert.id ||
+      alert.alert_id ||
+      alert.alert_key ||
+      alert.key ||
+      [
+        ACS_normalizeType(alert.type || alert.category),
+        ACS_normalizeLevel(alert.level),
+        alert.title || "Alert",
+        alert.message || ""
+      ].join(":")
     );
   }
 
-  // Si supera 45 días → quiebra automática
-  if (daysNegative >= 45) {
+  function ACS_normalizeAlert(alert) {
+    const type = ACS_normalizeType(alert.type || alert.category);
+    const level = ACS_normalizeLevel(alert.level || alert.severity);
 
-    ACS_addAlert(
-      "finance",
-      "critical",
-      "🛑 COMPANY BANKRUPTCY — Your airline has been terminated after 45 days with negative capital."
-    );
-
-    // Eliminar airline existente
-    localStorage.removeItem("ACS_activeUser");
-    localStorage.removeItem("ACS_Finance");
-    localStorage.removeItem("ACS_HR");
-    localStorage.removeItem("ACS_MyAircraft");
-    localStorage.removeItem("ACS_PendingAircraft");
-    localStorage.removeItem("ACS_GameAlerts");
-    localStorage.removeItem("ACS_BankruptcyStart");
-
-    // Guardar fecha del juego como nuevo inicio sugerido
-    localStorage.setItem("ACS_LastBankruptcyDate", simTime.toISOString());
-
-    // Redirigir al usuario
-    setTimeout(() => {
-      window.location.href = "create_airline.html";
-    }, 2000);
-
+    return {
+      id: ACS_makeAlertId(alert),
+      alert_id: alert.alert_id || alert.id || ACS_makeAlertId(alert),
+      alert_key: alert.alert_key || alert.key || ACS_makeAlertId(alert),
+      type,
+      category: ACS_normalizeType(alert.category || type),
+      level,
+      title: alert.title || "Operational Alert",
+      message: alert.message || "",
+      timestamp: alert.timestamp || alert.created_at || alert.reported_at || ACS_simTimestamp(),
+      source: alert.source || "occ"
+    };
   }
-}
 
-/* ============================================================
-   === AUTO INIT — nothing to load (NO SERVER MODE) ===========
-   ============================================================ */
-
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("🚀 ALERT ENGINE READY — LOCAL ONLY");
-});
-
-// ============================================================
-// === AUTO-CHECK BANKRUPTCY ON TIMER (GAME DAILY) ============
-// ============================================================
-
-setInterval(() => {
-  try { ACS_checkBankruptcy(); }
-  catch (e) { console.warn("Bankruptcy check failed:", e); }
-}, 3000);  // cada 3 segundos tiempo real (equivale a ~1 día sim, depende del speed)
-
-/* ============================================================
-   🟦 ACS ALERTS — UNIVERSAL LEGACY WRAPPER v5 (07 DEC 2025)
-   ------------------------------------------------------------
-   🔧 Función: Permitir compatibilidad con módulos antiguos (HR,
-   Finance, Bankruptcy, etc.) que aún llaman ACS_addAlert().
-   🔁 Internamente convierte todo a ACS_pushAlert() v4.
-   ============================================================ */
-
-function ACS_normalizeLevel(level) {
-  if (!level) return "info";
-  const L = String(level).trim().toLowerCase();
-  if (L.includes("crit")) return "critical";
-  if (L.includes("high")) return "high";
-  if (L.includes("med"))  return "medium";
-  if (L.includes("low"))  return "low";
-  return "info";
-}
-
-function ACS_addAlert(type, level, title, message) {
-  try {
-    const normalized = {
-      type: typeof type === "string" ? type : "system",
-      level: ACS_normalizeLevel(level),
-      title: title || "System Alert",
-      message: message || "",
-      timestamp: ACS_simTimestamp()
+  function ACS_sortAlerts(alerts) {
+    const levelWeight = {
+      critical: 4,
+      warning: 3,
+      medium: 2,
+      low: 1,
+      info: 0
     };
 
-    console.log("⚙️ [ACS_addAlert] Intercepted legacy alert → normalized:", normalized);
+    return alerts.slice().sort((a, b) => {
+      const levelDiff =
+        (levelWeight[b.level] || 0) - (levelWeight[a.level] || 0);
 
-    // Redirige al motor actual (ACS_pushAlert)
-    if (typeof ACS_pushAlert === "function") {
-      ACS_pushAlert(normalized);
-    } else {
-      console.warn("⚠️ ACS_pushAlert() not found — fallback active.");
+      if (levelDiff !== 0) return levelDiff;
+
+      return new Date(b.timestamp) - new Date(a.timestamp);
+    });
+  }
+
+  function ACS_mergeAlerts(backendAlerts, runtimeAlerts) {
+    const map = new Map();
+
+    [...backendAlerts, ...runtimeAlerts].forEach(alert => {
+      const normalized = ACS_normalizeAlert(alert);
+      map.set(normalized.id, normalized);
+    });
+
+    return ACS_sortAlerts(Array.from(map.values()));
+  }
+
+  async function ACS_fetchOCCAlerts() {
+    if (!ACS_alertApiAvailable) {
+      return [];
     }
 
-  } catch (err) {
-    console.error("❌ ACS_addAlert() wrapper failed:", err);
+    try {
+      const response = await fetch(ACS_OCC_ALERTS_ENDPOINT, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Accept": "application/json"
+        }
+      });
+
+      if (!response.ok) {
+        ACS_alertApiAvailable = false;
+        return [];
+      }
+
+      const data = await response.json();
+      const alerts = Array.isArray(data) ? data : (data.alerts || []);
+
+      return alerts.map(ACS_normalizeAlert);
+    } catch (_) {
+      ACS_alertApiAvailable = false;
+      return [];
+    }
   }
-}
+
+  async function ACS_runAlertScan() {
+    const backendAlerts = await ACS_fetchOCCAlerts();
+
+    ACS_occAlerts = ACS_mergeAlerts(backendAlerts, ACS_runtimeAlerts);
+
+    return ACS_occAlerts;
+  }
+
+  function ACS_getOCCAlerts() {
+    return ACS_occAlerts.slice();
+  }
+
+  function ACS_getAllAlertsMerged() {
+    return ACS_getOCCAlerts();
+  }
+
+  function ACS_deleteAlert(id) {
+    if (!id) return;
+
+    const alertId = String(id);
+
+    ACS_occAlerts = ACS_occAlerts.filter(alert => {
+      return String(alert.id) !== alertId &&
+             String(alert.alert_id) !== alertId &&
+             String(alert.alert_key) !== alertId;
+    });
+
+    ACS_runtimeAlerts = ACS_runtimeAlerts.filter(alert => {
+      return String(alert.id) !== alertId &&
+             String(alert.alert_id) !== alertId &&
+             String(alert.alert_key) !== alertId;
+    });
+  }
+
+  function ACS_pushAlert(payload = {}) {
+    const alert = ACS_normalizeAlert({
+      ...payload,
+      id: payload.id || payload.alert_id || payload.alert_key || `runtime:${Date.now()}`,
+      timestamp: payload.timestamp || ACS_simTimestamp(),
+      source: payload.source || "runtime"
+    });
+
+    const exists = ACS_runtimeAlerts.some(item => {
+      return ACS_makeAlertId(item) === alert.id;
+    });
+
+    if (!exists) {
+      ACS_runtimeAlerts.unshift(alert);
+    }
+
+    ACS_occAlerts = ACS_mergeAlerts(ACS_occAlerts, ACS_runtimeAlerts);
+
+    return alert;
+  }
+
+  function ACS_addAlert(type, level, title, message) {
+    return ACS_pushAlert({
+      type: type || "system",
+      level: level || "info",
+      title: title || "Operational Alert",
+      message: message || "",
+      timestamp: ACS_simTimestamp(),
+      source: "legacy"
+    });
+  }
+
+  window.ACS_runAlertScan = ACS_runAlertScan;
+  window.ACS_getOCCAlerts = ACS_getOCCAlerts;
+  window.ACS_getAllAlertsMerged = ACS_getAllAlertsMerged;
+  window.ACS_deleteAlert = ACS_deleteAlert;
+  window.ACS_pushAlert = ACS_pushAlert;
+  window.ACS_addAlert = ACS_addAlert;
+  window.ACS_normalizeLevel = ACS_normalizeLevel;
+  window.ACS_simTimestamp = ACS_simTimestamp;
+
+})();
