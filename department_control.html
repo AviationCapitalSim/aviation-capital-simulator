@@ -1482,10 +1482,8 @@ if (!HR || typeof HR !== "object") {
 }
 
 // ✅ Fuente canónica de orden y vista oficial del HR engine
-const depts =
-  (typeof ACS_HR_getDepartmentsView === "function")
-    ? ACS_HR_getDepartmentsView()
-    : Object.values(HR);
+     
+const depts = Object.values(HR);
      
   if (!depts || !Array.isArray(depts)) {
     console.warn("⚠️ HR view vacío o inválido");
@@ -1506,17 +1504,8 @@ const depts =
 
     const staff = Number(dep.staff || 0);
 
-    // 🔧 Required absoluto real (desde HR engine)
-    const requiredAbsolute =
-      (typeof d.required === "number") ? d.required : staff;
-
-    // ============================================================
-    // ✅ REQUIRED (MODO CANÓNICO QUE PEDISTE)
-    //   • 0  → 🟢 verde (NO falta personal)
-    //   • -X → 🔴 rojo (FALTA personal) + ALERT
-    //   • NUNCA muestra +X (exceso NO se muestra aquí)
-    // ============================================================
-
+    // 🔧 Required balance real desde PostgreSQL/Railway
+const requiredAbsolute = Number(dep.required || 0);
 const balance = staff - requiredAbsolute;
 
 let requiredClass = "required-ok";
@@ -1527,9 +1516,9 @@ if (balance < 0) {
   const missing = Math.abs(balance);
 
   requiredClass = "required-missing";
-  requiredText = `-${missing}`; // 🔴 falta personal
+  requiredText = `-${missing}`;
 
-  // 🔔 ALERTA SOLO SI FALTA PERSONAL (sin spam)
+  // 🔔 ALERTA SOLO SI FALTA PERSONAL
   if (window.ACS_Alerts && typeof window.ACS_Alerts.push === "function") {
 
     const alertKey = `HR_MISSING_${dep.id}`;
@@ -1550,7 +1539,7 @@ if (balance < 0) {
 } else if (balance > 0) {
 
   requiredClass = "required-ok";
-  requiredText = `+${balance}`; // 🟢 overstaff operativo
+  requiredText = `+${balance}`;
 
 }
        
