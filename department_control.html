@@ -1,6 +1,6 @@
 <!-- ============================================================
      === DEPARTMENT CONTROL CENTER — Qatar Luxury Edition ========
-     === Version:  v2 FIXED | Date: 22JAN 2026 ===================
+     === Version:  v2 FIXED | Date: 22 JAN 2026 ===================
      ============================================================ -->
 
 <!DOCTYPE html>
@@ -1886,7 +1886,12 @@ async function HR_hireOne(depId) {
   }
 
 }
-          
+     
+function handleLogout() {
+  alert("👋 Session closed. See you soon, Boss!");
+  window.location.href = "login.html";
+}
+     
 /* ============================================================
    🟦 HR BACKEND SYNC — ACS API CANONICAL
    ------------------------------------------------------------
@@ -2054,7 +2059,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   "color:#ffcf66;font-weight:800"
 );
 
-    
+    // ============================================================
+    // 🖥️ 4. RENDER
+    // ============================================================
+
+    loadDepartments();
+    HR_updateKPI();
+
     // ============================================================
     // 🕒 5. CLOCK
     // ============================================================
@@ -2364,6 +2375,11 @@ async function ACS_HR_liveSync() {
 
 }
 
+  loadDepartments();
+  HR_updateKPI();
+
+}
+
 // Cuando vuelves a la pestaña
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden) ACS_HR_liveSync();
@@ -2378,134 +2394,6 @@ function handleLogout(){
   alert("👋 Session closed. Your fleet awaits your command!");
   window.location.href = "login.html";
 } 
-
-window.openFireMiniModal = function(depId) {
-
-  const HR = window.ACS_HR_SERVER_STATE;
-
-  if (!HR || !HR[depId]) {
-    console.warn("❌ FIRE MODAL — Department not found:", depId);
-    return;
-  }
-
-  const dep = HR[depId];
-
-  if (dep.id === "ceo") {
-    alert("⚠️ The CEO cannot be dismissed.");
-    return;
-  }
-
-  if (Number(dep.staff || 0) <= 0) {
-    alert("⚠️ There is no staff to dismiss in this department.");
-    return;
-  }
-
-  window.__ACS_ACTIVE_FIRE_DEPT = depId;
-
-  document.getElementById("fireMiniDeptName").textContent = dep.name;
-
-  const select = document.getElementById("fireMiniQty");
-  select.innerHTML = "";
-
-  const max = Number(dep.staff || 0);
-
-  for (let i = 1; i <= max; i++) {
-    const opt = document.createElement("option");
-    opt.value = i;
-    opt.textContent = i;
-    select.appendChild(opt);
-  }
-
-  document.getElementById("hrFireMiniModal").style.display = "flex";
-
-  console.log("🔥 FIRE MODAL OPENED", dep.name);
-};
-
-window.closeFireMiniModal = function() {
-  const modal = document.getElementById("hrFireMiniModal");
-  if (modal) modal.style.display = "none";
-};
-
-window.confirmFireMiniModal = async function() {
-
-  const API_BASE = "https://api.aviationcapitalsim.com";
-  const depId = window.__ACS_ACTIVE_FIRE_DEPT;
-
-  if (!depId) {
-    console.warn("❌ FIRE CONFIRM FAILED — No active department");
-    return;
-  }
-
-  const HR = window.ACS_HR_SERVER_STATE;
-
-  if (!HR || !HR[depId]) {
-    console.warn("❌ FIRE FAILED — Department not found:", depId);
-    return;
-  }
-
-  const dep = HR[depId];
-  const airlineId = window.ACS_SERVER_SESSION?.airline_id;
-
-  if (!airlineId) {
-    console.error("❌ NO AIRLINE ID — SESSION INVALID");
-    return;
-  }
-
-  const select = document.getElementById("fireMiniQty");
-  const fireQty = Number(select?.value || 1);
-  const currentStaff = Number(dep.staff || 0);
-  const qty = Math.min(fireQty, currentStaff);
-
-  if (qty <= 0) {
-    console.warn("❌ FIRE FAILED — No staff to remove");
-    return;
-  }
-
-  const proceed = confirm(
-    "⚠ Fire Staff Action\n\n" +
-    "This will reduce staff in Railway/PostgreSQL.\n\n" +
-    "Are you sure you want to proceed?"
-  );
-
-  if (!proceed) return;
-
-  const newStaff = Math.max(0, currentStaff - qty);
-  const newMorale = Math.max(40, Number(dep.morale || 100) - 5);
-
-  const payload = {
-    airline_id: Number(airlineId),
-    dept_id: depId,
-    staff: newStaff,
-    morale: newMorale,
-    salary: Number(dep.salary || 0),
-    payroll: Math.round(newStaff * Number(dep.salary || 0))
-  };
-
-  const res = await fetch(`${API_BASE}/v1/hr/staff`, {
-    method: "PATCH",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-  });
-
-  const data = await res.json();
-
-  if (!res.ok || !data?.ok) {
-    console.warn("❌ HR FIRE SERVER REJECTED", data);
-    return;
-  }
-
-  console.log("🌐 HR FIRE SERVER UPDATE OK", dep.name, "New staff:", newStaff);
-
-  await ACS_HR_syncFromServer();
-
-  if (typeof loadDepartments === "function") loadDepartments();
-  if (typeof HR_updateKPI === "function") HR_updateKPI();
-
-  window.closeFireMiniModal();
-};
      
 </script>
        
