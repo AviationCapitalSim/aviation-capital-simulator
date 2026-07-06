@@ -1250,7 +1250,8 @@ function ACS_OPS_applyDepartmentBonus(depID, percent) {
 
 let __OPS_masterWeek = null;
 
-registerTimeListener((time) => {
+if (typeof registerTimeListener === "function") {
+  registerTimeListener((time) => {
 
   const year  = time.getUTCFullYear();
   const week  = Math.floor((time - new Date(year,0,1)) / (7 * 24 * 3600 * 1000));
@@ -1270,7 +1271,8 @@ registerTimeListener((time) => {
     __OPS_masterWeek = week;
   }
 
-});
+  });
+}
 
 /* ============================================================
    🟢 HR SALARY ENGINE SAFE START (TIME READY)
@@ -1281,8 +1283,9 @@ registerTimeListener((time) => {
 
 let __HR_salaryInitialized = false;
 
-registerTimeListener((time) => {
-
+if (typeof registerTimeListener === "function") {
+  registerTimeListener((time) => {
+     
   if (__HR_salaryInitialized) return;
   if (!(time instanceof Date)) return;
 
@@ -1298,7 +1301,8 @@ registerTimeListener((time) => {
 
   __HR_salaryInitialized = true;
 
-});
+  });
+}
 
 /* ============================================================
    🟦 A3.1.1 — HISTORICAL SALARY MATRIX (ACS OFFICIAL)
