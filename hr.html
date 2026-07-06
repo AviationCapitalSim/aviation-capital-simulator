@@ -270,7 +270,31 @@
   text-transform: uppercase;
   text-shadow: 0 0 8px rgba(138,180,255,0.28);
 }
-       
+
+.panel-subtitle {
+  margin: -0.35rem 0 1.5rem;
+  color: #d7e2ff;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: lowercase;
+  text-shadow: 0 0 10px rgba(215,226,255,0.35);
+}
+
+.hr-metric-ok {
+  color: #46ff8a;
+  text-shadow: 0 0 8px rgba(70,255,138,0.35);
+}
+
+.hr-metric-warn {
+  color: #ffb300;
+  text-shadow: 0 0 8px rgba(255,179,0,0.45);
+}
+
+.hr-metric-danger {
+  color: #ff4d4d;
+  text-shadow: 0 0 8px rgba(255,77,77,0.45);
+}       
   /* ============================================================
        === HR-SPECIFIC STYLES ==================================
      ============================================================ */
@@ -516,14 +540,15 @@
 
   <div class="dashboard-grid row-business">
 
-    <!-- === HR OVERVIEW === -->
-    <div class="panel">
-      <h3>📊 HR Overview</h3>
-      <p>Total Staff: <strong id="totalStaff">—</strong></p>
-      <p>Total Payroll: <strong id="totalPayroll">—</strong></p>
-      <p>Average Morale: <strong id="avgMorale">—</strong></p>
-      <p>Staff Coverage: <strong id="coverage">100%</strong></p>
-    </div>
+   <!-- === HR OVERVIEW === -->
+       
+<div class="panel">
+  <h3>📊 HR Overview</h3>
+  <p>Total Staff: <strong id="totalStaff">—</strong></p>
+  <p>Total Payroll: <strong id="totalPayroll">—</strong></p>
+  <p>Average Morale: <strong id="avgMorale">—</strong></p>
+  <p>Staff Coverage: <strong id="coverage">—</strong></p>
+</div>
 
     <!-- === HR COMMAND === -->
        
@@ -663,46 +688,68 @@ async function loadHRDashboard() {
 
     const deps = data.departments;
 
-    // =========================
-    // CALCULOS REALES
-    // =========================
+   // =========================
+// CALCULOS REALES
+// =========================
 
-    const totalStaff = deps.reduce(
-      (sum, d) => sum + (Number(d.staff) || 0),
-      0
-    );
+const totalStaff = deps.reduce(
+  (sum, d) => sum + (Number(d.staff) || 0),
+  0
+);
 
-    const totalPayroll = deps.reduce(
-      (sum, d) => sum + (Number(d.payroll) || 0),
-      0
-    );
+const totalPayroll = deps.reduce(
+  (sum, d) => sum + (Number(d.payroll) || 0),
+  0
+);
 
-    const avgMorale = deps.length
-      ? Math.round(
-          deps.reduce(
-            (sum, d) => sum + (Number(d.morale) || 100),
-            0
-          ) / deps.length
-        )
-      : 100;
+const avgMorale = deps.length
+  ? Math.round(
+      deps.reduce(
+        (sum, d) => sum + (Number(d.morale) || 100),
+        0
+      ) / deps.length
+    )
+  : 100;
 
-    // =========================
-    // RENDER UI
-    // =========================
+const totalRequired = deps.reduce(
+  (sum, d) => sum + (Number(d.required) || 0),
+  0
+);
 
-    document.getElementById("totalStaff").textContent = totalStaff;
-    document.getElementById("totalStaff2").textContent = totalStaff;
+const coveragePct = totalRequired > 0
+  ? Math.round((totalStaff / totalRequired) * 100)
+  : 100;
+// =========================
+// RENDER UI
+// =========================
 
-    document.getElementById("avgMorale").textContent = avgMorale + "%";
-    document.getElementById("avgMorale2").textContent = avgMorale + "%";
+const staffEl = document.getElementById("totalStaff");
+const moraleEl = document.getElementById("avgMorale");
+const coverageEl = document.getElementById("coverage");
 
-    document.getElementById("totalPayroll").textContent =
-      "$" + totalPayroll.toLocaleString() + " / month";
+staffEl.textContent = totalRequired > 0
+  ? `${totalStaff} / ${totalRequired}`
+  : totalStaff;
 
-    document.getElementById("monthlyPayroll").textContent =
-      "$" + totalPayroll.toLocaleString();
+moraleEl.textContent = avgMorale + "%";
+coverageEl.textContent = coveragePct + "%";
 
-    console.log("✅ HR DASHBOARD LOADED FROM BACKEND");
+staffEl.className =
+  coveragePct >= 100 ? "hr-metric-ok" :
+  coveragePct >= 85 ? "hr-metric-warn" :
+  "hr-metric-danger";
+
+coverageEl.className = staffEl.className;
+
+moraleEl.className =
+  avgMorale >= 90 ? "hr-metric-ok" :
+  avgMorale >= 70 ? "hr-metric-warn" :
+  "hr-metric-danger";
+
+document.getElementById("totalPayroll").textContent =
+  "$" + totalPayroll.toLocaleString() + " / month";
+
+console.log("✅ HR DASHBOARD LOADED FROM BACKEND");
 
   } catch (err) {
 
@@ -711,7 +758,7 @@ async function loadHRDashboard() {
     document.getElementById("totalStaff").textContent = "—";
     document.getElementById("totalPayroll").textContent = "—";
     document.getElementById("avgMorale").textContent = "—";
-
+    document.getElementById("coverage").textContent = "—";
   }
 
 }
