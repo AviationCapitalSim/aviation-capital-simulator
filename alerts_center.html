@@ -241,9 +241,9 @@ table.alerts-table {
   
 .alerts-table td:nth-child(5),
 .alerts-table th:nth-child(5) {
-  width: 25%;
+  width: 14%;
 }
-
+  
 /* ============================================================
    CHIPS DE NIVEL
    ============================================================ */
@@ -656,20 +656,6 @@ table.alerts-table {
 <script>
 
 /* ============================================================
-   3️⃣ MAPA DE REDIRECCIÓN POR CATEGORÍA
-   ============================================================ */
-
-const ALERT_REDIRECT_MAP = {
-  finance: "company_finance.html",
-  maintenance: "my_aircraft.html",
-  aircraft: "my_aircraft.html",
-  hr: "hr.html",
-  operations: "schedule_table.html",
-  routes: "routes.html",
-  credits: "buy_credits.html"
-};
-
-/* ============================================================
    4️⃣ RENDER DE ALERTAS PREMIUM — Qatar Luxury
    ============================================================ */
 
@@ -739,13 +725,10 @@ function renderAlerts(filter = "all") {
 
   <td>${new Date(alert.timestamp).toUTCString()}</td>
 
-  <td style="text-align:center;">
-    <button class="alert-go-btn"
-      onclick="ACS_jumpToAlert('${alert.type}')">Go →</button>
-
-    <button class="alert-delete-btn"
-      onclick="ACS_deleteAlert('${alert.id}')">🗑</button>
-  </td>
+<td style="text-align:center;">
+  <button class="alert-delete-btn"
+    onclick="ACS_deleteAlert('${alert.id}')">🗑</button>
+</td>
 `;
     
     tbody.appendChild(row);
@@ -767,27 +750,6 @@ function renderAlerts(filter = "all") {
   }
 
 }  /* ← ← ← AQUÍ CIERRA BIEN LA FUNCIÓN renderAlerts() */
-
-
-/* ============================================================
-   🟢 FUNCIÓN DE REDIRECCIÓN — GLOBAL (FIX CORRECTO)
-   ============================================================ */
-
-function ACS_jumpToAlert(type) {
-  if (!type) return;
-
-  const t = type.toLowerCase();
-
-  const goTo =
-    ALERT_REDIRECT_MAP[t] ||
-    ALERT_REDIRECT_MAP["operations"];
-
-  if (goTo) {
-    window.location.href = goTo;
-  } else {
-    console.warn("No redirect found for:", type);
-  }
-}
 
 
 /* ============================================================
