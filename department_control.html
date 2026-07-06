@@ -1483,7 +1483,9 @@ if (!HR || typeof HR !== "object") {
 
 // ✅ Fuente canónica de orden y vista oficial del HR engine
      
-const depts = Object.values(HR);
+const depts = ACS_HR_DEPARTMENTS
+  .map(meta => HR[meta.id])
+  .filter(Boolean);
      
   if (!depts || !Array.isArray(depts)) {
     console.warn("⚠️ HR view vacío o inválido");
