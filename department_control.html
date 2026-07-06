@@ -2113,117 +2113,144 @@ function HR_fillDepartmentSelector() {
        
 <script>
      
-/* ============================================================
-   🟥 A5 — FIRE MINI MODAL ENGINE (FINAL OFFICIAL — SELF CONTAINED)
-   ------------------------------------------------------------
-   • No depende de otros archivos
-   • Warning explícito de AutoHire OFF
-   • Reduce staff REAL
-   • Recalcula payroll inmediato
-   • Baja moral realista
-   • Desactiva AutoHire automáticamente
-   • Refresca tabla + KPI
-   • Arquitectura ACS estable
-   ============================================================ */
+window.__ACS_ACTIVE_FIRE_DEPT = null;
 
-let __ACS_ACTIVE_FIRE_DEPT = null;
+window.openFireMiniModal = function(depId) {
 
-/* ============================================================
-   🟥 A2 — CONFIRM FIRE MINI MODAL (API CANONICAL)
-   ------------------------------------------------------------
-   • NO localStorage
-   • NO Railway direct URL
-   • Uses official API domain
-   • Session cookie required
-   • Backend remains authority
-   ============================================================ */
+  const HR = window.ACS_HR_SERVER_STATE;
 
-async function confirmFireMiniModal() {
+  if (!HR || !HR[depId]) {
+    console.warn("❌ FIRE MODAL — Department not found:", depId, HR);
+    return;
+  }
+
+  const dep = HR[depId];
+
+  if (dep.id === "ceo") {
+    alert("⚠️ The CEO cannot be dismissed.");
+    return;
+  }
+
+  const staff = Number(dep.staff || 0);
+
+  if (staff <= 0) {
+    alert("⚠️ There is no staff to dismiss in this department.");
+    return;
+  }
+
+  window.__ACS_ACTIVE_FIRE_DEPT = depId;
+
+  const deptName = document.getElementById("fireMiniDeptName");
+  const select = document.getElementById("fireMiniQty");
+  const modal = document.getElementById("hrFireMiniModal");
+
+  if (!deptName || !select || !modal) {
+    console.warn("❌ FIRE MODAL — Missing modal elements");
+    return;
+  }
+
+  deptName.textContent = dep.name || depId;
+
+  select.innerHTML = "";
+
+  for (let i = 1; i <= staff; i++) {
+    const opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = i;
+    select.appendChild(opt);
+  }
+
+  modal.style.display = "flex";
+
+  console.log("🔥 FIRE MODAL OPENED", dep.name, "Staff:", staff);
+};
+
+window.closeFireMiniModal = function() {
+
+  const modal = document.getElementById("hrFireMiniModal");
+  if (!modal) return;
+
+  modal.style.display = "none";
+  window.__ACS_ACTIVE_FIRE_DEPT = null;
+
+  console.log("🔥 FIRE MODAL CLOSED");
+};
+
+window.confirmFireMiniModal = async function() {
 
   const API_BASE = "https://api.aviationcapitalsim.com";
-  const depId = __ACS_ACTIVE_FIRE_DEPT;
+  const depId = window.__ACS_ACTIVE_FIRE_DEPT;
 
   if (!depId) {
     console.warn("❌ FIRE CONFIRM FAILED — No active department");
     return;
   }
 
-  const select = document.getElementById("fireMiniQty");
-  const fireQty = Number(select?.value || 1);
+  const HR = window.ACS_HR_SERVER_STATE;
 
-  const proceed = confirm(
-    "⚠ Fire Staff Action\n\n" +
-    "This action will disable Auto Hire for this runtime session.\n" +
-    "Future hiring must be done manually unless Auto Hire is re-enabled later.\n\n" +
-    "Are you sure you want to proceed?"
-  );
-
-  if (!proceed) {
-    console.log("%c🟡 FIRE CANCELLED BY USER", "color:#ffaa00;font-weight:700");
+  if (!HR || !HR[depId]) {
+    console.warn("❌ FIRE FAILED — Department not found:", depId);
     return;
   }
 
+  const dep = HR[depId];
+  const airlineId = window.ACS_SERVER_SESSION?.airline_id;
+
+  if (!airlineId) {
+    console.error("❌ FIRE FAILED — No airline_id in session");
+    return;
+  }
+
+  const select = document.getElementById("fireMiniQty");
+  const fireQty = Number(select?.value || 1);
+
+  const currentStaff = Number(dep.staff || 0);
+  const qty = Math.min(fireQty, currentStaff);
+
+  if (qty <= 0) {
+    console.warn("❌ FIRE FAILED — No staff to remove");
+    return;
+  }
+
+  const proceed = confirm(
+    "⚠ Fire Staff Action\n\n" +
+    "This will reduce staff in PostgreSQL/Railway.\n\n" +
+    "Are you sure you want to proceed?"
+  );
+
+  if (!proceed) return;
+
+  const salary = Number(dep.salary || 0);
+  const newStaff = Math.max(0, currentStaff - qty);
+
+  let moraleDrop = 5;
+  if (qty >= 3) moraleDrop = 10;
+  if (qty >= 6) moraleDrop = 20;
+
+  const newMorale = Math.max(
+    40,
+    Number(dep.morale || 100) - moraleDrop
+  );
+
+  const payload = {
+    airline_id: Number(airlineId),
+    dept_id: depId,
+    staff: newStaff,
+    morale: newMorale,
+    salary: salary,
+    payroll: Math.round(newStaff * salary)
+  };
+
   try {
 
-    const HR = window.ACS_HR_SERVER_STATE;
-
-    if (!HR || !HR[depId]) {
-      console.warn("❌ FIRE FAILED — Department not found:", depId);
-      return;
-    }
-
-    const dep = HR[depId];
-
-    const airlineId = window.ACS_SERVER_SESSION?.airline_id;
-
-    if (!airlineId) {
-      console.error("❌ NO AIRLINE ID — SESSION INVALID");
-      return;
-    }
-
-    const currentStaff = Number(dep.staff || 0);
-    const qty = Math.min(fireQty, currentStaff);
-
-    if (qty <= 0) {
-      console.warn("❌ FIRE FAILED — No staff to remove");
-      return;
-    }
-
-    const newStaff = Math.max(0, currentStaff - qty);
-
-    let moraleDrop = 5;
-    if (qty >= 3) moraleDrop = 10;
-    if (qty >= 6) moraleDrop = 20;
-
-    const newMorale = Math.max(
-      40,
-      Number(dep.morale || 100) - moraleDrop
-    );
-
-    if (typeof ACS_HR_disableAutoHire === "function") {
-      ACS_HR_disableAutoHire();
-    }
-
-    const payload = {
-      airline_id: Number(airlineId),
-      dept_id: depId,
-      staff: newStaff,
-      morale: newMorale,
-      salary: Number(dep.salary || 0),
-      payroll: Math.round(newStaff * Number(dep.salary || 0))
-    };
-
-    const res = await fetch(
-      `${API_BASE}/v1/hr/staff`,
-      {
-        method: "PATCH",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      }
-    );
+    const res = await fetch(`${API_BASE}/v1/hr/staff`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
 
     const data = await res.json();
 
@@ -2232,95 +2259,28 @@ async function confirmFireMiniModal() {
       return;
     }
 
-    console.log(
-      "%c🌐 HR FIRE SERVER UPDATE OK",
-      "color:#ff7b7b;font-weight:700",
-      dep.name,
-      "New staff:", newStaff,
-      "New morale:", newMorale
-    );
+    console.log("🌐 HR FIRE SERVER UPDATE OK", dep.name, payload);
 
-    await ACS_HR_syncFromServer();
+    if (typeof ACS_HR_syncFromServer === "function") {
+      await ACS_HR_syncFromServer();
+    }
 
-    if (typeof loadDepartments === "function") loadDepartments();
-    if (typeof HR_updateKPI === "function") HR_updateKPI();
+    if (typeof loadDepartments === "function") {
+      loadDepartments();
+    }
 
-    closeFireMiniModal();
+    if (typeof HR_updateKPI === "function") {
+      HR_updateKPI();
+    }
+
+    window.closeFireMiniModal();
 
   } catch (err) {
 
     console.warn("❌ FIRE ERROR:", err);
 
   }
-
-}
-
-/* ============================================================
-   🟥 A5.2 — CLOSE FIRE MODAL
-   ============================================================ */
-
-function closeFireMiniModal() {
-
-  const modal = document.getElementById("hrFireMiniModal");
-  if (!modal) return;
-
-  modal.style.display = "none";
-
-  console.log("%c🔥 FIRE MODAL CLOSED", "color:#ffaa00;font-weight:700");
-}
-
-/* ============================================================
-   🟦 OPEN FIRE MINI MODAL (MISSING LINK — FIX)
-   ============================================================ */
-
-function openFireMiniModal(depId) {
-
-  const HR = window.ACS_HR_SERVER_STATE;
-
-  if (!HR || !HR[depId]) {
-    console.warn("❌ FIRE MODAL — Department not found:", depId);
-    return;
-  }
-
-  const dep = HR[depId];
-
-  if (dep.id === "ceo") {
-  alert("⚠️ The CEO cannot be dismissed.");
-  return;
-}
-
-if (Number(dep.staff || 0) <= 0) {
-  alert("⚠️ There is no staff to dismiss in this department.");
-  return;
-}
-     
-  // 🔐 Guardar contexto activo
-  __ACS_ACTIVE_FIRE_DEPT = depId;
-
-  // 🎯 Set UI
-  document.getElementById("fireMiniDeptName").textContent = dep.name;
-
-  const select = document.getElementById("fireMiniQty");
-  select.innerHTML = "";
-
-  const max = Math.max(1, Number(dep.staff || 0));
-
-  for (let i = 1; i <= max; i++) {
-    const opt = document.createElement("option");
-    opt.value = i;
-    opt.textContent = i;
-    select.appendChild(opt);
-  }
-
-  // 🟢 Mostrar modal
-  document.getElementById("hrFireMiniModal").style.display = "flex";
-
-  console.log(
-    "%c🔥 FIRE MODAL OPENED",
-    "color:#ffaa00;font-weight:700",
-    dep.name
-  );
-}
+};
      
 /* ============================================================
    🟦 A-FIRE-BOOT-RESET — FINAL CANONICAL FIX
