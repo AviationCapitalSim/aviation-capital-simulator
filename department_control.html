@@ -1545,6 +1545,8 @@ const depts =
         }
       }
     }
+
+  const canFire = dep.id !== "ceo" && staff > 0;
        
     rows.innerHTML += `
   <tr>
@@ -1584,10 +1586,13 @@ const depts =
       </button>
 
       <!-- Fire -->
-      <button class="btn btn-dismiss" title="Fire Staff"
-        onclick="openFireMiniModal('${dep.id}')">
-        👤➖
-      </button>
+<button
+  class="btn btn-dismiss ${canFire ? "" : "hr-disabled"}"
+  title="${canFire ? "Fire Staff" : "No staff available to dismiss"}"
+  ${canFire ? `onclick="openFireMiniModal('${dep.id}')"` : "disabled"}
+>
+  👤➖
+</button>
 
       <!-- Salary -->
       <button class="btn btn-adjust" title="Adjust Salary"
@@ -2279,6 +2284,16 @@ function openFireMiniModal(depId) {
 
   const dep = HR[depId];
 
+  if (dep.id === "ceo") {
+  alert("⚠️ The CEO cannot be dismissed.");
+  return;
+}
+
+if (Number(dep.staff || 0) <= 0) {
+  alert("⚠️ There is no staff to dismiss in this department.");
+  return;
+}
+     
   // 🔐 Guardar contexto activo
   __ACS_ACTIVE_FIRE_DEPT = depId;
 
