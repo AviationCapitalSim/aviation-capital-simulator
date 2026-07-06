@@ -2364,11 +2364,6 @@ async function ACS_HR_liveSync() {
 
 }
 
-  loadDepartments();
-  HR_updateKPI();
-
-}
-
 // Cuando vuelves a la pestaña
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden) ACS_HR_liveSync();
@@ -2383,8 +2378,6 @@ function handleLogout(){
   alert("👋 Session closed. Your fleet awaits your command!");
   window.location.href = "login.html";
 } 
-
-window.__ACS_ACTIVE_FIRE_DEPT = null;
 
 window.openFireMiniModal = function(depId) {
 
