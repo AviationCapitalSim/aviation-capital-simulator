@@ -606,6 +606,22 @@ function renderAlerts(filter = "all") {
   const tbody = document.getElementById("alertsTableBody");
   tbody.innerHTML = "";
 
+  if (!alerts || alerts.length === 0) {
+  for (let i = 0; i < 2; i++) {
+    tbody.insertAdjacentHTML("beforeend", `
+      <tr class="acs-empty-alert-row">
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+      </tr>
+    `);
+  }
+
+  return;
+}
+  
   alerts.forEach(alert => {
 
     // 1️⃣ Limpiar título
@@ -662,22 +678,23 @@ function renderAlerts(filter = "all") {
   });
 
   
-  /* 🟪 FILAS FANTASMA (5 columnas) */
-  
-  while (tbody.children.length < 4) {
+  /* ============================================================
+   ACS OCC EMPTY STATE — 2 filas vacías siempre visibles
+   ============================================================ */
+
+if (!alerts || alerts.length === 0) {
+  for (let i = 0; i < 2; i++) {
     tbody.insertAdjacentHTML("beforeend", `
-      <tr>
-        <td style="opacity:0.35;">No alerts</td>
-        <td style="opacity:0.35;">—</td>
-        <td style="opacity:0.35;">—</td>
-        <td style="opacity:0.35;">—</td>
-        <td style="opacity:0.35;">—</td>
+      <tr class="acs-empty-alert-row">
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
       </tr>
     `);
   }
-
-}  /* ← ← ← AQUÍ CIERRA BIEN LA FUNCIÓN renderAlerts() */
-
+}
 
 /* ============================================================
    5️⃣ INICIALIZACIÓN
