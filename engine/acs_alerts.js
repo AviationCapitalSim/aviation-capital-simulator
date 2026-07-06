@@ -6,7 +6,7 @@
 (function () {
   "use strict";
 
-  const ACS_OCC_ALERTS_ENDPOINT = "/api/occ/alerts";
+  const ACS_OCC_ALERTS_ENDPOINT = "/v1/occ/alerts";
 
   let ACS_occAlerts = [];
   let ACS_runtimeAlerts = [];
