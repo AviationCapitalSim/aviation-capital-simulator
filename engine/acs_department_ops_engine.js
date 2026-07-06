@@ -520,66 +520,7 @@ function ACS_OPS_classifyAircraftFromDB(aircraft) {
 
 window.ACS_OPS_recalculateAllRequired = ACS_OPS_recalculateAllRequired;
    
-  // ============================================================
-  // 🟦 A5 — STARTUP OPERATION CAPS (MOVED INSIDE OPS)
-  // ============================================================
-
-  (function applyStartupCaps(){
-
-    const totalFlights = activeFlights.length;
-
-    if (totalFlights <= 3) {
-
-      const STARTUP_CAPS = {
-        pilots_small:   2,
-        pilots_medium:  2,
-        pilots_large:   3,
-        pilots_vlarge:  4,
-        cabin:          1,
-        maintenance:    1,
-        ground:         1,
-        flightops:      1,
-        quality:        0,
-        security:       0,
-        routes:         0
-      };
-
-      Object.keys(HR).forEach(depID => {
-        const dep = HR[depID];
-        if (!dep || typeof dep.required !== "number") return;
-
-        const cap = STARTUP_CAPS[depID];
-        if (typeof cap === "number" && dep.required > cap) {
-          dep.required = cap;
-        }
-      });
-
-      console.log(
-        "%c🟢 STARTUP OPERATION MODE ACTIVE",
-        "color:#7CFFB2;font-weight:700",
-        "Flights:", totalFlights
-      );
-    }
-  })();
-
-  // ============================================================
-  // 🧭 MANAGEMENT
-  // ============================================================
-  if (typeof ACS_HR_calculateManagementRequired === "function") {
-    ACS_HR_calculateManagementRequired();
-  }
-
-  // ============================================================
-  // 💾 SAVE + UI
-  // ============================================================
-  ACS_HR_save(HR);
-
-  if (typeof loadDepartments === "function") loadDepartments();
-  if (typeof HR_updateKPI === "function") HR_updateKPI();
-
-  console.log("%c✅ OPS REQUIRED REBUILD — COMPLETED", "color:#00ffcc;font-weight:700");
-}
-
+ 
 /* ============================================================
    🟦 OPS DEFICIT STATE — NO LOCALSTORAGE
    ------------------------------------------------------------
