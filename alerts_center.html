@@ -1,5 +1,5 @@
 <!-- === ACS ALERT CENTER — Qatar Luxury Edition === -->
-<!-- Version: ACS OCC Clean Layout | Date: 06 JUL 2026 -->
+<!-- Version: ACS OCC Clean Layout | Date: 07 JUL 2026 -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -37,116 +37,134 @@ body {
   z-index: 5000;
 }
 
-.acs-left { display:flex; align-items:center; gap:1rem; }
-.acs-left img { height:46px; }
-.acs-left h1 { font-size:1.15rem; margin:0; color:#ffb300; }
-.acs-nav { flex:1; display:flex; justify-content:center; gap:2rem; }
+.acs-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.acs-left img {
+  height: 46px;
+}
+
+.acs-left h1 {
+  font-size: 1.15rem;
+  margin: 0;
+  color: #ffb300;
+}
+
+.acs-nav {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+}
 
 .acs-nav a {
-  position:relative;
-  font-size:1rem;
-  letter-spacing:0.4px;
-  color:#dbe4ff;
-  text-decoration:none;
-  transition:0.25s ease;
-  padding-bottom:6px;
+  position: relative;
+  font-size: 1rem;
+  letter-spacing: 0.4px;
+  color: #dbe4ff;
+  text-decoration: none;
+  transition: 0.25s ease;
+  padding-bottom: 6px;
 }
 
 .acs-nav a:hover,
 .acs-nav a.active {
-  color:#ffca3a;
-  text-shadow:0 0 6px rgba(255,179,0,0.45);
+  color: #ffca3a;
+  text-shadow: 0 0 6px rgba(255,179,0,0.45);
 }
 
 .acs-nav a.active::after,
 .acs-nav a:hover::after {
-  content:"";
-  position:absolute;
-  bottom:-8px;
-  left:0;
-  width:100%;
-  height:2px;
-  background:linear-gradient(to right,#ffb300,#ffe7a0);
-  border-radius:2px;
-  box-shadow:0 0 8px rgba(255,200,60,0.45);
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right,#ffb300,#ffe7a0);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(255,200,60,0.45);
 }
 
 .acs-right {
-  display:flex;
-  align-items:center;
-  gap:14px;
-  padding-right:12px;
-  flex-shrink:0;
-  white-space:nowrap;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-right: 12px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .support-btn {
-  padding:.45rem 1.1rem;
-  border-radius:12px;
-  font-size:.9rem;
-  font-weight:600;
-  text-decoration:none;
-  color:#8AB4FF;
-  border:1px solid rgba(138,180,255,.45);
-  background:rgba(138,180,255,.08);
+  padding: .45rem 1.1rem;
+  border-radius: 12px;
+  font-size: .9rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: #8AB4FF;
+  border: 1px solid rgba(138,180,255,.45);
+  background: rgba(138,180,255,.08);
 }
 
 .logout-btn {
-  padding:.45rem 1.1rem;
-  border:1px solid #ffb300;
-  border-radius:12px;
-  background:rgba(255,179,0,.05);
-  color:#ffb300;
-  font-weight:600;
-  cursor:pointer;
+  padding: .45rem 1.1rem;
+  border: 1px solid #ffb300;
+  border-radius: 12px;
+  background: rgba(255,179,0,.05);
+  color: #ffb300;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .acs-clock-header {
-  font-family:"Orbitron",monospace;
-  font-size:.95rem;
-  color:#00ff80;
-  background:rgba(0,255,128,.08);
-  border-radius:10px;
-  padding:.45rem .8rem;
-  width:260px;
-  flex:0 0 260px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  white-space:nowrap;
-  font-variant-numeric:tabular-nums;
-  border:1px solid rgba(0,255,128,.18);
-  overflow:hidden;
+  font-family: "Orbitron", monospace;
+  font-size: .95rem;
+  color: #00ff80;
+  background: rgba(0,255,128,.08);
+  border-radius: 10px;
+  padding: .45rem .8rem;
+  width: 260px;
+  flex: 0 0 260px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  border: 1px solid rgba(0,255,128,.18);
+  overflow: hidden;
 }
 
 .acs-main {
-  padding:120px 2rem 70px;
-  max-width:100%;
-  margin:0 auto;
+  padding: 120px 2rem 70px;
+  max-width: 100%;
+  margin: 0 auto;
 }
 
 .acs-page-title {
-  position:relative;
-  width:100%;
-  max-width:820px;
-  margin:18px auto 38px;
-  padding:18px 28px 20px;
-  text-align:center;
-  overflow:hidden;
-  background:transparent;
-  border:none;
-  border-radius:0;
-  box-shadow:none;
+  position: relative;
+  width: 100%;
+  max-width: 820px;
+  margin: 18px auto 38px;
+  padding: 18px 28px 20px;
+  text-align: center;
+  overflow: hidden;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .acs-page-title-main {
-  font-family:"Orbitron","Eurostile","Exo 2",sans-serif;
-  font-size:32px;
-  font-weight:700;
-  letter-spacing:.34em;
-  line-height:1;
-  color:#f7f8fb;
-  text-transform:uppercase;
+  font-family: "Orbitron","Eurostile","Exo 2",sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: .34em;
+  line-height: 1;
+  color: #f7f8fb;
+  text-transform: uppercase;
   text-shadow:
     0 1px 0 rgba(0,0,0,.85),
     0 0 10px rgba(255,255,255,.20),
@@ -154,15 +172,15 @@ body {
 }
 
 .acs-page-title-sub {
-  position:relative;
-  display:inline-block;
-  margin-top:11px;
-  font-family:"Orbitron","Eurostile","Exo 2",sans-serif;
-  font-size:15px;
-  font-weight:700;
-  letter-spacing:.42em;
-  color:#ffb300;
-  text-transform:uppercase;
+  position: relative;
+  display: inline-block;
+  margin-top: 11px;
+  font-family: "Orbitron","Eurostile","Exo 2",sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: .42em;
+  color: #ffb300;
+  text-transform: uppercase;
   text-shadow:
     0 0 8px rgba(255,179,0,.35),
     0 0 16px rgba(255,179,0,.18);
@@ -170,232 +188,36 @@ body {
 
 .acs-page-title-sub::before,
 .acs-page-title-sub::after {
-  content:"";
-  position:absolute;
-  top:50%;
-  width:82px;
-  height:2px;
-  background:linear-gradient(to right, transparent, #ffb300, transparent);
-  opacity:.8;
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 82px;
+  height: 2px;
+  background: linear-gradient(to right, transparent, #ffb300, transparent);
+  opacity: .8;
 }
 
 .acs-page-title-sub::before {
-  right:100%;
-  margin-right:18px;
+  right: 100%;
+  margin-right: 18px;
 }
 
 .acs-page-title-sub::after {
-  left:100%;
-  margin-left:18px;
+  left: 100%;
+  margin-left: 18px;
 }
 
 .acs-page-title-tag {
-  margin-top:10px;
-  font-size:13px;
-  font-weight:500;
-  letter-spacing:.24em;
-  color:rgba(220,226,238,.82);
-  text-shadow:0 0 8px rgba(255,255,255,.12);
-}
-
-.alerts-table-wrapper {
-  width:88% !important;
-  max-width:1280px;
-  margin:2rem auto 3rem;
-  background:rgba(13,28,60,0.55);
-  backdrop-filter:blur(6px);
-  border-radius:12px;
-  border:1px solid rgba(255,179,0,0.22);
-  box-shadow:0 0 16px rgba(0,0,0,0.38);
-  overflow-x:auto;
-}
-
-table.alerts-table {
-  width:100%;
-  border-collapse:collapse;
-  color:white;
-  font-size:0.88rem;
-}
-
-.alerts-table thead th {
-  background:#102040;
-  color:#ffb300;
-  padding:0.75rem 0.8rem;
-  font-size:0.92rem;
-  border-bottom:1px solid rgba(255,255,255,0.12);
-  text-align:center;
-  letter-spacing:0.2px;
-}
-
-.th-center {
-  text-align:center !important;
-}
-
-.alerts-table tbody tr {
-  height:54px;
-  transition:0.18s ease;
-}
-
-.alerts-table tbody tr:hover {
-  background:rgba(255,255,255,0.045);
-  box-shadow:inset 0 0 5px rgba(255,255,255,0.10);
-}
-
-.alerts-table td {
-  padding:0.55rem 0.75rem;
-  border-bottom:1px solid rgba(255,255,255,0.07);
-  vertical-align:middle !important;
-  text-align:center;
-}
-
-.alerts-table td:nth-child(1),
-.alerts-table th:nth-child(1) {
-  width: 8%;
-}
-
-.alerts-table td:nth-child(2),
-.alerts-table th:nth-child(2) {
-  width: 47%;
-}
-
-.alerts-table td:nth-child(3),
-.alerts-table th:nth-child(3) {
-  width: 15%;
-}
-
-.alerts-table td:nth-child(4),
-.alerts-table th:nth-child(4) {
-  width: 12%;
-}
-
-.alerts-table td:nth-child(5),
-.alerts-table th:nth-child(5) {
-  width: 18%;
-}
-
-.alert-chip {
-  padding:5px 10px;
-  border-radius:12px;
-  font-size:0.74rem;
-  font-weight:700;
-}
-
-.alert-low {
-  background:rgba(90,140,255,0.13);
-  border:1px solid #5a8cff;
-  color:#8ab4ff;
-}
-
-.alert-medium {
-  background:rgba(255,179,0,0.13);
-  border:1px solid #ffb300;
-  color:#ffca3a;
-}
-
-.alert-critical {
-  background:rgba(255,80,80,0.12);
-  border:1px solid #ff5050;
-  color:#ff8080;
-}
-
-.alert-category {
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  gap:6px;
-  background:rgba(255,255,255,0.055);
-  padding:5px 10px;
-  border-radius:9px;
-  border:1px solid rgba(255,255,255,0.11);
-  font-size:0.78rem;
-  color:#d0dbff;
-  width:fit-content;
-  margin:0 auto;
-}
-
-.alert-delete-btn {
-  padding:5px 12px;
-  border-radius:8px;
-  background:rgba(255,80,80,0.10);
-  border:1px solid rgba(255,80,80,0.65);
-  color:#ff8f8f;
-  font-weight:700;
-  font-size:0.76rem;
-  cursor:pointer;
-  box-shadow:none;
-  transition:0.18s ease;
-}
-
-.alert-delete-btn:hover {
-  background:rgba(255,80,80,0.18);
-  border-color:rgba(255,120,120,0.85);
-  color:#ffc0c0;
-}
-
-.acs-footer-email {
-  color:#ffb300;
-  text-decoration:none;
-  font-weight:500;
-  transition:.25s;
-}
-
-.acs-footer-email:hover {
-  color:#ffd86b;
-  text-shadow:0 0 8px rgba(255,179,0,.45);
-  text-decoration:underline;
-}
-
-@media (max-width:900px) {
-  .acs-page-title {
-    max-width:92%;
-    margin:14px auto 28px;
-    padding:14px 18px 16px;
-  }
-
-  .acs-page-title-main {
-    font-size:26px;
-    letter-spacing:.24em;
-  }
-
-  .acs-page-title-sub {
-    font-size:12px;
-    letter-spacing:.30em;
-  }
-
-  .acs-page-title-tag {
-    font-size:11px;
-    letter-spacing:.16em;
-  }
-
-  .acs-page-title-sub::before,
-  .acs-page-title-sub::after {
-    width:42px;
-  }
-}
-
-@media (max-width:560px) {
-  .acs-page-title-main {
-    font-size:22px;
-    letter-spacing:.18em;
-  }
-
-  .acs-page-title-sub {
-    font-size:11px;
-    letter-spacing:.22em;
-  }
-
-  .acs-page-title-tag {
-    font-size:10px;
-  }
-
-  .acs-page-title-sub::before,
-  .acs-page-title-sub::after {
-    display:none;
-  }
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: .24em;
+  color: rgba(220,226,238,.82);
+  text-shadow: 0 0 8px rgba(255,255,255,.12);
 }
 
 /* ============================================================
-   ACS OCC ALERT TOOLBAR
+   ACS OCC TOOLBAR
    ============================================================ */
 
 .occ-alert-toolbar {
@@ -476,7 +298,210 @@ table.alerts-table {
   background: rgba(255,80,80,0.08);
   color: #ff9b9b;
 }
-  
+
+.occ-alert-actions .occ-delete-selected:hover {
+  border-color: rgba(255,120,120,0.85);
+  background: rgba(255,80,80,0.16);
+  color: #ffc0c0;
+}
+
+/* ============================================================
+   ACS OCC TABLE
+   ============================================================ */
+
+.alerts-table-wrapper {
+  width: 88% !important;
+  max-width: 1280px;
+  margin: 0 auto 3rem;
+  background: rgba(13,28,60,0.55);
+  backdrop-filter: blur(6px);
+  border-radius: 12px;
+  border: 1px solid rgba(255,179,0,0.22);
+  box-shadow: 0 0 16px rgba(0,0,0,0.38);
+  overflow-x: auto;
+}
+
+table.alerts-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: white;
+  font-size: 0.88rem;
+}
+
+.alerts-table thead th {
+  background: #102040;
+  color: #ffb300;
+  padding: 0.75rem 0.8rem;
+  font-size: 0.92rem;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  text-align: center;
+  letter-spacing: 0.2px;
+}
+
+.th-center {
+  text-align: center !important;
+}
+
+.alerts-table tbody tr {
+  height: 54px;
+  transition: 0.18s ease;
+}
+
+.alerts-table tbody tr:hover {
+  background: rgba(255,255,255,0.045);
+  box-shadow: inset 0 0 5px rgba(255,255,255,0.10);
+}
+
+.alerts-table td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  vertical-align: middle !important;
+  text-align: center;
+}
+
+.alerts-table td:nth-child(1),
+.alerts-table th:nth-child(1) {
+  width: 8%;
+}
+
+.alerts-table td:nth-child(2),
+.alerts-table th:nth-child(2) {
+  width: 47%;
+}
+
+.alerts-table td:nth-child(3),
+.alerts-table th:nth-child(3) {
+  width: 15%;
+}
+
+.alerts-table td:nth-child(4),
+.alerts-table th:nth-child(4) {
+  width: 12%;
+}
+
+.alerts-table td:nth-child(5),
+.alerts-table th:nth-child(5) {
+  width: 18%;
+}
+
+.occ-alert-check {
+  width: 15px;
+  height: 15px;
+  accent-color: #ffb300;
+  cursor: pointer;
+}
+
+.alert-chip {
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.alert-low {
+  background: rgba(90,140,255,0.13);
+  border: 1px solid #5a8cff;
+  color: #8ab4ff;
+}
+
+.alert-medium {
+  background: rgba(255,179,0,0.13);
+  border: 1px solid #ffb300;
+  color: #ffca3a;
+}
+
+.alert-critical {
+  background: rgba(255,80,80,0.12);
+  border: 1px solid #ff5050;
+  color: #ff8080;
+}
+
+.alert-category {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.055);
+  padding: 5px 10px;
+  border-radius: 9px;
+  border: 1px solid rgba(255,255,255,0.11);
+  font-size: 0.78rem;
+  color: #d0dbff;
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.acs-footer-email {
+  color: #ffb300;
+  text-decoration: none;
+  font-weight: 500;
+  transition: .25s;
+}
+
+.acs-footer-email:hover {
+  color: #ffd86b;
+  text-shadow: 0 0 8px rgba(255,179,0,.45);
+  text-decoration: underline;
+}
+
+@media (max-width:900px) {
+  .acs-page-title {
+    max-width: 92%;
+    margin: 14px auto 28px;
+    padding: 14px 18px 16px;
+  }
+
+  .acs-page-title-main {
+    font-size: 26px;
+    letter-spacing: .24em;
+  }
+
+  .acs-page-title-sub {
+    font-size: 12px;
+    letter-spacing: .30em;
+  }
+
+  .acs-page-title-tag {
+    font-size: 11px;
+    letter-spacing: .16em;
+  }
+
+  .acs-page-title-sub::before,
+  .acs-page-title-sub::after {
+    width: 42px;
+  }
+
+  .occ-alert-toolbar {
+    width: 92%;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .alerts-table-wrapper {
+    width: 92% !important;
+  }
+}
+
+@media (max-width:560px) {
+  .acs-page-title-main {
+    font-size: 22px;
+    letter-spacing: .18em;
+  }
+
+  .acs-page-title-sub {
+    font-size: 11px;
+    letter-spacing: .22em;
+  }
+
+  .acs-page-title-tag {
+    font-size: 10px;
+  }
+
+  .acs-page-title-sub::before,
+  .acs-page-title-sub::after {
+    display: none;
+  }
+}
 </style>
 </head>
 
@@ -520,38 +545,33 @@ table.alerts-table {
   </section>
 
   <div class="occ-alert-toolbar">
-  <div class="occ-alert-status">
-    OCC ALERTS <span id="occAlertState">CLEAR</span>
+    <div class="occ-alert-panel">
+      <span class="occ-alert-label">OCC STATUS</span>
+      <span id="occAlertState" class="occ-alert-state occ-clear">CLEAR</span>
+    </div>
+
+    <div class="occ-alert-actions">
+      <button onclick="ACS_selectAllAlerts()">Select All</button>
+      <button onclick="ACS_clearAlertSelection()">Clear</button>
+      <button class="occ-delete-selected" onclick="ACS_deleteSelectedAlerts()">Delete Selected</button>
+    </div>
   </div>
 
-  <div class="occ-alert-toolbar">
-  <div class="occ-alert-panel">
-    <span class="occ-alert-label">OCC STATUS</span>
-    <span id="occAlertState" class="occ-alert-state occ-clear">CLEAR</span>
+  <div class="alerts-table-wrapper">
+    <table class="alerts-table">
+      <thead>
+        <tr>
+          <th class="th-center">Select</th>
+          <th class="th-center">Message</th>
+          <th class="th-center">Category</th>
+          <th class="th-center">Level</th>
+          <th class="th-center">Date</th>
+        </tr>
+      </thead>
+
+      <tbody id="alertsTableBody"></tbody>
+    </table>
   </div>
-
-  <div class="occ-alert-actions">
-    <button onclick="ACS_selectAllAlerts()">Select All</button>
-    <button onclick="ACS_clearAlertSelection()">Clear</button>
-    <button class="occ-delete-selected" onclick="ACS_deleteSelectedAlerts()">Delete Selected</button>
-  </div>
-</div>
-
-<div class="alerts-table-wrapper">
-  <table class="alerts-table">
-    <thead>
-  <tr>
-    <th class="th-center">Select</th>
-    <th class="th-center">Message</th>
-    <th class="th-center">Category</th>
-    <th class="th-center">Level</th>
-    <th class="th-center">Date</th>
-  </tr>
-</thead>
-
-    <tbody id="alertsTableBody"></tbody>
-  </table>
-</div>
 
 </main>
 
@@ -567,7 +587,18 @@ table.alerts-table {
 <script src="engine/acs_alerts.js?v=1.0"></script>
 
 <script>
-  
+const ACS_dismissedAlertIds = new Set();
+
+function ACS_getAlertId(alert) {
+  return String(
+    alert.id ||
+    alert.alert_id ||
+    alert.alert_key ||
+    alert.key ||
+    `${alert.type || "alert"}:${alert.title || ""}:${alert.message || ""}`
+  );
+}
+
 function renderAlerts(filter = "all") {
   let alerts = [];
 
@@ -583,6 +614,8 @@ function renderAlerts(filter = "all") {
     alerts = [];
   }
 
+  alerts = alerts.filter(alert => !ACS_dismissedAlertIds.has(ACS_getAlertId(alert)));
+
   if (filter !== "all") {
     alerts = alerts.filter(alert =>
       alert.type?.toLowerCase() === filter ||
@@ -593,13 +626,14 @@ function renderAlerts(filter = "all") {
   const tbody = document.getElementById("alertsTableBody");
   tbody.innerHTML = "";
 
- ACS_updateOccAlertState(alerts.length);
+  ACS_updateOccAlertState(alerts.length);
 
-if (alerts.length === 0) {
-  return;
-}
+  if (alerts.length === 0) {
+    return;
+  }
 
   alerts.forEach(alert => {
+    const alertId = ACS_getAlertId(alert);
     const cleanTitle = (alert.title || "Alert").replace("MISSING", "").trim();
     const type = (alert.type || alert.category || "system").toLowerCase();
 
@@ -622,28 +656,28 @@ if (alerts.length === 0) {
 
     const row = document.createElement("tr");
 
-row.innerHTML = `
-  <td>
-    <input
-      type="checkbox"
-      class="occ-alert-check"
-      data-alert-id="${alert.id || alert.alert_id || ""}">
-  </td>
+    row.innerHTML = `
+      <td>
+        <input
+          type="checkbox"
+          class="occ-alert-check"
+          data-alert-id="${alertId}">
+      </td>
 
-  <td>${cleanTitle} — ${alert.message || "-"}</td>
+      <td>${cleanTitle} — ${alert.message || "-"}</td>
 
-  <td>
-    <div class="alert-category">
-      <span>${categoryIcon}</span>
-      <span>${alert.category || alert.type || "-"}</span>
-    </div>
-  </td>
+      <td>
+        <div class="alert-category">
+          <span>${categoryIcon}</span>
+          <span>${alert.category || alert.type || "-"}</span>
+        </div>
+      </td>
 
-  <td><span class="${levelClass}">${level}</span></td>
+      <td><span class="${levelClass}">${level}</span></td>
 
-  <td>${alert.timestamp ? new Date(alert.timestamp).toUTCString() : "-"}</td>
-`;
-    
+      <td>${alert.timestamp ? new Date(alert.timestamp).toUTCString() : "-"}</td>
+    `;
+
     tbody.appendChild(row);
   });
 }
@@ -670,7 +704,7 @@ function ACS_updateOccAlertState(count) {
     state.classList.add("occ-clear");
   }
 }
-  
+
 function ACS_getSelectedAlertIds() {
   return Array.from(document.querySelectorAll(".occ-alert-check:checked"))
     .map(input => input.dataset.alertId)
@@ -693,6 +727,8 @@ function ACS_deleteSelectedAlerts() {
   const ids = ACS_getSelectedAlertIds();
 
   ids.forEach(id => {
+    ACS_dismissedAlertIds.add(id);
+
     if (typeof ACS_deleteAlert === "function") {
       ACS_deleteAlert(id);
     }
@@ -700,14 +736,11 @@ function ACS_deleteSelectedAlerts() {
 
   renderAlerts("all");
 }
-  
-/* ========== LOGOUT ========== */
-  
+
 function handleLogout(){
-  alert("👋 Session closed. Your fleet awaits your command!");
+  alert("Session closed. Your fleet awaits your command!");
   window.location.href = "login.html";
-} 
-  
+}
 </script>
 
 </body>
