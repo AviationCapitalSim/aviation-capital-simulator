@@ -1589,7 +1589,7 @@ const depts =
 <button
   class="btn btn-dismiss ${canFire ? "" : "hr-disabled"}"
   title="${canFire ? "Fire Staff" : "No staff available to dismiss"}"
-  ${canFire ? `onclick="openFireMiniModal('${dep.id}')"` : "disabled"}
+  ${canFire ? `onclick="window.openFireMiniModal('${dep.id}')"` : "disabled"}
 >
   👤➖
 </button>
