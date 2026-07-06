@@ -2448,18 +2448,3 @@ function ACS_HR_calculateManagementRequired() {
   );
 }
 
-/* ============================================================
-   ACS HR REQUIRED FRONTEND DISABLE — PHASE 1C
-   ------------------------------------------------------------
-   Required staff is now calculated by backend/PostgreSQL.
-   Frontend must not read localStorage.scheduleItems.
-============================================================ */
-
-window.ACS_OPS_recalculateAllRequired = function ACS_OPS_recalculateAllRequired_DISABLED() {
-  console.log(
-    "%c🛑 OPS required frontend calculation disabled — backend HR required is authority",
-    "color:#ffcf66;font-weight:800"
-  );
-
-  return null;
-};
