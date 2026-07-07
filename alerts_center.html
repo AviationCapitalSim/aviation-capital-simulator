@@ -736,27 +736,37 @@ function ACS_clearAlertSelection() {
   });
 }
 
-function ACS_deleteSelectedAlerts() {
+async function ACS_deleteSelectedAlerts() {
   const ids = ACS_getSelectedAlertIds();
 
-  ids.forEach(id => {
-    ACS_dismissedAlertIds.add(id);
-  });
+  if (!ids.length) {
+    return;
+  }
 
-  ACS_renderAlerts(ACS_visibleOccAlerts);
-}
+  try {
+    const response = await fetch("https://api.aviationcapitalsim.com/v1/occ/alerts", {
+      method: "DELETE",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        alert_ids: ids
+      })
+    });
 
-document.addEventListener("DOMContentLoaded", () => {
-  ACS_loadOccAlerts();
-  setInterval(ACS_loadOccAlerts, 30000);
-
-  document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) {
-      ACS_loadOccAlerts();
+    if (!response.ok) {
+      throw new Error(`OCC_ALERT_DELETE_HTTP_${response.status}`);
     }
-  });
-});
 
+    await ACS_loadOccAlerts();
+
+  } catch (error) {
+    console.warn("ACS OCC delete selected failed:", error);
+    alert("Delete selected failed. Please try again.");
+  }
+}
+  
 function handleLogout(){
   alert("Session closed. Your fleet awaits your command!");
   window.location.href = "login.html";
