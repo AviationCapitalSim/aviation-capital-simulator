@@ -524,6 +524,23 @@ body {
     padding-top: 145px;
   }
 }
+
+/* ============================================================
+   ACS GLOBAL FOOTER
+============================================================ */
+
+.acs-footer-email{
+    color:#ffb300;
+    text-decoration:none;
+    font-weight:500;
+    transition:.25s;
+}
+
+.acs-footer-email:hover{
+    color:#ffd86b;
+    text-shadow:0 0 8px rgba(255,179,0,.45);
+    text-decoration:underline;
+}
   
 </style>
 </head>
@@ -679,8 +696,11 @@ body {
 
 <footer class="acs-footer">
   © 2026 Aviation Capital Simulator. All rights reserved.
+  <a href="mailto:aviationcapitalsim@gmail.com" class="acs-footer-email">
+    aviationcapitalsim@gmail.com
+  </a>
 </footer>
-
+  
 <script>
   
 function openRoutesDB() { window.location.href = "routes_database.html"; }
