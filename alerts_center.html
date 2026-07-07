@@ -502,6 +502,7 @@ table.alerts-table {
     display: none;
   }
 }
+  
 </style>
 </head>
 
@@ -584,10 +585,11 @@ table.alerts-table {
 
 <script src="acs_time_recovery.js"></script>
 <script src="time_engine.js"></script>
-<script src="engine/acs_alerts.js?v=1.0"></script>
+
 
 <script>
 const ACS_dismissedAlertIds = new Set();
+let ACS_visibleOccAlerts = [];
 
 function ACS_getAlertId(alert) {
   return String(
@@ -599,56 +601,66 @@ function ACS_getAlertId(alert) {
   );
 }
 
-function renderAlerts(filter = "all") {
-  let alerts = [];
+function ACS_escapeHTML(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
-  try {
-    if (typeof ACS_getOCCAlerts === "function") {
-      alerts = ACS_getOCCAlerts();
-    }
-  } catch(e) {
-    alerts = [];
+function ACS_formatAlertDate(value) {
+  if (!value) return "-";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+
+  return date.toUTCString();
+}
+
+async function ACS_fetchOccAlerts() {
+  const response = await fetch("https://api.aviationcapitalsim.com/v1/occ/alerts", {
+    method: "GET",
+    credentials: "include",
+    cache: "no-store"
+  });
+
+  if (!response.ok) {
+    throw new Error(`OCC_ALERTS_HTTP_${response.status}`);
   }
 
-  if (!Array.isArray(alerts)) {
-    alerts = [];
-  }
+  const data = await response.json();
+  return Array.isArray(data.alerts) ? data.alerts : [];
+}
 
-  alerts = alerts.filter(alert => !ACS_dismissedAlertIds.has(ACS_getAlertId(alert)));
-
-  if (filter !== "all") {
-    alerts = alerts.filter(alert =>
-      alert.type?.toLowerCase() === filter ||
-      alert.category?.toLowerCase() === filter
-    );
-  }
-
+function ACS_renderAlerts(alerts) {
   const tbody = document.getElementById("alertsTableBody");
+  if (!tbody) return;
+
+  const visibleAlerts = Array.isArray(alerts)
+    ? alerts.filter(alert => !ACS_dismissedAlertIds.has(ACS_getAlertId(alert)))
+    : [];
+
+  ACS_visibleOccAlerts = visibleAlerts;
+
   tbody.innerHTML = "";
+  ACS_updateOccAlertState(visibleAlerts.length);
 
-  ACS_updateOccAlertState(alerts.length);
-
-  if (alerts.length === 0) {
+  if (visibleAlerts.length === 0) {
     return;
   }
 
-  alerts.forEach(alert => {
+  visibleAlerts.forEach(alert => {
     const alertId = ACS_getAlertId(alert);
-    const cleanTitle = (alert.title || "Alert").replace("MISSING", "").trim();
-    const type = (alert.type || alert.category || "system").toLowerCase();
+    const title = ACS_escapeHTML(alert.title || "OCC ALERT");
+    const message = ACS_escapeHTML(alert.message || "-");
+    const category = ACS_escapeHTML(alert.category || alert.type || "occ");
+    const level = String(alert.level || "info").toLowerCase();
+    const dateText = ACS_escapeHTML(
+      ACS_formatAlertDate(alert.timestamp || alert.date)
+    );
 
-    const categoryIcon = {
-      hr: "HR",
-      finance: "$",
-      maintenance: "MX",
-      aircraft: "AC",
-      slots: "SLOT",
-      operations: "OPS",
-      routes: "RTE",
-      credits: "CR"
-    }[type] || "OCC";
-
-    const level = (alert.level || "info").toLowerCase();
     const levelClass =
       level === "critical" ? "alert-chip alert-critical" :
       level === "medium" || level === "warning" ? "alert-chip alert-medium" :
@@ -661,34 +673,35 @@ function renderAlerts(filter = "all") {
         <input
           type="checkbox"
           class="occ-alert-check"
-          data-alert-id="${alertId}">
+          data-alert-id="${ACS_escapeHTML(alertId)}">
       </td>
 
-      <td>${cleanTitle} — ${alert.message || "-"}</td>
+      <td>${title} — ${message}</td>
 
       <td>
         <div class="alert-category">
-          <span>${categoryIcon}</span>
-          <span>${alert.category || alert.type || "-"}</span>
+          <span>${category}</span>
         </div>
       </td>
 
-      <td><span class="${levelClass}">${level}</span></td>
+      <td><span class="${levelClass}">${ACS_escapeHTML(level)}</span></td>
 
-      <td>${alert.timestamp ? new Date(alert.timestamp).toUTCString() : "-"}</td>
+      <td>${dateText}</td>
     `;
 
     tbody.appendChild(row);
   });
 }
 
-document.addEventListener("DOMContentLoaded", async () => {
-  if (typeof ACS_runAlertScan === "function") {
-    await ACS_runAlertScan();
+async function ACS_loadOccAlerts() {
+  try {
+    const alerts = await ACS_fetchOccAlerts();
+    ACS_renderAlerts(alerts);
+  } catch (error) {
+    console.warn("ACS OCC alerts load failed:", error);
+    ACS_renderAlerts([]);
   }
-
-  renderAlerts("all");
-});
+}
 
 function ACS_updateOccAlertState(count) {
   const state = document.getElementById("occAlertState");
@@ -728,19 +741,37 @@ function ACS_deleteSelectedAlerts() {
 
   ids.forEach(id => {
     ACS_dismissedAlertIds.add(id);
-
-    if (typeof ACS_deleteAlert === "function") {
-      ACS_deleteAlert(id);
-    }
   });
 
-  renderAlerts("all");
+  ACS_renderAlerts(ACS_visibleOccAlerts);
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  ACS_loadOccAlerts();
+  setInterval(ACS_loadOccAlerts, 30000);
+
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+      ACS_loadOccAlerts();
+    }
+  });
+});
 
 function handleLogout(){
   alert("Session closed. Your fleet awaits your command!");
   window.location.href = "login.html";
 }
+
+  
+/* ========== LOGOUT ========== */
+  
+function handleLogout(){
+  alert("👋 Session closed. Your fleet awaits your command!");
+  window.location.href = "login.html";
+} 
+
+</script>
+  
 </script>
 
 </body>
