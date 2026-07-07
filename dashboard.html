@@ -244,9 +244,7 @@ body {
 }
 
 #opsAlertBadge {
-  position: absolute;
-  top: -10px;
-  right: -10px;
+  display: none;
   min-width: 24px;
   height: 24px;
   padding: 0 7px;
@@ -257,10 +255,10 @@ body {
   font-weight: 800;
   line-height: 24px;
   text-align: center;
-  display: none;
   box-shadow: 0 0 12px rgba(255, 47, 47, 0.85);
   border: 1px solid rgba(255,255,255,0.45);
-  z-index: 5;
+  margin-right: 8px;
+  vertical-align: middle;
 }
   
 .alert-list,
@@ -594,11 +592,13 @@ body {
  </div>
 
   <div class="panel operational-alert-panel">
-      <span id="opsAlertBadge">0</span>
-      <h3 id="dashboardAlertTitle">⚠️ Operational Alerts</h3>
-      <p>Manage Operational, Financial, HR, and Maintenance Alerts.</p>
-      <button class="acs-btn" onclick="window.location.href='alerts_center.html'">Open Center</button>
-    </div>
+  <h3 id="dashboardAlertTitle">
+    <span id="opsAlertBadge">0</span>
+    <span>Operational Alerts</span>
+  </h3>
+  <p>Manage Operational, Financial, HR, and Maintenance Alerts.</p>
+  <button class="acs-btn" onclick="window.location.href='alerts_center.html'">Open Center</button>
+</div>
 
   </div>
 
