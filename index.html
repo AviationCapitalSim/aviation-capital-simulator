@@ -1,0 +1,629 @@
+<!-- INDEX ACS OCC v1.0 — Global Aviation Operations Center -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Aviation Capital Simulator — ACS OCC</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+  <link rel="apple-touch-icon" href="acs_logo_180.png">
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    :root {
+      --acs-bg: #030712;
+      --acs-panel: rgba(5, 14, 32, 0.78);
+      --acs-panel-soft: rgba(10, 24, 52, 0.62);
+      --acs-gold: #d9a441;
+      --acs-gold-bright: #ffca63;
+      --acs-text: #f4f0e8;
+      --acs-muted: #aeb8cc;
+      --acs-green: #42ff7b;
+      --acs-border: rgba(217, 164, 65, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--acs-text);
+      background:
+        radial-gradient(circle at 50% 18%, rgba(255, 202, 99, 0.16), transparent 28%),
+        radial-gradient(circle at 20% 30%, rgba(58, 118, 180, 0.20), transparent 28%),
+        linear-gradient(180deg, #020713 0%, #061124 48%, #020713 100%);
+      overflow-x: hidden;
+    }
+
+    .acs-page {
+      min-height: 100vh;
+      position: relative;
+      padding: 1.5rem;
+      overflow: hidden;
+    }
+
+    .acs-page::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 80px 80px;
+      opacity: 0.35;
+      pointer-events: none;
+    }
+
+    .acs-world {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at center, rgba(255, 183, 77, 0.20), transparent 22%),
+        url("acs_logo.png");
+      background-repeat: no-repeat;
+      background-position: center 8%;
+      background-size: 460px auto;
+      opacity: 0.055;
+      filter: blur(1px);
+      pointer-events: none;
+    }
+
+    .acs-topbar {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .acs-status {
+      border: 1px solid rgba(217,164,65,0.35);
+      background: rgba(0,0,0,0.32);
+      border-radius: 12px;
+      padding: 0.55rem 1rem;
+      color: #ffffff;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+    }
+
+    .acs-status span {
+      color: var(--acs-green);
+      margin-right: 0.5rem;
+    }
+
+    .acs-icons {
+      display: flex;
+      gap: 0.8rem;
+      color: var(--acs-gold-bright);
+      font-size: 1.35rem;
+      opacity: 0.9;
+    }
+
+    .hero {
+      position: relative;
+      z-index: 2;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding-top: 2rem;
+      text-align: center;
+    }
+
+    .acs-mark {
+      width: 120px;
+      max-width: 35vw;
+      margin-bottom: 0.6rem;
+      filter: drop-shadow(0 0 18px rgba(255,202,99,0.38));
+    }
+
+    .title {
+      margin: 0;
+      font-size: clamp(3rem, 8vw, 7rem);
+      line-height: 0.9;
+      letter-spacing: 0.08em;
+      color: var(--acs-gold-bright);
+      text-shadow:
+        0 0 18px rgba(217,164,65,0.42),
+        0 4px 0 rgba(0,0,0,0.45);
+      font-weight: 900;
+    }
+
+    .subtitle {
+      margin-top: 0.7rem;
+      color: #e8b65b;
+      letter-spacing: 0.45em;
+      font-size: clamp(0.75rem, 1.5vw, 1.15rem);
+      text-transform: uppercase;
+    }
+
+    .occ {
+      margin-top: 0.8rem;
+      color: #ffffff;
+      letter-spacing: 0.34em;
+      font-size: clamp(0.7rem, 1.2vw, 1rem);
+      text-transform: uppercase;
+    }
+
+    .quote {
+      margin: 2.4rem auto 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(1.7rem, 3.2vw, 3rem);
+      color: #fff4dc;
+      text-shadow: 0 0 14px rgba(255,202,99,0.34);
+    }
+
+    .welcome {
+      margin: 1rem auto 2rem;
+      max-width: 720px;
+      color: #d8deef;
+      font-size: clamp(1rem, 1.5vw, 1.25rem);
+      line-height: 1.5;
+    }
+
+    .timeline {
+      position: relative;
+      z-index: 2;
+      max-width: 1280px;
+      margin: 1.8rem auto 1.4rem;
+      padding: 5.4rem 0 1.7rem;
+      background:
+        linear-gradient(90deg,
+          rgba(0,0,0,0),
+          rgba(7, 18, 38, 0.55),
+          rgba(0,0,0,0));
+    }
+
+    .timeline-images {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      gap: 4px;
+      opacity: 0.78;
+    }
+
+    .era {
+      height: 92px;
+      border-left: 1px solid rgba(217,164,65,0.18);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.07), rgba(0,0,0,0.3)),
+        radial-gradient(circle at 50% 30%, rgba(255,202,99,0.22), transparent 32%);
+      border-radius: 4px;
+    }
+
+    .line {
+      height: 1px;
+      background: linear-gradient(90deg, rgba(217,164,65,0.2), var(--acs-gold-bright), rgba(217,164,65,0.2));
+      position: relative;
+    }
+
+    .years {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      margin-top: 0.5rem;
+      color: var(--acs-gold-bright);
+      font-size: 0.95rem;
+    }
+
+    .actions {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(220px, 1fr));
+      gap: 1.4rem;
+      max-width: 1040px;
+      margin: 0 auto 1.8rem;
+    }
+
+    .action-card {
+      display: flex;
+      align-items: center;
+      gap: 1.3rem;
+      text-decoration: none;
+      color: var(--acs-text);
+      background: var(--acs-panel);
+      border: 1px solid var(--acs-border);
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      min-height: 96px;
+      box-shadow: 0 0 24px rgba(0,0,0,0.35);
+      transition: 0.22s ease;
+    }
+
+    .action-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--acs-gold-bright);
+      box-shadow: 0 0 26px rgba(217,164,65,0.32);
+    }
+
+    .action-icon {
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255,202,99,0.42);
+      border-radius: 50%;
+      color: var(--acs-gold-bright);
+      font-size: 1.8rem;
+      flex: 0 0 auto;
+    }
+
+    .action-title {
+      font-size: 1.35rem;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+    }
+
+    .action-sub {
+      margin-top: 0.25rem;
+      color: var(--acs-muted);
+      font-size: 0.95rem;
+      line-height: 1.35;
+    }
+
+    .section-label {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      color: #f7d490;
+      letter-spacing: 0.55em;
+      margin: 1.5rem 0 1.1rem;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+    }
+
+    .features {
+      position: relative;
+      z-index: 2;
+      max-width: 1420px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1rem;
+    }
+
+    .feature-card {
+      min-height: 210px;
+      border: 1px solid var(--acs-border);
+      border-radius: 14px;
+      overflow: hidden;
+      background: var(--acs-panel-soft);
+      box-shadow: 0 0 18px rgba(0,0,0,0.35);
+    }
+
+    .feature-art {
+      height: 110px;
+      background:
+        radial-gradient(circle at 35% 35%, rgba(255,202,99,0.25), transparent 34%),
+        linear-gradient(135deg, rgba(14,40,82,0.95), rgba(3,8,18,0.95));
+      border-bottom: 1px solid rgba(217,164,65,0.22);
+    }
+
+    .feature-card:nth-child(2) .feature-art {
+      background:
+        radial-gradient(circle at 50% 65%, rgba(255,185,80,0.28), transparent 35%),
+        linear-gradient(135deg, #18233a, #06101f);
+    }
+
+    .feature-card:nth-child(3) .feature-art {
+      background:
+        radial-gradient(circle at 50% 50%, rgba(70,155,255,0.28), transparent 36%),
+        linear-gradient(135deg, #071d2c, #020713);
+    }
+
+    .feature-card:nth-child(4) .feature-art {
+      background:
+        radial-gradient(circle at 70% 30%, rgba(0,255,192,0.16), transparent 32%),
+        linear-gradient(135deg, #07142b, #020713);
+    }
+
+    .feature-card:nth-child(5) .feature-art {
+      background:
+        radial-gradient(circle at 55% 30%, rgba(255,135,70,0.24), transparent 35%),
+        linear-gradient(135deg, #251018, #06101f);
+    }
+
+    .feature-body {
+      padding: 1rem;
+    }
+
+    .feature-title {
+      color: var(--acs-gold-bright);
+      font-size: 1rem;
+      margin-bottom: 0.45rem;
+      text-transform: uppercase;
+    }
+
+    .feature-text {
+      color: #e4e9f6;
+      font-size: 0.92rem;
+      line-height: 1.42;
+    }
+
+    .bottom-status {
+      position: relative;
+      z-index: 2;
+      max-width: 1420px;
+      margin: 1.3rem auto 0;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1px;
+      border: 1px solid rgba(217,164,65,0.20);
+      border-radius: 14px;
+      overflow: hidden;
+      background: rgba(0,0,0,0.28);
+    }
+
+    .stat {
+      padding: 1rem;
+      text-align: center;
+      background: rgba(5,14,32,0.55);
+    }
+
+    .stat-label {
+      color: var(--acs-muted);
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      margin-top: 0.35rem;
+      color: #ffffff;
+      font-size: 1.05rem;
+    }
+
+    .stat-value.green {
+      color: var(--acs-green);
+    }
+
+    footer {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      padding: 1rem 0 0;
+      color: rgba(255,255,255,0.45);
+      font-size: 0.8rem;
+      letter-spacing: 0.15em;
+    }
+
+    @media (max-width: 1050px) {
+      .features {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .actions {
+        grid-template-columns: 1fr;
+      }
+
+      .timeline-images {
+        grid-template-columns: repeat(5, 1fr);
+      }
+
+      .bottom-status {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .acs-page {
+        padding: 1rem;
+      }
+
+      .acs-topbar {
+        align-items: flex-start;
+      }
+
+      .acs-icons {
+        display: none;
+      }
+
+      .timeline {
+        padding-top: 3.5rem;
+      }
+
+      .era {
+        height: 60px;
+      }
+
+      .years {
+        font-size: 0.72rem;
+      }
+
+      .features,
+      .bottom-status {
+        grid-template-columns: 1fr;
+      }
+
+      .action-card {
+        padding: 1rem;
+      }
+
+      .subtitle,
+      .occ,
+      .section-label {
+        letter-spacing: 0.22em;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="acs-page">
+    <div class="acs-world"></div>
+
+    <div class="acs-topbar">
+      <div class="acs-status"><span>●</span> SYSTEMS ONLINE</div>
+      <div class="acs-icons">
+        <span>◌</span>
+        <span>⚙</span>
+      </div>
+    </div>
+
+    <section class="hero">
+      <img src="acs_logo.png" alt="ACS Logo" class="acs-mark">
+
+      <h1 class="title">ACS OCC</h1>
+
+      <div class="subtitle">Aviation Capital Simulator</div>
+      <div class="occ">Global Aviation Operations Center</div>
+
+      <div class="quote">“History is written by those who build it.”</div>
+
+      <p class="welcome">
+        Welcome to the world’s most comprehensive aviation management simulation.
+      </p>
+    </section>
+
+    <section class="timeline" aria-label="ACS Historical Timeline">
+      <div class="timeline-images">
+        <div class="era"></div>
+        <div class="era"></div>
+        <div class="era"></div>
+        <div class="era"></div>
+        <div class="era"></div>
+        <div class="era"></div>
+        <div class="era"></div>
+        <div class="era"></div>
+        <div class="era"></div>
+      </div>
+
+      <div class="line"></div>
+
+      <div class="years">
+        <span>1940</span>
+        <span>1950</span>
+        <span>1960</span>
+        <span>1970</span>
+        <span>1980</span>
+        <span>1990</span>
+        <span>2000</span>
+        <span>2010</span>
+        <span>2020</span>
+        <span>2030</span>
+      </div>
+    </section>
+
+    <section class="actions" aria-label="ACS Entry Actions">
+      <a href="register.html" class="action-card">
+        <div class="action-icon">👤</div>
+        <div>
+          <div class="action-title">REGISTER</div>
+          <div class="action-sub">Create your account and join ACS OCC</div>
+        </div>
+      </a>
+
+      <a href="login.html" class="action-card">
+        <div class="action-icon">🔒</div>
+        <div>
+          <div class="action-title">LOGIN</div>
+          <div class="action-sub">Access your account and enter ACS OCC</div>
+        </div>
+      </a>
+
+      <a href="support.html" class="action-card">
+        <div class="action-icon">🎧</div>
+        <div>
+          <div class="action-title">SUPPORT</div>
+          <div class="action-sub">Get help and support from our team</div>
+        </div>
+      </a>
+    </section>
+
+    <div class="section-label">Explore the ACS Experience</div>
+
+    <section class="features" aria-label="ACS Game Features">
+      <article class="feature-card">
+        <div class="feature-art"></div>
+        <div class="feature-body">
+          <div class="feature-title">Global Route Network</div>
+          <div class="feature-text">
+            Design, manage and expand routes across the entire world.
+          </div>
+        </div>
+      </article>
+
+      <article class="feature-card">
+        <div class="feature-art"></div>
+        <div class="feature-body">
+          <div class="feature-title">Fleet Operations</div>
+          <div class="feature-text">
+            Acquire, operate and optimize one of the largest aircraft fleets.
+          </div>
+        </div>
+      </article>
+
+      <article class="feature-card">
+        <div class="feature-art"></div>
+        <div class="feature-body">
+          <div class="feature-title">Live Operations</div>
+          <div class="feature-text">
+            Real-time flights, schedules, dispatch and operational control.
+          </div>
+        </div>
+      </article>
+
+      <article class="feature-card">
+        <div class="feature-art"></div>
+        <div class="feature-body">
+          <div class="feature-title">Corporate Finance</div>
+          <div class="feature-text">
+            Manage capital, revenue, expenses, investments and profitability.
+          </div>
+        </div>
+      </article>
+
+      <article class="feature-card">
+        <div class="feature-art"></div>
+        <div class="feature-body">
+          <div class="feature-title">World Events</div>
+          <div class="feature-text">
+            Dynamic economy, historical events and global news that impact aviation.
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="bottom-status" aria-label="ACS World Snapshot">
+      <div class="stat">
+        <div class="stat-label">Current Year</div>
+        <div class="stat-value">1956</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">Aircraft in Service</div>
+        <div class="stat-value">8,942</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">Airports</div>
+        <div class="stat-value">4,223</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">Airlines</div>
+        <div class="stat-value">2,816</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">Global Economy</div>
+        <div class="stat-value green">GROWING</div>
+      </div>
+    </section>
+
+    <footer>
+      © 2026 AVIATION CAPITAL SIMULATOR. ALL RIGHTS RESERVED.
+    </footer>
+  </main>
+</body>
+</html>
