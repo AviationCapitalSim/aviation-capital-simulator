@@ -119,44 +119,79 @@
       text-align: center;
     }
 
-    .acs-mark {
-      width: 120px;
-      max-width: 35vw;
-      margin-bottom: 0.6rem;
-      filter: drop-shadow(0 0 18px rgba(255,202,99,0.38));
-    }
+ .acs-page-title{
+  position: relative;
+  width: 100%;
+  max-width: 920px;
+  margin: 18px auto 34px;
+  padding: 18px 28px 20px;
+  text-align: center;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
 
-    .title {
-  margin: 0;
-  font-family: "Orbitron", "Eurostile", "Exo 2", Arial, sans-serif;
-  font-size: clamp(3rem, 7vw, 6.6rem);
+.acs-page-title-main{
+  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+  font-size: 46px;
+  font-weight: 700;
+  letter-spacing: .24em;
   line-height: 1;
-  letter-spacing: 0.28em;
   color: var(--acs-gold-bright);
   text-transform: uppercase;
   text-shadow:
     0 1px 0 rgba(0,0,0,.85),
     0 0 10px rgba(255,202,99,.35),
     0 0 22px rgba(255,202,99,.18);
-  font-weight: 800;
 }
 
-    .subtitle {
-      margin-top: 0.7rem;
-      color: #e8b65b;
-      letter-spacing: 0.45em;
-      font-size: clamp(0.75rem, 1.5vw, 1.15rem);
-      text-transform: uppercase;
-    }
+.acs-page-title-sub{
+  position: relative;
+  display: inline-block;
+  margin-top: 12px;
+  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: .42em;
+  color: var(--acs-gold-bright);
+  text-transform: uppercase;
+  text-shadow:
+    0 0 8px rgba(255,202,99,.35),
+    0 0 16px rgba(255,202,99,.18);
+}
 
-    .occ {
-      margin-top: 0.8rem;
-      color: #ffffff;
-      letter-spacing: 0.34em;
-      font-size: clamp(0.7rem, 1.2vw, 1rem);
-      text-transform: uppercase;
-    }
+.acs-page-title-sub::before,
+.acs-page-title-sub::after{
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 82px;
+  height: 2px;
+  background: linear-gradient(to right, transparent, var(--acs-gold-bright), transparent);
+  opacity: .8;
+}
 
+.acs-page-title-sub::before{
+  right: 100%;
+  margin-right: 18px;
+}
+
+.acs-page-title-sub::after{
+  left: 100%;
+  margin-left: 18px;
+}
+
+.acs-page-title-tag{
+  margin-top: 11px;
+  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: .24em;
+  color: rgba(255,214,139,.82);
+  text-transform: uppercase;
+  text-shadow: 0 0 8px rgba(255,202,99,.18);
+}
+    
     .quote {
       margin: 2.4rem auto 0;
       font-family: Georgia, "Times New Roman", serif;
@@ -460,7 +495,9 @@
         letter-spacing: 0.22em;
       }
     }
-  </style>
+
+    
+</style>
 </head>
 
 <body>
@@ -475,13 +512,21 @@
       </div>
     </div>
 
-    <section class="hero">
-      <img src="acs_logo.png" alt="ACS Logo" class="acs-mark">
+  <section class="acs-page-title">
 
-      <h1 class="title">Aviation Capital Simulator</h1>
+  <div class="acs-page-title-main">
+    Aviation Capital Simulator
+  </div>
 
-      <div class="subtitle">ACS OCC</div>
-      <div class="occ">Global Aviation Operations Center</div>
+  <div class="acs-page-title-sub">
+    ACS-OCC
+  </div>
+
+  <div class="acs-page-title-tag">
+    Global Aviation Operations Center
+  </div>
+
+</section>
 
       <div class="quote">“History is written by those who build it.”</div>
 
