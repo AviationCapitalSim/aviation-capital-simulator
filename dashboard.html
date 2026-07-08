@@ -1025,7 +1025,7 @@ document.addEventListener("DOMContentLoaded", async () => {
    ACS DASHBOARD OCC ALERT BADGE
    ------------------------------------------------------------
    Backend authority: /v1/occ/alerts
-   No localStorage authority.
+   Dashboard only reads live OCC status.
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -1052,7 +1052,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const total = alerts.length;
 
       badge.textContent = String(total);
-      badge.style.display = total > 0 ? "block" : "none";
+      badge.style.display = total > 0 ? "inline-block" : "none";
 
     } catch (error) {
       console.warn("ACS Dashboard OCC alert badge failed:", error);
@@ -1070,8 +1070,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-</script>
-
+  
 </script>
   
 </body>
