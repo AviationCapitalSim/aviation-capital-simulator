@@ -22,445 +22,492 @@
   <!-- ======== PWA Manifest (Android / Chrome) ======== -->
   <link rel="manifest" href="manifest.json">
 
-  <style>
-    
-    /* ============================================================
-       === GLOBAL BASE ===
-       ============================================================ */
-   /* ============================================================
-   === ACS GLOBAL BACKGROUND SYSTEM ============================
-   ============================================================ */
+<style>
+    * {
+      box-sizing: border-box;
+    }
 
-body {
-  margin: 0;
-  padding-top: 90px;
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding-top: 90px;
+      color: white;
+      font-family: "Segoe UI", sans-serif;
+      background: #050c18;
+      overflow-x: hidden;
+      position: relative;
+      animation: fadeIn 1s ease;
+    }
 
-  color: white;
-  font-family: "Segoe UI", sans-serif;
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: url("acs_background.jpg") center center / cover no-repeat;
+      opacity: .52;
+      z-index: -2;
+      pointer-events: none;
+    }
 
-  background: #071427;
-
-  position: relative;
-  overflow-x: hidden;
-
-  animation: fadeIn 1s ease;
-}
-
-/* Fondo Global ACS */
-
-body::before {
-
-  content: "";
-
-  position: fixed;
-  inset: 0;
-
-  background: url("acs_background.jpg") center center / cover no-repeat;
-
-  opacity: 52;
-
-  z-index: -2;
-
-  pointer-events: none;
-
-}
-
-/* Tono Azul ACS */
-
-body::after{
-
-    content:"";
-    position:fixed;
-    inset:0;
-
-    background:
-
-    radial-gradient(circle at top,
-    rgba(9,18,40,.08),
-    rgba(4,9,22,.28)),
-
-    linear-gradient(
-    to bottom,
-    rgba(5,10,22,.05),
-    rgba(5,10,22,.12));
-
-    z-index:-1;
-
-  pointer-events: none;
-
-}
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at center, rgba(5,12,25,.10), rgba(2,7,18,.42)),
+        linear-gradient(to bottom, rgba(3,9,20,.08), rgba(2,6,16,.28));
+      z-index: -1;
+      pointer-events: none;
+    }
 
     @keyframes fadeIn {
       from { opacity: 0; }
-      to   { opacity: 1; }
+      to { opacity: 1; }
     }
-
-    /* ============================================================
-       === QATAR LUXURY HEADER (same as index but with Home/Support)
-       ============================================================ */
 
     .acs-header {
       position: fixed;
       top: 0;
       width: 100%;
+      min-height: 90px;
       padding: 0.8rem 2rem;
-
-      background: rgba(12, 23, 50, 0.45);
+      background: rgba(2, 10, 24, 0.72);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
-
-      border-bottom: 1px solid rgba(255, 179, 0, 0.35);
-
+      border-bottom: 1px solid rgba(255, 179, 0, 0.55);
       display: flex;
       align-items: center;
       justify-content: space-between;
-
       z-index: 1000;
-      animation: acsHeaderFade 0.8s ease forwards;
     }
 
-    @keyframes acsHeaderFade {
-      from { opacity: 0; transform: translateY(-10px); }
-      to   { opacity: 1; transform: translateY(0); }
+    .acs-logo {
+      display: flex;
+      align-items: center;
+      gap: 18px;
     }
 
     .acs-logo img {
-     height: 46px;
-   }
+      height: 58px;
+      display: block;
+    }
 
     .acs-logo h1 {
       color: #FFB300;
-      font-size: 1.15rem;
+      font-size: 1.75rem;
       margin: 0;
-      letter-spacing: 0.6px;
-      text-shadow: 0 0 8px rgba(255,179,0,0.4);
+      letter-spacing: 0.4px;
+      font-weight: 700;
+      text-shadow: none;
     }
 
     .acs-nav-buttons {
       display: flex;
-      gap: 1rem;
+      gap: 1.4rem;
       align-items: center;
     }
 
     .nav-btn {
-      padding: 0.45rem 1.2rem;
-      border-radius: 10px;
-      font-size: 0.9rem;
-      font-weight: 600;
+      min-width: 140px;
+      padding: 0.75rem 1.5rem;
+      border-radius: 11px;
+      font-size: 1.25rem;
+      font-weight: 700;
+      text-align: center;
       text-decoration: none;
       cursor: pointer;
       transition: 0.25s;
-      min-width: 100px;
-
-      background: rgba(255,255,255,0.06);
-      backdrop-filter: blur(6px);
-
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1),
-                  0 0 10px rgba(0,0,0,0.25);
-
-      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0, 8, 20, 0.45);
+      border: 1px solid rgba(255,255,255,0.10);
     }
 
     .nav-btn-yellow {
       color: #FFB300;
-      border-color: rgba(255,179,0,0.45);
+      border-color: rgba(255,179,0,0.85);
     }
+
     .nav-btn-yellow:hover {
-      background: rgba(255,179,0,0.20);
-      box-shadow: 0 0 12px rgba(255,179,0,0.55);
+      background: rgba(255,179,0,0.15);
     }
 
     .nav-btn-blue {
       color: #8AB4FF;
-      border-color: rgba(138,180,255,0.45);
-    }
-    .nav-btn-blue:hover {
-      background: rgba(138,180,255,0.20);
-      box-shadow: 0 0 12px rgba(138,180,255,0.55);
+      border-color: rgba(138,180,255,0.70);
     }
 
-    /* ============================================================
-       === LOGIN CONTAINER
-       ============================================================ */
+    .nav-btn-blue:hover {
+      background: rgba(138,180,255,0.15);
+    }
 
     .login-wrapper {
-  max-width: 620px;
-  margin: 4rem auto 4rem;
-  text-align: center;
-  padding: 3.1rem 3.2rem 2.7rem;
+      width: 660px;
+      max-width: 92%;
+      margin: 110px auto 70px;
+      padding: 62px 42px 44px;
+      text-align: center;
+      position: relative;
 
-  background:
-    linear-gradient(180deg, rgba(8, 20, 44, 0.88), rgba(3, 10, 24, 0.92));
+      background:
+        linear-gradient(
+          180deg,
+          rgba(5, 16, 36, .96) 0%,
+          rgba(2, 8, 20, .98) 100%
+        );
 
-  border-radius: 24px;
-  border: 1px solid rgba(255,179,0,0.34);
+      border: 1px solid rgba(255, 170, 25, .78);
+      border-radius: 28px;
 
-  box-shadow:
-    0 0 0 1px rgba(255,179,0,0.08),
-    0 0 34px rgba(0,0,0,0.55),
-    inset 0 0 32px rgba(255,179,0,0.035);
+      box-shadow:
+        0 35px 90px rgba(0,0,0,.70),
+        inset 0 0 45px rgba(255,180,0,.025),
+        0 0 0 1px rgba(255,180,0,.05);
 
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
 
-  animation: fadeSlide 0.9s ease;
-}
+    .login-title {
+      margin: 0;
+      font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+      font-size: 2.15rem;
+      font-weight: 600;
+      letter-spacing: .34em;
+      line-height: 1.15;
+      color: #F5F6FA;
+      text-transform: uppercase;
+      text-align: center;
+      text-shadow:
+        0 0 8px rgba(255,255,255,.22),
+        0 0 20px rgba(255,255,255,.08);
+      position: relative;
+    }
 
-.login-title {
-  margin: 0;
-  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
-  font-size: 2rem;
-  font-weight: 700;
-  letter-spacing: 0.34em;
-  line-height: 1;
-  color: #f7f8fb;
-  text-transform: uppercase;
-  text-shadow:
-    0 1px 0 rgba(0,0,0,.85),
-    0 0 10px rgba(255,255,255,.20),
-    0 0 22px rgba(255,255,255,.10);
-}
+    .login-title::after {
+      content: "";
+      display: block;
+      width: 470px;
+      max-width: 86%;
+      height: 2px;
+      margin: 30px auto 34px;
+      background:
+        linear-gradient(
+          90deg,
+          transparent 0%,
+          rgba(255,180,0,.10) 18%,
+          #FFC94B 50%,
+          rgba(255,180,0,.10) 82%,
+          transparent 100%
+        );
+      box-shadow:
+        0 0 8px rgba(255,190,50,.60),
+        0 0 24px rgba(255,190,50,.30);
+    }
 
-.login-title::after {
-  content: "";
-  display: block;
-  width: 420px;
-  max-width: 80%;
-  height: 1px;
-  margin: 1.6rem auto 1.45rem;
-  background: linear-gradient(to right, transparent, #ffb300, transparent);
-  box-shadow: 0 0 10px rgba(255,179,0,.65);
-}
+    .login-glow-dot {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: #FFD05A;
+      position: absolute;
+      left: 50%;
+      top: 126px;
+      transform: translateX(-50%);
+      box-shadow:
+        0 0 10px #FFD05A,
+        0 0 25px rgba(255,200,80,.8),
+        0 0 45px rgba(255,200,80,.45);
+    }
 
-.login-subtitle {
-  position: relative;
-  display: inline-block;
-  margin: 0 0 1.45rem;
-  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
-  font-size: 1.08rem;
-  font-weight: 700;
-  letter-spacing: .42em;
-  color: #ffb300;
-  text-transform: uppercase;
-  text-shadow:
-    0 0 8px rgba(255,179,0,.35),
-    0 0 16px rgba(255,179,0,.18);
-}
+    .login-subtitle {
+      display: block;
+      margin: 0 0 30px;
+      font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: .36em;
+      color: #F4B328;
+      text-transform: uppercase;
+      text-shadow:
+        0 0 8px rgba(255,179,0,.35),
+        0 0 16px rgba(255,179,0,.18);
+    }
 
-.login-subtitle::after {
-  content: "Access your airline and continue building your legacy.";
-  display: block;
-  margin-top: 1.35rem;
-  font-family: "Segoe UI", sans-serif;
-  font-size: 1.05rem;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  line-height: 1.55;
-  color: rgba(235,239,250,0.86);
-  text-transform: none;
-  text-shadow: 0 0 8px rgba(255,255,255,.10);
-}
+    .login-subtitle::after {
+      content: "";
+      display: block;
+      width: 360px;
+      max-width: 72%;
+      height: 1px;
+      margin: 28px auto 0;
+      background: linear-gradient(to right, transparent, rgba(255,179,0,.65), transparent);
+      box-shadow: 0 0 8px rgba(255,179,0,.40);
+    }
 
-.login-wrapper form {
-  margin-top: 2.35rem;
-}
+    .login-description {
+      margin: 24px 0 44px;
+      color: #D7DCE8;
+      font-size: 1.35rem;
+      line-height: 1.45;
+      font-weight: 400;
+      text-shadow: 0 0 8px rgba(255,255,255,.08);
+    }
 
-input {
-  width: 100%;
-  height: 60px;
-  padding: 0 1.1rem;
-  margin-bottom: 1.45rem;
+    .login-wrapper form {
+      margin: 0;
+    }
 
-  border-radius: 11px;
-  border: 1px solid rgba(255,179,0,0.36);
+    .login-field {
+      position: relative;
+      width: 100%;
+      margin-bottom: 24px;
+    }
 
-  background: rgba(2, 9, 22, 0.68);
-  color: #ffffff;
+    .login-field-icon {
+      position: absolute;
+      left: 25px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #FFC14A;
+      font-size: 1.7rem;
+      pointer-events: none;
+      text-shadow: 0 0 8px rgba(255,179,0,.35);
+    }
 
-  font-size: 1.02rem;
-  letter-spacing: 0.02em;
+    .login-field input {
+      width: 100%;
+      height: 76px;
+      padding: 0 24px 0 82px;
+      border-radius: 15px;
+      border: 1px solid rgba(255,170,25,.78);
+      background: rgba(2,8,20,.72);
+      color: white;
+      font-size: 1.25rem;
+      outline: none;
+      box-shadow:
+        inset 0 0 14px rgba(0,0,0,.42);
+      transition: .25s;
+    }
 
-  outline: none;
+    .login-field input:focus {
+      border-color: #FFC94A;
+      box-shadow:
+        0 0 14px rgba(255,190,40,.22),
+        inset 0 0 14px rgba(0,0,0,.42);
+    }
 
-  box-shadow:
-    inset 0 0 14px rgba(0,0,0,0.38),
-    0 0 0 rgba(255,179,0,0);
+    .login-field input::placeholder {
+      color: rgba(235,238,246,.82);
+    }
 
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+    .login-button {
+      width: 100%;
+      height: 80px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
 
-  transition: 0.25s ease;
-}
+      background:
+        linear-gradient(
+          180deg,
+          #FFD466 0%,
+          #F1B13A 48%,
+          #D88D19 100%
+        );
 
-input:focus {
-  border-color: rgba(255,202,99,0.8);
-  box-shadow:
-    0 0 16px rgba(255,179,0,0.20),
-    inset 0 0 14px rgba(0,0,0,0.38);
-}
+      color: #07101f;
+      font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+      font-size: 1.55rem;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-transform: uppercase;
 
-input::placeholder {
-  color: rgba(230,235,248,0.68);
-}
+      box-shadow:
+        0 8px 18px rgba(255,180,0,.22),
+        inset 0 1px 0 rgba(255,255,255,.45);
 
-button {
-  width: 100%;
-  height: 62px;
-  margin-top: 0.4rem;
+      transition: .25s;
+    }
 
-  border-radius: 12px;
-  border: 1px solid rgba(255,220,140,0.45);
+    .login-button:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.06);
+    }
 
-  background:
-    linear-gradient(180deg, #ffd063 0%, #d89216 100%);
-
-  color: #07101f;
-
-  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
-  font-size: 1.08rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-
-  cursor: pointer;
-
-  box-shadow:
-    0 0 18px rgba(255,179,0,0.28),
-    inset 0 1px 0 rgba(255,255,255,0.35);
-
-  transition: 0.25s ease;
-}
-
-button:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.08);
-  box-shadow:
-    0 0 24px rgba(255,179,0,0.42),
-    inset 0 1px 0 rgba(255,255,255,0.35);
-}
+    .login-link {
+      margin: 34px 0 0;
+      font-size: 1.15rem;
+      color: #D8D8D8;
+      text-align: center;
+    }
 
     .login-link a {
-      color: #ffb300;
+      color: #F4B328;
       text-decoration: none;
       font-weight: 600;
     }
 
+    .forgot-link {
+      margin-top: 14px;
+    }
+
     footer {
-      margin-top: 3rem;
+      margin: 30px 0;
       text-align: center;
-      color: #FFFFFF;
+      color: rgba(255,255,255,.75);
       font-size: 0.85rem;
     }
 
-/* ============================================================
-   === RESET MODAL (Qatar Luxury Style) ========================
-   ============================================================ */
+    .acs-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 10, 25, 0.78);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
 
-.acs-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(5, 10, 25, 0.78);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-  animation: fadeInModal 0.3s ease;
-}
+    .acs-modal {
+      background: rgba(12, 23, 50, 0.86);
+      border: 1px solid rgba(255,179,0,0.48);
+      border-radius: 16px;
+      padding: 2rem;
+      width: 92%;
+      max-width: 360px;
+      text-align: center;
+      box-shadow:
+        0 0 35px rgba(255,179,0,0.28),
+        0 0 22px rgba(0,0,0,0.32);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
 
-@keyframes fadeInModal {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
+    .acs-modal-title {
+      color: #FFB300;
+      font-size: 1.6rem;
+      margin-bottom: 0.4rem;
+    }
 
-.acs-modal {
-  background: rgba(12, 23, 50, 0.40);
-  border: 1px solid rgba(255,179,0,0.48);
-  border-radius: 16px;
-  padding: 2rem;
-  width: 92%;
-  max-width: 360px;
-  text-align: center;
+    .acs-modal-desc {
+      color: #cbd6ff;
+      margin-bottom: 1.4rem;
+      font-size: 0.95rem;
+    }
 
-  box-shadow: 0 0 35px rgba(255,179,0,0.28), 
-              0 0 22px rgba(0,0,0,0.32);
+    .acs-modal-input {
+      width: 100%;
+      padding: 0.8rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255,179,0,.35);
+      margin-bottom: 1.2rem;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 0.95rem;
+    }
 
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+    .acs-modal-btn,
+    .acs-modal-btn-cancel {
+      width: 100%;
+      padding: 0.85rem;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.8rem;
+    }
 
-  animation: slideDown 0.35s ease;
-}
+    .acs-modal-btn {
+      background-color: #00c853;
+      border: none;
+      color: white;
+    }
 
-@keyframes slideDown {
-  from { transform: translateY(-20px); opacity: 0; }
-  to   { transform: translateY(0); opacity: 1; }
-}
+    .acs-modal-btn-cancel {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #d1d6ff;
+    }
 
-.acs-modal-title {
-  color: #FFB300;
-  font-size: 1.6rem;
-  margin-bottom: 0.4rem;
-  text-shadow: 0 0 10px rgba(255,179,0,0.4);
-}
+    @media (max-width: 760px) {
+      body {
+        padding-top: 82px;
+      }
 
-.acs-modal-desc {
-  color: #cbd6ff;
-  margin-bottom: 1.4rem;
-  font-size: 0.95rem;
-}
+      .acs-header {
+        min-height: 82px;
+        padding: .7rem 1rem;
+      }
 
-.acs-modal-input {
-  width: 100%;
-  padding: 0.8rem;
-  border-radius: 10px;
-  border: none;
-  margin-bottom: 1.2rem;
-  background: rgba(255,255,255,0.1);
-  color: white;
-  font-size: 0.95rem;
-}
+      .acs-logo h1 {
+        font-size: 1rem;
+      }
 
-.acs-modal-btn {
-  width: 100%;
-  padding: 0.85rem;
-  border-radius: 10px;
-  background-color: #00c853;
-  border: none;
-  color: white;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  margin-bottom: 0.8rem;
-}
+      .acs-logo img {
+        height: 46px;
+      }
 
-.acs-modal-btn:hover {
-  background-color: #00e76b;
-}
+      .acs-nav-buttons {
+        gap: .5rem;
+      }
 
-.acs-modal-btn-cancel {
-  width: 100%;
-  padding: 0.8rem;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: #d1d6ff;
-  cursor: pointer;
-  font-size: 0.95rem;
-}
-    
-  </style>
+      .nav-btn {
+        min-width: auto;
+        padding: .55rem .75rem;
+        font-size: .85rem;
+      }
+
+      .login-wrapper {
+        margin: 60px auto 40px;
+        padding: 42px 22px 32px;
+        border-radius: 22px;
+      }
+
+      .login-title {
+        font-size: 1.35rem;
+        letter-spacing: .22em;
+      }
+
+      .login-glow-dot {
+        top: 94px;
+      }
+
+      .login-subtitle {
+        font-size: 1rem;
+        letter-spacing: .24em;
+      }
+
+      .login-description {
+        font-size: 1.05rem;
+      }
+
+      .login-field input {
+        height: 64px;
+        font-size: 1rem;
+        padding-left: 64px;
+      }
+
+      .login-field-icon {
+        left: 22px;
+        font-size: 1.35rem;
+      }
+
+      .login-button {
+        height: 68px;
+        font-size: 1.25rem;
+      }
+    }
+  
+</style>
 </head>
 
 <body>
 
-<!-- ===== HEADER — QATAR LUXURY ===== -->
 <header class="acs-header">
   <div class="acs-logo">
-    <img src="acs_logo.png">
+    <img src="acs_logo.png" alt="ACS Logo">
     <h1>Aviation Capital Simulator</h1>
   </div>
 
@@ -471,35 +518,49 @@ button:hover {
   </div>
 </header>
 
-<!-- ===== LOGIN PANEL ===== -->
 <div class="login-wrapper">
+  <span class="login-glow-dot"></span>
+
   <h2 class="login-title" id="loginTitle">Operations Access</h2>
+
   <p class="login-subtitle">Secure Login</p>
 
-  <form onsubmit="return handleLogin(event)">
-    <input type="email" id="email" placeholder="Email Address" required>
-    <input type="password" id="password" placeholder="Password" required>
-    <button type="submit">Login</button>
-  </form>
-
-  <p class="login-link">Don’t have an account? <a href="register.html">Create one here</a>.</p>
-</div>
-  <p class="login-link" style="margin-top: 0.4rem;">
-  <a href="#" onclick="openResetModal()">Forgot your password?</a>
+  <p class="login-description">
+    Access your airline and continue<br>
+    building your legacy.
   </p>
 
- <footer>
+  <form onsubmit="return handleLogin(event)">
+    <div class="login-field">
+      <span class="login-field-icon">👤</span>
+      <input type="email" id="email" placeholder="Email Address" required>
+    </div>
+
+    <div class="login-field">
+      <span class="login-field-icon">🔒</span>
+      <input type="password" id="password" placeholder="Password" required>
+    </div>
+
+    <button type="submit" class="login-button">Login</button>
+  </form>
+
+  <p class="login-link">
+    Don’t have an account? <a href="register.html">Create one here</a>.
+  </p>
+
+  <p class="login-link forgot-link">
+    <a href="#" onclick="openResetModal()">Forgot your password?</a>
+  </p>
+</div>
+
+<footer>
   © 2026 Aviation Capital Simulator. All rights reserved.
 </footer>
 
-  <!-- ============================================================
-     === RESET PASSWORD MODAL — Qatar Luxury Edition ===========
-     ============================================================ -->
-  
 <div id="resetPasswordModal" class="acs-modal-overlay" style="display:none;">
   <div class="acs-modal">
-    
     <h2 class="acs-modal-title">Reset Password</h2>
+
     <p class="acs-modal-desc">
       Enter your registered email and we will send you a temporary password.
     </p>
@@ -511,6 +572,7 @@ button:hover {
     <button class="acs-modal-btn-cancel" onclick="closeResetModal()">Cancel</button>
   </div>
 </div>
+
   
 <script>
   
