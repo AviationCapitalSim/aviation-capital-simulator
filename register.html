@@ -33,232 +33,274 @@
 
   <!-- ======== PWA Manifest (Android / Chrome) ======== -->
   <link rel="manifest" href="manifest.json">
+<style>
 
-  <style>
-   
-  /* ============================================================
+/* ============================================================
    ACS GLOBAL BACKGROUND SYSTEM
    ============================================================ */
 
+body {
+  margin: 0;
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+
+  color: #ffffff;
+  font-family: "Segoe UI", sans-serif;
+
+  background: #071427;
+
+  position: relative;
+  overflow-x: hidden;
+}
+
 body::before {
+  content: "";
 
-    content: "";
+  position: fixed;
+  inset: 0;
 
-    position: fixed;
+  background:
+    url("acs_background.jpg")
+    center center / cover
+    no-repeat;
 
-    inset: 0;
+  opacity: 0.80;
 
-    background:
-        url("acs_background.jpg")
-        center center / cover
-        no-repeat;
-
-    opacity: .80;
-
-    z-index: -2;
-
-    pointer-events: none;
-
+  z-index: -2;
+  pointer-events: none;
 }
 
 body::after {
+  content: "";
 
-    content: "";
+  position: fixed;
+  inset: 0;
 
-    position: fixed;
+  background:
+    radial-gradient(
+      circle at top,
+      rgba(9, 18, 40, 0.08),
+      rgba(4, 9, 22, 0.28)
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(5, 10, 22, 0.05),
+      rgba(5, 10, 22, 0.12)
+    );
 
-    inset: 0;
-
-    background:
-
-        radial-gradient(
-            circle at top,
-            rgba(9,18,40,.08),
-            rgba(4,9,22,.28)
-        ),
-
-        linear-gradient(
-            to bottom,
-            rgba(5,10,22,.05),
-            rgba(5,10,22,.12)
-        );
-
-    z-index: -1;
-
-    pointer-events: none;
-
+  z-index: -1;
+  pointer-events: none;
 }
 
-    /* ============================================================
-       === ACS HEADER — QATAR LUXURY EDITION ======================
-       ============================================================ */
-       
-    .acs-header {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      padding: 0.8rem 2rem;
 
-      background: rgba(12, 23, 50, 0.45);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+/* ============================================================
+   ACS HEADER — QATAR LUXURY EDITION
+   ============================================================ */
 
-      border-bottom: 1px solid rgba(255, 179, 0, 0.35);
+.acs-header {
+  position: fixed;
+  top: 0;
+  left: 0;
 
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+  width: 100%;
+  padding: 0.8rem 2rem;
 
-      z-index: 1000;
-      box-sizing: border-box;
+  background: rgba(12, 23, 50, 0.45);
 
-      animation: acsHeaderFade 0.8s ease forwards;
-    }
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 
-    @keyframes acsHeaderFade {
-      from { opacity: 0; transform: translateY(-10px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+  border-bottom: 1px solid rgba(255, 179, 0, 0.35);
 
-    .acs-logo {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-    }
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 
-    .acs-logo img {
-      height: 46px;
-     
-    }
+  z-index: 1000;
+  box-sizing: border-box;
 
-    /* ============================================================
+  animation: acsHeaderFade 0.8s ease forwards;
+}
+
+@keyframes acsHeaderFade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.acs-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.acs-logo img {
+  height: 46px;
+}
+
+
+/* ============================================================
    ACS GLOBAL BRAND
    DO NOT MODIFY
    Corporate Visual Identity Standard
    ============================================================ */
 
-.acs-logo img {
-     height: 46px;
-   }
+.acs-logo h1 {
+  margin: 16px 0 0 0;
 
-   .acs-logo h1{
-    margin:16px 0 0 0;
+  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
 
-    font-family:"Orbitron","Eurostile","Exo 2",sans-serif;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 
-    font-size:1rem;
-
-    font-weight:700;
-
-    letter-spacing:.03em;
-
-    text-transform:uppercase;
-
-    background:linear-gradient(
-        180deg,
-        #FFE08A 0%,
-        #FFC94A 22%,
-        #FFB300 55%,
-        #D98B00 100%
+  background:
+    linear-gradient(
+      180deg,
+      #ffe08a 0%,
+      #ffc94a 22%,
+      #ffb300 55%,
+      #d98b00 100%
     );
 
-    -webkit-background-clip:text;
-    background-clip:text;
+  -webkit-background-clip: text;
+  background-clip: text;
 
-    -webkit-text-fill-color:transparent;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 
-    color:transparent;
-
-    text-shadow:
-        0 0 2px rgba(255,179,0,.15);
-
+  text-shadow:
+    0 0 2px rgba(255, 179, 0, 0.15);
 }
-    
-    .acs-nav-buttons {
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-      margin-left: auto;
-    }
 
-    .nav-btn {
-      padding: 0.45rem 1.2rem;
-      border-radius: 10px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      text-decoration: none;
-      cursor: pointer;
-      transition: 0.25s;
-      min-width: 100px;
+.acs-nav-buttons {
+  display: flex;
+  align-items: center;
 
-      background: rgba(255,255,255,0.06);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
+  gap: 1rem;
+  margin-left: auto;
+}
 
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1),
-                  0 0 10px rgba(0,0,0,0.25);
+.nav-btn {
+  min-width: 100px;
 
-      border: 1px solid rgba(255,255,255,0.08);
-      text-align: center;
-    }
+  padding: 0.45rem 1.2rem;
 
-    .nav-btn-yellow {
-      color: #FFB300;
-      border-color: rgba(255,179,0,0.45);
-    }
-    .nav-btn-yellow:hover {
-      background: rgba(255,179,0,0.20);
-      box-shadow: 0 0 12px rgba(255,179,0,0.55);
-      text-decoration: none;
-    }
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
 
-    .nav-btn-blue {
-      color: #8AB4FF;
-      border-color: rgba(138,180,255,0.45);
-    }
-    .nav-btn-blue:hover {
-      background: rgba(138,180,255,0.20);
-      box-shadow: 0 0 12px rgba(138,180,255,0.55);
-      text-decoration: none;
-    }
+  background: rgba(255, 255, 255, 0.06);
 
-    /* ============================================================
-       === REGISTER HERO / LAYOUT =================================
-       ============================================================ */
-       
-    .acs-register-hero {
-      padding: 6.5rem 1.5rem 3rem; /* deja espacio para el header fijo */
-      max-width: 1100px;
-      margin: 0 auto;
-      box-sizing: border-box;
-      flex: 1;
-    }
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 
-    .acs-register-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-      gap: 2.5rem;
-      align-items: flex-start;
-    }
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 0 10px rgba(0, 0, 0, 0.25);
 
-    @media (max-width: 880px) {
-      .acs-register-grid {
-        grid-template-columns: 1fr;
-      }
-    }
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  text-align: center;
+  text-decoration: none;
+
+  cursor: pointer;
+
+  transition: 0.25s;
+}
+
+.nav-btn-yellow {
+  color: #ffb300;
+  border-color: rgba(255, 179, 0, 0.45);
+}
+
+.nav-btn-yellow:hover {
+  background: rgba(255, 179, 0, 0.20);
+
+  box-shadow:
+    0 0 12px rgba(255, 179, 0, 0.55);
+
+  text-decoration: none;
+}
+
+.nav-btn-blue {
+  color: #8ab4ff;
+  border-color: rgba(138, 180, 255, 0.45);
+}
+
+.nav-btn-blue:hover {
+  background: rgba(138, 180, 255, 0.20);
+
+  box-shadow:
+    0 0 12px rgba(138, 180, 255, 0.55);
+
+  text-decoration: none;
+}
+
 
 /* ============================================================
-   === REGISTER MAIN TITLE — COMPACT ===========================
+   REGISTER HERO / LAYOUT
+   ============================================================ */
+
+.acs-register-hero {
+  width: 100%;
+  max-width: 1180px;
+
+  margin: 0 auto;
+  padding: 7.2rem 1.5rem 3rem;
+
+  box-sizing: border-box;
+  flex: 1;
+}
+
+.acs-register-grid {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1.12fr)
+    minmax(390px, 0.88fr);
+
+  gap: 3rem;
+  align-items: flex-start;
+}
+
+
+/* ============================================================
+   REGISTER LEFT PANEL
+   ============================================================ */
+
+.acs-register-grid > div:first-child {
+  width: 100%;
+  max-width: 620px;
+
+  padding-top: 0.35rem;
+}
+
+
+/* ============================================================
+   REGISTER MAIN TITLE — COMPACT
    ============================================================ */
 
 .acs-register-copy-title {
   margin: 0 0 1rem;
 
   font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
-  font-size: clamp(1.35rem, 2vw, 1.72rem);
+  font-size: clamp(1.28rem, 1.75vw, 1.62rem);
   font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: 0.025em;
+
+  line-height: 1.28;
+  letter-spacing: 0.018em;
+
+  text-align: center;
 
   color: #f7f8fb;
 
@@ -269,14 +311,315 @@ body::after {
 
 .acs-register-copy-title span {
   display: block;
+
   margin-top: 0.28rem;
 
   font-size: 1em;
+
   color: #f4b328;
 
   text-shadow:
     0 0 7px rgba(255, 179, 0, 0.24);
 }
+
+
+/* ============================================================
+   REGISTER INTRODUCTION
+   ============================================================ */
+
+.acs-register-copy-sub {
+  width: 100%;
+  max-width: 570px;
+
+  margin: 0 auto 1.35rem;
+
+  color: #cdd8f1;
+
+  font-size: 0.94rem;
+  font-weight: 400;
+
+  line-height: 1.55;
+  text-align: center;
+}
+
+
+/* ============================================================
+   REGISTER BADGES
+   ============================================================ */
+
+.acs-register-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+
+  gap: 0.58rem;
+
+  width: 100%;
+  max-width: 590px;
+
+  margin: 0 auto 1.7rem;
+}
+
+.acs-register-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 31px;
+
+  padding: 0.28rem 0.72rem;
+
+  color: #ffdc84;
+
+  background:
+    rgba(255, 179, 0, 0.075);
+
+  border:
+    1px solid rgba(255, 179, 0, 0.48);
+
+  border-radius: 999px;
+
+  box-shadow:
+    inset 0 0 12px rgba(255, 179, 0, 0.025),
+    0 4px 14px rgba(0, 0, 0, 0.12);
+
+  font-family:
+    "Segoe UI",
+    sans-serif;
+
+  font-size: 0.72rem;
+  font-weight: 700;
+
+  line-height: 1.2;
+  letter-spacing: 0.035em;
+
+  text-align: center;
+  text-transform: uppercase;
+}
+
+
+/* ============================================================
+   BEFORE YOU BEGIN
+   ============================================================ */
+
+.acs-register-list-title {
+  margin: 0 0 0.75rem;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  color: #ffb300;
+
+  font-size: 0.82rem;
+  font-weight: 600;
+
+  letter-spacing: 0.07em;
+
+  text-align: center;
+  text-transform: uppercase;
+
+  text-shadow:
+    0 0 7px rgba(255, 179, 0, 0.20);
+}
+
+
+/* ============================================================
+   REGISTER INFORMATION LIST
+   ============================================================ */
+
+.acs-register-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 0.62rem;
+
+  width: 100%;
+  max-width: 590px;
+
+  margin: 0 auto;
+  padding: 0;
+
+  list-style: none;
+}
+
+.acs-register-list li {
+  display: grid;
+
+  grid-template-columns: 34px minmax(0, 1fr);
+
+  gap: 0.75rem;
+  align-items: center;
+
+  min-height: 58px;
+
+  margin: 0;
+  padding: 0.62rem 0.78rem;
+
+  color: #d7e0f5;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(6, 17, 38, 0.62),
+      rgba(4, 13, 30, 0.38)
+    );
+
+  border:
+    1px solid rgba(138, 180, 255, 0.14);
+
+  border-radius: 10px;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.018),
+    0 7px 18px rgba(0, 0, 0, 0.10);
+
+  font-size: 0.83rem;
+  line-height: 1.4;
+
+  text-align: left;
+}
+
+.acs-register-step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 30px;
+  height: 30px;
+
+  color: #ffbf35;
+
+  background:
+    rgba(255, 179, 0, 0.08);
+
+  border:
+    1px solid rgba(255, 179, 0, 0.48);
+
+  border-radius: 8px;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 0.68rem;
+  font-weight: 700;
+
+  line-height: 1;
+}
+
+.acs-register-step-content {
+  min-width: 0;
+
+  color: #d4def4;
+
+  font-size: 0.83rem;
+  line-height: 1.4;
+}
+
+.acs-register-step-content strong {
+  color: #ffffff;
+
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.acs-register-required-step {
+  border-color:
+    rgba(255, 179, 0, 0.48) !important;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255, 179, 0, 0.13),
+      rgba(5, 16, 37, 0.52)
+    ) !important;
+
+  box-shadow:
+    0 0 15px rgba(255, 179, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025) !important;
+}
+
+.acs-required-heading {
+  display: flex;
+  align-items: center;
+
+  gap: 0.48rem;
+
+  margin: 0 0 0.16rem;
+
+  color: #ffbf35;
+
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+
+/* ============================================================
+   ACS STATUS PULSE
+   ============================================================ */
+
+.acs-status-pulse {
+  width: 8px;
+  height: 8px;
+
+  flex: 0 0 8px;
+
+  border-radius: 50%;
+
+  background: #ffb300;
+
+  box-shadow:
+    0 0 0 0 rgba(255, 179, 0, 0.65),
+    0 0 9px rgba(255, 179, 0, 0.85);
+
+  animation:
+    acsRequiredPulse 1.45s ease-out infinite;
+}
+
+@keyframes acsRequiredPulse {
+  0% {
+    transform: scale(0.92);
+
+    box-shadow:
+      0 0 0 0 rgba(255, 179, 0, 0.68),
+      0 0 8px rgba(255, 179, 0, 0.72);
+  }
+
+  65% {
+    transform: scale(1);
+
+    box-shadow:
+      0 0 0 9px rgba(255, 179, 0, 0),
+      0 0 14px rgba(255, 179, 0, 0.45);
+  }
+
+  100% {
+    transform: scale(0.92);
+
+    box-shadow:
+      0 0 0 0 rgba(255, 179, 0, 0),
+      0 0 8px rgba(255, 179, 0, 0.65);
+  }
+}
+
+.acs-terms-link,
+.acs-terms-link:visited {
+  color: #ffbf35;
+
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.acs-terms-link:hover {
+  color: #ffe09a;
+  text-decoration: underline;
+}
+
 
 /* ============================================================
    LOCKED REGISTRATION FORM
@@ -301,27 +644,34 @@ body::after {
 .acs-terms-state {
   display: flex;
   align-items: center;
+
   gap: 0.55rem;
 
   margin-top: 0.4rem;
   padding: 0.72rem 0.8rem;
 
-  font-size: 0.8rem;
-  line-height: 1.4;
-
   color: #ffd978;
 
-  border: 1px solid rgba(255, 179, 0, 0.35);
+  background:
+    rgba(255, 179, 0, 0.07);
+
+  border:
+    1px solid rgba(255, 179, 0, 0.35);
+
   border-radius: 10px;
 
-  background: rgba(255, 179, 0, 0.07);
+  font-size: 0.8rem;
+  line-height: 1.4;
 }
 
 .acs-terms-state.is-accepted {
   color: #9ee7c3;
 
-  border-color: rgba(52, 211, 153, 0.4);
-  background: rgba(52, 211, 153, 0.08);
+  border-color:
+    rgba(52, 211, 153, 0.4);
+
+  background:
+    rgba(52, 211, 153, 0.08);
 }
 
 .acs-terms-state.is-accepted .acs-status-pulse {
@@ -334,19 +684,21 @@ body::after {
   animation: none;
 }
 
- /* ============================================================
-   === REGISTER CARD — LOGIN VISUAL AUTHORITY =================
+
+/* ============================================================
+   REGISTER CARD — LOGIN VISUAL AUTHORITY
    ============================================================ */
 
 .acs-register-card {
   width: 440px;
   max-width: 100%;
-  box-sizing: border-box;
 
   margin-left: auto;
   padding: 30px 28px 27px;
 
   position: relative;
+
+  box-sizing: border-box;
   text-align: center;
 
   background:
@@ -356,7 +708,9 @@ body::after {
       rgba(2, 9, 22, 0.98) 100%
     );
 
-  border: 1px solid rgba(255, 170, 24, 0.76);
+  border:
+    1px solid rgba(255, 170, 24, 0.76);
+
   border-radius: 22px;
 
   box-shadow:
@@ -367,29 +721,29 @@ body::after {
   -webkit-backdrop-filter: blur(10px);
 }
 
-@media (max-width: 880px) {
-  .acs-register-card {
-    margin: 0 auto;
-  }
-}
-
 
 /* ============================================================
-   === ACCOUNT REGISTRATION ===================================
+   ACCOUNT REGISTRATION
    ============================================================ */
 
 .register-card-title {
   margin: 0;
 
-  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+  color: #f7f8fb;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
   font-size: 1.22rem;
   font-weight: 600;
+
   line-height: 1.15;
-
   letter-spacing: 0.17em;
-  white-space: nowrap;
 
-  color: #f7f8fb;
+  white-space: nowrap;
   text-transform: uppercase;
 
   text-shadow:
@@ -399,11 +753,12 @@ body::after {
 
 
 /* ============================================================
-   === GOLD SEPARATOR =========================================
+   GOLD SEPARATOR
    ============================================================ */
 
 .register-card-title::after {
   content: "";
+
   display: block;
 
   width: 78%;
@@ -428,20 +783,27 @@ body::after {
 
 
 /* ============================================================
-   === CREATE YOUR ACS ACCOUNT ================================
+   CREATE YOUR ACS ACCOUNT
    ============================================================ */
 
 .register-card-subtitle {
   display: block;
+
   margin: 0;
 
-  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+  color: #f4b328;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
   font-size: 0.92rem;
   font-weight: 700;
 
   letter-spacing: 0.13em;
 
-  color: #f4b328;
   text-transform: uppercase;
 
   text-shadow:
@@ -450,23 +812,26 @@ body::after {
 
 
 /* ============================================================
-   === REGISTER DESCRIPTION ===================================
+   REGISTER DESCRIPTION
    ============================================================ */
 
 .acs-register-sub {
   max-width: 350px;
 
-  margin:
-    20px auto 0;
+  margin: 20px auto 0;
 
-  font-family: "Segoe UI", sans-serif;
+  color:
+    rgba(235, 239, 250, 0.88);
+
+  font-family:
+    "Segoe UI",
+    sans-serif;
+
   font-size: 0.84rem;
   font-weight: 400;
 
   letter-spacing: 0.01em;
   line-height: 1.45;
-
-  color: rgba(235, 239, 250, 0.88);
 
   text-shadow:
     0 0 7px rgba(255, 255, 255, 0.07);
@@ -474,15 +839,17 @@ body::after {
 
 
 /* ============================================================
-   === REGISTER FORM ==========================================
+   REGISTER FORM
    ============================================================ */
 
 .register-form {
   display: flex;
   flex-direction: column;
+
   gap: 12px;
 
   width: 100%;
+
   margin: 27px 0 0;
 
   text-align: left;
@@ -490,7 +857,7 @@ body::after {
 
 
 /* ============================================================
-   === REGISTER INPUTS AND SELECTS =============================
+   REGISTER INPUTS AND SELECTS
    ============================================================ */
 
 .register-form input,
@@ -500,18 +867,25 @@ body::after {
   width: 100%;
   height: 48px;
 
-  box-sizing: border-box;
-
   margin: 0;
   padding: 0 16px;
 
-  border-radius: 10px;
-  border: 1px solid rgba(255, 179, 0, 0.42);
+  box-sizing: border-box;
 
-  background: rgba(2, 9, 22, 0.72);
   color: #ffffff;
 
-  font-family: "Segoe UI", sans-serif;
+  background:
+    rgba(2, 9, 22, 0.72);
+
+  border:
+    1px solid rgba(255, 179, 0, 0.42);
+
+  border-radius: 10px;
+
+  font-family:
+    "Segoe UI",
+    sans-serif;
+
   font-size: 0.88rem;
   letter-spacing: 0.01em;
 
@@ -525,7 +899,8 @@ body::after {
 
 .register-form input:focus,
 .register-form select:focus {
-  border-color: rgba(255, 202, 99, 0.82);
+  border-color:
+    rgba(255, 202, 99, 0.82);
 
   box-shadow:
     0 0 12px rgba(255, 179, 0, 0.18),
@@ -533,13 +908,9 @@ body::after {
 }
 
 .register-form input::placeholder {
-  color: rgba(230, 235, 248, 0.72);
+  color:
+    rgba(230, 235, 248, 0.72);
 }
-
-
-/* ============================================================
-   === DATE OF BIRTH ROW ======================================
-   ============================================================ */
 
 .register-form select {
   min-width: 0;
@@ -547,7 +918,7 @@ body::after {
 
 
 /* ============================================================
-   === PASSWORD WRAPPER =======================================
+   PASSWORD WRAPPER
    ============================================================ */
 
 .password-wrapper {
@@ -569,12 +940,14 @@ body::after {
   align-items: center;
   justify-content: center;
 
-  transform: translateY(-50%);
+  transform:
+    translateY(-50%);
 
   cursor: pointer;
   opacity: 0.72;
 
-  transition: opacity 0.2s ease;
+  transition:
+    opacity 0.2s ease;
 }
 
 .toggle-password:hover {
@@ -585,26 +958,26 @@ body::after {
   width: 20px;
   height: 20px;
 
-  stroke: rgba(235, 239, 250, 0.82);
+  stroke:
+    rgba(235, 239, 250, 0.82);
 
   pointer-events: none;
 }
 
 
 /* ============================================================
-   === REGISTER BUTTON — LOGIN AUTHORITY ======================
+   REGISTER BUTTON — LOGIN AUTHORITY
    ============================================================ */
 
 .register-form button[type="submit"] {
   width: 100%;
   height: 54px;
 
-  box-sizing: border-box;
-
   margin-top: 4px;
 
-  border-radius: 10px;
-  border: 1px solid rgba(255, 220, 140, 0.45);
+  box-sizing: border-box;
+
+  color: #07101f;
 
   background:
     linear-gradient(
@@ -613,12 +986,22 @@ body::after {
       #d89216 100%
     );
 
-  color: #07101f;
+  border:
+    1px solid rgba(255, 220, 140, 0.45);
 
-  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+  border-radius: 10px;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
   font-size: 0.92rem;
   font-weight: 800;
+
   letter-spacing: 0.12em;
+
   text-transform: uppercase;
 
   cursor: pointer;
@@ -627,40 +1010,52 @@ body::after {
     0 0 14px rgba(255, 179, 0, 0.24),
     inset 0 1px 0 rgba(255, 255, 255, 0.35);
 
-  transition: 0.25s ease;
+  transition:
+    0.25s ease;
 }
 
 .register-form button[type="submit"]:hover:not(:disabled) {
-  transform: translateY(-1px);
-  filter: brightness(1.06);
+  transform:
+    translateY(-1px);
+
+  filter:
+    brightness(1.06);
 }
 
 .register-form button[type="submit"]:disabled {
   cursor: not-allowed;
+
   opacity: 0.42;
+
   transform: none;
-  filter: saturate(0.55);
+
+  filter:
+    saturate(0.55);
 }
 
 
 /* ============================================================
-   === LOGIN LINK =============================================
+   LOGIN LINK
    ============================================================ */
 
 .acs-register-card .login-link {
   margin: 18px 0 0;
 
-  color: rgba(235, 239, 250, 0.82);
+  color:
+    rgba(235, 239, 250, 0.82);
+
   font-size: 0.82rem;
   line-height: 1.4;
+
   text-align: center;
 }
 
 .acs-register-card .login-link a,
 .acs-register-card .login-link a:visited {
   color: #ffb300;
-  text-decoration: none;
+
   font-weight: 600;
+  text-decoration: none;
 }
 
 .acs-register-card .login-link a:hover {
@@ -669,122 +1064,82 @@ body::after {
 
 
 /* ============================================================
-   === REGISTER CARD MOBILE ===================================
+   FOOTER
    ============================================================ */
 
-@media (max-width: 520px) {
+footer {
+  text-align: center;
 
-  .acs-register-card {
-    width: calc(100% - 4px);
+  padding: 1rem 0 1.2rem;
 
-    margin: 0 auto;
-    padding: 27px 20px 24px;
+  color: #ffffff;
 
-    border-radius: 19px;
-  }
+  font-size: 0.85rem;
 
-  .register-card-title {
-    font-size: 1rem;
-    letter-spacing: 0.12em;
-    white-space: normal;
-  }
-
-  .register-card-title::after {
-    margin: 19px auto 20px;
-  }
-
-  .register-card-subtitle {
-    font-size: 0.78rem;
-    letter-spacing: 0.1em;
-  }
-
-  .acs-register-sub {
-    margin-top: 18px;
-    font-size: 0.8rem;
-  }
-
-  .register-form {
-    margin-top: 23px;
-  }
-
-  .register-form input,
-  .register-form select {
-    height: 46px;
-    padding-left: 14px;
-    padding-right: 14px;
-    font-size: 16px;
-  }
-
-  .password-wrapper input {
-    padding-right: 44px;
-  }
-
-  .register-form button[type="submit"] {
-    height: 50px;
-    font-size: 0.86rem;
-  }
+  opacity: 0.9;
 }
 
-    /* ============================================================
-       === FOOTER ================================================
-       ============================================================ */
-    footer {
-      text-align: center;
-      padding: 1rem 0 1.2rem;
-      font-size: 0.85rem;
-      color: #ffffff;
-      opacity: 0.9;
-    }
 
 /* ============================================================
    ACS GLOBAL FOOTER
    ============================================================ */
 
-.acs-footer{
-  width:100%;
-  box-sizing:border-box;
+.acs-footer {
+  width: 100%;
 
-  padding:18px 20px;
+  padding: 18px 20px;
 
-  text-align:center;
-  white-space:nowrap;
+  box-sizing: border-box;
 
-  font-family:"Segoe UI",sans-serif;
-  font-size:.85rem;
-  font-weight:500;
+  color:
+    rgba(255, 255, 255, 0.88);
 
-  color:rgba(255,255,255,.88);
+  background:
+    rgba(3, 10, 24, 0.28);
 
-  border-top:1px solid rgba(138,180,255,.18);
+  border-top:
+    1px solid rgba(138, 180, 255, 0.18);
 
-  background:rgba(3,10,24,.28);
+  font-family:
+    "Segoe UI",
+    sans-serif;
+
+  font-size: 0.85rem;
+  font-weight: 500;
+
+  text-align: center;
+  white-space: nowrap;
 }
 
-.acs-footer-text{
-  color:rgba(255,255,255,.88);
+.acs-footer-text {
+  color:
+    rgba(255, 255, 255, 0.88);
 }
 
-.acs-footer-separator{
-  margin:0 8px;
-  color:rgba(255,255,255,.38);
+.acs-footer-separator {
+  margin: 0 8px;
+
+  color:
+    rgba(255, 255, 255, 0.38);
 }
 
 .acs-footer-link,
-.acs-footer-link:visited{
-  color:#FFB300;
-  text-decoration:none;
-  font-weight:600;
+.acs-footer-link:visited {
+  color: #ffb300;
+
+  font-weight: 600;
+  text-decoration: none;
 
   transition:
-    color .25s ease,
-    text-shadow .25s ease;
+    color 0.25s ease,
+    text-shadow 0.25s ease;
 }
 
-.acs-footer-link:hover{
-  color:#FFD870;
+.acs-footer-link:hover {
+  color: #ffd870;
 
   text-shadow:
-    0 0 8px rgba(255,179,0,.35);
+    0 0 8px rgba(255, 179, 0, 0.35);
 }
 
 
@@ -792,23 +1147,23 @@ body::after {
    ACS GLOBAL FOOTER — MOBILE
    ============================================================ */
 
-@media (max-width:850px){
+@media (max-width: 850px) {
 
-  .acs-footer{
-    overflow-x:auto;
+  .acs-footer {
+    overflow-x: auto;
 
-    padding:16px 14px;
+    padding: 16px 14px;
 
-    font-size:.76rem;
+    font-size: 0.76rem;
 
-    -webkit-overflow-scrolling:touch;
+    -webkit-overflow-scrolling: touch;
   }
 
-  .acs-footer-separator{
-    margin:0 6px;
+  .acs-footer-separator {
+    margin: 0 6px;
   }
-
 }
+
 
 /* ============================================================
    ACS OCC GLOBAL RESPONSIVE SYSTEM
@@ -830,6 +1185,7 @@ html,
 body {
   width: 100%;
   max-width: 100%;
+
   overflow-x: hidden;
 }
 
@@ -845,6 +1201,7 @@ select,
 textarea,
 button {
   max-width: 100%;
+
   font: inherit;
 }
 
@@ -856,7 +1213,6 @@ button {
 
 /* ============================================================
    2. RESPONSIVE TABLE CONTAINERS
-   No obliga a todas las tablas a medir 680px
    ============================================================ */
 
 .acs-table-wrapper,
@@ -864,6 +1220,7 @@ button {
 .table-responsive {
   width: 100%;
   max-width: 100%;
+
   overflow-x: auto;
   overflow-y: hidden;
 
@@ -878,52 +1235,50 @@ button {
 .modal,
 .acs-modal,
 .dialog {
-  max-width: calc(100vw - 32px);
+  max-width:
+    calc(100vw - 32px);
 }
 
 
 /* ============================================================
-   4. iPAD PORTRAIT / MEDIUM TABLETS
-   769px — 900px
-   Conserva el comportamiento que ya funciona
+   4. DESKTOP / SMALL LAPTOP
+   ============================================================ */
+
+@media (max-width: 1080px) {
+
+  .acs-register-hero {
+    max-width: 980px;
+  }
+
+  .acs-register-grid {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(380px, 0.9fr);
+
+    gap: 2rem;
+  }
+
+  .acs-register-copy-title {
+    font-size:
+      clamp(1.2rem, 1.7vw, 1.48rem);
+  }
+
+  .acs-register-list li {
+    font-size: 0.8rem;
+  }
+}
+
+
+/* ============================================================
+   5. iPAD PORTRAIT / MEDIUM TABLETS
    ============================================================ */
 
 @media (max-width: 900px) and (min-width: 769px) {
-
-  /* OCC header */
 
   .acs-header {
     flex-wrap: wrap;
     row-gap: 10px;
   }
-
-  .acs-left {
-    order: 1;
-    flex: 1 1 auto;
-    min-width: 0;
-  }
-
-  .acs-right {
-    order: 2;
-    flex: 0 0 auto;
-  }
-
-  .acs-nav {
-    order: 3;
-    flex: 0 0 100%;
-
-    width: 100%;
-
-    justify-content: center;
-    gap: 1.6rem;
-  }
-
-  .acs-main {
-    padding-top: 145px;
-  }
-
-
-  /* Login / public pages header */
 
   .acs-logo {
     min-width: 0;
@@ -934,8 +1289,24 @@ button {
     gap: 0.65rem;
   }
 
+  .acs-register-hero {
+    padding-top: 8.6rem;
+  }
 
-  /* Global footer */
+  .acs-register-grid {
+    grid-template-columns: 1fr;
+
+    gap: 2rem;
+  }
+
+  .acs-register-grid > div:first-child {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .acs-register-card {
+    margin: 0 auto;
+  }
 
   .acs-footer {
     padding: 16px 14px;
@@ -943,10 +1314,12 @@ button {
     font-size: 0.78rem;
 
     white-space: nowrap;
+
     overflow-x: auto;
     overflow-y: hidden;
 
     -webkit-overflow-scrolling: touch;
+
     scrollbar-width: none;
   }
 
@@ -961,13 +1334,10 @@ button {
 
 
 /* ============================================================
-   5. MOBILE + SMALL TABLETS
-   iPhone • Android • Tablets ≤ 768px
+   6. MOBILE + SMALL TABLETS
    ============================================================ */
 
 @media (max-width: 768px) {
-
-  /* Header base */
 
   .acs-header {
     flex-wrap: wrap;
@@ -977,56 +1347,6 @@ button {
     padding-left: 14px;
     padding-right: 14px;
   }
-
-
-  /* OCC header structure */
-
-  .acs-left {
-    order: 1;
-
-    flex: 1 1 auto;
-    min-width: 0;
-  }
-
-  .acs-right {
-    order: 2;
-
-    flex: 0 0 auto;
-  }
-
-  .acs-nav {
-    order: 3;
-
-    flex: 0 0 100%;
-
-    width: 100%;
-
-    justify-content: flex-start;
-    gap: 10px;
-
-    overflow-x: auto;
-    overflow-y: hidden;
-
-    padding-bottom: 4px;
-
-    white-space: nowrap;
-
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-
-  .acs-nav::-webkit-scrollbar {
-    display: none;
-  }
-
-  .acs-nav a,
-  .acs-nav button {
-    flex: 0 0 auto;
-    white-space: nowrap;
-  }
-
-
-  /* Login / public pages header structure */
 
   .acs-logo {
     min-width: 0;
@@ -1039,6 +1359,7 @@ button {
 
   .acs-logo h1 {
     max-width: 100%;
+
     white-space: nowrap;
   }
 
@@ -1058,6 +1379,7 @@ button {
     white-space: nowrap;
 
     -webkit-overflow-scrolling: touch;
+
     scrollbar-width: none;
   }
 
@@ -1068,47 +1390,56 @@ button {
   .acs-nav-buttons a,
   .acs-nav-buttons button {
     flex: 0 0 auto;
+
     white-space: nowrap;
   }
 
-
-  /* Main content */
-
-  .acs-main {
-    padding-top: 145px;
-    padding-left: 14px;
-    padding-right: 14px;
+  .acs-register-hero {
+    padding:
+      9.2rem 14px 2.5rem;
   }
 
+  .acs-register-grid {
+    grid-template-columns: 1fr;
 
-  /* Tables */
-
-  .acs-table-wrapper,
-  .table-wrapper,
-  .table-responsive {
-    width: 100%;
-    max-width: 100%;
-
-    overflow-x: auto;
-
-    -webkit-overflow-scrolling: touch;
+    gap: 1.8rem;
   }
 
+  .acs-register-grid > div:first-child {
+    max-width: 610px;
 
-  /* Modals */
+    margin: 0 auto;
+  }
+
+  .acs-register-copy-title {
+    font-size:
+      clamp(1.2rem, 5vw, 1.48rem);
+  }
+
+  .acs-register-copy-sub {
+    font-size: 0.9rem;
+  }
+
+  .acs-register-list li {
+    font-size: 0.8rem;
+  }
+
+  .acs-register-card {
+    margin: 0 auto;
+  }
 
   .modal,
   .acs-modal,
   .dialog {
-    width: calc(100vw - 28px);
-    max-width: calc(100vw - 28px);
+    width:
+      calc(100vw - 28px);
+
+    max-width:
+      calc(100vw - 28px);
 
     margin-left: auto;
     margin-right: auto;
   }
-
-
-  /* Global footer */
 
   .acs-footer {
     width: 100%;
@@ -1123,6 +1454,7 @@ button {
     overflow-y: hidden;
 
     -webkit-overflow-scrolling: touch;
+
     scrollbar-width: none;
   }
 
@@ -1137,8 +1469,74 @@ button {
 
 
 /* ============================================================
-   6. COMPACT MOBILE
-   Small iPhone • Small Android ≤ 480px
+   7. REGISTER CARD MOBILE
+   ============================================================ */
+
+@media (max-width: 520px) {
+
+  .acs-register-card {
+    width:
+      calc(100% - 4px);
+
+    margin: 0 auto;
+    padding: 27px 20px 24px;
+
+    border-radius: 19px;
+  }
+
+  .register-card-title {
+    font-size: 1rem;
+
+    letter-spacing: 0.12em;
+
+    white-space: normal;
+  }
+
+  .register-card-title::after {
+    margin:
+      19px auto 20px;
+  }
+
+  .register-card-subtitle {
+    font-size: 0.78rem;
+
+    letter-spacing: 0.1em;
+  }
+
+  .acs-register-sub {
+    margin-top: 18px;
+
+    font-size: 0.8rem;
+  }
+
+  .register-form {
+    margin-top: 23px;
+  }
+
+  .register-form input,
+  .register-form select {
+    height: 46px;
+
+    padding-left: 14px;
+    padding-right: 14px;
+
+    font-size: 16px;
+  }
+
+  .password-wrapper input {
+    padding-right: 44px;
+  }
+
+  .register-form button[type="submit"] {
+    height: 50px;
+
+    font-size: 0.86rem;
+  }
+}
+
+
+/* ============================================================
+   8. COMPACT MOBILE
    ============================================================ */
 
 @media (max-width: 480px) {
@@ -1148,42 +1546,46 @@ button {
     padding-right: 10px;
   }
 
-
-  /* ACS logo and corporate title */
-
   .acs-logo {
     max-width: 100%;
   }
 
   .acs-logo h1 {
     font-size: 0.82rem;
+
     letter-spacing: 0.02em;
   }
-
-
-  /* OCC navigation */
-
-  .acs-nav {
-    gap: 8px;
-  }
-
-
-  /* Public navigation */
 
   .acs-nav-buttons {
     gap: 6px;
   }
 
-
-  /* Main content */
-
-  .acs-main {
+  .acs-register-hero {
     padding-left: 10px;
     padding-right: 10px;
   }
 
+  .acs-register-badges {
+    gap: 0.45rem;
+  }
 
-  /* Prevents automatic Safari zoom */
+  .acs-register-badge {
+    font-size: 0.67rem;
+  }
+
+  .acs-register-list li {
+    grid-template-columns:
+      31px minmax(0, 1fr);
+
+    gap: 0.62rem;
+
+    padding: 0.58rem 0.65rem;
+  }
+
+  .acs-register-step-number {
+    width: 28px;
+    height: 28px;
+  }
 
   input,
   select,
@@ -1191,21 +1593,19 @@ button {
     font-size: 16px;
   }
 
-
-  /* Modals */
-
   .modal,
   .acs-modal,
   .dialog {
-    width: calc(100vw - 20px);
-    max-width: calc(100vw - 20px);
+    width:
+      calc(100vw - 20px);
+
+    max-width:
+      calc(100vw - 20px);
   }
-
-
-  /* Footer stays on one line with horizontal touch scroll */
 
   .acs-footer {
     padding: 14px 10px;
+
     font-size: 0.70rem;
   }
 
@@ -1213,10 +1613,10 @@ button {
     margin: 0 4px;
   }
 }
-       
-</style>
-</head>
 
+</style>
+     
+</head>
 <body>
 
   <!-- ===== HEADER — QATAR LUXURY ===== -->
