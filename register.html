@@ -910,33 +910,111 @@ button {
   <section class="acs-register-hero">
     <div class="acs-register-grid">
 
-      <!-- LADO IZQUIERDO: TEXTO Y CONTEXTO -->
-      <div>
-        <h2 class="acs-register-copy-title">
-          Create your ACS profile and lead your own airline.
-        </h2>
+    <!-- LADO IZQUIERDO: ACS OCC ONBOARDING BRIEFING -->
+<div class="acs-onboarding-briefing">
 
-        <p class="acs-register-copy-sub">
-          Your name, country and email will define your identity in the ACS universe —
-          as Captain and CEO of your airline from 1940 to 2026.
-        </p>
+  <p class="acs-register-eyebrow">
+    ACS OCC · CAPTAIN ONBOARDING
+  </p>
 
-        <div class="acs-register-badges">
-          <span class="acs-register-badge">Multi-Era Timeline 1940–2026</span>
-          <span class="acs-register-badge">Fleet · Finance · HR · Airports</span>
-          <span class="acs-register-badge">Future Token Economy</span>
-        </div>
+  <h2 class="acs-register-copy-title">
+    Establish Your ACS Command Profile
+  </h2>
 
-        <div>
-          <div class="acs-register-list-title">Why we ask for this information:</div>
-          <ul class="acs-register-list">
-            <li>▪ <strong>Full Name</strong> → Used as your Captain / CEO name in the game.</li>
-            <li>▪ <strong>Country</strong> → Affects registration, events and future tax rules.</li>
-            <li>▪ <strong>Email</strong> → For multi-device access and recovery in future updates.</li>
-            <li>▪ <strong>Password</strong> → Stored as a secure hash (not in plain text).</li>
-          </ul>
-        </div>
-      </div>
+  <p class="acs-register-copy-sub">
+    Register your operational identity as Captain and Chief Executive
+    Officer of a new aviation enterprise.
+  </p>
+
+  <div class="acs-register-badges">
+    <span class="acs-register-badge">
+      Multi-Era Timeline 1940–2026
+    </span>
+
+    <span class="acs-register-badge">
+      Fleet · Finance · HR · Airports
+    </span>
+
+    <span class="acs-register-badge">
+      Secure Account Recovery
+    </span>
+  </div>
+
+  <!-- REQUIRED LEGAL REVIEW -->
+
+  <section
+    class="acs-legal-briefing"
+    aria-labelledby="legalBriefingTitle"
+  >
+    <div class="acs-legal-status">
+      <span
+        class="acs-legal-beacon"
+        aria-hidden="true"
+      ></span>
+
+      <span>Review Required</span>
+    </div>
+
+    <h3 id="legalBriefingTitle">
+      Required Pre-Flight Review
+    </h3>
+
+    <p>
+      Before entering your registration details, review the ACS
+      Terms of Service and Privacy Policy.
+    </p>
+
+    <p class="acs-legal-briefing-note">
+      Account creation confirms acceptance of the operational rules
+      governing Aviation Capital Simulator.
+    </p>
+
+    <div class="acs-legal-actions">
+      <a
+        href="terms.html"
+        class="acs-legal-action acs-legal-action-primary"
+      >
+        Review &amp; Accept Terms
+      </a>
+
+      <a
+        href="privacy.html"
+        class="acs-legal-action"
+      >
+        Review Privacy Policy
+      </a>
+    </div>
+  </section>
+
+  <div class="acs-data-briefing">
+    <div class="acs-register-list-title">
+      Identity Data Briefing
+    </div>
+
+    <ul class="acs-register-list">
+      <li>
+        <strong>Full Name</strong>
+        <span>Captain and CEO identity inside ACS.</span>
+      </li>
+
+      <li>
+        <strong>Country</strong>
+        <span>Registration, events and jurisdiction rules.</span>
+      </li>
+
+      <li>
+        <strong>Email</strong>
+        <span>Secure access and password recovery.</span>
+      </li>
+
+      <li>
+        <strong>Password</strong>
+        <span>Protected using bcrypt; never stored as plain text.</span>
+      </li>
+    </ul>
+  </div>
+
+</div>
 
       <!-- LADO DERECHO: TARJETA DE REGISTRO -->
       <div class="acs-register-card">
@@ -952,6 +1030,7 @@ button {
 
   <!-- ===== DOB SELECTORS (DAY - MONTH - YEAR) ===== -->
   <!-- ===== NEW DOB SELECTORS ===== -->
+            
 <div style="display:flex; gap:0.5rem; width:100%;">
   <select id="dob-day" required>
     <option value="">Day</option>
@@ -967,6 +1046,7 @@ button {
 </div>
 
    <!-- ===== DOB INFO MESSAGE (ACS Professional Style) ===== -->
+            
   <div style="
     font-size: 0.78rem;
     margin-top: 4px;
@@ -977,9 +1057,10 @@ button {
  ">
    📅 Your date of birth must confirm that you are <strong>18 years or older</strong> to join the ACS universe.
   </div>
-<!-- ===================================================== -->
+
             
   <!-- ===== PASSWORD FIELD (MODERN APPLE EYE ICON) ===== -->
+            
   <div class="password-wrapper">
     <input type="password" id="password" placeholder="Password (min 8 chars, 1 uppercase, 1 number)" required />
     <span class="toggle-password" onclick="togglePassword('password', this)">
