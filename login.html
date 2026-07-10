@@ -701,19 +701,76 @@ button:hover {
 
 /* ============================================================
    ACS GLOBAL FOOTER
-============================================================ */
+   ============================================================ */
 
-.acs-footer-email{
-    color:#ffb300;
-    text-decoration:none;
-    font-weight:500;
-    transition:.25s;
+.acs-footer{
+  width:100%;
+  box-sizing:border-box;
+
+  padding:18px 20px;
+
+  text-align:center;
+  white-space:nowrap;
+
+  font-family:"Segoe UI",sans-serif;
+  font-size:.85rem;
+  font-weight:500;
+
+  color:rgba(255,255,255,.88);
+
+  border-top:1px solid rgba(138,180,255,.18);
+
+  background:rgba(3,10,24,.28);
 }
 
-.acs-footer-email:hover{
-    color:#ffd86b;
-    text-shadow:0 0 8px rgba(255,179,0,.45);
-    text-decoration:underline;
+.acs-footer-text{
+  color:rgba(255,255,255,.88);
+}
+
+.acs-footer-separator{
+  margin:0 8px;
+  color:rgba(255,255,255,.38);
+}
+
+.acs-footer-link,
+.acs-footer-link:visited{
+  color:#FFB300;
+  text-decoration:none;
+  font-weight:600;
+
+  transition:
+    color .25s ease,
+    text-shadow .25s ease;
+}
+
+.acs-footer-link:hover{
+  color:#FFD870;
+
+  text-shadow:
+    0 0 8px rgba(255,179,0,.35);
+}
+
+
+/* ============================================================
+   ACS GLOBAL FOOTER — MOBILE
+   ============================================================ */
+
+@media (max-width:850px){
+
+  .acs-footer{
+    overflow-x:auto;
+
+    padding:16px 14px;
+
+    font-size:.76rem;
+
+    -webkit-overflow-scrolling:touch;
+  }
+
+  .acs-footer-separator{
+    margin:0 6px;
+  }
+
 }
     
 </style>
@@ -752,29 +809,39 @@ button:hover {
   <a href="#" onclick="openResetModal()">Forgot your password?</a>
   </p>
 
+/* ============================================================
+   ACS GLOBAL FOOTER
+   ============================================================ */
+  
 <footer class="acs-footer">
 
-    <span>
-        © 2026 Aviation Capital Simulator. All rights reserved.
-    </span>
+  <span class="acs-footer-text">
+    © 2026 Aviation Capital Simulator. All rights reserved.
+  </span>
 
-    <span class="acs-footer-separator">|</span>
+  <span class="acs-footer-separator">•</span>
 
-    <a href="privacy.html">
-        Privacy Policy
-    </a>
+  <a
+    href="mailto:aviationcapitalsim@gmail.com"
+    class="acs-footer-link">
+    aviationcapitalsim@gmail.com
+  </a>
 
-    <span class="acs-footer-separator">|</span>
+  <span class="acs-footer-separator">•</span>
 
-    <a href="terms.html">
-        Terms of Service
-    </a>
+  <a
+    href="privacy.html"
+    class="acs-footer-link">
+    Privacy Policy
+  </a>
 
-    <span class="acs-footer-separator">|</span>
+  <span class="acs-footer-separator">•</span>
 
-    <a href="contact.html">
-        Contact
-    </a>
+  <a
+    href="terms.html"
+    class="acs-footer-link">
+    Terms of Service
+  </a>
 
 </footer>
 
