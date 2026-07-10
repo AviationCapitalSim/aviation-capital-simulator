@@ -677,36 +677,37 @@ text-shadow:
   }
 }
 
-    /* ============================================================
+/* ============================================================
    🟦 ACS GLOBAL CLOCK — STABLE HEADER FIX (NO LAYOUT SHIFT)
    Use in ALL ACS modules
    ============================================================ */
 
-.acs-clock-header{
+.acs-clock-header {
+  width: 290px;
+  flex: 0 0 290px;
 
-  font-family:"Orbitron",monospace;
-  font-size:.95rem;
-  color:#00ff80;
+  padding: 0.45rem 0.8rem;
 
-  background:rgba(0,255,128,.08);
-  border-radius:10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-  padding:.45rem .8rem;
+  font-family: "Orbitron", monospace;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 
-  width:260px;                 /* ancho fijo absoluto */
-  flex:0 0 260px;             /* evita expansión o compresión */
+  color: #00ff80;
 
-  display:flex;
-  justify-content:center;
-  align-items:center;
+  background: rgba(0, 255, 128, 0.08);
 
-  white-space:nowrap;
+  border: 1px solid rgba(0, 255, 128, 0.18);
+  border-radius: 10px;
 
-  font-variant-numeric:tabular-nums;
+  white-space: nowrap;
+  overflow: visible;
 
-  border:1px solid rgba(0,255,128,.18);
-
-  overflow:hidden;            /* protección extra */
+  box-sizing: border-box;
 }
 
 /* ============================================================
