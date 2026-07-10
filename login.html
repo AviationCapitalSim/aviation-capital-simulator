@@ -600,103 +600,276 @@ button:hover {
     }
 
 /* ============================================================
-   === RESET MODAL (Qatar Luxury Style) ========================
+   ACS OCC PASSWORD RECOVERY MODAL
    ============================================================ */
+
+body.acs-modal-open {
+  overflow: hidden;
+}
+
+.acs-modal-overlay[hidden] {
+  display: none;
+}
 
 .acs-modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(5, 10, 25, 0.78);
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(2, 7, 18, 0.84);
+
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-  animation: fadeInModal 0.3s ease;
-}
 
-@keyframes fadeInModal {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  z-index: 2000;
 }
 
 .acs-modal {
-  background: rgba(12, 23, 50, 0.40);
-  border: 1px solid rgba(255,179,0,0.48);
-  border-radius: 16px;
-  padding: 2rem;
-  width: 92%;
-  max-width: 360px;
-  text-align: center;
+  position: relative;
 
-  box-shadow: 0 0 35px rgba(255,179,0,0.28), 
-              0 0 22px rgba(0,0,0,0.32);
+  width: 100%;
+  max-width: 430px;
 
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  padding: 34px 30px 28px;
 
-  animation: slideDown 0.35s ease;
+  color: #ffffff;
+  text-align: left;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(8, 22, 48, 0.98) 0%,
+      rgba(2, 9, 22, 0.99) 100%
+    );
+
+  border: 1px solid rgba(255, 179, 0, 0.72);
+  border-radius: 18px;
+
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.62),
+    0 0 26px rgba(255, 179, 0, 0.12),
+    inset 0 0 24px rgba(255, 179, 0, 0.025);
 }
 
-@keyframes slideDown {
-  from { transform: translateY(-20px); opacity: 0; }
-  to   { transform: translateY(0); opacity: 1; }
+.acs-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+
+  width: 38px;
+  height: 38px;
+  margin: 0;
+  padding: 0;
+
+  color: rgba(235, 239, 250, 0.78);
+  font-family: Arial, sans-serif;
+  font-size: 1.7rem;
+  font-weight: 400;
+  line-height: 1;
+
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.acs-modal-close:hover {
+  color: #ffca63;
+  background: rgba(255, 179, 0, 0.08);
+  box-shadow: none;
+  transform: none;
 }
 
 .acs-modal-title {
-  color: #FFB300;
-  font-size: 1.6rem;
-  margin-bottom: 0.4rem;
-  text-shadow: 0 0 10px rgba(255,179,0,0.4);
+  margin: 0 42px 12px 0;
+
+  color: #ffb300;
+
+  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+  font-size: 1.22rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+
+  text-shadow: 0 0 10px rgba(255, 179, 0, 0.26);
 }
 
 .acs-modal-desc {
-  color: #cbd6ff;
-  margin-bottom: 1.4rem;
-  font-size: 0.95rem;
+  margin: 0 0 24px;
+
+  color: rgba(235, 239, 250, 0.84);
+
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.acs-modal-label {
+  display: block;
+
+  margin: 0 0 8px;
+
+  color: rgba(235, 239, 250, 0.88);
+
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
 }
 
 .acs-modal-input {
+  display: block;
+
   width: 100%;
-  padding: 0.8rem;
-  border-radius: 10px;
-  border: none;
-  margin-bottom: 1.2rem;
-  background: rgba(255,255,255,0.1);
-  color: white;
-  font-size: 0.95rem;
+  height: 50px;
+
+  box-sizing: border-box;
+
+  margin: 0 0 17px;
+  padding: 0 16px;
+
+  color: #ffffff;
+
+  background: rgba(2, 9, 22, 0.78);
+
+  border: 1px solid rgba(255, 179, 0, 0.42);
+  border-radius: 9px;
+
+  outline: none;
+
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.38);
+}
+
+.acs-modal-input:focus {
+  border-color: rgba(255, 202, 99, 0.88);
+
+  box-shadow:
+    0 0 12px rgba(255, 179, 0, 0.18),
+    inset 0 0 12px rgba(0, 0, 0, 0.38);
+}
+
+.acs-password-policy {
+  margin: -5px 0 18px;
+
+  color: rgba(190, 201, 225, 0.78);
+
+  font-size: 0.76rem;
+  line-height: 1.45;
 }
 
 .acs-modal-btn {
   width: 100%;
-  padding: 0.85rem;
-  border-radius: 10px;
-  background-color: #00c853;
-  border: none;
-  color: white;
-  font-size: 1rem;
-  font-weight: 700;
+  height: 50px;
+
+  margin: 2px 0 10px;
+  padding: 0 16px;
+
+  color: #07101f;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffd063 0%,
+      #d89216 100%
+    );
+
+  border: 1px solid rgba(255, 220, 140, 0.45);
+  border-radius: 9px;
+
+  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+  font-size: 0.86rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+
   cursor: pointer;
-  margin-bottom: 0.8rem;
+
+  box-shadow:
+    0 0 14px rgba(255, 179, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
-.acs-modal-btn:hover {
-  background-color: #00e76b;
+.acs-modal-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+.acs-modal-btn:disabled {
+  cursor: wait;
+  opacity: 0.64;
 }
 
 .acs-modal-btn-cancel {
   width: 100%;
-  padding: 0.8rem;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: #d1d6ff;
+  height: 46px;
+
+  margin: 0;
+  padding: 0 16px;
+
+  color: rgba(235, 239, 250, 0.82);
+
+  background: rgba(255, 255, 255, 0.045);
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 9px;
+
+  font-size: 0.84rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+
   cursor: pointer;
-  font-size: 0.95rem;
+
+  box-shadow: none;
+}
+
+.acs-modal-btn-cancel:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  transform: none;
+  box-shadow: none;
+}
+
+.acs-modal-status {
+  min-height: 22px;
+
+  margin: 8px 0 14px;
+
+  font-size: 0.82rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.acs-modal-status:empty {
+  display: none;
+}
+
+.acs-modal-status.is-success {
+  color: #70e59a;
+}
+
+.acs-modal-status.is-error {
+  color: #ff8d8d;
+}
+
+@media (max-width: 520px) {
+  .acs-modal-overlay {
+    padding: 12px;
+  }
+
+  .acs-modal {
+    padding: 30px 20px 23px;
+    border-radius: 15px;
+  }
+
+  .acs-modal-title {
+    font-size: 1.02rem;
+  }
 }
 
 /* ============================================================
@@ -1185,11 +1358,17 @@ button {
     <button type="submit">Login</button>
   </form>
 
-  <p class="login-link">Don’t have an account? <a href="register.html">Create one here</a>.</p>
+  <p class="login-link">
+  Don’t have an account?
+  <a href="register.html">Create one here</a>.
+</p>
+
+<p class="login-link" style="margin-top: 0.5rem;">
+  <a href="#" id="forgotPasswordLink">
+    Forgot your password?
+  </a>
+</p>
 </div>
-  <p class="login-link" style="margin-top: 0.4rem;">
-  <a href="#" onclick="openResetModal()">Forgot your password?</a>
-  </p>
   
 <footer class="acs-footer">
 
@@ -1224,22 +1403,132 @@ button {
 </footer>
 
   <!-- ============================================================
-     === RESET PASSWORD MODAL — Qatar Luxury Edition ===========
+     ACS OCC PASSWORD RECOVERY MODAL
      ============================================================ -->
-  
-<div id="resetPasswordModal" class="acs-modal-overlay" style="display:none;">
+
+<div
+  id="passwordRecoveryModal"
+  class="acs-modal-overlay"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="passwordRecoveryTitle"
+  aria-describedby="passwordRecoveryDescription"
+  hidden
+>
   <div class="acs-modal">
-    
-    <h2 class="acs-modal-title">Reset Password</h2>
-    <p class="acs-modal-desc">
-      Enter your registered email and we will send you a temporary password.
+
+    <button
+      type="button"
+      id="passwordRecoveryClose"
+      class="acs-modal-close"
+      aria-label="Close password recovery"
+    >
+      &times;
+    </button>
+
+    <h2
+      id="passwordRecoveryTitle"
+      class="acs-modal-title"
+    >
+      Password Recovery
+    </h2>
+
+    <p
+      id="passwordRecoveryDescription"
+      class="acs-modal-desc"
+    >
+      Enter your registered email address. If the account exists,
+      ACS will transmit a secure recovery link.
     </p>
 
-    <input type="email" id="resetEmail" class="acs-modal-input" placeholder="Your email address">
+    <!-- REQUEST RECOVERY LINK -->
 
-    <button class="acs-modal-btn" onclick="sendPasswordReset()">Send Temporary Password</button>
+    <form id="forgotPasswordForm" novalidate>
+      <label class="acs-modal-label" for="resetEmail">
+        Email Address
+      </label>
 
-    <button class="acs-modal-btn-cancel" onclick="closeResetModal()">Cancel</button>
+      <input
+        type="email"
+        id="resetEmail"
+        class="acs-modal-input"
+        autocomplete="email"
+        maxlength="320"
+        placeholder="Email Address"
+        required
+      >
+
+      <button
+        type="submit"
+        id="sendRecoveryButton"
+        class="acs-modal-btn"
+      >
+        Send Recovery Link
+      </button>
+    </form>
+
+    <!-- SET NEW PASSWORD -->
+
+    <form id="newPasswordForm" hidden novalidate>
+      <label class="acs-modal-label" for="newPassword">
+        New Password
+      </label>
+
+      <input
+        type="password"
+        id="newPassword"
+        class="acs-modal-input"
+        autocomplete="new-password"
+        minlength="12"
+        maxlength="128"
+        placeholder="New Password"
+        required
+      >
+
+      <label class="acs-modal-label" for="confirmPassword">
+        Confirm Password
+      </label>
+
+      <input
+        type="password"
+        id="confirmPassword"
+        class="acs-modal-input"
+        autocomplete="new-password"
+        minlength="12"
+        maxlength="128"
+        placeholder="Confirm Password"
+        required
+      >
+
+      <p class="acs-password-policy">
+        12–128 characters, including uppercase, lowercase and
+        at least one number.
+      </p>
+
+      <button
+        type="submit"
+        id="resetPasswordButton"
+        class="acs-modal-btn"
+      >
+        Reset Password
+      </button>
+    </form>
+
+    <p
+      id="passwordRecoveryStatus"
+      class="acs-modal-status"
+      role="status"
+      aria-live="polite"
+    ></p>
+
+    <button
+      type="button"
+      id="passwordRecoveryCancel"
+      class="acs-modal-btn-cancel"
+    >
+      Cancel
+    </button>
+
   </div>
 </div>
   
@@ -1346,12 +1635,409 @@ if (result.status === "NO_AIRLINE") {
   }
 }
 
-/* ========== LOGOUT ========== */
-  
-function handleLogout(){
-  alert("👋 Session closed. Your fleet awaits your command!");
-  window.location.href = "login.html";
-} 
+/* ============================================================
+   ACS OCC PASSWORD RECOVERY
+   ============================================================ */
+
+const ACS_FORGOT_PASSWORD_URL =
+  "https://api.aviationcapitalsim.com/v1/auth/forgot-password";
+
+const ACS_RESET_PASSWORD_URL =
+  "https://api.aviationcapitalsim.com/v1/auth/reset-password";
+
+const PASSWORD_RECOVERY_GENERIC_MESSAGE =
+  "If the account exists, a recovery email has been sent.";
+
+let ACS_passwordResetToken = null;
+
+function setPasswordRecoveryStatus(message, type = "") {
+  const status = document.getElementById(
+    "passwordRecoveryStatus"
+  );
+
+  status.textContent = message;
+  status.classList.remove("is-success", "is-error");
+
+  if (type === "success") {
+    status.classList.add("is-success");
+  }
+
+  if (type === "error") {
+    status.classList.add("is-error");
+  }
+}
+
+function showPasswordRecoveryView(view) {
+  const title = document.getElementById(
+    "passwordRecoveryTitle"
+  );
+
+  const description = document.getElementById(
+    "passwordRecoveryDescription"
+  );
+
+  const forgotForm = document.getElementById(
+    "forgotPasswordForm"
+  );
+
+  const newPasswordForm = document.getElementById(
+    "newPasswordForm"
+  );
+
+  const cancelButton = document.getElementById(
+    "passwordRecoveryCancel"
+  );
+
+  setPasswordRecoveryStatus("");
+
+  if (view === "reset") {
+    title.textContent = "Set New Password";
+
+    description.textContent =
+      "Enter and confirm your new Aviation Capital Simulator password.";
+
+    forgotForm.hidden = true;
+    newPasswordForm.hidden = false;
+
+    cancelButton.textContent = "Cancel";
+
+    document.getElementById("newPassword").focus();
+    return;
+  }
+
+  title.textContent = "Password Recovery";
+
+  description.textContent =
+    "Enter your registered email address. If the account exists, ACS will transmit a secure recovery link.";
+
+  forgotForm.hidden = false;
+  newPasswordForm.hidden = true;
+
+  cancelButton.textContent = "Cancel";
+
+  document.getElementById("resetEmail").focus();
+}
+
+function openResetModal() {
+  const modal = document.getElementById(
+    "passwordRecoveryModal"
+  );
+
+  modal.hidden = false;
+  document.body.classList.add("acs-modal-open");
+
+  if (ACS_passwordResetToken) {
+    showPasswordRecoveryView("reset");
+  } else {
+    showPasswordRecoveryView("request");
+  }
+}
+
+function closeResetModal() {
+  const modal = document.getElementById(
+    "passwordRecoveryModal"
+  );
+
+  modal.hidden = true;
+  document.body.classList.remove("acs-modal-open");
+
+  setPasswordRecoveryStatus("");
+}
+
+async function sendPasswordReset(event) {
+  event.preventDefault();
+
+  const emailInput = document.getElementById("resetEmail");
+  const button = document.getElementById(
+    "sendRecoveryButton"
+  );
+
+  const email = emailInput.value.trim().toLowerCase();
+
+  if (!email || !emailInput.checkValidity()) {
+    setPasswordRecoveryStatus(
+      "Enter a valid email address.",
+      "error"
+    );
+
+    emailInput.focus();
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = "Transmitting...";
+
+  setPasswordRecoveryStatus("");
+
+  try {
+    await fetch(ACS_FORGOT_PASSWORD_URL, {
+      method: "POST",
+      credentials: "omit",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email })
+    });
+
+    setPasswordRecoveryStatus(
+      PASSWORD_RECOVERY_GENERIC_MESSAGE,
+      "success"
+    );
+
+    emailInput.value = "";
+
+  } catch (error) {
+    setPasswordRecoveryStatus(
+      "Unable to contact ACS Operations. Please try again.",
+      "error"
+    );
+  } finally {
+    button.disabled = false;
+    button.textContent = "Send Recovery Link";
+  }
+}
+
+function isValidACSPassword(password) {
+  return (
+    typeof password === "string" &&
+    password.length >= 12 &&
+    password.length <= 128 &&
+    /[a-z]/.test(password) &&
+    /[A-Z]/.test(password) &&
+    /\d/.test(password)
+  );
+}
+
+async function submitNewPassword(event) {
+  event.preventDefault();
+
+  const newPasswordInput = document.getElementById(
+    "newPassword"
+  );
+
+  const confirmPasswordInput = document.getElementById(
+    "confirmPassword"
+  );
+
+  const button = document.getElementById(
+    "resetPasswordButton"
+  );
+
+  const newPassword = newPasswordInput.value;
+  const confirmPassword = confirmPasswordInput.value;
+
+  if (!ACS_passwordResetToken) {
+    setPasswordRecoveryStatus(
+      "The recovery link is invalid or has expired.",
+      "error"
+    );
+
+    return;
+  }
+
+  if (!isValidACSPassword(newPassword)) {
+    setPasswordRecoveryStatus(
+      "Password must contain 12–128 characters, including uppercase, lowercase and a number.",
+      "error"
+    );
+
+    newPasswordInput.focus();
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    setPasswordRecoveryStatus(
+      "Password confirmation does not match.",
+      "error"
+    );
+
+    confirmPasswordInput.focus();
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = "Updating...";
+
+  setPasswordRecoveryStatus("");
+
+  try {
+    const response = await fetch(
+      ACS_RESET_PASSWORD_URL,
+      {
+        method: "POST",
+        credentials: "omit",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          token: ACS_passwordResetToken,
+          newPassword
+        })
+      }
+    );
+
+    let result = null;
+
+    try {
+      result = await response.json();
+    } catch (error) {
+      result = null;
+    }
+
+    if (
+      response.ok &&
+      result?.status === "PASSWORD_RESET_COMPLETE"
+    ) {
+      ACS_passwordResetToken = null;
+
+      newPasswordInput.value = "";
+      confirmPasswordInput.value = "";
+
+      document.getElementById(
+        "newPasswordForm"
+      ).hidden = true;
+
+      document.getElementById(
+        "passwordRecoveryTitle"
+      ).textContent = "Password Updated";
+
+      document.getElementById(
+        "passwordRecoveryDescription"
+      ).textContent =
+        "Your ACS password has been updated. You can now return to secure login.";
+
+      document.getElementById(
+        "passwordRecoveryCancel"
+      ).textContent = "Return to Login";
+
+      setPasswordRecoveryStatus(
+        "Password reset completed successfully.",
+        "success"
+      );
+
+      return;
+    }
+
+    if (result?.error === "PASSWORD_POLICY") {
+      setPasswordRecoveryStatus(
+        result.message ||
+          "The new password does not meet ACS security requirements.",
+        "error"
+      );
+
+      return;
+    }
+
+    if (
+      result?.error === "INVALID_OR_EXPIRED_TOKEN"
+    ) {
+      setPasswordRecoveryStatus(
+        "The recovery link is invalid, expired or has already been used.",
+        "error"
+      );
+
+      return;
+    }
+
+    if (result?.error === "RATE_LIMIT") {
+      setPasswordRecoveryStatus(
+        "Too many attempts. Please try again later.",
+        "error"
+      );
+
+      return;
+    }
+
+    setPasswordRecoveryStatus(
+      "ACS could not update the password. Please request a new recovery link.",
+      "error"
+    );
+
+  } catch (error) {
+    setPasswordRecoveryStatus(
+      "Unable to contact ACS Operations. Please try again.",
+      "error"
+    );
+  } finally {
+    button.disabled = false;
+    button.textContent = "Reset Password";
+  }
+}
+
+function readPasswordResetToken() {
+  const fragment = window.location.hash.startsWith("#")
+    ? window.location.hash.slice(1)
+    : "";
+
+  if (!fragment) {
+    return;
+  }
+
+  const fragmentParameters = new URLSearchParams(fragment);
+  const token = fragmentParameters.get("reset_token");
+
+  if (!token) {
+    return;
+  }
+
+  /*
+    Keep the token only in memory.
+    Remove it immediately from the visible URL and browser history.
+  */
+  ACS_passwordResetToken = token;
+
+  window.history.replaceState(
+    null,
+    document.title,
+    window.location.pathname + window.location.search
+  );
+
+  openResetModal();
+}
+
+document.getElementById(
+  "forgotPasswordLink"
+).addEventListener("click", event => {
+  event.preventDefault();
+  openResetModal();
+});
+
+document.getElementById(
+  "forgotPasswordForm"
+).addEventListener("submit", sendPasswordReset);
+
+document.getElementById(
+  "newPasswordForm"
+).addEventListener("submit", submitNewPassword);
+
+document.getElementById(
+  "passwordRecoveryClose"
+).addEventListener("click", closeResetModal);
+
+document.getElementById(
+  "passwordRecoveryCancel"
+).addEventListener("click", closeResetModal);
+
+document.getElementById(
+  "passwordRecoveryModal"
+).addEventListener("click", event => {
+  if (event.target.id === "passwordRecoveryModal") {
+    closeResetModal();
+  }
+});
+
+document.addEventListener("keydown", event => {
+  if (
+    event.key === "Escape" &&
+    !document.getElementById(
+      "passwordRecoveryModal"
+    ).hidden
+  ) {
+    closeResetModal();
+  }
+});
+
+readPasswordResetToken();
   
 </script>
 
