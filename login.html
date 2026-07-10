@@ -125,14 +125,40 @@ body::after{
      height: 46px;
    }
 
-    .acs-logo h1 {
-      color: #FFB300;
-      font-size: 1.15rem;
-      margin: 0;
-      letter-spacing: 0.6px;
-      text-shadow: 0 0 8px rgba(255,179,0,0.4);
-    }
+   .acs-logo h1{
 
+    margin:0;
+
+    font-family:"Orbitron","Eurostile","Exo 2",sans-serif;
+
+    font-size:2rem;
+
+    font-weight:700;
+
+    letter-spacing:.04em;
+
+    text-transform:uppercase;
+
+    background:linear-gradient(
+        180deg,
+        #FFE08A 0%,
+        #FFC94A 22%,
+        #FFB300 55%,
+        #D98B00 100%
+    );
+
+    -webkit-background-clip:text;
+    background-clip:text;
+
+    -webkit-text-fill-color:transparent;
+
+    color:transparent;
+
+    text-shadow:
+        0 0 3px rgba(255,179,0,.15);
+
+}
+    
     .acs-nav-buttons {
       display: flex;
       gap: 1rem;
