@@ -886,504 +886,6 @@ button {
     margin: 0 4px;
   }
 }
-
-/* ============================================================
-   ACS OCC CAPTAIN ONBOARDING — FINAL VISUAL AUTHORITY
-   ============================================================ */
-
-.acs-register-eyebrow {
-  margin: 0 0 12px;
-
-  color: #ffb300;
-
-  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-
-  text-shadow: 0 0 10px rgba(255, 179, 0, 0.25);
-}
-
-.acs-register-copy-title {
-  max-width: 560px;
-
-  margin: 0 0 16px;
-
-  color: #f7f9ff;
-
-  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
-  font-size: clamp(1.9rem, 3.4vw, 3.15rem);
-  font-weight: 700;
-  line-height: 1.13;
-  letter-spacing: 0.015em;
-  text-transform: uppercase;
-
-  text-shadow:
-    0 0 18px rgba(255, 255, 255, 0.09),
-    0 8px 24px rgba(0, 0, 0, 0.58);
-}
-
-.acs-register-copy-sub {
-  max-width: 570px;
-
-  margin: 0 0 22px;
-
-  color: rgba(222, 230, 250, 0.9);
-
-  font-size: 1rem;
-  line-height: 1.65;
-}
-
-.acs-register-badges {
-  margin-bottom: 22px;
-}
-
-.acs-register-badge {
-  padding: 7px 12px;
-
-  background: rgba(3, 12, 29, 0.72);
-
-  border-color: rgba(255, 179, 0, 0.5);
-
-  font-size: 0.72rem;
-  font-weight: 650;
-  letter-spacing: 0.07em;
-
-  box-shadow:
-    inset 0 0 12px rgba(255, 179, 0, 0.025),
-    0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-/* REQUIRED PRE-FLIGHT REVIEW */
-
-.acs-legal-briefing {
-  position: relative;
-  overflow: hidden;
-
-  max-width: 570px;
-
-  margin: 0 0 24px;
-  padding: 20px 21px;
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(9, 22, 48, 0.95),
-      rgba(3, 11, 27, 0.97)
-    );
-
-  border: 1px solid rgba(255, 179, 0, 0.68);
-  border-radius: 14px;
-
-  box-shadow:
-    0 16px 34px rgba(0, 0, 0, 0.38),
-    inset 0 0 20px rgba(255, 179, 0, 0.025);
-
-  animation: acsLegalBorderPulse 2.8s ease-in-out infinite;
-}
-
-.acs-legal-briefing::before {
-  content: "";
-
-  position: absolute;
-  top: 0;
-  left: 20px;
-  right: 20px;
-
-  height: 1px;
-
-  background:
-    linear-gradient(
-      90deg,
-      transparent,
-      #ffc94a,
-      transparent
-    );
-}
-
-.acs-legal-status {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-
-  margin-bottom: 11px;
-
-  color: #ffca63;
-
-  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
-  font-size: 0.67rem;
-  font-weight: 750;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.acs-legal-beacon,
-.acs-clearance-indicator {
-  display: inline-block;
-  flex: 0 0 auto;
-
-  width: 9px;
-  height: 9px;
-
-  background: #ffb300;
-  border-radius: 50%;
-
-  box-shadow:
-    0 0 0 0 rgba(255, 179, 0, 0.58),
-    0 0 11px rgba(255, 179, 0, 0.72);
-
-  animation: acsBeaconPulse 1.8s ease-out infinite;
-}
-
-.acs-legal-briefing h3 {
-  margin: 0 0 10px;
-
-  color: #ffffff;
-
-  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
-  font-size: 1rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.acs-legal-briefing p {
-  margin: 0 0 9px;
-
-  color: rgba(231, 236, 248, 0.9);
-
-  font-size: 0.84rem;
-  line-height: 1.55;
-}
-
-.acs-legal-briefing .acs-legal-briefing-note {
-  color: rgba(187, 199, 225, 0.78);
-  font-size: 0.77rem;
-}
-
-.acs-legal-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 9px;
-
-  margin-top: 16px;
-}
-
-.acs-legal-action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  min-height: 38px;
-  padding: 0 14px;
-
-  color: #c9d8fa;
-  text-decoration: none;
-
-  background: rgba(138, 180, 255, 0.055);
-
-  border: 1px solid rgba(138, 180, 255, 0.3);
-  border-radius: 8px;
-
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-
-  transition:
-    color 0.2s ease,
-    background 0.2s ease,
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.acs-legal-action:hover {
-  color: #ffffff;
-
-  background: rgba(138, 180, 255, 0.11);
-  border-color: rgba(138, 180, 255, 0.56);
-
-  box-shadow: 0 0 13px rgba(138, 180, 255, 0.16);
-}
-
-.acs-legal-action-primary {
-  color: #ffca63;
-
-  background: rgba(255, 179, 0, 0.08);
-  border-color: rgba(255, 179, 0, 0.52);
-}
-
-.acs-legal-action-primary:hover {
-  color: #ffe19a;
-
-  background: rgba(255, 179, 0, 0.14);
-  border-color: rgba(255, 179, 0, 0.78);
-
-  box-shadow: 0 0 15px rgba(255, 179, 0, 0.2);
-}
-
-/* IDENTITY DATA */
-
-.acs-data-briefing {
-  max-width: 570px;
-}
-
-.acs-register-list-title {
-  margin: 0 0 10px;
-
-  color: #ffb300;
-
-  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
-  font-size: 0.78rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.acs-register-list {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 9px;
-}
-
-.acs-register-list li {
-  min-width: 0;
-
-  margin: 0;
-  padding: 11px 12px;
-
-  background: rgba(4, 13, 30, 0.64);
-
-  border: 1px solid rgba(138, 180, 255, 0.14);
-  border-radius: 9px;
-}
-
-.acs-register-list strong,
-.acs-register-list span {
-  display: block;
-}
-
-.acs-register-list strong {
-  margin-bottom: 3px;
-
-  color: #eaf0ff;
-
-  font-size: 0.78rem;
-  letter-spacing: 0.04em;
-}
-
-.acs-register-list span {
-  color: rgba(188, 201, 229, 0.8);
-
-  font-size: 0.72rem;
-  line-height: 1.4;
-}
-
-/* REGISTRATION CLEARANCE */
-
-.acs-registration-clearance {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-
-  margin: 0 0 17px;
-  padding: 12px 13px;
-
-  background: rgba(255, 179, 0, 0.065);
-
-  border: 1px solid rgba(255, 179, 0, 0.4);
-  border-radius: 9px;
-
-  transition:
-    background 0.25s ease,
-    border-color 0.25s ease;
-}
-
-.acs-registration-clearance strong,
-.acs-registration-clearance span {
-  display: block;
-}
-
-.acs-registration-clearance strong {
-  margin-bottom: 3px;
-
-  color: #ffca63;
-
-  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
-  font-size: 0.68rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.acs-registration-clearance span {
-  color: rgba(213, 222, 242, 0.8);
-
-  font-size: 0.72rem;
-  line-height: 1.4;
-}
-
-.acs-registration-clearance.is-cleared {
-  background: rgba(52, 211, 113, 0.07);
-  border-color: rgba(82, 222, 137, 0.4);
-}
-
-.acs-registration-clearance.is-cleared
-.acs-clearance-indicator {
-  background: #52de89;
-
-  box-shadow:
-    0 0 10px rgba(82, 222, 137, 0.58);
-
-  animation: none;
-}
-
-.acs-registration-clearance.is-cleared strong {
-  color: #70e59a;
-}
-
-.register-form.is-locked
-input:not(#terms),
-.register-form.is-locked select {
-  opacity: 0.46;
-  cursor: not-allowed;
-}
-
-.acs-terms-confirmation {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-
-  margin-top: 5px;
-
-  color: rgba(213, 222, 242, 0.84);
-
-  font-size: 0.77rem;
-  line-height: 1.5;
-}
-
-.acs-terms-confirmation input {
-  flex: 0 0 auto;
-
-  width: 17px;
-  height: 17px;
-
-  margin: 2px 0 0;
-
-  accent-color: #ffb300;
-}
-
-.acs-terms-confirmation a {
-  color: #ffb300;
-  font-weight: 650;
-  text-decoration: none;
-}
-
-.acs-terms-confirmation a:hover {
-  color: #ffd66e;
-  text-decoration: underline;
-}
-
-.register-form button {
-  border-radius: 9px;
-
-  color: #07101f;
-
-  background:
-    linear-gradient(
-      180deg,
-      #ffd063 0%,
-      #d89216 100%
-    );
-
-  border: 1px solid rgba(255, 220, 140, 0.46);
-
-  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
-  font-size: 0.82rem;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-
-  box-shadow:
-    0 0 14px rgba(255, 179, 0, 0.23),
-    inset 0 1px 0 rgba(255, 255, 255, 0.34);
-}
-
-.register-form button:hover:not(:disabled) {
-  color: #07101f;
-
-  background:
-    linear-gradient(
-      180deg,
-      #ffda78 0%,
-      #e49a1c 100%
-    );
-
-  box-shadow:
-    0 0 20px rgba(255, 179, 0, 0.34),
-    inset 0 1px 0 rgba(255, 255, 255, 0.38);
-}
-
-.register-form button:disabled {
-  opacity: 0.42;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-@keyframes acsBeaconPulse {
-  0% {
-    box-shadow:
-      0 0 0 0 rgba(255, 179, 0, 0.6),
-      0 0 10px rgba(255, 179, 0, 0.62);
-  }
-
-  70% {
-    box-shadow:
-      0 0 0 8px rgba(255, 179, 0, 0),
-      0 0 15px rgba(255, 179, 0, 0.28);
-  }
-
-  100% {
-    box-shadow:
-      0 0 0 0 rgba(255, 179, 0, 0),
-      0 0 10px rgba(255, 179, 0, 0.54);
-  }
-}
-
-@keyframes acsLegalBorderPulse {
-  0%,
-  100% {
-    border-color: rgba(255, 179, 0, 0.48);
-  }
-
-  50% {
-    border-color: rgba(255, 202, 99, 0.88);
-
-    box-shadow:
-      0 16px 34px rgba(0, 0, 0, 0.38),
-      0 0 18px rgba(255, 179, 0, 0.13);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .acs-legal-briefing,
-  .acs-legal-beacon,
-  .acs-clearance-indicator {
-    animation: none;
-  }
-}
-
-@media (max-width: 600px) {
-  .acs-register-list {
-    grid-template-columns: 1fr;
-  }
-
-  .acs-legal-actions {
-    flex-direction: column;
-  }
-
-  .acs-legal-action {
-    width: 100%;
-  }
-}
        
 </style>
 </head>
@@ -1408,155 +910,48 @@ input:not(#terms),
   <section class="acs-register-hero">
     <div class="acs-register-grid">
 
-    <!-- LADO IZQUIERDO: ACS OCC ONBOARDING BRIEFING -->
-<div class="acs-onboarding-briefing">
+      <!-- LADO IZQUIERDO: TEXTO Y CONTEXTO -->
+      <div>
+        <h2 class="acs-register-copy-title">
+          Create your ACS profile and lead your own airline.
+        </h2>
 
-  <p class="acs-register-eyebrow">
-    ACS OCC · CAPTAIN ONBOARDING
-  </p>
+        <p class="acs-register-copy-sub">
+          Your name, country and email will define your identity in the ACS universe —
+          as Captain and CEO of your airline from 1940 to 2026.
+        </p>
 
-  <h2 class="acs-register-copy-title">
-    Establish Your ACS Command Profile
-  </h2>
+        <div class="acs-register-badges">
+          <span class="acs-register-badge">Multi-Era Timeline 1940–2026</span>
+          <span class="acs-register-badge">Fleet · Finance · HR · Airports</span>
+          <span class="acs-register-badge">Future Token Economy</span>
+        </div>
 
-  <p class="acs-register-copy-sub">
-    Register your operational identity as Captain and Chief Executive
-    Officer of a new aviation enterprise.
-  </p>
-
-  <div class="acs-register-badges">
-    <span class="acs-register-badge">
-      Multi-Era Timeline 1940–2026
-    </span>
-
-    <span class="acs-register-badge">
-      Fleet · Finance · HR · Airports
-    </span>
-
-    <span class="acs-register-badge">
-      Secure Account Recovery
-    </span>
-  </div>
-
-  <!-- REQUIRED LEGAL REVIEW -->
-
-  <section
-    class="acs-legal-briefing"
-    aria-labelledby="legalBriefingTitle"
-  >
-    <div class="acs-legal-status">
-      <span
-        class="acs-legal-beacon"
-        aria-hidden="true"
-      ></span>
-
-      <span>Review Required</span>
-    </div>
-
-    <h3 id="legalBriefingTitle">
-      Required Pre-Flight Review
-    </h3>
-
-    <p>
-      Before entering your registration details, review the ACS
-      Terms of Service and Privacy Policy.
-    </p>
-
-    <p class="acs-legal-briefing-note">
-      Account creation confirms acceptance of the operational rules
-      governing Aviation Capital Simulator.
-    </p>
-
-    <div class="acs-legal-actions">
-      <a
-        href="terms.html"
-        class="acs-legal-action acs-legal-action-primary"
-      >
-        Review &amp; Accept Terms
-      </a>
-
-      <a
-        href="privacy.html"
-        class="acs-legal-action"
-      >
-        Review Privacy Policy
-      </a>
-    </div>
-  </section>
-
-  <div class="acs-data-briefing">
-    <div class="acs-register-list-title">
-      Identity Data Briefing
-    </div>
-
-    <ul class="acs-register-list">
-      <li>
-        <strong>Full Name</strong>
-        <span>Captain and CEO identity inside ACS.</span>
-      </li>
-
-      <li>
-        <strong>Country</strong>
-        <span>Registration, events and jurisdiction rules.</span>
-      </li>
-
-      <li>
-        <strong>Email</strong>
-        <span>Secure access and password recovery.</span>
-      </li>
-
-      <li>
-        <strong>Password</strong>
-        <span>Protected using bcrypt; never stored as plain text.</span>
-      </li>
-    </ul>
-  </div>
-
-</div>
+        <div>
+          <div class="acs-register-list-title">Why we ask for this information:</div>
+          <ul class="acs-register-list">
+            <li>▪ <strong>Full Name</strong> → Used as your Captain / CEO name in the game.</li>
+            <li>▪ <strong>Country</strong> → Affects registration, events and future tax rules.</li>
+            <li>▪ <strong>Email</strong> → For multi-device access and recovery in future updates.</li>
+            <li>▪ <strong>Password</strong> → Stored as a secure hash (not in plain text).</li>
+          </ul>
+        </div>
+      </div>
 
       <!-- LADO DERECHO: TARJETA DE REGISTRO -->
       <div class="acs-register-card">
         <h2>Create your ACS Account</h2>
         <p class="acs-register-sub">
-  One account, one airline empire. You can expand, restart, or
-  launch new projects in the future ACS universe.
-</p>
+          One account, one airline empire. You can expand, restart, or launch new projects in the future ACS universe.
+        </p>
 
-<div
-  id="registrationClearance"
-  class="acs-registration-clearance"
-  role="status"
-  aria-live="polite"
->
-  <span
-    class="acs-clearance-indicator"
-    aria-hidden="true"
-  ></span>
-
-  <div>
-    <strong id="registrationClearanceTitle">
-      Registration Locked
-    </strong>
-
-    <span id="registrationClearanceMessage">
-      Review and accept the Terms of Service before entering
-      registration data.
-    </span>
-  </div>
-</div>
-
-<form
-  class="register-form is-locked"
-  id="registerForm"
-  onsubmit="handleRegister(event)"
->
+       <form class="register-form" onsubmit="handleRegister(event)">
         
   <input type="text" id="fullName" placeholder="Full Name" required />
   <input type="email" id="email" placeholder="Email Address" required />
 
   <!-- ===== DOB SELECTORS (DAY - MONTH - YEAR) ===== -->
   <!-- ===== NEW DOB SELECTORS ===== -->
-            
 <div style="display:flex; gap:0.5rem; width:100%;">
   <select id="dob-day" required>
     <option value="">Day</option>
@@ -1572,7 +967,6 @@ input:not(#terms),
 </div>
 
    <!-- ===== DOB INFO MESSAGE (ACS Professional Style) ===== -->
-            
   <div style="
     font-size: 0.78rem;
     margin-top: 4px;
@@ -1583,10 +977,9 @@ input:not(#terms),
  ">
    📅 Your date of birth must confirm that you are <strong>18 years or older</strong> to join the ACS universe.
   </div>
-
+<!-- ===================================================== -->
             
   <!-- ===== PASSWORD FIELD (MODERN APPLE EYE ICON) ===== -->
-            
   <div class="password-wrapper">
     <input type="password" id="password" placeholder="Password (min 8 chars, 1 uppercase, 1 number)" required />
     <span class="toggle-password" onclick="togglePassword('password', this)">
@@ -1706,25 +1099,13 @@ input:not(#terms),
             <option value="Vietnam">🇻🇳 Vietnam</option>
           </select>
     
- <label class="acs-terms-confirmation">
-  <input
-    type="checkbox"
-    id="terms"
-    disabled
-  >
-
-  <span>
-    I have reviewed and accept the
-    <a href="terms.html">Terms of Service</a>
-    and acknowledge the
-    <a href="privacy.html">Privacy Policy</a>.
-  </span>
+  <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.82rem; color:#c8d6ff; margin-top:0.4rem;">
+  <input type="checkbox" id="terms" disabled style="width:16px; height:16px;" />
+  I accept the 
+  <a href="terms.html" style="color:#ffb300;">Terms & Conditions</a>
 </label>
 
-<button type="submit" id="registerBtn" disabled>
-  Create ACS Account
-</button>
-     
+  <button type="submit" id="registerBtn" disabled>Register Now</button>
 </form>
 
         <p class="login-link">
@@ -1988,93 +1369,60 @@ function closeAgeModal() {
 </script>
 
 <script>
-
-/* ============================================================
-   ACS OCC TERMS CLEARANCE CONTROL
-   Reuses the existing session acceptance handshake.
-   ============================================================ */
+     
+// ======================================================
+//   🔐 TERMS CONTROL — STRUCTURAL VERSION (PHASE II)
+// ======================================================
 
 document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("registerForm");
+
   const checkbox = document.getElementById("terms");
-  const registerButton = document.getElementById("registerBtn");
+  const registerBtn = document.getElementById("registerBtn");
 
-  const clearance = document.getElementById(
-    "registrationClearance"
-  );
+  if (!checkbox || !registerBtn) return;
 
-  const clearanceTitle = document.getElementById(
-    "registrationClearanceTitle"
-  );
+  // 🔹 Estado inicial
+  checkbox.checked = false;
+  checkbox.disabled = true;
+  registerBtn.disabled = true;
 
-  const clearanceMessage = document.getElementById(
-    "registrationClearanceMessage"
-  );
+  
 
-  if (
-    !form ||
-    !checkbox ||
-    !registerButton ||
-    !clearance ||
-    !clearanceTitle ||
-    !clearanceMessage
-  ) {
-    return;
-  }
+  // 🔹 Solo habilitar si viene JUSTO de aceptar
+  if (sessionStorage.getItem("ACS_termsJustAccepted") === "yes") {
 
-  const protectedControls = form.querySelectorAll(
-    "input:not(#terms), select"
-  );
+  checkbox.disabled = false;
+  checkbox.checked = true;
+  registerBtn.disabled = false;
 
-  function setRegistrationLocked(locked) {
-    protectedControls.forEach(control => {
-      control.disabled = locked;
+  // Limpiar flag temporal
+  sessionStorage.removeItem("ACS_termsJustAccepted");
+
+} else {
+  checkbox.disabled = true;
+  checkbox.checked = false;
+  registerBtn.disabled = true;
+}
+
+  // 🔹 Si hace click en el enlace Terms
+  const termsLink = document.querySelector('a[href="terms.html"]');
+  if (termsLink) {
+    termsLink.addEventListener("click", () => {
+    
     });
-
-    form.classList.toggle("is-locked", locked);
-
-    if (locked) {
-      checkbox.checked = false;
-      checkbox.disabled = true;
-      registerButton.disabled = true;
-
-      clearance.classList.remove("is-cleared");
-
-      clearanceTitle.textContent =
-        "Registration Locked";
-
-      clearanceMessage.textContent =
-        "Review and accept the Terms of Service before entering registration data.";
-
-      return;
-    }
-
-    checkbox.disabled = false;
-    checkbox.checked = true;
-    registerButton.disabled = false;
-
-    clearance.classList.add("is-cleared");
-
-    clearanceTitle.textContent =
-      "Pre-Flight Review Complete";
-
-    clearanceMessage.textContent =
-      "Terms accepted. Registration data entry is now authorized.";
   }
 
-  const termsAccepted =
-    sessionStorage.getItem("ACS_termsJustAccepted") === "yes";
-
-  setRegistrationLocked(!termsAccepted);
-
-  if (termsAccepted) {
-    sessionStorage.removeItem("ACS_termsJustAccepted");
-  }
-
+  // 🔹 Si intenta marcar sin haber aceptado
   checkbox.addEventListener("change", () => {
-    registerButton.disabled = !checkbox.checked;
+    if (!checkbox.checked) {
+      registerBtn.disabled = true;
+    } else {
+      registerBtn.disabled = false;
+    }
   });
+
 });
+
 
 </script>
      
