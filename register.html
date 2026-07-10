@@ -248,210 +248,34 @@ body::after {
     }
 
 /* ============================================================
-   ACS REGISTRATION INTRODUCTION
+   === REGISTER MAIN TITLE — COMPACT ===========================
    ============================================================ */
 
 .acs-register-copy-title {
   margin: 0 0 1rem;
 
   font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
-  font-size: clamp(1.85rem, 3vw, 2.65rem);
-  font-weight: 700;
-  line-height: 1.22;
-  letter-spacing: 0.015em;
+  font-size: clamp(1.35rem, 2vw, 1.72rem);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.025em;
 
-  color: #ffffff;
+  color: #f7f8fb;
 
   text-shadow:
-    0 2px 12px rgba(0, 0, 0, 0.55),
-    0 0 18px rgba(138, 180, 255, 0.08);
+    0 0 8px rgba(255, 255, 255, 0.16),
+    0 0 18px rgba(255, 255, 255, 0.06);
 }
 
 .acs-register-copy-title span {
   display: block;
-  margin-top: 0.22rem;
+  margin-top: 0.28rem;
 
-  color: #ffbf35;
-}
+  font-size: 1em;
+  color: #f4b328;
 
-.acs-register-copy-sub {
-  max-width: 540px;
-  margin: 0 0 1.5rem;
-
-  font-size: 1.04rem;
-  line-height: 1.65;
-  font-weight: 400;
-
-  color: #cdd9f7;
-}
-
-.acs-register-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.65rem;
-
-  margin-bottom: 1.8rem;
-}
-
-.acs-register-badge {
-  padding: 0.35rem 0.82rem;
-
-  font-size: 0.76rem;
-  font-weight: 600;
-  letter-spacing: 0.045em;
-  text-transform: uppercase;
-
-  color: #ffdb82;
-
-  border: 1px solid rgba(255, 179, 0, 0.48);
-  border-radius: 999px;
-
-  background: rgba(255, 179, 0, 0.075);
-
-  box-shadow:
-    inset 0 0 12px rgba(255, 179, 0, 0.025),
-    0 4px 18px rgba(0, 0, 0, 0.16);
-}
-
-.acs-register-list-title {
-  margin-bottom: 0.85rem;
-
-  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
-  font-size: 0.9rem;
-  font-weight: 600;
-  letter-spacing: 0.055em;
-  text-transform: uppercase;
-
-  color: #ffb300;
-}
-
-.acs-register-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
-
-  max-width: 570px;
-  padding: 0;
-  margin: 0;
-
-  list-style: none;
-}
-
-.acs-register-list li {
-  display: grid;
-  grid-template-columns: 34px minmax(0, 1fr);
-  gap: 0.72rem;
-  align-items: flex-start;
-
-  padding: 0.72rem 0.8rem;
-
-  font-size: 0.92rem;
-  line-height: 1.45;
-
-  color: #d4def7;
-
-  border: 1px solid rgba(138, 180, 255, 0.12);
-  border-radius: 10px;
-
-  background: rgba(8, 18, 40, 0.34);
-}
-
-.acs-register-step-number {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  width: 30px;
-  height: 30px;
-
-  font-family: "Orbitron", sans-serif;
-  font-size: 0.76rem;
-  font-weight: 700;
-
-  color: #ffbf35;
-
-  border: 1px solid rgba(255, 179, 0, 0.48);
-  border-radius: 8px;
-
-  background: rgba(255, 179, 0, 0.08);
-}
-
-.acs-register-step-content strong {
-  color: #ffffff;
-  font-weight: 700;
-}
-
-.acs-register-required-step {
-  border-color: rgba(255, 179, 0, 0.42) !important;
-
-  background:
-    linear-gradient(
-      90deg,
-      rgba(255, 179, 0, 0.12),
-      rgba(8, 18, 40, 0.38)
-    ) !important;
-}
-
-.acs-required-heading {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-
-  margin-bottom: 0.2rem;
-
-  font-weight: 700;
-  color: #ffbf35;
-}
-
-.acs-status-pulse {
-  width: 9px;
-  height: 9px;
-  flex: 0 0 9px;
-
-  border-radius: 50%;
-
-  background: #ffb300;
-
-  box-shadow:
-    0 0 0 0 rgba(255, 179, 0, 0.65),
-    0 0 10px rgba(255, 179, 0, 0.85);
-
-  animation: acsRequiredPulse 1.45s ease-out infinite;
-}
-
-@keyframes acsRequiredPulse {
-  0% {
-    transform: scale(0.92);
-    box-shadow:
-      0 0 0 0 rgba(255, 179, 0, 0.68),
-      0 0 8px rgba(255, 179, 0, 0.72);
-  }
-
-  65% {
-    transform: scale(1);
-    box-shadow:
-      0 0 0 9px rgba(255, 179, 0, 0),
-      0 0 14px rgba(255, 179, 0, 0.45);
-  }
-
-  100% {
-    transform: scale(0.92);
-    box-shadow:
-      0 0 0 0 rgba(255, 179, 0, 0),
-      0 0 8px rgba(255, 179, 0, 0.65);
-  }
-}
-
-.acs-terms-link,
-.acs-terms-link:visited {
-  color: #ffbf35;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.acs-terms-link:hover {
-  color: #ffe09a;
-  text-decoration: underline;
+  text-shadow:
+    0 0 7px rgba(255, 179, 0, 0.24);
 }
 
 /* ============================================================
@@ -510,108 +334,396 @@ body::after {
   animation: none;
 }
 
-    /* ============================================================
-       === REGISTER CARD (FORM) ===================================
-       ============================================================ */
-    .acs-register-card {
-      background: rgba(10, 20, 50, 0.75);
-      border-radius: 16px;
-      padding: 1.8rem 2rem;
-      border: 1px solid rgba(255,179,0,0.45);
-      box-shadow: 0 0 22px rgba(0,0,0,0.6);
-      max-width: 420px;
-      margin-left: auto;
-    }
+ /* ============================================================
+   === REGISTER CARD — LOGIN VISUAL AUTHORITY =================
+   ============================================================ */
 
-    @media (max-width: 880px) {
-      .acs-register-card {
-        margin: 0 auto;
-      }
-    }
+.acs-register-card {
+  width: 440px;
+  max-width: 100%;
+  box-sizing: border-box;
 
-    .acs-register-card h2 {
-      margin-top: 0;
-      margin-bottom: 0.5rem;
-      font-size: 1.6rem;
-      color: #ffb300;
-    }
+  margin-left: auto;
+  padding: 30px 28px 27px;
 
-    .acs-register-sub {
-      font-size: 0.95rem;
-      color: #c8d6ff;
-      margin-bottom: 1.2rem;
-    }
+  position: relative;
+  text-align: center;
 
-    .register-form {
-      display: flex;
-      flex-direction: column;
-      gap: 0.8rem;
-      margin-bottom: 0.8rem;
-    }
+  background:
+    linear-gradient(
+      180deg,
+      rgba(6, 17, 38, 0.96) 0%,
+      rgba(2, 9, 22, 0.98) 100%
+    );
 
-    .register-form input,
-    .register-form select {
-      width: 100%;
-      padding: 0.65rem 0.8rem;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.15);
-      font-size: 0.95rem;
-      background: rgba(8, 18, 40, 0.9);
-      color: #ffffff;
-      box-sizing: border-box;
-    }
+  border: 1px solid rgba(255, 170, 24, 0.76);
+  border-radius: 22px;
 
-    .register-form input::placeholder {
-      color: #9fb0e8;
-    }
+  box-shadow:
+    0 22px 50px rgba(0, 0, 0, 0.52),
+    inset 0 0 28px rgba(255, 179, 0, 0.025);
 
-    .password-wrapper {
-      position: relative;
-    }
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
 
-    .toggle-password {
-      position: absolute;
-      right: -2.1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      cursor: pointer;
-      opacity: 0.75;
-      transition: 0.2s;
-    }
+@media (max-width: 880px) {
+  .acs-register-card {
+    margin: 0 auto;
+  }
+}
 
-    .toggle-password:hover {
-      opacity: 1;
-    }
 
-    .toggle-password svg {
-      pointer-events: none;
-    }
+/* ============================================================
+   === ACCOUNT REGISTRATION ===================================
+   ============================================================ */
 
-    .register-form button {
-      margin-top: 0.6rem;
-      padding: 0.75rem;
-      border-radius: 999px;
-      border: none;
-      background-color: #00a86b;
-      color: #ffffff;
-      font-weight: 700;
-      font-size: 1rem;
-      cursor: pointer;
-      box-shadow: 0 0 14px rgba(0,168,107,0.6);
-      transition: all 0.2s ease;
-    }
+.register-card-title {
+  margin: 0;
 
-    .register-form button:hover {
-      background-color: #007d4e;
-      transform: translateY(-2px);
-      box-shadow: 0 0 20px rgba(0,168,107,0.8);
-    }
+  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+  font-size: 1.22rem;
+  font-weight: 600;
+  line-height: 1.15;
 
-    .login-link {
-      font-size: 0.9rem;
-      color: #c8d6ff;
-      margin-top: 0.8rem;
-    }
+  letter-spacing: 0.17em;
+  white-space: nowrap;
+
+  color: #f7f8fb;
+  text-transform: uppercase;
+
+  text-shadow:
+    0 0 8px rgba(255, 255, 255, 0.20),
+    0 0 18px rgba(255, 255, 255, 0.08);
+}
+
+
+/* ============================================================
+   === GOLD SEPARATOR =========================================
+   ============================================================ */
+
+.register-card-title::after {
+  content: "";
+  display: block;
+
+  width: 78%;
+  height: 1px;
+
+  margin: 21px auto 22px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 182, 35, 0.15) 22%,
+      #ffc74a 50%,
+      rgba(255, 182, 35, 0.15) 78%,
+      transparent 100%
+    );
+
+  box-shadow:
+    0 0 7px rgba(255, 190, 50, 0.62),
+    0 0 15px rgba(255, 190, 50, 0.22);
+}
+
+
+/* ============================================================
+   === CREATE YOUR ACS ACCOUNT ================================
+   ============================================================ */
+
+.register-card-subtitle {
+  display: block;
+  margin: 0;
+
+  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+
+  letter-spacing: 0.13em;
+
+  color: #f4b328;
+  text-transform: uppercase;
+
+  text-shadow:
+    0 0 7px rgba(255, 179, 0, 0.30);
+}
+
+
+/* ============================================================
+   === REGISTER DESCRIPTION ===================================
+   ============================================================ */
+
+.acs-register-sub {
+  max-width: 350px;
+
+  margin:
+    20px auto 0;
+
+  font-family: "Segoe UI", sans-serif;
+  font-size: 0.84rem;
+  font-weight: 400;
+
+  letter-spacing: 0.01em;
+  line-height: 1.45;
+
+  color: rgba(235, 239, 250, 0.88);
+
+  text-shadow:
+    0 0 7px rgba(255, 255, 255, 0.07);
+}
+
+
+/* ============================================================
+   === REGISTER FORM ==========================================
+   ============================================================ */
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  width: 100%;
+  margin: 27px 0 0;
+
+  text-align: left;
+}
+
+
+/* ============================================================
+   === REGISTER INPUTS AND SELECTS =============================
+   ============================================================ */
+
+.register-form input,
+.register-form select {
+  display: block;
+
+  width: 100%;
+  height: 48px;
+
+  box-sizing: border-box;
+
+  margin: 0;
+  padding: 0 16px;
+
+  border-radius: 10px;
+  border: 1px solid rgba(255, 179, 0, 0.42);
+
+  background: rgba(2, 9, 22, 0.72);
+  color: #ffffff;
+
+  font-family: "Segoe UI", sans-serif;
+  font-size: 0.88rem;
+  letter-spacing: 0.01em;
+
+  outline: none;
+
+  box-shadow:
+    inset 0 0 12px rgba(0, 0, 0, 0.38);
+
+  transition: 0.25s ease;
+}
+
+.register-form input:focus,
+.register-form select:focus {
+  border-color: rgba(255, 202, 99, 0.82);
+
+  box-shadow:
+    0 0 12px rgba(255, 179, 0, 0.18),
+    inset 0 0 12px rgba(0, 0, 0, 0.38);
+}
+
+.register-form input::placeholder {
+  color: rgba(230, 235, 248, 0.72);
+}
+
+
+/* ============================================================
+   === DATE OF BIRTH ROW ======================================
+   ============================================================ */
+
+.register-form select {
+  min-width: 0;
+}
+
+
+/* ============================================================
+   === PASSWORD WRAPPER =======================================
+   ============================================================ */
+
+.password-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-wrapper input {
+  padding-right: 46px;
+}
+
+.toggle-password {
+  position: absolute;
+
+  right: 14px;
+  top: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transform: translateY(-50%);
+
+  cursor: pointer;
+  opacity: 0.72;
+
+  transition: opacity 0.2s ease;
+}
+
+.toggle-password:hover {
+  opacity: 1;
+}
+
+.toggle-password svg {
+  width: 20px;
+  height: 20px;
+
+  stroke: rgba(235, 239, 250, 0.82);
+
+  pointer-events: none;
+}
+
+
+/* ============================================================
+   === REGISTER BUTTON — LOGIN AUTHORITY ======================
+   ============================================================ */
+
+.register-form button[type="submit"] {
+  width: 100%;
+  height: 54px;
+
+  box-sizing: border-box;
+
+  margin-top: 4px;
+
+  border-radius: 10px;
+  border: 1px solid rgba(255, 220, 140, 0.45);
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffd063 0%,
+      #d89216 100%
+    );
+
+  color: #07101f;
+
+  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 0 14px rgba(255, 179, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+
+  transition: 0.25s ease;
+}
+
+.register-form button[type="submit"]:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+.register-form button[type="submit"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+  transform: none;
+  filter: saturate(0.55);
+}
+
+
+/* ============================================================
+   === LOGIN LINK =============================================
+   ============================================================ */
+
+.acs-register-card .login-link {
+  margin: 18px 0 0;
+
+  color: rgba(235, 239, 250, 0.82);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.acs-register-card .login-link a,
+.acs-register-card .login-link a:visited {
+  color: #ffb300;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.acs-register-card .login-link a:hover {
+  color: #ffd063;
+}
+
+
+/* ============================================================
+   === REGISTER CARD MOBILE ===================================
+   ============================================================ */
+
+@media (max-width: 520px) {
+
+  .acs-register-card {
+    width: calc(100% - 4px);
+
+    margin: 0 auto;
+    padding: 27px 20px 24px;
+
+    border-radius: 19px;
+  }
+
+  .register-card-title {
+    font-size: 1rem;
+    letter-spacing: 0.12em;
+    white-space: normal;
+  }
+
+  .register-card-title::after {
+    margin: 19px auto 20px;
+  }
+
+  .register-card-subtitle {
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+  }
+
+  .acs-register-sub {
+    margin-top: 18px;
+    font-size: 0.8rem;
+  }
+
+  .register-form {
+    margin-top: 23px;
+  }
+
+  .register-form input,
+  .register-form select {
+    height: 46px;
+    padding-left: 14px;
+    padding-right: 14px;
+    font-size: 16px;
+  }
+
+  .password-wrapper input {
+    padding-right: 44px;
+  }
+
+  .register-form button[type="submit"] {
+    height: 50px;
+    font-size: 0.86rem;
+  }
+}
 
     /* ============================================================
        === FOOTER ================================================
@@ -1207,12 +1319,20 @@ button {
 </div>
 
       <!-- LADO DERECHO: TARJETA DE REGISTRO -->
-      <div class="acs-register-card">
-        <h2>Create your ACS Account</h2>
-        <p class="acs-register-sub">
-          One account, one airline empire. You can expand, restart, or launch new projects in the future ACS universe.
-        </p>
+         
+<div class="acs-register-card">
 
+  <h2 class="register-card-title">
+    Account Registration
+  </h2>
+
+  <p class="register-card-subtitle">
+    Create Your ACS Account
+  </p>
+
+  <p class="acs-register-sub">
+    One account, one airline empire. Create your profile and begin building your aviation legacy.
+  </p>
        <form class="register-form" onsubmit="handleRegister(event)">
         
   <input type="text" id="fullName" placeholder="Full Name" required />
