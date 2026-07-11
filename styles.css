@@ -907,6 +907,8 @@ footer {
 
 .acs-header .acs-right {
   margin-left: auto;
+  margin-right: -18px;
+
   padding-right: 0;
 
   justify-content: flex-end;
@@ -1054,13 +1056,15 @@ footer {
   }
 
   .acs-header .acs-right {
-    width: 100%;
+  width: 100%;
 
-    flex-wrap: wrap;
-    justify-content: center;
+  margin-right: 0;
 
-    gap: 10px;
-  }
+  flex-wrap: wrap;
+  justify-content: center;
+
+  gap: 10px;
+}
 
   .acs-header #acs-clock.acs-cockpit-clock {
     flex: 0 0 100%;
