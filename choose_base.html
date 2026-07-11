@@ -107,15 +107,49 @@ body::after {
       to   { opacity:1; transform: translateY(0); }
     }
 
-    .acs-logo { display: flex; align-items: center; gap: 0.6rem; }
-    .acs-logo img { height: 46px; filter: drop-shadow(0 0 6px rgba(255,179,0,0.35)); }
-    .acs-logo h1 {
-      color: #FFB300;
-      font-size: 1.15rem;
-      margin: 0;
-      letter-spacing: 0.6px;
-      text-shadow: 0 0 8px rgba(255,179,0,0.4);
-    }
+    /* ============================================================
+   ACS GLOBAL BRAND
+   DO NOT MODIFY
+   Corporate Visual Identity Standard
+   ============================================================ */
+
+.acs-logo img {
+     height: 46px;
+   }
+
+   .acs-logo h1{
+    margin:16px 0 0 0;
+
+    font-family:"Orbitron","Eurostile","Exo 2",sans-serif;
+
+    font-size:1rem;
+
+    font-weight:700;
+
+    letter-spacing:.03em;
+
+    text-transform:uppercase;
+
+    background:linear-gradient(
+        180deg,
+        #FFE08A 0%,
+        #FFC94A 22%,
+        #FFB300 55%,
+        #D98B00 100%
+    );
+
+    -webkit-background-clip:text;
+    background-clip:text;
+
+    -webkit-text-fill-color:transparent;
+
+    color:transparent;
+
+    text-shadow:
+        0 0 2px rgba(255,179,0,.15);
+
+}
+    
 
     .nav-btn {
       padding: 0.45rem 1.2rem;
