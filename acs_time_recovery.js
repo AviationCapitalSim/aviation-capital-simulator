@@ -75,15 +75,19 @@
       return;
     }
 
-    if (
-      !world ||
-      world.time_source !== "POSTGRESQL_TIME_AUTHORITY"
-    ) {
-      console.warn(
-        "ACS TIME RECOVERY — PostgreSQL authority not verified"
-      );
-      return;
-    }
+   if (!world) {
+  return;
+}
+
+if (
+  world.time_source !== "POSTGRESQL_TIME_AUTHORITY"
+) {
+  console.error(
+    "ACS TIME RECOVERY — Invalid time authority:",
+    world.time_source || "UNKNOWN"
+  );
+  return;
+}
 
     /*
      * Keep this public object because older ACS modules may
@@ -161,21 +165,27 @@
     listenerRegistered = true;
 
     window.registerTimeListener(
-      publishAuthoritativeState
-    );
+  publishAuthoritativeState
+);
 
-    /*
-     * Publish the state immediately instead of waiting for
-     * the next Railway synchronization cycle.
-     */
-    publishAuthoritativeState(
-      window.ACS_TIME.currentTime
-    );
+const initialWorld = getOfficialWorldSnapshot();
 
-    console.log(
-      "ACS TIME RECOVERY — Connected to PostgreSQL authority"
-    );
-  }
+if (
+  initialWorld &&
+  initialWorld.time_source === "POSTGRESQL_TIME_AUTHORITY"
+) {
+  publishAuthoritativeState(
+    window.ACS_TIME.currentTime
+  );
+
+  console.log(
+    "ACS TIME RECOVERY — Connected to PostgreSQL authority"
+  );
+} else {
+  console.log(
+    "ACS TIME RECOVERY — Waiting for first Railway synchronization"
+  );
+}
 
   /* ============================================================
      INITIALIZATION
