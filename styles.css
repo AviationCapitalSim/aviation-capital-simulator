@@ -1078,3 +1078,12 @@ footer {
   }
 }
 
+/* ============================================================
+   ACS CLOCK INITIALIZATION GUARD
+   Prevents legacy clock flash before Railway synchronization
+   ============================================================ */
+
+#acs-clock.acs-clock-header:not(.acs-cockpit-clock) {
+  color: transparent;
+  text-shadow: none;
+}
