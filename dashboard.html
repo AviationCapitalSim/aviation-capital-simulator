@@ -986,6 +986,168 @@ button {
   }
 
 }
+
+/* ============================================================
+   ACS OCC HEADER — DASHBOARD TEST
+   Logo Priority / Orbitron Navigation
+   ============================================================ */
+
+/* Más aire vertical para el nuevo logo */
+.acs-header {
+  min-height: 104px;
+
+  padding:
+    0.75rem
+    2rem;
+
+  column-gap: 24px;
+}
+
+/* Zona exclusiva del logotipo */
+.acs-left {
+  flex: 0 0 88px;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  gap: 0;
+}
+
+/* Logo limpio: sin luces, fondo ni animaciones */
+.acs-left img {
+  width: auto;
+  height: 72px;
+
+  display: block;
+  object-fit: contain;
+
+  filter: none;
+  background: transparent;
+
+  transform: none;
+  transition: none;
+}
+
+/*
+ * El nombre permanece en el HTML para accesibilidad,
+ * pero no ocupa espacio visual en el header.
+ */
+.acs-left h1 {
+  position: absolute;
+
+  width: 1px;
+  height: 1px;
+
+  padding: 0;
+  margin: -1px;
+
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+
+  border: 0;
+}
+
+/* Navegación ACS */
+.acs-nav {
+  gap: clamp(24px, 2.2vw, 42px);
+}
+
+.acs-nav a {
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+/* Controles operacionales */
+.support-btn,
+.logout-btn {
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
+
+/* Aire uniforme entre botones y cockpit */
+.acs-right {
+  gap: 18px;
+}
+
+/* ============================================================
+   DASHBOARD HEADER — COMPACT DESKTOP
+   ============================================================ */
+
+@media (max-width: 1350px) and (min-width: 769px) {
+  .acs-header {
+    padding:
+      0.7rem
+      1.2rem;
+
+    column-gap: 15px;
+  }
+
+  .acs-left {
+    flex-basis: 74px;
+  }
+
+  .acs-left img {
+    height: 62px;
+  }
+
+  .acs-nav {
+    gap: 18px;
+  }
+
+  .acs-nav a {
+    font-size: 0.76rem;
+  }
+
+  .acs-right {
+    gap: 9px;
+  }
+
+  .support-btn,
+  .logout-btn {
+    padding:
+      0.4rem
+      0.72rem;
+
+    font-size: 0.68rem;
+  }
+}
+
+/* ============================================================
+   DASHBOARD HEADER — MOBILE
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .acs-left {
+    flex: 0 0 auto;
+    justify-content: center;
+  }
+
+  .acs-left img {
+    height: 54px;
+  }
+
+  .acs-nav a {
+    font-size: 0.7rem;
+  }
+}
   
 </style>
 </head>
