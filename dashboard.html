@@ -525,68 +525,86 @@ body::after {
 }
 
 /* ============================================================
-   ACS OCC iPAD HEADER FIX v2
-   Mantiene TODO en una sola línea
-   NO toca el reloj
+   ACS OCC GLOBAL RESPONSIVE SYSTEM
+   iPad • Tablets • iPhone • Android
    ============================================================ */
 
-@media (max-width: 1180px) and (min-width: 769px) {
-
-  .acs-header {
-    flex-wrap: nowrap;
-    padding: 0.7rem 1rem;
-  }
-
-  .acs-left {
-    flex: 0 1 255px;
-    gap: 0.6rem;
-    min-width: 0;
-  }
-
-  .acs-left img {
-    height: 38px;
-  }
-
-  .acs-left h1 {
-    font-size: 0.88rem;
-    white-space: nowrap;
-  }
-
-  .acs-nav {
-    flex: 1 1 auto;
-    min-width: 0;
-    justify-content: center;
-    gap: 0.75rem;
-  }
-
-  .acs-nav a {
-    font-size: 0.82rem;
-    white-space: nowrap;
-  }
-
-  .acs-right {
-    flex: 0 0 auto;
-    gap: 8px;
-    padding-right: 6px;
-  }
-
-  .support-btn,
-  .logout-btn {
-    padding: 0.36rem 0.65rem;
-    font-size: 0.76rem;
-  }
-
-  .acs-main {
-    padding-top: 110px;
-  }
-}
 
 /* ============================================================
-   ACS OCC iPAD PORTRAIT FIX v3
-   Solo iPad vertical
+   1. GLOBAL RESPONSIVE BASE
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+input,
+select,
+textarea,
+button {
+  max-width: 100%;
+  font: inherit;
+}
+
+.acs-main {
+  width: 100%;
+  max-width: 100%;
+}
+
+
+/* ============================================================
+   2. RESPONSIVE TABLE CONTAINERS
+   No obliga a todas las tablas a medir 680px
+   ============================================================ */
+
+.acs-table-wrapper,
+.table-wrapper,
+.table-responsive {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  -webkit-overflow-scrolling: touch;
+}
+
+
+/* ============================================================
+   3. RESPONSIVE MODALS AND PANELS
+   ============================================================ */
+
+.modal,
+.acs-modal,
+.dialog {
+  max-width: calc(100vw - 32px);
+}
+
+
+/* ============================================================
+   4. iPAD PORTRAIT / MEDIUM TABLETS
+   769px — 900px
+   Conserva el comportamiento que ya funciona
    ============================================================ */
 
 @media (max-width: 900px) and (min-width: 769px) {
+
+  /* OCC header */
 
   .acs-header {
     flex-wrap: wrap;
@@ -596,6 +614,7 @@ body::after {
   .acs-left {
     order: 1;
     flex: 1 1 auto;
+    min-width: 0;
   }
 
   .acs-right {
@@ -606,13 +625,306 @@ body::after {
   .acs-nav {
     order: 3;
     flex: 0 0 100%;
+
     width: 100%;
+
     justify-content: center;
     gap: 1.6rem;
   }
 
   .acs-main {
     padding-top: 145px;
+  }
+
+
+  /* Login / public pages header */
+
+  .acs-logo {
+    min-width: 0;
+  }
+
+  .acs-nav-buttons {
+    flex-wrap: nowrap;
+    gap: 0.65rem;
+  }
+
+
+  /* Global footer */
+
+  .acs-footer {
+    padding: 16px 14px;
+
+    font-size: 0.78rem;
+
+    white-space: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .acs-footer::-webkit-scrollbar {
+    display: none;
+  }
+
+  .acs-footer-separator {
+    margin: 0 6px;
+  }
+}
+
+
+/* ============================================================
+   5. MOBILE + SMALL TABLETS
+   iPhone • Android • Tablets ≤ 768px
+   ============================================================ */
+
+@media (max-width: 768px) {
+
+  /* Header base */
+
+  .acs-header {
+    flex-wrap: wrap;
+
+    row-gap: 10px;
+
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+
+  /* OCC header structure */
+
+  .acs-left {
+    order: 1;
+
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .acs-right {
+    order: 2;
+
+    flex: 0 0 auto;
+  }
+
+  .acs-nav {
+    order: 3;
+
+    flex: 0 0 100%;
+
+    width: 100%;
+
+    justify-content: flex-start;
+    gap: 10px;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    padding-bottom: 4px;
+
+    white-space: nowrap;
+
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .acs-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .acs-nav a,
+  .acs-nav button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+
+  /* Login / public pages header structure */
+
+  .acs-logo {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .acs-logo img {
+    flex: 0 0 auto;
+  }
+
+  .acs-logo h1 {
+    max-width: 100%;
+    white-space: nowrap;
+  }
+
+  .acs-nav-buttons {
+    width: 100%;
+
+    display: flex;
+    justify-content: center;
+
+    gap: 8px;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    padding-bottom: 3px;
+
+    white-space: nowrap;
+
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .acs-nav-buttons::-webkit-scrollbar {
+    display: none;
+  }
+
+  .acs-nav-buttons a,
+  .acs-nav-buttons button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+
+  /* Main content */
+
+  .acs-main {
+    padding-top: 145px;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+
+  /* Tables */
+
+  .acs-table-wrapper,
+  .table-wrapper,
+  .table-responsive {
+    width: 100%;
+    max-width: 100%;
+
+    overflow-x: auto;
+
+    -webkit-overflow-scrolling: touch;
+  }
+
+
+  /* Modals */
+
+  .modal,
+  .acs-modal,
+  .dialog {
+    width: calc(100vw - 28px);
+    max-width: calc(100vw - 28px);
+
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+
+  /* Global footer */
+
+  .acs-footer {
+    width: 100%;
+
+    padding: 15px 12px;
+
+    font-size: 0.74rem;
+
+    white-space: nowrap;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .acs-footer::-webkit-scrollbar {
+    display: none;
+  }
+
+  .acs-footer-separator {
+    margin: 0 5px;
+  }
+}
+
+
+/* ============================================================
+   6. COMPACT MOBILE
+   Small iPhone • Small Android ≤ 480px
+   ============================================================ */
+
+@media (max-width: 480px) {
+
+  .acs-header {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+
+  /* ACS logo and corporate title */
+
+  .acs-logo {
+    max-width: 100%;
+  }
+
+  .acs-logo h1 {
+    font-size: 0.82rem;
+    letter-spacing: 0.02em;
+  }
+
+
+  /* OCC navigation */
+
+  .acs-nav {
+    gap: 8px;
+  }
+
+
+  /* Public navigation */
+
+  .acs-nav-buttons {
+    gap: 6px;
+  }
+
+
+  /* Main content */
+
+  .acs-main {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+
+  /* Prevents automatic Safari zoom */
+
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+
+  /* Modals */
+
+  .modal,
+  .acs-modal,
+  .dialog {
+    width: calc(100vw - 20px);
+    max-width: calc(100vw - 20px);
+  }
+
+
+  /* Footer stays on one line with horizontal touch scroll */
+
+  .acs-footer {
+    padding: 14px 10px;
+    font-size: 0.70rem;
+  }
+
+  .acs-footer-separator {
+    margin: 0 4px;
   }
 }
 
@@ -631,6 +943,80 @@ body::after {
     color:#ffd86b;
     text-shadow:0 0 8px rgba(255,179,0,.45);
     text-decoration:underline;
+}
+
+/* ============================================================
+   ACS GLOBAL FOOTER
+   ============================================================ */
+
+.acs-footer{
+  width:100%;
+  box-sizing:border-box;
+
+  padding:18px 20px;
+
+  text-align:center;
+  white-space:nowrap;
+
+  font-family:"Segoe UI",sans-serif;
+  font-size:.85rem;
+  font-weight:500;
+
+  color:rgba(255,255,255,.88);
+
+  border-top:1px solid rgba(138,180,255,.18);
+
+  background:rgba(3,10,24,.28);
+}
+
+.acs-footer-text{
+  color:rgba(255,255,255,.88);
+}
+
+.acs-footer-separator{
+  margin:0 8px;
+  color:rgba(255,255,255,.38);
+}
+
+.acs-footer-link,
+.acs-footer-link:visited{
+  color:#FFB300;
+  text-decoration:none;
+  font-weight:600;
+
+  transition:
+    color .25s ease,
+    text-shadow .25s ease;
+}
+
+.acs-footer-link:hover{
+  color:#FFD870;
+
+  text-shadow:
+    0 0 8px rgba(255,179,0,.35);
+}
+
+
+/* ============================================================
+   ACS GLOBAL FOOTER — MOBILE
+   ============================================================ */
+
+@media (max-width:850px){
+
+  .acs-footer{
+    overflow-x:auto;
+
+    padding:16px 14px;
+
+    font-size:.76rem;
+
+    -webkit-overflow-scrolling:touch;
+  }
+
+  .acs-footer-separator{
+    margin:0 6px;
+  }
+
 }
   
 </style>
@@ -785,11 +1171,38 @@ body::after {
 
 </main>
 
+ <!-- global footer -->
+
 <footer class="acs-footer">
-  © 2026 Aviation Capital Simulator. All rights reserved.
-  <a href="mailto:aviationcapitalsim@gmail.com" class="acs-footer-email">
+
+  <span class="acs-footer-text">
+    © 2026 Aviation Capital Simulator. All rights reserved.
+  </span>
+
+  <span class="acs-footer-separator">•</span>
+
+  <a
+    href="mailto:aviationcapitalsim@gmail.com"
+    class="acs-footer-link">
     aviationcapitalsim@gmail.com
   </a>
+
+  <span class="acs-footer-separator">•</span>
+
+  <a
+    href="privacy.html"
+    class="acs-footer-link">
+    Privacy Policy
+  </a>
+
+  <span class="acs-footer-separator">•</span>
+
+  <a
+    href="terms.html"
+    class="acs-footer-link">
+    Terms of Service
+  </a>
+
 </footer>
   
 <script>
