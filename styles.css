@@ -810,3 +810,267 @@ footer {
   }
 }
 
+/* ============================================================
+   ACS GLOBAL OCC HEADER
+   Corporate Navigation Standard
+   ============================================================ */
+
+.acs-header {
+  box-sizing: border-box;
+
+  min-height: 104px;
+
+  padding:
+    0.75rem
+    1rem
+    0.75rem
+    2rem;
+
+  column-gap: 24px;
+}
+
+/* ============================================================
+   ACS LOGO
+   ============================================================ */
+
+.acs-header .acs-left,
+.acs-header .acs-logo {
+  flex: 0 0 88px;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  gap: 0;
+}
+
+.acs-header .acs-left img,
+.acs-header .acs-logo img {
+  display: block;
+
+  width: auto;
+  height: 72px;
+
+  object-fit: contain;
+
+  background: transparent;
+  filter: none;
+  transform: none;
+  transition: none;
+}
+
+/*
+ * Conserva el nombre en el documento para accesibilidad,
+ * pero no ocupa espacio en el header.
+ */
+.acs-header .acs-left h1,
+.acs-header .acs-logo h1 {
+  position: absolute;
+
+  width: 1px;
+  height: 1px;
+
+  padding: 0;
+  margin: -1px;
+
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+
+  border: 0;
+}
+
+/* ============================================================
+   ACS NAVIGATION — ORBITRON
+   ============================================================ */
+
+.acs-header .acs-nav {
+  gap: clamp(24px, 2.2vw, 42px);
+}
+
+.acs-header .acs-nav a {
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   ACS OPERATIONAL CONTROLS
+   ============================================================ */
+
+.acs-header .acs-right {
+  margin-left: auto;
+  padding-right: 0;
+
+  justify-content: flex-end;
+
+  gap: 18px;
+}
+
+.acs-header .support-btn,
+.acs-header .logout-btn {
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   ACS FMS TIME DISPLAY
+   Transparent / Borderless
+   ============================================================ */
+
+.acs-header #acs-clock.acs-cockpit-clock {
+  min-width: 390px;
+
+  padding:
+    8px
+    12px;
+
+  border: 0;
+  border-radius: 0;
+
+  background: transparent;
+
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.acs-header .acs-clock-primary {
+  font-size: 0.92rem;
+}
+
+.acs-header .acs-clock-secondary {
+  margin-top: 6px;
+}
+
+/* ============================================================
+   COMPACT DESKTOP / TABLET LANDSCAPE
+   ============================================================ */
+
+@media (max-width: 1350px) and (min-width: 769px) {
+  .acs-header {
+    min-height: 94px;
+
+    padding:
+      0.7rem
+      0.8rem
+      0.7rem
+      1.2rem;
+
+    column-gap: 14px;
+  }
+
+  .acs-header .acs-left,
+  .acs-header .acs-logo {
+    flex-basis: 74px;
+  }
+
+  .acs-header .acs-left img,
+  .acs-header .acs-logo img {
+    height: 62px;
+  }
+
+  .acs-header .acs-nav {
+    gap: 17px;
+  }
+
+  .acs-header .acs-nav a {
+    font-size: 0.75rem;
+  }
+
+  .acs-header .acs-right {
+    gap: 9px;
+  }
+
+  .acs-header .support-btn,
+  .acs-header .logout-btn {
+    padding:
+      0.4rem
+      0.7rem;
+
+    font-size: 0.67rem;
+  }
+
+  .acs-header #acs-clock.acs-cockpit-clock {
+    min-width: 325px;
+    padding-inline: 6px;
+  }
+
+  .acs-header .acs-clock-primary {
+    font-size: 0.75rem;
+  }
+
+  .acs-header .acs-clock-secondary {
+    font-size: 0.54rem;
+  }
+}
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .acs-header {
+    min-height: auto;
+
+    padding:
+      14px
+      12px;
+
+    row-gap: 14px;
+  }
+
+  .acs-header .acs-left,
+  .acs-header .acs-logo {
+    flex: 0 0 auto;
+    justify-content: center;
+  }
+
+  .acs-header .acs-left img,
+  .acs-header .acs-logo img {
+    height: 54px;
+  }
+
+  .acs-header .acs-nav {
+    gap: 14px 22px;
+  }
+
+  .acs-header .acs-nav a {
+    font-size: 0.69rem;
+  }
+
+  .acs-header .acs-right {
+    width: 100%;
+
+    flex-wrap: wrap;
+    justify-content: center;
+
+    gap: 10px;
+  }
+
+  .acs-header #acs-clock.acs-cockpit-clock {
+    flex: 0 0 100%;
+
+    width: 100%;
+    min-width: 0;
+
+    padding:
+      8px
+      4px;
+  }
+}
+
