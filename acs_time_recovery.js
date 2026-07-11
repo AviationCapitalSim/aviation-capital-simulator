@@ -182,10 +182,11 @@ if (
     "ACS TIME RECOVERY — Connected to PostgreSQL authority"
   );
 } else {
-  console.log(
-    "ACS TIME RECOVERY — Waiting for first Railway synchronization"
-  );
-}
+      console.log(
+        "ACS TIME RECOVERY — Waiting for first Railway synchronization"
+      );
+    }
+  }
 
   /* ============================================================
      INITIALIZATION
