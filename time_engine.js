@@ -191,32 +191,101 @@ function resetSimulationData() {
 
 function updateClockDisplay() {
   const el = document.getElementById("acs-clock");
+
   if (!el) return;
 
   const t = ACS_TIME.currentTime;
 
-  if (!(t instanceof Date) || Number.isNaN(t.getTime())) {
-    el.textContent = "ACS TIME INVALID";
-    el.style.color = "#ff4040";
+  if (
+    !(t instanceof Date) ||
+    Number.isNaN(t.getTime())
+  ) {
+    el.classList.add("acs-cockpit-clock");
+
+    el.innerHTML = `
+      <div class="acs-clock-failure">
+        ACS TIME AUTHORITY OFFLINE
+      </div>
+    `;
+
     return;
   }
 
-  const hh = String(t.getUTCHours()).padStart(2, "0");
-  const mm = String(t.getUTCMinutes()).padStart(2, "0");
+  const hh = String(
+    t.getUTCHours()
+  ).padStart(2, "0");
+
+  const mm = String(
+    t.getUTCMinutes()
+  ).padStart(2, "0");
 
   const weekday = t
-    .toLocaleString("en-US", { weekday: "short", timeZone: "UTC" })
+    .toLocaleString("en-US", {
+      weekday: "short",
+      timeZone: "UTC"
+    })
     .toUpperCase();
 
-  const dd = String(t.getUTCDate()).padStart(2, "0");
+  const dd = String(
+    t.getUTCDate()
+  ).padStart(2, "0");
+
   const mon = t
-    .toLocaleString("en-US", { month: "short", timeZone: "UTC" })
+    .toLocaleString("en-US", {
+      month: "short",
+      timeZone: "UTC"
+    })
     .toUpperCase();
 
-  const yy = t.getUTCFullYear();
+  const yyyy = t.getUTCFullYear();
 
-  el.textContent = `${hh}:${mm} — ${weekday} ${dd} ${mon} ${yy}`;
-  el.style.color = "#00ff80";
+  const rawStatus = String(
+    ACS_WORLD?.status || "UNKNOWN"
+  ).toUpperCase();
+
+  const isActive = rawStatus === "ON";
+
+  const statusLabel =
+    isActive
+      ? "ACTIVE"
+      : rawStatus === "OFF"
+        ? "PAUSED"
+        : "UNKNOWN";
+
+  el.classList.add("acs-cockpit-clock");
+
+  el.innerHTML = `
+    <div class="acs-clock-primary">
+      <span class="acs-clock-time">
+        ${hh}:${mm} UTC
+      </span>
+
+      <span
+        class="acs-clock-divider"
+        aria-hidden="true"
+      ></span>
+
+      <span class="acs-clock-date">
+        ${weekday} ${dd} ${mon} ${yyyy}
+      </span>
+    </div>
+
+    <div class="acs-clock-secondary">
+      <span>
+        ACS WORLD:
+        <strong>${statusLabel}</strong>
+      </span>
+
+      <span
+        class="acs-world-indicator ${
+          isActive
+            ? "is-active"
+            : "is-inactive"
+        }"
+        aria-label="ACS World ${statusLabel}"
+      ></span>
+    </div>
+  `;
 }
 
 /* ============================================================
