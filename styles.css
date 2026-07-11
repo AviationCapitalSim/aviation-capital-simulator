@@ -1089,6 +1089,11 @@ footer {
    ============================================================ */
 
 #acs-clock.acs-clock-header:not(.acs-cockpit-clock) {
-  color: transparent;
-  text-shadow: none;
+  opacity: 0;
+  visibility: hidden;
+}
+
+#acs-clock.acs-clock-header.acs-cockpit-clock {
+  opacity: 1;
+  visibility: visible;
 }
