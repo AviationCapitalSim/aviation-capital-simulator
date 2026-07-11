@@ -10,6 +10,12 @@
   <!-- ======== ACS Styles ======== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
 
+  <!-- ======== ACS Corporate Typography ======== -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700&display=swap" rel="stylesheet">
+     
+  
   <!-- ======== ACS Favicons ======== -->
   <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
@@ -22,18 +28,64 @@
   <link rel="manifest" href="manifest.json">
 
   <style>
-    body {
-      margin: 0;
-      background-color: #0C1F3C;
-      color: white;
-      font-family: "Poppins", sans-serif;
-      padding-top: 120px;
-      text-align: center;
-    }
+
+  /* ============================================================
+   ACS GLOBAL BACKGROUND SYSTEM
+   ============================================================ */
+
+body::before {
+
+    content: "";
+
+    position: fixed;
+
+    inset: 0;
+
+    background:
+        url("acs_background.jpg")
+        center center / cover
+        no-repeat;
+
+    opacity: .75;
+
+    z-index: -2;
+
+    pointer-events: none;
+
+}
+
+body::after {
+
+    content: "";
+
+    position: fixed;
+
+    inset: 0;
+
+    background:
+
+        radial-gradient(
+            circle at top,
+            rgba(9,18,40,.08),
+            rgba(4,9,22,.28)
+        ),
+
+        linear-gradient(
+            to bottom,
+            rgba(5,10,22,.05),
+            rgba(5,10,22,.12)
+        );
+
+    z-index: -1;
+
+    pointer-events: none;
+
+}
 
     /* ============================================================
          QATAR LUXURY HEADER — EXACT COPY
        ============================================================ */
+    
     .acs-header {
       position: fixed;
       top: 0;
@@ -101,6 +153,7 @@
     /* ============================================================
          QATAR LUXURY MAIN CARD
        ============================================================ */
+    
     .form-container {
       background: linear-gradient(145deg, #102040 0%, #0b1a33 100%);
       max-width: 1000px;
@@ -215,7 +268,8 @@
       transform: scale(1.05);
       box-shadow: 0 0 16px rgba(29,185,84,0.6);
     }
-  </style>
+
+</style>
 </head>
 
 <body>
