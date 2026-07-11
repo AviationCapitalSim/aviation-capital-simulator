@@ -678,39 +678,6 @@ text-shadow:
 }
 
 /* ============================================================
-   🟦 ACS GLOBAL CLOCK — STABLE HEADER FIX (NO LAYOUT SHIFT)
-   Use in ALL ACS modules
-   ============================================================ */
-
-.acs-clock-header {
-  width: 290px;
-  flex: 0 0 290px;
-
-  padding: 0.45rem 0.8rem;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  font-family: "Orbitron", monospace;
-  font-size: 0.95rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-
-  color: #00ff80;
-
-  background: rgba(0, 255, 128, 0.08);
-
-  border: 1px solid rgba(0, 255, 128, 0.18);
-  border-radius: 10px;
-
-  white-space: nowrap;
-  overflow: visible;
-
-  box-sizing: border-box;
-}
-
-/* ============================================================
    🟦 RIGHT HEADER AREA — PERFECT SPACING & CLOCK ALIGNMENT
    ============================================================ */
 
@@ -1233,10 +1200,7 @@ button {
     </div>
 
       <div class="acs-right">
-    <a href="support.html" class="support-btn">Support</a>
     <a class="logout-btn" onclick="handleLogout()">Logout</a>
-   <div id="acs-clock" class="acs-clock-header">
-  <span class="clock-text">20:10 — MON 09 JUN 1941</span>
 </div>
   
 </div>
