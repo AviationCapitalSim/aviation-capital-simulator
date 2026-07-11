@@ -46,7 +46,7 @@ body::before {
         center center / cover
         no-repeat;
 
-    opacity: .75;
+    opacity: 0.80;
 
     z-index: -2;
 
@@ -174,40 +174,212 @@ body::after {
       box-shadow: 0 0 12px rgba(138,180,255,0.55);
     }
 
-    .acs-clock-header {
-      font-family: 'Orbitron', monospace;
-      color: #00ff80;
-      background: rgba(0,255,128,0.08);
-      padding: 0.3rem 0.8rem;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      margin-left: 1rem;
-    }
+    /* ============================================================
+   🟦 ACS GLOBAL CLOCK — STABLE HEADER FIX (NO LAYOUT SHIFT)
+   Use in ALL ACS modules
+   ============================================================ */
+
+.acs-clock-header {
+  width: 290px;
+  flex: 0 0 290px;
+
+  padding: 0.45rem 0.8rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-family: "Orbitron", monospace;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+
+  color: #00ff80;
+
+  background: rgba(0, 255, 128, 0.08);
+
+  border: 1px solid rgba(0, 255, 128, 0.18);
+  border-radius: 10px;
+
+  white-space: nowrap;
+  overflow: visible;
+
+  box-sizing: border-box;
+}
 
     /* ============================================================
-         QATAR LUXURY MAIN CARD
+         ACS MAIN CARD 2026
        ============================================================ */
     
-    .form-container {
-      background: linear-gradient(145deg, #102040 0%, #0b1a33 100%);
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 2.4rem;
-      border-radius: 22px;
-      border: 1px solid rgba(255,179,0,0.22);
-      box-shadow: 0 0 30px rgba(0,0,0,0.55),
-                  inset 0 0 25px rgba(255,255,255,0.04);
-      backdrop-filter: blur(14px);
-    }
+  .form-container {
+  width: calc(100% - 32px);
+  max-width: 1100px;
 
-    h2 { color: #FFB300; font-size: 1.8rem; }
-    p  { color: #c9d4ff; font-size: 1rem; }
+  margin: 32px auto 38px;
+  padding: 34px 34px 30px;
+
+  box-sizing: border-box;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(6, 17, 38, 0.96) 0%,
+      rgba(2, 9, 22, 0.98) 100%
+    );
+
+  border: 1px solid rgba(255, 170, 24, 0.76);
+  border-radius: 22px;
+
+  box-shadow:
+    0 22px 50px rgba(0, 0, 0, 0.52),
+    inset 0 0 28px rgba(255, 179, 0, 0.025);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.base-panel-heading {
+  max-width: 850px;
+
+  margin: 0 auto 24px;
+
+  text-align: center;
+}
+
+.base-panel-kicker {
+  display: block;
+
+  margin-bottom: 12px;
+
+  color: #f4b328;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 0.7rem;
+  font-weight: 700;
+
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+
+  text-shadow:
+    0 0 8px rgba(255, 179, 0, 0.28);
+}
+
+.form-container .base-panel-title {
+  margin: 0;
+
+  color: #f7f8fb;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: clamp(1.15rem, 2vw, 1.48rem);
+  font-weight: 600;
+
+  line-height: 1.3;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+
+  text-shadow:
+    0 0 8px rgba(255, 255, 255, 0.18),
+    0 0 18px rgba(255, 255, 255, 0.07);
+}
+
+.base-panel-separator {
+  width: 76%;
+  height: 1px;
+
+  margin: 21px auto 19px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 199, 74, 0.28),
+      #ffc74a,
+      rgba(255, 199, 74, 0.28),
+      transparent
+    );
+
+  box-shadow:
+    0 0 7px rgba(255, 190, 50, 0.55);
+}
+
+.form-container .base-panel-description {
+  max-width: 790px;
+
+  margin: 0 auto;
+
+  color: rgba(235, 239, 250, 0.88);
+
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.base-directive {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+
+  margin: 0 0 18px;
+  padding: 10px 14px;
+
+  color: #ffca63;
+
+  background: rgba(255, 179, 0, 0.065);
+
+  border: 1px solid rgba(255, 179, 0, 0.3);
+  border-radius: 9px;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 0.67rem;
+  font-weight: 700;
+
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.base-directive-dot {
+  width: 8px;
+  height: 8px;
+
+  flex: 0 0 8px;
+
+  background: #ffb300;
+  border-radius: 50%;
+
+  box-shadow:
+    0 0 9px rgba(255, 179, 0, 0.75);
+}
+
+.base-select-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 12px;
+}
 
     /* ============================================================
          SELECTS
        ============================================================ */
+    
     .lux-select {
-      width: 48%;
+      width: 100%;
+      min-width: 0;
       padding: 0.85rem 1rem;
       border-radius: 16px;
       background: rgba(255,255,255,0.06);
@@ -779,7 +951,45 @@ button {
     margin:0 6px;
   }
 
-}    
+} 
+
+/* ============================================================
+   CHOOSE BASE PANEL — RESPONSIVE ONLY
+   ============================================================ */
+
+@media (max-width: 700px) {
+  .form-container {
+    width: calc(100% - 20px);
+
+    margin-top: 24px;
+    margin-bottom: 28px;
+
+    padding: 27px 18px 22px;
+
+    border-radius: 18px;
+  }
+
+  .base-select-row {
+    grid-template-columns: 1fr;
+  }
+
+  .form-container .base-panel-title {
+    font-size: 1rem;
+    letter-spacing: 0.08em;
+  }
+
+  .form-container .base-panel-description {
+    font-size: 0.82rem;
+  }
+
+  .base-directive {
+    align-items: flex-start;
+
+    font-size: 0.62rem;
+    line-height: 1.45;
+  }
+}
+    
 </style>
 </head>
 
@@ -798,10 +1008,38 @@ button {
 </header>
 
 <section class="form-container">
-  <h2>Choose Your Base</h2>
-  <p>Select a continent and country to establish your main operations base.</p>
 
-  <div>
+  <div class="base-panel-heading">
+    <span class="base-panel-kicker">
+      ESTABLISH YOUR GLOBAL HEADQUARTERS
+    </span>
+
+    <h2 class="base-panel-title">
+      Select Your Operating Base
+
+    <div
+      class="base-panel-separator"
+      aria-hidden="true"
+    ></div>
+
+    <p class="base-panel-description">
+      Select the country where your airline will be headquartered.
+      This strategic decision defines your regulatory authority,
+      historical operating environment and future global expansion.
+    </p>
+  </div>
+
+  <div class="base-directive">
+    <span
+      class="base-directive-dot"
+      aria-hidden="true"
+    ></span>
+
+    Headquarters Assignment Required
+  </div>
+
+  <div class="base-select-row">
+    
     <select id="continentSelect" class="lux-select">
       <option value="">🌍 Select Continent</option>
       <option value="NorthAmerica">North America</option>
