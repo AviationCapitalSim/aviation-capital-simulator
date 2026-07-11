@@ -1,5 +1,5 @@
 /* ============================================================
-   === AVIATION CAPITAL SIMULATOR - GLOBAL TIME ENGINE v5.0 ===
+   === AVIATION CAPITAL SIMULATOR -GLOBAL TIME ENGINE v5.0 ===
    ------------------------------------------------------------
    ACS + Airbus OCC Technique
    PostgreSQL / Railway Time Authority
