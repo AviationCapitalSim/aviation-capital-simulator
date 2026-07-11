@@ -450,12 +450,28 @@ function economicWatcher() {
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", async () => {
+  /*
+   * Build the ACS cockpit immediately.
+   *
+   * Before Railway responds, ACS_WORLD is not available and
+   * the status indicator remains inactive/red.
+   *
+   * Once PostgreSQL authority responds, loadWorldState()
+   * updates the same display to ACTIVE/green.
+   */
+  updateClockDisplay();
+
   try {
     await loadWorldState();
+
     startACSTime();
     economicWatcher();
+
   } catch (err) {
-    console.error("🚨 ACS TIME ENGINE INIT FAILED:", err);
+    console.error(
+      "🚨 ACS TIME ENGINE INIT FAILED:",
+      err
+    );
   }
 });
 
