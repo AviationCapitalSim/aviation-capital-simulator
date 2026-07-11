@@ -1,124 +1,201 @@
 /* ============================================================
-   ⏳ ACS TIME WATCHDOG — V13 (SERVER AUTHORITATIVE MODE)
+   ACS TIME RECOVERY — V14
+   SERVER AUTHORITATIVE COMPATIBILITY MODE
+   ------------------------------------------------------------
    Project: Aviation Capital Simulator (ACS)
-   Purpose:
-   - Detect offline real time
-   - Calculate theoretical lost simulated time
-   - DOES NOT modify simulation time
-   - Server is the ONLY time authority
+
+   Authority:
+   - PostgreSQL calculates official ACS time
+   - Railway exposes the official world state
+   - time_engine.js synchronizes the frontend
+
+   This module:
+   - Does not calculate simulation time
+   - Does not recover offline time
+   - Does not use localStorage
+   - Does not use Date.now()
+   - Does not modify ACS_TIME
+   - Preserves window.ACS_TIME_RECOVERY for legacy compatibility
    ============================================================ */
 
 (function () {
+  "use strict";
 
-  console.log("⏳ ACS TIME WATCHDOG — V13");
+  console.log(
+    "ACS TIME RECOVERY — V14 | POSTGRESQL AUTHORITY"
+  );
 
-  const nowReal = Date.now();
+  let listenerRegistered = false;
+  let connectionAttempts = 0;
 
-  const rawLastReal = localStorage.getItem("ACS_LAST_REAL_TIME");
-  const rawLastSim  = localStorage.getItem("ACS_LAST_SIM_TIME");
+  const MAX_RETRY_DELAY_MS = 5000;
 
-  // TRUE FIRST RUN
-  if (!rawLastReal && !rawLastSim) {
-    console.log("🟡 FIRST RUN — No previous time data found");
-    localStorage.setItem("ACS_LAST_REAL_TIME", nowReal);
-    return;
+  /* ============================================================
+     OFFICIAL WORLD SNAPSHOT
+     ============================================================ */
+
+  function getOfficialWorldSnapshot() {
+    if (typeof window.ACS_WORLD !== "function") {
+      return null;
+    }
+
+    const world = window.ACS_WORLD();
+
+    if (!world || typeof world !== "object") {
+      return null;
+    }
+
+    return world;
   }
 
-  // Parse safely
-  const lastReal = parseInt(rawLastReal || "0");
-  const lastSim  = parseInt(rawLastSim || "0");
+  /* ============================================================
+     PUBLISH LEGACY-COMPATIBLE RECOVERY STATE
+     ------------------------------------------------------------
+     Offline values remain zero intentionally.
 
-  // Corrupted data → reset anchors safely
-  if (!lastReal || !lastSim || isNaN(lastSim)) {
+     PostgreSQL already includes elapsed world time in
+     current_sim_time. Applying offline time again would advance
+     the simulation twice.
+     ============================================================ */
 
-    console.log("🟡 TIME WATCHDOG — Anchors initialized");
+  function publishAuthoritativeState(currentTime) {
+    const world = getOfficialWorldSnapshot();
 
-    localStorage.setItem("ACS_LAST_REAL_TIME", nowReal);
-    localStorage.setItem("ACS_LAST_SIM_TIME", nowReal);
+    if (!(currentTime instanceof Date)) {
+      console.warn(
+        "ACS TIME RECOVERY — Invalid official time object"
+      );
+      return;
+    }
 
+    if (Number.isNaN(currentTime.getTime())) {
+      console.warn(
+        "ACS TIME RECOVERY — Invalid official timestamp"
+      );
+      return;
+    }
+
+    if (
+      !world ||
+      world.time_source !== "POSTGRESQL_TIME_AUTHORITY"
+    ) {
+      console.warn(
+        "ACS TIME RECOVERY — PostgreSQL authority not verified"
+      );
+      return;
+    }
+
+    /*
+     * Keep this public object because older ACS modules may
+     * already read window.ACS_TIME_RECOVERY.
+     *
+     * No local time is applied.
+     */
     window.ACS_TIME_RECOVERY = {
       offlineMs: 0,
       offlineSeconds: 0,
       offlineSimMinutes: 0,
-      lastReal: nowReal,
-      lastSim: nowReal,
-      mode: "WATCHDOG",
-      applied: true
+
+      lastReal: null,
+      lastSim: currentTime.getTime(),
+
+      currentSimTime: currentTime.toISOString(),
+      worldStatus: String(world.status || "UNKNOWN").toUpperCase(),
+      worldUpdatedAt: world.updated_at || null,
+
+      timeSource: world.time_source,
+      mode: "SERVER_AUTHORITATIVE",
+      authority: "POSTGRESQL_VIA_RAILWAY",
+
+      detected: false,
+      applied: false,
+      synchronized: true
     };
-
-    return;
   }
 
-  const offlineMs = nowReal - lastReal;
+  /* ============================================================
+     CONNECT TO GLOBAL TIME ENGINE
+     ------------------------------------------------------------
+     This supports either script loading order:
 
-  if (offlineMs < 30000) {
-    console.log("🟢 No significant offline time detected");
-    return;
+     1. time_engine.js
+     2. acs_time_recovery.js
+
+     or:
+
+     1. acs_time_recovery.js
+     2. time_engine.js
+     ============================================================ */
+
+  function connectToOfficialTimeEngine() {
+    if (listenerRegistered) {
+      return;
+    }
+
+    const timeEngineReady =
+      window.ACS_TIME &&
+      window.ACS_TIME.currentTime instanceof Date &&
+      typeof window.registerTimeListener === "function";
+
+    if (!timeEngineReady) {
+      connectionAttempts += 1;
+
+      /*
+       * Gradually reduce polling frequency.
+       * This delay only waits for time_engine.js.
+       * It does not calculate or advance ACS time.
+       */
+      const retryDelay = Math.min(
+        250 + connectionAttempts * 100,
+        MAX_RETRY_DELAY_MS
+      );
+
+      window.setTimeout(
+        connectToOfficialTimeEngine,
+        retryDelay
+      );
+
+      return;
+    }
+
+    listenerRegistered = true;
+
+    window.registerTimeListener(
+      publishAuthoritativeState
+    );
+
+    /*
+     * Publish the state immediately instead of waiting for
+     * the next Railway synchronization cycle.
+     */
+    publishAuthoritativeState(
+      window.ACS_TIME.currentTime
+    );
+
+    console.log(
+      "ACS TIME RECOVERY — Connected to PostgreSQL authority"
+    );
   }
 
-  // Convert offline real time
-  const offlineSeconds = offlineMs / 1000;
+  /* ============================================================
+     INITIALIZATION
+     ============================================================ */
 
-  // Simulation speed
-  const simSpeed = window.SIM_SPEED || 1;
+  if (document.readyState === "loading") {
+    document.addEventListener(
+      "DOMContentLoaded",
+      connectToOfficialTimeEngine,
+      { once: true }
+    );
+  } else {
+    connectToOfficialTimeEngine();
+  }
 
-  const offlineSimMinutes = offlineSeconds * simSpeed;
-
-  // Format human readable time
-  const offlineMinutes = Math.floor(offlineSeconds / 60);
-  const offlineHours   = Math.floor(offlineMinutes / 60);
-  const offlineDays    = Math.floor(offlineHours / 24);
-
-  console.log("==========================================");
-  console.log("⏳ ACS OFFLINE TIME DETECTED (WATCHDOG)");
-  console.log("LAST CLOSE REAL:", new Date(lastReal).toLocaleString());
-  console.log("LAST CLOSE SIM :", new Date(lastSim).toLocaleString());
-  console.log("NOW REAL       :", new Date(nowReal).toLocaleString());
-  console.log("OFFLINE REAL   :", 
-    offlineDays + " days " + 
-    (offlineHours % 24) + " hours " + 
-    (offlineMinutes % 60) + " minutes"
-  );
-  console.log("SIM SPEED      :", simSpeed, " sim minutes / real second");
-  console.log("SIM MINUTES LOST:", Math.floor(offlineSimMinutes));
-  console.log("MODE            : WATCHDOG (NO TIME OVERRIDE)");
-  console.log("==========================================");
-
-  // Store recovery info (WATCHDOG ONLY)
-  window.ACS_TIME_RECOVERY = {
-    offlineMs,
-    offlineSeconds,
-    offlineSimMinutes,
-    lastReal,
-    lastSim,
-    mode: "WATCHDOG",
-    applied: true
-  };
+  /*
+   * Legacy public function.
+   * Preserved in case another ACS module calls it directly.
+   */
+  window.applyRecoveryWhenReady =
+    connectToOfficialTimeEngine;
 
 })();
-
-/* ============================================================
-   🟧 WATCHDOG REPORTER (NO TIME MODIFICATION)
-   ============================================================ */
-
-function applyRecoveryWhenReady() {
-
-  if (!window.ACS_TIME || !window.ACS_TIME.currentTime) {
-    setTimeout(applyRecoveryWhenReady, 200);
-    return;
-  }
-
-  if (!window.ACS_TIME_RECOVERY) {
-    return;
-  }
-
-  const rec = window.ACS_TIME_RECOVERY;
-
-  console.log("🟡 ACS TIME WATCHDOG ACTIVE");
-  console.log("MODE            : SERVER AUTHORITATIVE");
-  console.log("CURRENT SIM TIME:", new Date(window.ACS_TIME.currentTime).toLocaleString());
-  console.log("OFFLINE DETECTED:", Math.floor(rec.offlineSimMinutes || 0), "sim minutes (informational)");
-}
-
-// Start watchdog
-applyRecoveryWhenReady();
