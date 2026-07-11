@@ -272,7 +272,23 @@ body::after {
 .form-container .base-panel-title {
   margin: 0;
 
-  color: #f7f8fb;
+  background:
+  linear-gradient(
+    180deg,
+    #ffe08a 0%,
+    #ffc94a 22%,
+    #ffb300 55%,
+    #d98b00 100%
+  );
+
+-webkit-background-clip: text;
+background-clip: text;
+
+-webkit-text-fill-color: transparent;
+color: transparent;
+
+text-shadow:
+  0 0 8px rgba(255, 179, 0, 0.16);
 
   font-family:
     "Orbitron",
