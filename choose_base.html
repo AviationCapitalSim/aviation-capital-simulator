@@ -1148,479 +1148,562 @@ button {
 <script src="engine/acs_world_engine.js"></script>    <!-- 👈 NUEVO -->
 
 <script>
-
 /* ============================================================
-   🧭 BASE RESTORE — DISABLED DURING RAILWAY MIGRATION
+   ACS CHOOSE BASE — GLOBAL POSTGRESQL AUTHORITY
    ------------------------------------------------------------
-   choose_base no debe reconstruir base desde localStorage.
-   La base válida debe venir del flujo real y guardarse en Railway.
+   Authority:
+   - GET  /v1/airports/catalog?operation=base
+   - POST /v1/users/set-base
+
+   No WorldAirportsACS.
+   No local airport loader.
+   No frontend simulation-year authority.
    ============================================================ */
 
-(function restoreBaseIfExists(){
-  console.log("🟦 Legacy base restore disabled.");
-  
-})();
-  
-</script>
-  
+const ACS_API_BASE =
+  "https://api.aviationcapitalsim.com/v1";
 
-<script>
+let ACS_BASE_AIRPORTS = [];
+let ACS_SELECTED_CONTINENT = "";
+let ACS_SELECTED_COUNTRY = "";
+let ACS_SERVER_SIM_YEAR = null;
+let ACS_SERVER_SIM_MONTH = null;
 
-/* ============================================================
-   🔓 ACS BASE FLOW — RAILWAY MODE
-   ------------------------------------------------------------
-   choose_base no debe redirigir por localStorage.
-   Esta pantalla debe abrirse normalmente después de create_airline.
-   ============================================================ */
+function ACS_safeText(value, fallback = "") {
+  const text = String(value ?? "").trim();
+  return text || fallback;
+}
 
-(function preventBaseChange(){
+function ACS_safeNumber(value, fallback = 0) {
+  const number = Number(value);
+  return Number.isFinite(number)
+    ? number
+    : fallback;
+}
 
-  try {
-    console.log("🟦 Local base lock disabled in choose_base.");
-  } catch (err) {
-    console.warn("⚠ Base flow log failed:", err);
-  }
+function ACS_escapeHtml(value) {
+  return ACS_safeText(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
-})();
-  
-document.addEventListener("DOMContentLoaded", () => {
+function ACS_normalizeAirport(row) {
+  return {
+    id: row.id,
+    icao:
+      ACS_safeText(row.icao).toUpperCase(),
+    iata:
+      ACS_safeText(row.iata).toUpperCase(),
+    city:
+      ACS_safeText(
+        row.city,
+        ACS_safeText(row.icao, "Unknown")
+      ),
+    country_code:
+      ACS_safeText(row.country).toUpperCase(),
+    country_name:
+      ACS_safeText(
+        row.region,
+        ACS_safeText(row.country, "Unknown")
+      ),
+    continent:
+      ACS_safeText(row.continent, "Unknown"),
+    category:
+      ACS_safeText(row.category, "Not specified"),
+    latitude:
+      ACS_safeNumber(row.latitude),
+    longitude:
+      ACS_safeNumber(row.longitude),
+    runway_m:
+      ACS_safeNumber(row.runway_m),
+    aircraft_limit:
+      ACS_safeText(
+        row.aircraft_limit,
+        "Not specified"
+      ),
+    demand_y:
+      ACS_safeNumber(row.demand_y),
+    demand_c:
+      ACS_safeNumber(row.demand_c),
+    demand_f:
+      ACS_safeNumber(row.demand_f),
+    slot_capacity:
+      ACS_safeNumber(row.slot_capacity),
+    available_slots:
+      ACS_safeNumber(row.available_slots),
+    slot_cost_usd:
+      ACS_safeNumber(row.slot_cost_usd),
+    availability_basis:
+      ACS_safeText(
+        row.availability_basis,
+        "HISTORICAL"
+      ),
+    commercial_open_year:
+      row.commercial_open_year === null
+        ? null
+        : ACS_safeNumber(
+            row.commercial_open_year,
+            null
+          ),
+    base_operation_allowed:
+      row.base_operation_allowed === true
+  };
+}
 
-  loadAirportScripts(() => {
-
-    buildAirportIndex();
-    ACS_World.initialize();
-
-    console.log("🌍 Motor mundial listo:", ACS_World.ready);
-
-    document.getElementById("continentSelect")
-      .addEventListener("change", () => loadCountries());
-
-    document.getElementById("countrySelect")
-      .addEventListener("change", () => loadAirports());
-
+async function ACS_fetchJson(url, options = {}) {
+  const response = await fetch(url, {
+    credentials: "include",
+    ...options,
+    headers: {
+      Accept: "application/json",
+      ...(options.headers || {})
+    }
   });
 
-});
-  
-</script>
+  const text = await response.text();
 
-<script>
-let selectedContinent = "";
-let selectedCountry = "";
+  let data = null;
 
-/* ============================================================
-   === HISTORICAL GROUPS (OPCIÓN 1) ============================
-   ============================================================ */
-const ACS_HISTORICAL_GROUPS = [
-  {
-    label: "Soviet Union",
-    start: 1917,
-    end: 1991,
-    members: [
-      "Russia","Belarus","Ukraine","Kazakhstan","Kyrgyzstan","Uzbekistan",
-      "Turkmenistan","Tajikistan","Georgia","Armenia","Azerbaijan","Moldova","Lithuania","Latvia","Estonia"
-    ]
-  },
-  {
-    label: "Korea",
-    start: 1900,
-    end: 1948,
-    members: ["South Korea","North Korea","Korea"]
-  },
-  {
-    label: "French Indochina",
-    start: 1887,
-    end: 1954,
-    members: ["Vietnam","Laos","Cambodia"]
-  },
-  {
-    label: "British Protectorates",
-    start: 1900,
-    end: 1971,
-    members: [
-      "United Arab Emirates","Qatar","Bahrain","Kuwait","Oman",
-      "Trucial States"
-    ]
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    throw new Error(
+      `INVALID_SERVER_RESPONSE_${response.status}`
+    );
   }
-];
 
-/* ============================================================
-   === AUX: Buscar entrada en ACS_CountryHistory ===============
-   ============================================================ */
-function findCountryHistory(name) {
-  if (!window.ACS_CountryHistory) return null;
-  return ACS_CountryHistory.find(c => c.name === name) || null;
+  if (
+    !response.ok ||
+    !data ||
+    data.ok !== true
+  ) {
+    const error = new Error(
+      data?.error || `HTTP_${response.status}`
+    );
+
+    error.status = response.status;
+    error.payload = data;
+
+    throw error;
+  }
+
+  return data;
 }
 
-/* ============================================================
-   === RESOLVE COUNTRY LABEL FOR YEAR ==========================
-   ============================================================ */
-/**
- * Recibe un país moderno (ej: "Russia") y un año (ej: 1940)
- * Devuelve:
- *  - Un nombre histórico agrupado ("Soviet Union", "Korea", etc.)
- *  - O el mismo país si existe en ese año
- *  - O null si no debería mostrarse en ese año
- */
-function resolveCountryForYear(countryName, year) {
-  if (!countryName) return null;
+async function ACS_loadBaseAuthority() {
+  const data = await ACS_fetchJson(
+    `${ACS_API_BASE}/airports/catalog` +
+    `?operation=base&limit=5000`
+  );
 
-  // 1) ¿Pertenece a un grupo histórico?
-  for (const group of ACS_HISTORICAL_GROUPS) {
-    if (group.members.includes(countryName)) {
-      if (year >= group.start && year <= group.end) {
-        return group.label;
-      }
-      // Fuera del rango del grupo → seguimos evaluando como país moderno
+  ACS_BASE_AIRPORTS =
+    (Array.isArray(data.airports)
+      ? data.airports
+      : []
+    )
+      .map(ACS_normalizeAirport)
+      .filter(
+        airport =>
+          airport.icao &&
+          airport.base_operation_allowed
+      );
+
+  ACS_SERVER_SIM_YEAR =
+    ACS_safeNumber(data.sim_year, null);
+
+  ACS_SERVER_SIM_MONTH =
+    ACS_safeNumber(data.sim_month, null);
+
+  console.log(
+    "ACS BASE AIRPORT AUTHORITY LOADED",
+    {
+      airports: ACS_BASE_AIRPORTS.length,
+      sim_year: ACS_SERVER_SIM_YEAR,
+      sim_month: ACS_SERVER_SIM_MONTH,
+      authority:
+        data.authority?.airport_availability
     }
-  }
+  );
 
-  // 2) ¿Existe este país en la historia?
-  const hist = findCountryHistory(countryName);
-  if (hist) {
-    const start = hist.start ?? -9999;
-    const end = (hist.end === null || hist.end === undefined) ? 9999 : hist.end;
-    if (year >= start && year <= end) {
-      return countryName; // válido en ese año
-    } else {
-      return null; // país moderno fuera de su rango
-    }
-  }
-
-  // 3) Si no está en ACS_CountryHistory → lo aceptamos siempre
-  return countryName;
+  return ACS_BASE_AIRPORTS;
 }
-  
-/* ============================================================
-   === CONTINENT SELECT — ALWAYS OPEN =========================
-   ------------------------------------------------------------
-   ▪ Muestra SIEMPRE los 7 continentes
-   ▪ Sin "Unavailable in XXXX"
-   ▪ Sin disabled
-   ▪ Filtro histórico se hace luego
-   ============================================================ */
-function buildContinentSelect() {
-  const continentSelect = document.getElementById("continentSelect");
-  if (!continentSelect) return;
 
-  const allContinents = [
-    "NorthAmerica",
-    "SouthAmerica",
-    "Europe",
-    "Asia",
-    "MiddleEast",
+function ACS_buildContinentSelect() {
+  const select =
+    document.getElementById("continentSelect");
+
+  if (!select) {
+    return;
+  }
+
+  const preferredOrder = [
     "Africa",
+    "Asia",
+    "Europe",
+    "Middle East",
+    "North America",
+    "South America",
     "Oceania"
   ];
 
-  continentSelect.innerHTML = '<option value="">🌍 Select Continent</option>';
+  const availableContinents =
+    [...new Set(
+      ACS_BASE_AIRPORTS
+        .map(airport => airport.continent)
+        .filter(Boolean)
+    )];
 
-  allContinents.forEach(cont => {
-    const opt = document.createElement("option");
-    opt.value = cont;
+  availableContinents.sort((a, b) => {
+    const indexA = preferredOrder.indexOf(a);
+    const indexB = preferredOrder.indexOf(b);
 
-    const pretty = cont.replace(/([A-Z])/g, " $1").trim();
-    opt.textContent = pretty;
-    opt.style.color = "#e8ecff";
+    if (indexA === -1 && indexB === -1) {
+      return a.localeCompare(b);
+    }
 
-    continentSelect.appendChild(opt);
+    if (indexA === -1) {
+      return 1;
+    }
+
+    if (indexB === -1) {
+      return -1;
+    }
+
+    return indexA - indexB;
   });
+
+  select.innerHTML =
+    '<option value="">🌍 Select Continent</option>';
+
+  for (
+    const continent of availableContinents
+  ) {
+    const option =
+      document.createElement("option");
+
+    option.value = continent;
+    option.textContent = continent;
+
+    select.appendChild(option);
+  }
 }
 
-
-/* ============================================================
-   CHOOSE_BASE — loadCountries() (WorldAirportsACS + WorldEngine)
-   ------------------------------------------------------------
-   ▪ Usa directamente WorldAirportsACS[continent]
-   ▪ Aplica fechas históricas con ACS_World.airportExistsInYear
-   ▪ No depende de índices internos del motor
-   ============================================================ */
 function loadCountries() {
-  selectedContinent = document.getElementById("continentSelect").value;
-  const countrySelect = document.getElementById("countrySelect");
-  const list = document.getElementById("airportList");
+  ACS_SELECTED_CONTINENT =
+    document
+      .getElementById("continentSelect")
+      ?.value || "";
 
-  // Reset UI
-  countrySelect.innerHTML = '<option value="">🏳️ Select Country</option>';
-  list.innerHTML = '<tr><td colspan="9">Select a continent and country to view airports.</td></tr>';
+  ACS_SELECTED_COUNTRY = "";
 
-  if (!selectedContinent) return;
+  const countrySelect =
+    document.getElementById("countrySelect");
 
-  const year = ACS_World.getSimYear();
+  const airportList =
+    document.getElementById("airportList");
 
-  // 🔹 Lista bruta del continente desde el LOADER
-  const rawList =
-    (window.WorldAirportsACS && WorldAirportsACS[selectedContinent])
-      ? WorldAirportsACS[selectedContinent]
-      : [];
+  countrySelect.innerHTML =
+    '<option value="">🏳️ Select Country</option>';
 
-  // 🔹 Aplicar solo filtro histórico (apertura/cierre)
-  const airports = rawList.filter(a => ACS_World.airportExistsInYear(a, year));
+  airportList.innerHTML =
+    '<tr><td colspan="9">' +
+    'Select a continent and country ' +
+    'to view airports.' +
+    "</td></tr>";
 
-  if (!airports.length) {
-    list.innerHTML = `<tr><td colspan="9">
-      No airports available in this continent for the year ${year}.
-    </td></tr>`;
+  if (!ACS_SELECTED_CONTINENT) {
     return;
   }
 
-  // 🔹 Extraer países reales de la base
-  const countrySet = new Set();
+  const countries =
+    [...new Set(
+      ACS_BASE_AIRPORTS
+        .filter(
+          airport =>
+            airport.continent ===
+            ACS_SELECTED_CONTINENT
+        )
+        .map(
+          airport =>
+            airport.country_name
+        )
+        .filter(Boolean)
+    )]
+      .sort((a, b) =>
+        a.localeCompare(b)
+      );
 
-  airports.forEach(a => {
-    const country =
-      (a.region && String(a.region).trim()) ||
-      (a.country && String(a.country).trim()) ||
-      (a.country_name && String(a.country_name).trim());
+  for (const country of countries) {
+    const option =
+      document.createElement("option");
 
-    if (country) countrySet.add(country);
-  });
+    option.value = country;
+    option.textContent = country;
 
-  const countries = Array.from(countrySet).sort();
-
-  // Poblar select de países
-  countries.forEach(c => {
-    const opt = document.createElement("option");
-    opt.value = c;
-    opt.textContent = c;
-    countrySelect.appendChild(opt);
-  });
+    countrySelect.appendChild(option);
+  }
 }
 
-/* Inicializar menú de continentes al cargar */
-document.addEventListener("DOMContentLoaded", () => {
-  buildContinentSelect();
-});
-
-/* ============================================================
-   LOAD AIRPORTS — WorldAirportsACS + WorldEngine (Stable Beta)
-   ------------------------------------------------------------
-   ▪ Usa WorldAirportsACS[continent] como fuente principal
-   ▪ Filtra por país seleccionado + año histórico
-   ▪ Usa ACS_World.getHistoricalDemand para demanda
-   ▪ Sin filtros artificiales (runway, etc.)
-   ============================================================ */
 function loadAirports() {
-  selectedCountry = document.getElementById("countrySelect").value;
-  const tbody = document.getElementById("airportList");
+  ACS_SELECTED_COUNTRY =
+    document
+      .getElementById("countrySelect")
+      ?.value || "";
+
+  const tbody =
+    document.getElementById("airportList");
+
   tbody.innerHTML = "";
 
-  if (!selectedContinent || !selectedCountry) {
-    tbody.innerHTML = '<tr><td colspan="9">Please select both continent and country.</td></tr>';
+  if (
+    !ACS_SELECTED_CONTINENT ||
+    !ACS_SELECTED_COUNTRY
+  ) {
+    tbody.innerHTML =
+      '<tr><td colspan="9">' +
+      "Please select both continent " +
+      "and country." +
+      "</td></tr>";
+
     return;
   }
 
-  const year = ACS_World.getSimYear();
+  const airports =
+    ACS_BASE_AIRPORTS
+      .filter(
+        airport =>
+          airport.continent ===
+            ACS_SELECTED_CONTINENT &&
+          airport.country_name ===
+            ACS_SELECTED_COUNTRY
+      )
+      .sort((a, b) => {
+        const demandA =
+          a.demand_y +
+          a.demand_c +
+          a.demand_f;
 
-  // 🔹 Lista bruta del continente desde el LOADER
-  const rawList =
-    (window.WorldAirportsACS && WorldAirportsACS[selectedContinent])
-      ? WorldAirportsACS[selectedContinent]
-      : [];
+        const demandB =
+          b.demand_y +
+          b.demand_c +
+          b.demand_f;
 
-  // 🔹 Filtrar por país y por año histórico
-  const airports = rawList.filter(a => {
-    const country =
-      (a.region && String(a.region).trim()) ||
-      (a.country && String(a.country).trim()) ||
-      (a.country_name && String(a.country_name).trim());
-
-    if (!country) return false;
-    if (country !== selectedCountry) return false;
-
-    // Respetar apertura/cierre histórica del motor mundial
-    return ACS_World.airportExistsInYear(a, year);
-  });
+        return (
+          demandB - demandA ||
+          a.city.localeCompare(b.city) ||
+          a.icao.localeCompare(b.icao)
+        );
+      });
 
   if (!airports.length) {
-    tbody.innerHTML = `<tr><td colspan="9">
-      No airports available in ${selectedCountry} for the year ${year}.
-    </td></tr>`;
+    tbody.innerHTML =
+      '<tr><td colspan="9">' +
+      "No base airports are authorized " +
+      "for the current simulation period." +
+      "</td></tr>";
+
     return;
   }
-/* ============================================================
-   === HISTORICAL SORTING SYSTEM (C-2) =========================
-   ------------------------------------------------------------
-   • 1940–1954 → ordenar por Y
-   • 1955–1975 → ordenar por Y + C
-   • 1976+     → ordenar por Y + C + F
-   ============================================================ */
-airports.sort((a, b) => {
 
-  const D1 = ACS_World.getHistoricalDemand(a, year);
-  const D2 = ACS_World.getHistoricalDemand(b, year);
+  for (const airport of airports) {
+    const totalDemand =
+      airport.demand_y +
+      airport.demand_c +
+      airport.demand_f;
 
-  let totalA = 0;
-  let totalB = 0;
+    const economyPercent =
+      totalDemand > 0
+        ? (
+            airport.demand_y /
+            totalDemand
+          ) * 100
+        : 0;
 
-  if (year < 1955) {
-    // SOLO Y
-    totalA = (D1.Y || 0);
-    totalB = (D2.Y || 0);
-  }
-  else if (year < 1976) {
-    // Y + C
-    totalA = (D1.Y || 0) + (D1.C || 0);
-    totalB = (D2.Y || 0) + (D2.C || 0);
-  }
-  else {
-    // Y + C + F
-    totalA = (D1.Y || 0) + (D1.C || 0) + (D1.F || 0);
-    totalB = (D2.Y || 0) + (D2.C || 0) + (D2.F || 0);
-  }
+    const businessPercent =
+      totalDemand > 0
+        ? (
+            (
+              airport.demand_y +
+              airport.demand_c
+            ) /
+            totalDemand
+          ) * 100
+        : 0;
 
-  // ORDEN DESCENDENTE (Mayor → Menor)
-  return totalB - totalA;
-});
+    const row =
+      document.createElement("tr");
 
-  airports.forEach(a => {
-    // Demanda histórica real del motor mundial
-    const D = ACS_World.getHistoricalDemand(a, year);
-    const total = D.Y + D.C + D.F;
-
-    const ecoPct = total ? (D.Y / total) * 100 : 0;
-    const bizPct = total ? ((D.Y + D.C) / total) * 100 : 0;
-
-    const row = document.createElement("tr");
     row.innerHTML = `
-      <td>${a.icao}</td>
-      <td>${a.iata}</td>
-      <td>${a.city}</td>
-      <td>${a.name || a.city}</td>
-      <td>${a.category}</td>
+      <td>${ACS_escapeHtml(airport.icao)}</td>
+      <td>${ACS_escapeHtml(airport.iata || "—")}</td>
+      <td>${ACS_escapeHtml(airport.city)}</td>
+      <td>${ACS_escapeHtml(airport.city)}</td>
+      <td>${ACS_escapeHtml(airport.category)}</td>
       <td>
-        ${D.Y}/${D.C}/${D.F}
-        <div class="demand-bar"
-             style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
+        ${airport.demand_y}/
+        ${airport.demand_c}/
+        ${airport.demand_f}
+        <div
+          class="demand-bar"
+          style="
+            --eco:${economyPercent}%;
+            --biz:${businessPercent}%;
+          "
+        ></div>
       </td>
-      <td>${a.slot_capacity}</td>
-      <td>$${(a.slot_cost_usd || 0).toLocaleString()}</td>
-      <td><button class="acs-btn" onclick="setBase('${a.icao}')">
-        Set as Base
-      </button></td>
+      <td>${airport.slot_capacity.toLocaleString()}</td>
+      <td>$${airport.slot_cost_usd.toLocaleString()}</td>
+      <td>
+        <button
+          class="acs-btn"
+          type="button"
+          onclick="setBase('${airport.icao}', this)"
+        >
+          Set as Base
+        </button>
+      </td>
     `;
+
     tbody.appendChild(row);
-  });
+  }
 }
-  
-const ISO2_TO_COUNTRY = {  
-  "AF":"Afghanistan","AL":"Albania","DZ":"Algeria","AD":"Andorra","AO":"Angola",
-  "AR":"Argentina","AM":"Armenia","AU":"Australia","AT":"Austria","AZ":"Azerbaijan",
-  "BS":"Bahamas","BH":"Bahrain","BD":"Bangladesh","BY":"Belarus","BE":"Belgium",
-  "BZ":"Belize","BJ":"Benin","BT":"Bhutan","BO":"Bolivia","BA":"Bosnia and Herzegovina",
-  "BW":"Botswana","BR":"Brazil","BN":"Brunei","BG":"Bulgaria","BF":"Burkina Faso",
-  "BI":"Burundi","KH":"Cambodia","CM":"Cameroon","CA":"Canada","CV":"Cape Verde",
-  "TD":"Chad","CL":"Chile","CN":"China","CO":"Colombia","CG":"Congo",
-  "CR":"Costa Rica","HR":"Croatia","CU":"Cuba","CY":"Cyprus","CZ":"Czech Republic",
-  "DK":"Denmark","DJ":"Djibouti","DO":"Dominican Republic","EC":"Ecuador","EG":"Egypt",
-  "SV":"El Salvador","EE":"Estonia","ET":"Ethiopia","FJ":"Fiji","FI":"Finland",
-  "FR":"France","GE":"Georgia","DE":"Germany","GH":"Ghana","GR":"Greece",
-  "GT":"Guatemala","HT":"Haiti","HN":"Honduras","HU":"Hungary","IS":"Iceland",
-  "IN":"India","ID":"Indonesia","IR":"Iran","IQ":"Iraq","IE":"Ireland",
-  "IL":"Israel","IT":"Italy","JM":"Jamaica","JP":"Japan","JO":"Jordan",
-  "KZ":"Kazakhstan","KE":"Kenya","KG":"Kyrgyzstan","LA":"Laos","LV":"Latvia",
-  "LB":"Lebanon","LR":"Liberia","LY":"Libya","LI":"Liechtenstein","LT":"Lithuania",
-  "LU":"Luxembourg","MG":"Madagascar","MW":"Malawi","MY":"Malaysia","MV":"Maldives",
-  "ML":"Mali","MT":"Malta","MX":"Mexico","MD":"Moldova","MC":"Monaco",
-  "MN":"Mongolia","ME":"Montenegro","MA":"Morocco","MZ":"Mozambique","MM":"Myanmar",
-  "NA":"Namibia","NP":"Nepal","NL":"Netherlands","NZ":"New Zealand","NI":"Nicaragua",
-  "NE":"Niger","NG":"Nigeria","KP":"North Korea","MK":"North Macedonia","NO":"Norway",
-  "OM":"Oman","PK":"Pakistan","PA":"Panama","PY":"Paraguay","PE":"Peru",
-  "PH":"Philippines","PL":"Poland","PT":"Portugal","QA":"Qatar","RO":"Romania",
-  "RU":"Russia","RW":"Rwanda","SA":"Saudi Arabia","SN":"Senegal","RS":"Serbia",
-  "SG":"Singapore","SK":"Slovakia","SI":"Slovenia","SO":"Somalia","ZA":"South Africa",
-  "KR":"South Korea","ES":"Spain","LK":"Sri Lanka","SD":"Sudan","SE":"Sweden",
-  "CH":"Switzerland","SY":"Syria","TW":"Taiwan","TJ":"Tajikistan","TZ":"Tanzania",
-  "TH":"Thailand","TN":"Tunisia","TR":"Turkey","TM":"Turkmenistan","UG":"Uganda",
-  "UA":"Ukraine","AE":"United Arab Emirates","GB":"United Kingdom","US":"United States",
-  "UY":"Uruguay","UZ":"Uzbekistan","VE":"Venezuela","VN":"Vietnam","YE":"Yemen",
-  "ZM":"Zambia","ZW":"Zimbabwe"
-};
-  
-async function setBase(icao) {
-  const airport = Object.values(WorldAirportsACS).flat().find(a => a.icao === icao);
-  if (!airport) {
-    alert("⚠️ Airport not found.");
+
+async function setBase(icao, button) {
+  const code =
+    ACS_safeText(icao).toUpperCase();
+
+  const airport =
+    ACS_BASE_AIRPORTS.find(
+      item => item.icao === code
+    );
+
+  if (
+    !airport ||
+    !airport.base_operation_allowed
+  ) {
+    alert(
+      "This airport is not authorized " +
+      "as a base in the current period."
+    );
+
     return;
   }
 
-  const basePayload = {
-    icao: airport.icao,
-    iata: airport.iata,
-    city: airport.city,
-    name: airport.name,
-    country: airport.country || airport.region || "",
-    continent: selectedContinent,
-    demand_total:
-      (airport.demand?.Y || 0) +
-      (airport.demand?.C || 0) +
-      (airport.demand?.F || 0),
-    slot_capacity: airport.slot_capacity,
-    slot_cost_usd: airport.slot_cost_usd
-  };
+  const originalText =
+    button?.textContent || "Set as Base";
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Saving...";
+  }
 
   try {
-    
-const API = "https://api.aviationcapitalsim.com/v1/users/set-base";
-    
-const response = await fetch(API, {
-  method: "POST",
-  credentials: "include", // 🔥 CLAVE
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    base_icao: airport.icao
-  })
-});
+    const result = await ACS_fetchJson(
+      `${ACS_API_BASE}/users/set-base`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json"
+        },
+        body: JSON.stringify({
+          base_icao: airport.icao
+        })
+      }
+    );
 
-    const result = await response.json();
-    console.log("BASE SAVE RESPONSE:", result);
+    console.log(
+      "ACS BASE SAVED",
+      result
+    );
 
-    if (!response.ok || result.ok !== true) {
-      alert("❌ Railway did not save the base.");
-      return;
+    alert(
+      `Base set successfully at ` +
+      `${airport.city} ` +
+      `(${airport.icao}).`
+    );
+
+    window.location.href =
+      "dashboard.html";
+  } catch (error) {
+    console.error(
+      "SET BASE ERROR",
+      error
+    );
+
+    if (
+      error.message ===
+      "BASE_AIRPORT_NOT_ALLOWED"
+    ) {
+      alert(
+        "This airport is no longer " +
+        "available as a base."
+      );
+    } else {
+      alert(
+        "Railway could not save the base."
+      );
     }
 
-    alert(`✅ Base set successfully at ${airport.city} (${airport.icao}).`);
-    window.location.href = "dashboard.html";
-
-  } catch (err) {
-    console.error("SET BASE ERROR:", err);
-    alert("❌ Error saving base in Railway.");
+    if (button) {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
   }
 }
-    
-/* ============================================================
-   DEMAND TOOLTIP
-============================================================ */
-  
-const tooltip = document.getElementById("demandTooltip");
 
-document.addEventListener("mousemove", e => {
-  const cell = e.target.closest("td:nth-child(6)");
-  if (cell && cell.textContent.includes("/")) {
-    const parts = cell.textContent.trim().split("/");
-    if (parts.length === 3) {
-      const [Y, C, F] = parts.map(Number);
-      const total = Y + C + F;
-      const ecoDeg = total ? (Y/total)*360 : 0;
-      const bizDeg = total ? ((Y+C)/total)*360 : 0;
+const tooltip =
+  document.getElementById(
+    "demandTooltip"
+  );
 
-      tooltip.innerHTML = `
-        <h4>Passenger Demand</h4>
-        <div>Economy: ${Y}</div>
-        <div>Business: ${C}</div>
-        <div>First: ${F}</div>
-      `;
-      tooltip.style.display = "block";
-      tooltip.style.left = e.pageX + 15 + "px";
-      tooltip.style.top = e.pageY - 60 + "px";
+document.addEventListener(
+  "mousemove",
+  event => {
+    const cell =
+      event.target.closest(
+        "td:nth-child(6)"
+      );
+
+    if (
+      cell &&
+      cell.textContent.includes("/")
+    ) {
+      const parts =
+        cell.textContent
+          .trim()
+          .split("/")
+          .map(Number);
+
+      if (
+        parts.length === 3 &&
+        parts.every(Number.isFinite)
+      ) {
+        const [Y, C, F] = parts;
+
+        tooltip.innerHTML = `
+          <h4>Airport Market Indicator</h4>
+          <div>Economy indicator: ${Y}</div>
+          <div>Business indicator: ${C}</div>
+          <div>First indicator: ${F}</div>
+        `;
+
+        tooltip.style.display = "block";
+        tooltip.style.left =
+          event.pageX + 15 + "px";
+        tooltip.style.top =
+          event.pageY - 60 + "px";
+
+        return;
+      }
     }
-  } else {
+
     tooltip.style.display = "none";
   }
-});
+);
 
 /* ========== LOGOUT ========== */ 
   
@@ -1628,6 +1711,64 @@ function handleLogout(){
   alert("👋 Session closed. Your fleet awaits your command!");
   window.location.href = "login.html";
 } 
+
+document.addEventListener(
+  "DOMContentLoaded",
+  async () => {
+    const list =
+      document.getElementById(
+        "airportList"
+      );
+
+    try {
+      list.innerHTML =
+        '<tr><td colspan="9">' +
+        "Loading authorized airports " +
+        "from PostgreSQL..." +
+        "</td></tr>";
+
+      await ACS_loadBaseAuthority();
+      ACS_buildContinentSelect();
+
+      document
+        .getElementById(
+          "continentSelect"
+        )
+        .addEventListener(
+          "change",
+          loadCountries
+        );
+
+      document
+        .getElementById(
+          "countrySelect"
+        )
+        .addEventListener(
+          "change",
+          loadAirports
+        );
+
+      list.innerHTML =
+        '<tr><td colspan="9">' +
+        "Select a continent and country " +
+        "to view authorized base airports." +
+        "</td></tr>";
+    } catch (error) {
+      console.error(
+        "CHOOSE BASE AUTHORITY ERROR",
+        error
+      );
+
+      list.innerHTML =
+        '<tr><td colspan="9">' +
+        "Airport authority is unavailable. " +
+        "Please try again." +
+        "</td></tr>";
+    }
+  }
+);
+
+
   
 </script>
 
