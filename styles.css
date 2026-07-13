@@ -7,7 +7,7 @@ body {
   background: #0A1630;
   color: white;
   text-align: center;
-  padding-top: 80px; /* to prevent header overlap */
+  padding-top: 104px; /* to prevent header overlap */
   overflow-x: hidden;
 }
 
