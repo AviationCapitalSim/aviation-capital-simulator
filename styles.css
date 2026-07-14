@@ -1706,3 +1706,16 @@ body:has(#airportTable) #acs-clock.acs-cockpit-clock {
     font-size: clamp(1.3rem, 6vw, 1.75rem);
   }
 }
+
+/* SKYTRACK — WORLD MAP TITLE ONLY */
+
+.acs-world-map-title {
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Segoe UI",
+    sans-serif;
+
+  font-weight: 700;
+  letter-spacing: 0.025em;
+}
