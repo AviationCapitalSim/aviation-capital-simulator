@@ -15,7 +15,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SkyTrack Command - ACS OCC</title>
+  <title>SkyTrack - Aviation Capital Simulator</title>
 
   <!-- ======== ACS GLOBAL STYLE (MISMO QUE DASHBOARD) ======== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
@@ -489,6 +489,80 @@ body {
 .badge-ground { background: rgba(0,135,255,0.25); color:#9cc9ff; }
 .badge-air    { background: rgba(0,255,160,0.25); color:#8fffd2; }
 .badge-maint  { background: rgba(255,179,0,0.30); color:#ffe7a0; }
+
+/* ============================================================
+   ACS GLOBAL FOOTER
+   ============================================================ */
+
+.acs-footer{
+  width:100%;
+  box-sizing:border-box;
+
+  padding:18px 20px;
+
+  text-align:center;
+  white-space:nowrap;
+
+  font-family:"Segoe UI",sans-serif;
+  font-size:.85rem;
+  font-weight:500;
+
+  color:rgba(255,255,255,.88);
+
+  border-top:1px solid rgba(138,180,255,.18);
+
+  background:rgba(3,10,24,.28);
+}
+
+.acs-footer-text{
+  color:rgba(255,255,255,.88);
+}
+
+.acs-footer-separator{
+  margin:0 8px;
+  color:rgba(255,255,255,.38);
+}
+
+.acs-footer-link,
+.acs-footer-link:visited{
+  color:#FFB300;
+  text-decoration:none;
+  font-weight:600;
+
+  transition:
+    color .25s ease,
+    text-shadow .25s ease;
+}
+
+.acs-footer-link:hover{
+  color:#FFD870;
+
+  text-shadow:
+    0 0 8px rgba(255,179,0,.35);
+}
+
+
+/* ============================================================
+   ACS GLOBAL FOOTER — MOBILE
+   ============================================================ */
+
+@media (max-width:850px){
+
+  .acs-footer{
+    overflow-x:auto;
+
+    padding:16px 14px;
+
+    font-size:.76rem;
+
+    -webkit-overflow-scrolling:touch;
+  }
+
+  .acs-footer-separator{
+    margin:0 6px;
+  }
+
+}
      
 </style>
 
@@ -532,14 +606,14 @@ body {
 
   <section class="acs-title-global">
     <div class="acs-title-main">LIVE SKYTRACK</div>
-    <div class="acs-title-sub">OPERATIONS COMMAND</div>
+    <div class="acs-title-sub">FLIGHTS CENTER</div>
     <div class="acs-title-tag">Global Fleet Intelligence</div>
   </section>
 
   <!-- ========================= MAP PANEL ========================= -->
 
   <div class="panel">
-    <h3>🌍 World Map</h3>
+   <h3 class="acs-world-map-title">🌍 World Map</h3>
 
     <div class="skytrack-map-shell">
       <div id="skytrack-map"></div>
@@ -601,8 +675,38 @@ body {
 
 </main>
 
+ <!-- global footer -->
+
 <footer class="acs-footer">
-  © 2026 Aviation Capital Simulator. All rights reserved. aviationcapitalsim@gmail.com
+
+  <span class="acs-footer-text">
+    © 2026 Aviation Capital Simulator. All rights reserved.
+  </span>
+
+  <span class="acs-footer-separator">•</span>
+
+  <a
+    href="mailto:aviationcapitalsim@gmail.com"
+    class="acs-footer-link">
+    aviationcapitalsim@gmail.com
+  </a>
+
+  <span class="acs-footer-separator">•</span>
+
+  <a
+    href="privacy.html"
+    class="acs-footer-link">
+    Privacy Policy
+  </a>
+
+  <span class="acs-footer-separator">•</span>
+
+  <a
+    href="terms.html"
+    class="acs-footer-link">
+    Terms of Service
+  </a>
+
 </footer>
 
 <!-- ============================================================
