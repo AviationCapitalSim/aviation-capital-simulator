@@ -1337,7 +1337,7 @@ if (opsStatus.startsWith("CANCELLED")) {
 
 const primaryLabel = hasFlight
   ? `${item.originICAO} → ${item.destinationICAO}`
-  : `${item.registration || "AIRCRAFT"} · ${item.airport || item.baseICAO || "GROUND"}`;
+  : `${item.registration || "AIRCRAFT"} · ${item.baseICAO || item.airport || "GROUND"}`;
 
 const secondaryLabel = hasFlight
   ? item.flightNumber
