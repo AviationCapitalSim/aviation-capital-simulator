@@ -1787,9 +1787,13 @@ if(counter){
     Number.isFinite(item.depAbsMin) ? item.depAbsMin :
     Number.isFinite(item.arrAbsMin) ? item.arrAbsMin : 0;
 
-  if (lastSeenSnapshot[key] != null && logicalTime < lastSeenSnapshot[key]) {
-    return; // ⛔ ignore older snapshot
-  }
+  if (
+  markers[key] &&
+  lastSeenSnapshot[key] != null &&
+  logicalTime < lastSeenSnapshot[key]
+) {
+  return; // ignore older position only while marker still exists
+}
 
   lastSeenSnapshot[key] = logicalTime;
 
