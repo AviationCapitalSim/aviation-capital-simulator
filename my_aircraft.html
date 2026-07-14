@@ -2537,6 +2537,157 @@
   }
 
 }
+
+/* ============================================================
+   AIRCRAFT CENTER — EXECUTION CARD BUTTON FIX
+   ============================================================ */
+
+.aircraft-panels > .panel {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 260px;
+}
+
+.aircraft-panels > .panel .acs-btn {
+  flex: 0 0 auto;
+  min-width: 132px;
+  min-height: 52px;
+
+  margin-top: auto;
+  padding: 0.72rem 1.35rem;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   MY AIRCRAFT — HEADER SPACING
+   ============================================================ */
+
+.acs-main {
+  padding-top: 155px;
+}
+
+.acs-main > .acs-page-title {
+  margin-top: 24px;
+  margin-bottom: 70px;
+}
+
+/* ============================================================
+   AIRCRAFT AUTHORITY MODAL — LAYOUT REPAIR
+   ============================================================ */
+
+#aircraftModal.modal-bg {
+  z-index: 10000;
+
+  box-sizing: border-box;
+  padding: 18px;
+
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+}
+
+#aircraftModal .acp-panel {
+  box-sizing: border-box;
+
+  width: min(960px, calc(100vw - 36px));
+  max-width: 960px;
+  max-height: calc(100vh - 36px);
+
+  margin: 0;
+  padding: 1.5rem;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+#aircraftModal .acp-clean-header {
+  width: 100%;
+  margin-bottom: 1.25rem;
+}
+
+#aircraftModal .acp-main-title {
+  margin: 0 0 1rem;
+  text-align: center;
+}
+
+#aircraftModal .acp-main-image {
+  display: block;
+  width: min(100%, 620px);
+  max-height: 280px;
+
+  margin: 0 auto;
+
+  object-fit: cover;
+  border-radius: 14px;
+}
+
+#aircraftModal .acp-action-center {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  width: 100%;
+  gap: 0.65rem;
+}
+
+#aircraftModal .acp-action-btn {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+}
+
+#aircraftModal .acp-close-row {
+  grid-column: 1 / -1;
+
+  width: 100%;
+  margin-top: 0.25rem;
+
+  display: flex;
+  justify-content: center;
+}
+
+#aircraftModal .acp-close-btn {
+  min-width: 180px;
+  min-height: 42px;
+}
+
+@media (max-width: 760px) {
+  .acs-main {
+    padding-top: 145px;
+  }
+
+  .acs-main > .acs-page-title {
+    margin-top: 16px;
+    margin-bottom: 48px;
+  }
+
+  #aircraftModal.modal-bg {
+    padding: 10px;
+  }
+
+  #aircraftModal .acp-panel {
+    width: calc(100vw - 20px);
+    max-height: calc(100vh - 20px);
+    padding: 1rem;
+  }
+
+  #aircraftModal .acp-action-center {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  #aircraftModal .acp-action-center {
+    grid-template-columns: 1fr;
+  }
+}
     
 </style>
   
