@@ -1085,9 +1085,8 @@ footer {
 
 /* ============================================================
    ACS GLOBAL SAPPHIRE GLASS SYSTEM
+   Scoped only to execution cards
    ============================================================ */
-
-@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap");
 
 :root {
   --acs-gold: #ffb300;
@@ -1109,8 +1108,10 @@ footer {
 
 html body {
   min-height: 100vh;
+
   color: #ffffff;
   background: #071427;
+
   position: relative;
   overflow-x: hidden;
   isolation: isolate;
@@ -1118,6 +1119,7 @@ html body {
 
 html body::before {
   content: "";
+
   position: fixed;
   inset: 0;
 
@@ -1127,12 +1129,14 @@ html body::before {
     no-repeat;
 
   opacity: 0.80;
+
   z-index: -2;
   pointer-events: none;
 }
 
 html body::after {
   content: "";
+
   position: fixed;
   inset: 0;
 
@@ -1153,23 +1157,45 @@ html body::after {
 }
 
 /* ============================================================
-   ACS GLOBAL CARD — SAPPHIRE GLASS
+   GLOBAL CONTENT TYPOGRAPHY
+   Orbitron is not applied to normal ACS content
    ============================================================ */
 
-.acs-main .panel,
-.dashboard .panel,
-main .panel {
+html body,
+button,
+input,
+select,
+textarea {
+  font-family:
+    "Poppins",
+    "Segoe UI",
+    Arial,
+    sans-serif;
+}
+
+/* ============================================================
+   EXECUTION CARDS ONLY
+   Dashboard • Main Grid • Aircraft Center
+   ============================================================ */
+
+.dashboard-grid > .panel,
+.main-grid > .panel,
+.aircraft-panels > .panel {
+  box-sizing: border-box;
+
   position: relative;
   isolation: isolate;
 
   display: flex;
-  width: 100%;
-  aspect-ratio: 1.65 / 1;
-
-  padding: 1.6rem 1.5rem;
   flex-direction: column;
   align-items: center;
 
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 250px;
+
+  padding: 1.6rem 1.5rem;
   overflow: hidden;
 
   border: 1px solid rgba(255, 179, 0, 0.42);
@@ -1201,10 +1227,13 @@ main .panel {
     box-shadow 260ms ease;
 }
 
-.acs-main .panel::before,
-.dashboard .panel::before,
-main .panel::before {
+/* Gold reflection line */
+
+.dashboard-grid > .panel::before,
+.main-grid > .panel::before,
+.aircraft-panels > .panel::before {
   content: "";
+
   position: absolute;
   z-index: -1;
 
@@ -1223,10 +1252,13 @@ main .panel::before {
   opacity: 0.78;
 }
 
-.acs-main .panel::after,
-.dashboard .panel::after,
-main .panel::after {
+/* Sapphire internal glow */
+
+.dashboard-grid > .panel::after,
+.main-grid > .panel::after,
+.aircraft-panels > .panel::after {
   content: "";
+
   position: absolute;
   z-index: -1;
 
@@ -1235,9 +1267,10 @@ main .panel::after {
 
   width: 190px;
   height: 190px;
-  border-radius: 50%;
 
+  border-radius: 50%;
   background: rgba(52, 140, 255, 0.13);
+
   filter: blur(28px);
 
   transition:
@@ -1245,9 +1278,11 @@ main .panel::after {
     transform 260ms ease;
 }
 
-.acs-main .panel:hover,
-.dashboard .panel:hover,
-main .panel:hover {
+/* Card hover */
+
+.dashboard-grid > .panel:hover,
+.main-grid > .panel:hover,
+.aircraft-panels > .panel:hover {
   transform: translateY(-6px);
   border-color: rgba(255, 190, 45, 0.82);
 
@@ -1257,20 +1292,21 @@ main .panel:hover {
     inset 0 1px 0 rgba(255, 232, 172, 0.22);
 }
 
-.acs-main .panel:hover::after,
-.dashboard .panel:hover::after,
-main .panel:hover::after {
+.dashboard-grid > .panel:hover::after,
+.main-grid > .panel:hover::after,
+.aircraft-panels > .panel:hover::after {
   transform: scale(1.16);
   background: rgba(52, 140, 255, 0.21);
 }
 
 /* ============================================================
-   ACS CARD TITLES — CORPORATE GOLD
+   EXECUTION CARD TITLES
+   Orbitron only for these titles
    ============================================================ */
 
-.acs-main .panel h3,
-.dashboard .panel h3,
-main .panel h3 {
+.dashboard-grid > .panel h3,
+.main-grid > .panel h3,
+.aircraft-panels > .panel h3 {
   margin: 0 0 1rem;
 
   color: var(--acs-gold);
@@ -1289,6 +1325,12 @@ main .panel h3 {
 
   -webkit-text-fill-color: transparent;
 
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Segoe UI",
+    sans-serif;
+
   font-size: clamp(1rem, 1.35vw, 1.2rem);
   font-weight: 700;
   line-height: 1.45;
@@ -1298,12 +1340,20 @@ main .panel h3 {
     0 0 10px rgba(255, 179, 0, 0.16);
 }
 
-.acs-main .panel p,
-.dashboard .panel p,
-main .panel p {
+/* Normal readable card descriptions */
+
+.dashboard-grid > .panel p,
+.main-grid > .panel p,
+.aircraft-panels > .panel p {
   margin: 0.3rem 0;
 
   color: #c7d9ee;
+
+  font-family:
+    "Poppins",
+    "Segoe UI",
+    Arial,
+    sans-serif;
 
   font-size: 0.82rem;
   font-weight: 400;
@@ -1312,19 +1362,29 @@ main .panel p {
 }
 
 /* ============================================================
-   ACS GLOBAL OPEN BUTTON
+   EXECUTION CARD OPEN BUTTONS
    ============================================================ */
 
-.acs-main .panel .acs-btn,
-.dashboard .panel .acs-btn,
-main .panel .acs-btn {
+.dashboard-grid > .panel .acs-btn,
+.main-grid > .panel .acs-btn,
+.aircraft-panels > .panel .acs-btn {
+  box-sizing: border-box;
+
   position: relative;
+  flex: 0 0 auto;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 
   min-width: 132px;
+  min-height: 52px;
+
   margin-top: auto;
   padding: 0.72rem 1.35rem;
 
   overflow: hidden;
+  white-space: nowrap;
 
   border: 1px solid rgba(83, 166, 255, 0.68);
   border-radius: 12px;
@@ -1342,8 +1402,15 @@ main .panel .acs-btn {
     0 9px 22px rgba(5, 48, 112, 0.22),
     inset 0 1px 0 rgba(184, 226, 255, 0.14);
 
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Segoe UI",
+    sans-serif;
+
   font-size: 0.74rem;
   font-weight: 700;
+  line-height: 1;
   letter-spacing: 0.16em;
   text-transform: uppercase;
 
@@ -1356,9 +1423,9 @@ main .panel .acs-btn {
     box-shadow 220ms ease;
 }
 
-.acs-main .panel .acs-btn:hover,
-.dashboard .panel .acs-btn:hover,
-main .panel .acs-btn:hover {
+.dashboard-grid > .panel .acs-btn:hover,
+.main-grid > .panel .acs-btn:hover,
+.aircraft-panels > .panel .acs-btn:hover {
   transform: translateY(-2px);
 
   color: var(--acs-sapphire-text-hover);
@@ -1377,20 +1444,20 @@ main .panel .acs-btn:hover {
 }
 
 /* ============================================================
-   DISABLED CARDS
+   DISABLED EXECUTION CARDS
    ============================================================ */
 
-.acs-main .panel-disabled,
-.dashboard .panel-disabled,
-main .panel-disabled {
+.dashboard-grid > .panel-disabled,
+.main-grid > .panel-disabled,
+.aircraft-panels > .panel-disabled {
   opacity: 0.62;
   filter: saturate(0.62);
   border-color: rgba(125, 153, 189, 0.20);
 }
 
-.acs-main .panel-disabled:hover,
-.dashboard .panel-disabled:hover,
-main .panel-disabled:hover {
+.dashboard-grid > .panel-disabled:hover,
+.main-grid > .panel-disabled:hover,
+.aircraft-panels > .panel-disabled:hover {
   transform: none;
   border-color: rgba(125, 153, 189, 0.20);
 
@@ -1399,9 +1466,9 @@ main .panel-disabled:hover {
     inset 0 1px 0 rgba(220, 242, 255, 0.08);
 }
 
-.acs-main .panel-disabled .acs-btn,
-.dashboard .panel-disabled .acs-btn,
-main .panel-disabled .acs-btn {
+.dashboard-grid > .panel-disabled .acs-btn,
+.main-grid > .panel-disabled .acs-btn,
+.aircraft-panels > .panel-disabled .acs-btn {
   color: #a9bdd5;
 
   border-color: rgba(135, 165, 200, 0.25);
@@ -1420,155 +1487,62 @@ main .panel-disabled .acs-btn {
 }
 
 /* ============================================================
-   RESPONSIVE
-   ============================================================ */
-
-@media (max-width: 768px) {
-  .acs-main .panel,
-  .dashboard .panel,
-  main .panel {
-    aspect-ratio: auto;
-    min-height: 250px;
-    padding: 1.5rem 1.25rem;
-    border-radius: 20px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .panel,
-  .panel::after,
-  .panel .acs-btn {
-    transition: none;
-  }
-}
-
-/* ============================================================
-   ACS GLOBAL CORRECTION
-   Orbitron only for card titles
-   ============================================================ */
-
-/* Restore readable typography throughout ACS */
-
-html body,
-button,
-input,
-select,
-textarea {
-  font-family:
-    "Poppins",
-    "Segoe UI",
-    Arial,
-    sans-serif;
-}
-
-/* Orbitron remains exclusive to card titles */
-
-.dashboard-grid .panel h3,
-.main-grid .panel h3 {
-  font-family:
-    "Orbitron",
-    "Eurostile",
-    "Segoe UI",
-    sans-serif;
-}
-
-/* Keep OPEN buttons in Orbitron */
-
-.dashboard-grid .panel .acs-btn,
-.main-grid .panel .acs-btn {
-  font-family:
-    "Orbitron",
-    "Eurostile",
-    "Segoe UI",
-    sans-serif;
-}
-
-/* ============================================================
-   CARD SIZE AND GRID CORRECTION
-   Prevent cards from overlapping
-   ============================================================ */
-
-.dashboard-grid .panel,
-.main-grid .panel {
-  box-sizing: border-box;
-  width: auto;
-  min-width: 0;
-  max-width: 100%;
-
-  /* Remove the proportion that distorted other modules */
-  aspect-ratio: auto;
-
-  /* Maintain the approved compact card size */
-  min-height: 250px;
-}
-
-/* Stop applying dashboard-card dimensions to every panel */
-
-main .panel {
-  aspect-ratio: auto;
-  box-sizing: border-box;
-  min-width: 0;
-  max-width: 100%;
-}
-
-/* Normal content inside tables and module panels */
-
-table,
-thead,
-tbody,
-tfoot,
-tr,
-th,
-td,
-table button,
-table input,
-table select,
-.panel p,
-.panel li,
-.panel label,
-.panel input,
-.panel select {
-  font-family:
-    "Poppins",
-    "Segoe UI",
-    Arial,
-    sans-serif;
-}
-
-/* ============================================================
    OPERATIONAL ALERT BADGE
-   Restore visible report number
+   Keep the report number visible
    ============================================================ */
 
 #opsAlertBadge {
   color: #ffffff;
   -webkit-text-fill-color: #ffffff;
+
   font-family:
     "Orbitron",
     "Eurostile",
     sans-serif;
+
   font-size: 0.78rem;
   font-weight: 800;
   line-height: 24px;
 }
 
-/* Show zero when the alert system leaves the badge empty */
-
 #opsAlertBadge:empty::before {
   content: "0";
+
   color: #ffffff;
   -webkit-text-fill-color: #ffffff;
 }
 
 /* ============================================================
-   MOBILE
+   RESPONSIVE EXECUTION CARDS
    ============================================================ */
 
 @media (max-width: 768px) {
-  .dashboard-grid .panel,
-  .main-grid .panel {
+  .dashboard-grid > .panel,
+  .main-grid > .panel,
+  .aircraft-panels > .panel {
     width: 100%;
     min-height: 230px;
+
+    padding: 1.5rem 1.25rem;
+    border-radius: 20px;
+  }
+}
+
+/* ============================================================
+   ACCESSIBILITY
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-grid > .panel,
+  .main-grid > .panel,
+  .aircraft-panels > .panel,
+  .dashboard-grid > .panel::after,
+  .main-grid > .panel::after,
+  .aircraft-panels > .panel::after,
+  .dashboard-grid > .panel .acs-btn,
+  .main-grid > .panel .acs-btn,
+  .aircraft-panels > .panel .acs-btn {
+    transition: none;
   }
 }
 
