@@ -1546,3 +1546,163 @@ textarea {
   }
 }
 
+/* ============================================================
+   ACS CONTINENT AIRPORT PAGES — GLOBAL REPAIR
+   Applies automatically to every airport_list_*.html page
+   ============================================================ */
+
+/* Keep the complete header inside the viewport */
+
+body:has(#airportTable) .acs-header {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+/* Continent page title */
+
+body:has(#airportTable) .acs-main > h2 {
+  margin: 0 0 0.75rem;
+
+  color: var(--acs-gold, #ffb300);
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffe08a 0%,
+      #ffc94a 24%,
+      #ffb300 58%,
+      #d98b00 100%
+    );
+
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Segoe UI",
+    sans-serif;
+
+  font-size: clamp(1.65rem, 2.5vw, 2.35rem);
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.025em;
+
+  text-shadow:
+    0 0 12px rgba(255, 179, 0, 0.18);
+}
+
+/* Preserve readable subtitle */
+
+body:has(#airportTable) .acs-main > .sub {
+  font-family:
+    "Poppins",
+    "Segoe UI",
+    Arial,
+    sans-serif;
+}
+
+/* Header right area */
+
+body:has(#airportTable) .acs-right {
+  box-sizing: border-box;
+  min-width: 0;
+  flex: 0 0 auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 14px;
+  padding-right: 0;
+}
+
+/* Remove the obsolete 260px restriction from the clock wrapper */
+
+body:has(#airportTable) .acs-clock-header:has(#acs-clock) {
+  box-sizing: border-box;
+
+  width: 390px;
+  min-width: 390px;
+  max-width: 390px;
+  flex: 0 0 390px;
+
+  padding: 0;
+
+  overflow: visible;
+
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+/* Modern cockpit clock inside the corrected wrapper */
+
+body:has(#airportTable) #acs-clock.acs-cockpit-clock {
+  box-sizing: border-box;
+
+  width: 390px;
+  min-width: 390px;
+  max-width: 390px;
+
+  margin: 0;
+}
+
+/* ============================================================
+   CONTINENT PAGE — TABLET
+   ============================================================ */
+
+@media (max-width: 1200px) {
+  body:has(#airportTable) .acs-header {
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+
+  body:has(#airportTable) .acs-nav {
+    order: 3;
+    flex: 0 0 100%;
+
+    justify-content: center;
+  }
+
+  body:has(#airportTable) .acs-clock-header:has(#acs-clock),
+  body:has(#airportTable) #acs-clock.acs-cockpit-clock {
+    width: 350px;
+    min-width: 350px;
+    max-width: 350px;
+  }
+}
+
+/* ============================================================
+   CONTINENT PAGE — MOBILE
+   ============================================================ */
+
+@media (max-width: 768px) {
+  body:has(#airportTable) .acs-header {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  body:has(#airportTable) .acs-right {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  body:has(#airportTable) .acs-clock-header:has(#acs-clock),
+  body:has(#airportTable) #acs-clock.acs-cockpit-clock {
+    width: min(100%, 350px);
+    min-width: 0;
+    max-width: 350px;
+    flex-basis: 100%;
+  }
+
+  body:has(#airportTable) .acs-main > h2 {
+    font-size: clamp(1.3rem, 6vw, 1.75rem);
+  }
+}
