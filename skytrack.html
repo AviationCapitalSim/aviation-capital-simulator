@@ -1259,7 +1259,7 @@ function renderLiveTrackPanel(snapshot) {
   liveListEl.innerHTML = "";
 
   snapshot.forEach(item => {
-    if (!item.flightNumber) return;
+    
 
     const card = document.createElement("div");
 card.className = "flight-card";
@@ -1333,17 +1333,27 @@ if (opsStatus.startsWith("CANCELLED")) {
   `;
 }
 
-    card.innerHTML = `
-      <div class="flight-route">
-        ${item.originICAO} → ${item.destinationICAO}
-      </div>
-      <div class="flight-meta">
-        <span>${item.flightNumber}</span>
-        <span class="badge ${stateClass}">${item.state}</span>
-        ${opsBadge}
-      </div>
-      ${extra}
-    `;
+    const hasFlight = Boolean(item.flightNumber);
+
+const primaryLabel = hasFlight
+  ? `${item.originICAO} → ${item.destinationICAO}`
+  : `${item.registration || "AIRCRAFT"} · ${item.airport || item.baseICAO || "GROUND"}`;
+
+const secondaryLabel = hasFlight
+  ? item.flightNumber
+  : "NO FLIGHT";
+
+card.innerHTML = `
+  <div class="flight-route">
+    ${primaryLabel}
+  </div>
+  <div class="flight-meta">
+    <span>${secondaryLabel}</span>
+    <span class="badge ${stateClass}">${item.state}</span>
+    ${hasFlight ? opsBadge : ""}
+  </div>
+  ${hasFlight ? extra : ""}
+`;
 
     liveListEl.appendChild(card);
   });
