@@ -1063,10 +1063,28 @@ function ACS_ST_isMyAirlineFlight(item) {
 function ACS_ST_getMyLiveTraffic(snapshot) {
   if (!Array.isArray(snapshot)) return [];
 
-  return snapshot.filter(item =>
-    item?.flightNumber &&
-    ACS_ST_isMyAirlineFlight(item)
-  );
+  const maintenanceStates = new Set([
+    "A_CHECK",
+    "B_CHECK",
+    "C_CHECK",
+    "D_CHECK",
+    "A_CHECK_OVERDUE",
+    "B_CHECK_OVERDUE",
+    "C_CHECK_OVERDUE",
+    "D_CHECK_OVERDUE",
+    "MAINTENANCE",
+    "MAINTENANCE_REQUIRED",
+    "UNSERVICEABLE"
+  ]);
+
+  return snapshot.filter(item => {
+    if (!ACS_ST_isMyAirlineFlight(item)) return false;
+
+    const state = String(item?.state || "").toUpperCase();
+
+    return Boolean(item?.flightNumber) ||
+      maintenanceStates.has(state);
+  });
 }
    
 </script>
@@ -1111,6 +1129,7 @@ window.ACS_SKYTRACK_OPS_IMPACTS_LOADED = false;
 window.ACS_SKYTRACK_OPS_IMPACTS_LOADING = false;
 
 async function ACS_ST_loadOpsImpacts() {
+   
   if (window.ACS_SKYTRACK_OPS_IMPACTS_LOADED) return;
   if (window.ACS_SKYTRACK_OPS_IMPACTS_LOADING) return;
 
