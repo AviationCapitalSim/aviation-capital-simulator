@@ -470,6 +470,153 @@
     text-decoration:underline;
 }
 
+/* ============================================================
+   SETTINGS — PAGE SPACING
+   ============================================================ */
+
+.acs-main {
+  padding-top: 145px;
+}
+
+.acs-main > .acs-page-title {
+  margin-top: 28px;
+  margin-bottom: 58px;
+}
+
+/* ============================================================
+   SETTINGS — COMPACT INTERNAL BUTTONS
+   These are controls, not execution OPEN buttons
+   ============================================================ */
+
+.finance-panels.dashboard-grid > .panel .save-group {
+  margin-top: auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+
+  gap: 8px;
+}
+
+.finance-panels.dashboard-grid > .panel .acs-btn {
+  flex: 0 0 auto;
+
+  min-width: 94px;
+  min-height: 40px;
+
+  margin-top: 0;
+  padding: 0.55rem 0.85rem;
+
+  font-family:
+    "Poppins",
+    "Segoe UI",
+    Arial,
+    sans-serif;
+
+  font-size: 0.76rem;
+  line-height: 1;
+  letter-spacing: 0.015em;
+  text-transform: none;
+}
+
+.finance-panels.dashboard-grid > .panel .acs-btn.secondary {
+  color: #c9d3e2;
+
+  border-color: rgba(180, 195, 215, 0.30);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(80, 94, 115, 0.38),
+      rgba(49, 61, 80, 0.46)
+    );
+}
+
+@media (max-width: 768px) {
+  .acs-main {
+    padding-top: 140px;
+  }
+
+  .acs-main > .acs-page-title {
+    margin-top: 18px;
+    margin-bottom: 42px;
+  }
+}
+
+/* ============================================================
+   ACS GLOBAL FOOTER
+   ============================================================ */
+
+.acs-footer{
+  width:100%;
+  box-sizing:border-box;
+
+  padding:18px 20px;
+
+  text-align:center;
+  white-space:nowrap;
+
+  font-family:"Segoe UI",sans-serif;
+  font-size:.85rem;
+  font-weight:500;
+
+  color:rgba(255,255,255,.88);
+
+  border-top:1px solid rgba(138,180,255,.18);
+
+  background:rgba(3,10,24,.28);
+}
+
+.acs-footer-text{
+  color:rgba(255,255,255,.88);
+}
+
+.acs-footer-separator{
+  margin:0 8px;
+  color:rgba(255,255,255,.38);
+}
+
+.acs-footer-link,
+.acs-footer-link:visited{
+  color:#FFB300;
+  text-decoration:none;
+  font-weight:600;
+
+  transition:
+    color .25s ease,
+    text-shadow .25s ease;
+}
+
+.acs-footer-link:hover{
+  color:#FFD870;
+
+  text-shadow:
+    0 0 8px rgba(255,179,0,.35);
+}
+
+
+/* ============================================================
+   ACS GLOBAL FOOTER — MOBILE
+   ============================================================ */
+
+@media (max-width:850px){
+
+  .acs-footer{
+    overflow-x:auto;
+
+    padding:16px 14px;
+
+    font-size:.76rem;
+
+    -webkit-overflow-scrolling:touch;
+  }
+
+  .acs-footer-separator{
+    margin:0 6px;
+  }
+
+}
     
 </style>
 </head>
@@ -502,7 +649,7 @@
   
 <section class="acs-page-title">
   <div class="acs-page-title-main">
-    SETTING COMMAND
+    SETTING CENTER
 </div>
 
 <div class="acs-page-title-sub">
@@ -515,10 +662,10 @@
   
 </section>
 
-<main>
+<div class="settings-content">
   
-  <section class="finance-panels">
-
+  <section class="finance-panels dashboard-grid">
+    
     <!-- 1. Interface -->
     <div class="panel">
       <h3>🎨 Interface Settings</h3>
@@ -561,14 +708,42 @@
       </div>
     </div>
 
-  </section>
+ </section>
+</div>
 </main>
 
+<!-- global footer -->
+
 <footer class="acs-footer">
-  © 2026 Aviation Capital Simulator. All rights reserved.
-  <a href="mailto:aviationcapitalsim@gmail.com" class="acs-footer-email">
+
+  <span class="acs-footer-text">
+    © 2026 Aviation Capital Simulator. All rights reserved.
+  </span>
+
+  <span class="acs-footer-separator">•</span>
+
+  <a
+    href="mailto:aviationcapitalsim@gmail.com"
+    class="acs-footer-link">
     aviationcapitalsim@gmail.com
   </a>
+
+  <span class="acs-footer-separator">•</span>
+
+  <a
+    href="privacy.html"
+    class="acs-footer-link">
+    Privacy Policy
+  </a>
+
+  <span class="acs-footer-separator">•</span>
+
+  <a
+    href="terms.html"
+    class="acs-footer-link">
+    Terms of Service
+  </a>
+
 </footer>
 
 <!-- MODAL PARA SAVE/RESET -->
