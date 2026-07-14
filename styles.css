@@ -1377,11 +1377,11 @@ textarea {
   align-items: center;
   justify-content: center;
 
-  min-width: 132px;
-  min-height: 52px;
+  min-width: 118px;
+  min-height: 44px;
 
   margin-top: auto;
-  padding: 0.72rem 1.35rem;
+  padding: 0.62rem 1.15rem;
 
   overflow: hidden;
   white-space: nowrap;
