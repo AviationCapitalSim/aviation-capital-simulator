@@ -1243,63 +1243,7 @@ function loadLeasing() {
     });
 
 }
-     
-/* ============================================================
-   === CLOCK ====================================================
-   ============================================================ */
-     
-function updateClockDisplay(simTime){
-
-  const el = document.getElementById("acs-clock");
-  if(!el) return;
-
-  // 🟡 IGNORAR llamadas vacías (NO romper, NO log spam)
-  if(!(simTime instanceof Date)){
-    return;
-  }
-
-  const d = simTime;
-
-  window.ACS_CurrentSimDate = d;
-
-  const weekday = d
-    .toLocaleString("en-US", { weekday: "short", timeZone: "UTC" })
-    .toUpperCase();
-
-  const day = String(d.getUTCDate()).padStart(2,"0");
-
-  const months = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
-  const month = months[d.getUTCMonth()];
-
-  const year  = d.getUTCFullYear();
-  const hh = String(d.getUTCHours()).padStart(2,"0");
-  const mm = String(d.getUTCMinutes()).padStart(2,"0");
-
-  el.textContent = `${hh}:${mm} — ${weekday} ${day} ${month} ${year}`;
-}
-     
-/* ============================================================
-   🟢 FIX — TIME ENGINE HOOK (CRÍTICO)
-   ============================================================ */
-
-(function ACS_bindClock(){
-
-  if (typeof registerTimeListener === "function") {
-
-    console.log("🟢 FINANCE CLOCK CONNECTED TO TIME ENGINE");
-
-    registerTimeListener((simDate)=>{
-      updateClockDisplay(simDate);
-    });
-
-  } else {
-
-    console.warn("⚠️ TIME ENGINE NOT READY (registerTimeListener missing)");
-
-  }
-
-})();
-     
+          
 /* ============================================================
    🟦 A0 — DEPARTMENT CONTROL BOOTSTRAP (SESSION FIRST)
    ============================================================ */
