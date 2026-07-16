@@ -2688,6 +2688,98 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================
+   ACS GLOBAL TRANSPARENT INTERFACE
+   MY AIRCRAFT ADAPTER v1.0
+   Main page only — aircraft modals remain protected
+   ============================================================ */
+
+html body :is(
+  .fleet-overview-wrapper,
+  .filter-bar,
+  .fleet-table-wrapper
+) {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+
+  box-shadow: none !important;
+
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html body .fleet-overview-wrapper {
+  border-color: var(
+    --acs-ui-border-blue,
+    rgba(91, 158, 255, 0.26)
+  ) !important;
+}
+
+html body .fleet-card {
+  background: rgba(255, 255, 255, 0.015) !important;
+  background-color: rgba(255, 255, 255, 0.015) !important;
+  background-image: none !important;
+
+  border-color: var(
+    --acs-ui-border-blue,
+    rgba(91, 158, 255, 0.26)
+  ) !important;
+
+  box-shadow: none !important;
+
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html body .fleet-card::before {
+  opacity: 0.32 !important;
+}
+
+html body .fleet-card:hover {
+  background: rgba(255, 255, 255, 0.028) !important;
+  background-image: none !important;
+
+  box-shadow:
+    0 0 20px rgba(255, 179, 0, 0.08) !important;
+}
+
+html body .fleet-table-wrapper {
+  border: 1px solid var(
+    --acs-ui-border-blue,
+    rgba(91, 158, 255, 0.26)
+  ) !important;
+}
+
+html body .fleet-table,
+html body .fleet-table thead,
+html body .fleet-table tbody,
+html body .fleet-table tbody tr,
+html body .order-book-table,
+html body .order-book-table thead,
+html body .order-book-table tbody,
+html body .order-book-table tbody tr {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+html body .fleet-table thead th,
+html body .order-book-table thead th {
+  background: rgba(255, 255, 255, 0.035) !important;
+  background-image: none !important;
+}
+
+html body .fleet-table tbody tr:nth-child(even),
+html body .order-book-table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.022) !important;
+}
+
+html body .fleet-table tbody tr:hover,
+html body .order-book-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
     
 </style>
   
