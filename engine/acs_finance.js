@@ -666,3 +666,804 @@ window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
 });
 
 })();
+
+/* ============================================================
+   ACS FINANCIAL HISTORY UI
+   PostgreSQL read-only authority
+   ============================================================ */
+
+const ACS_FINANCE_HISTORY_API =
+  "https://api.aviationcapitalsim.com/v1/finance/history";
+
+const ACS_FINANCE_MONTH_NAMES = [
+  "JANUARY",
+  "FEBRUARY",
+  "MARCH",
+  "APRIL",
+  "MAY",
+  "JUNE",
+  "JULY",
+  "AUGUST",
+  "SEPTEMBER",
+  "OCTOBER",
+  "NOVEMBER",
+  "DECEMBER"
+];
+
+const ACS_FINANCE_HISTORY_STATE = {
+  initialized: false,
+  loading: false,
+  selectedYear: null,
+  selectedMonth: null,
+  availableYears: [],
+  data: null
+};
+
+function ACS_FINANCE_historyMoney(value) {
+  const amount = Number(value || 0);
+
+  return amount.toLocaleString(
+    "en-US",
+    {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0
+    }
+  );
+}
+
+function ACS_FINANCE_historyNumber(value) {
+  return Number(value || 0).toLocaleString(
+    "en-US"
+  );
+}
+
+function ACS_FINANCE_setHistoryStatus(
+  message,
+  visible = true
+) {
+  const status = document.getElementById(
+    "financeHistoryStatus"
+  );
+
+  if (!status) return;
+
+  status.textContent = message;
+  status.hidden = !visible;
+}
+
+function ACS_FINANCE_renderHistoryYears(data) {
+  const select = document.getElementById(
+    "historyYearSelect"
+  );
+
+  const previousButton = document.getElementById(
+    "historyPreviousYear"
+  );
+
+  const nextButton = document.getElementById(
+    "historyNextYear"
+  );
+
+  if (
+    !select ||
+    !previousButton ||
+    !nextButton
+  ) {
+    return;
+  }
+
+  const years = Array.isArray(
+    data.available_years
+  )
+    ? data.available_years
+        .map(Number)
+        .filter(Number.isInteger)
+        .sort((a, b) => b - a)
+    : [];
+
+  ACS_FINANCE_HISTORY_STATE.availableYears =
+    years;
+
+  select.innerHTML = "";
+
+  years.forEach(year => {
+    const option = document.createElement(
+      "option"
+    );
+
+    option.value = String(year);
+    option.textContent = String(year);
+    option.selected =
+      year === Number(data.selected_year);
+
+    select.appendChild(option);
+  });
+
+  const selectedIndex = years.indexOf(
+    Number(data.selected_year)
+  );
+
+  previousButton.disabled =
+    selectedIndex < 0 ||
+    selectedIndex === years.length - 1;
+
+  nextButton.disabled =
+    selectedIndex <= 0;
+}
+
+function ACS_FINANCE_renderAnnualSummary(data) {
+  const summary = data.annual_summary || {};
+
+  const revenue = document.getElementById(
+    "historyAnnualRevenue"
+  );
+
+  const expenses = document.getElementById(
+    "historyAnnualExpenses"
+  );
+
+  const profit = document.getElementById(
+    "historyAnnualProfit"
+  );
+
+  const flights = document.getElementById(
+    "historyAnnualFlights"
+  );
+
+  const passengers = document.getElementById(
+    "historyAnnualPassengers"
+  );
+
+  if (revenue) {
+    revenue.textContent =
+      ACS_FINANCE_historyMoney(
+        summary.revenue
+      );
+  }
+
+  if (expenses) {
+    expenses.textContent =
+      ACS_FINANCE_historyMoney(
+        summary.expenses
+      );
+  }
+
+  if (profit) {
+    const value = Number(summary.profit || 0);
+
+    profit.textContent =
+      ACS_FINANCE_historyMoney(value);
+
+    profit.style.color =
+      value >= 0
+        ? "#00f59b"
+        : "#ff626b";
+  }
+
+  if (flights) {
+    flights.textContent =
+      ACS_FINANCE_historyNumber(
+        summary.flight_count
+      );
+  }
+
+  if (passengers) {
+    passengers.textContent =
+      ACS_FINANCE_historyNumber(
+        summary.passenger_count
+      );
+  }
+}
+
+function ACS_FINANCE_historyDetailItem(
+  label,
+  value
+) {
+  return `
+    <div class="history-detail-item">
+      <span>${label}</span>
+      <strong>${value}</strong>
+    </div>
+  `;
+}
+
+function ACS_FINANCE_renderMonthDetail(record) {
+  const detail = document.getElementById(
+    "historyMonthDetail"
+  );
+
+  if (!detail || !record) return;
+
+  const monthNumber = Number(record.month);
+  const monthName =
+    ACS_FINANCE_MONTH_NAMES[
+      monthNumber - 1
+    ] || "MONTH";
+
+  const profit = Number(
+    record.profit || 0
+  );
+
+  const status =
+    record.record_kind === "OPEN_PERIOD"
+      ? "IN PROGRESS"
+      : "VERIFIED";
+
+  detail.innerHTML = `
+    <div class="history-legacy-title">
+      ${monthName} ${record.year}
+      · ${status}
+    </div>
+
+    <div class="history-detail-grid">
+      ${ACS_FINANCE_historyDetailItem(
+        "Opening Capital",
+        ACS_FINANCE_historyMoney(
+          record.opening_capital
+        )
+      )}
+
+      ${ACS_FINANCE_historyDetailItem(
+        "Closing Capital",
+        ACS_FINANCE_historyMoney(
+          record.closing_capital ??
+          record.capital
+        )
+      )}
+
+      ${ACS_FINANCE_historyDetailItem(
+        "Revenue",
+        ACS_FINANCE_historyMoney(
+          record.revenue
+        )
+      )}
+
+      ${ACS_FINANCE_historyDetailItem(
+        "Expenses",
+        ACS_FINANCE_historyMoney(
+          record.expenses
+        )
+      )}
+
+      ${ACS_FINANCE_historyDetailItem(
+        "Profit",
+        ACS_FINANCE_historyMoney(profit)
+      )}
+
+      ${ACS_FINANCE_historyDetailItem(
+        "Flights",
+        ACS_FINANCE_historyNumber(
+          record.flight_count
+        )
+      )}
+
+      ${ACS_FINANCE_historyDetailItem(
+        "Passengers",
+        ACS_FINANCE_historyNumber(
+          record.passenger_count
+        )
+      )}
+
+      ${ACS_FINANCE_historyDetailItem(
+        "Fleet Size",
+        ACS_FINANCE_historyNumber(
+          record.fleet_size
+        )
+      )}
+
+      ${ACS_FINANCE_historyDetailItem(
+        "Fuel",
+        ACS_FINANCE_historyMoney(
+          record.cost_fuel
+        )
+      )}
+
+      ${ACS_FINANCE_historyDetailItem(
+        "Ground Handling",
+        ACS_FINANCE_historyMoney(
+          record.cost_handling
+        )
+      )}
+
+      ${ACS_FINANCE_historyDetailItem(
+        "Landing",
+        ACS_FINANCE_historyMoney(
+          record.cost_landing
+        )
+      )}
+
+      ${ACS_FINANCE_historyDetailItem(
+        "Navigation",
+        ACS_FINANCE_historyMoney(
+          record.cost_navigation
+        )
+      )}
+
+      ${ACS_FINANCE_historyDetailItem(
+        "Overflight",
+        ACS_FINANCE_historyMoney(
+          record.cost_overflight
+        )
+      )}
+
+      ${ACS_FINANCE_historyDetailItem(
+        "Slots",
+        ACS_FINANCE_historyMoney(
+          record.cost_slots
+        )
+      )}
+
+      ${ACS_FINANCE_historyDetailItem(
+        "Maintenance",
+        ACS_FINANCE_historyMoney(
+          record.cost_maintenance
+        )
+      )}
+
+      ${ACS_FINANCE_historyDetailItem(
+        "Salaries",
+        ACS_FINANCE_historyMoney(
+          record.cost_hr
+        )
+      )}
+
+      ${ACS_FINANCE_historyDetailItem(
+        "Leasing",
+        ACS_FINANCE_historyMoney(
+          record.cost_leasing
+        )
+      )}
+
+      ${ACS_FINANCE_historyDetailItem(
+        "Loans",
+        ACS_FINANCE_historyMoney(
+          record.cost_loans
+        )
+      )}
+
+      ${ACS_FINANCE_historyDetailItem(
+        "New Aircraft",
+        ACS_FINANCE_historyMoney(
+          record.cost_new_aircraft_purchase
+        )
+      )}
+
+      ${ACS_FINANCE_historyDetailItem(
+        "Used Aircraft",
+        ACS_FINANCE_historyMoney(
+          record.cost_used_aircraft_purchase
+        )
+      )}
+    </div>
+  `;
+
+  detail.hidden = false;
+}
+
+function ACS_FINANCE_renderLegacy(record) {
+  const panel = document.getElementById(
+    "historyLegacyPanel"
+  );
+
+  if (!panel) return;
+
+  if (!record) {
+    panel.hidden = true;
+    panel.innerHTML = "";
+    return;
+  }
+
+  const metadata =
+    record.metadata || {};
+
+  const coverageStart =
+    metadata.coverage_start || "Unknown";
+
+  const coverageEnd =
+    metadata.coverage_end || "Unknown";
+
+  panel.innerHTML = `
+    <div class="history-legacy-title">
+      Legacy Financial Cutover
+    </div>
+
+    <div class="history-legacy-copy">
+      Consolidated verified balance covering
+      ${coverageStart} through ${coverageEnd}.
+      This period predates ACS Finance 24/7 and
+      does not contain an invented monthly breakdown.
+    </div>
+
+    <div
+      class="history-detail-grid"
+      style="margin-top:16px;"
+    >
+      ${ACS_FINANCE_historyDetailItem(
+        "Revenue",
+        ACS_FINANCE_historyMoney(
+          record.revenue
+        )
+      )}
+
+      ${ACS_FINANCE_historyDetailItem(
+        "Expenses",
+        ACS_FINANCE_historyMoney(
+          record.expenses
+        )
+      )}
+
+      ${ACS_FINANCE_historyDetailItem(
+        "Profit",
+        ACS_FINANCE_historyMoney(
+          record.profit
+        )
+      )}
+
+      ${ACS_FINANCE_historyDetailItem(
+        "Closing Capital",
+        ACS_FINANCE_historyMoney(
+          record.closing_capital ??
+          record.capital
+        )
+      )}
+    </div>
+  `;
+
+  panel.hidden = false;
+}
+
+function ACS_FINANCE_renderHistoryMonths(data) {
+  const grid = document.getElementById(
+    "historyMonthGrid"
+  );
+
+  if (!grid) return;
+
+  const records = Array.isArray(data.months)
+    ? data.months
+    : [];
+
+  const legacyRecord = records.find(
+    row =>
+      row.record_kind ===
+      "LEGACY_CUTOVER"
+  );
+
+  const monthlyRecords = records.filter(
+    row =>
+      row.record_kind !==
+      "LEGACY_CUTOVER"
+  );
+
+  if (data.open_month) {
+    monthlyRecords.push(data.open_month);
+  }
+
+  const monthMap = new Map();
+
+  monthlyRecords.forEach(record => {
+    monthMap.set(
+      Number(record.month),
+      record
+    );
+  });
+
+  grid.innerHTML = "";
+
+  for (
+    let monthNumber = 1;
+    monthNumber <= 12;
+    monthNumber += 1
+  ) {
+    const record = monthMap.get(
+      monthNumber
+    );
+
+    const button = document.createElement(
+      "button"
+    );
+
+    button.type = "button";
+    button.className =
+      "history-month-card";
+
+    if (!record) {
+      button.classList.add("is-empty");
+    }
+
+    if (
+      ACS_FINANCE_HISTORY_STATE.selectedMonth ===
+      monthNumber
+    ) {
+      button.classList.add(
+        "is-selected"
+      );
+    }
+
+    const profit = Number(
+      record?.profit || 0
+    );
+
+    const isLive =
+      record?.record_kind ===
+      "OPEN_PERIOD";
+
+    const status = record
+      ? isLive
+        ? "IN PROGRESS"
+        : "VERIFIED"
+      : "NO ACTIVITY";
+
+    button.innerHTML = `
+      <span class="history-month-name">
+        ${ACS_FINANCE_MONTH_NAMES[
+          monthNumber - 1
+        ]}
+      </span>
+
+      <span
+        class="
+          history-month-profit
+          ${profit < 0 ? "is-negative" : ""}
+        "
+      >
+        ${
+          record
+            ? ACS_FINANCE_historyMoney(
+                profit
+              )
+            : "—"
+        }
+      </span>
+
+      <span
+        class="
+          history-month-status
+          ${isLive ? "is-live" : ""}
+        "
+      >
+        ${status}
+      </span>
+    `;
+
+    button.disabled = !record;
+
+    if (record) {
+      button.addEventListener(
+        "click",
+        () => {
+          ACS_FINANCE_HISTORY_STATE.selectedMonth =
+            monthNumber;
+
+          ACS_FINANCE_renderHistoryMonths(
+            data
+          );
+
+          ACS_FINANCE_renderMonthDetail(
+            record
+          );
+        }
+      );
+    }
+
+    grid.appendChild(button);
+  }
+
+  ACS_FINANCE_renderLegacy(
+    legacyRecord
+  );
+
+  const preferredMonth =
+    Number(data.open_month?.month) ||
+    Math.max(
+      0,
+      ...Array.from(monthMap.keys())
+    );
+
+  const selectedRecord =
+    monthMap.get(
+      ACS_FINANCE_HISTORY_STATE.selectedMonth
+    ) ||
+    monthMap.get(preferredMonth);
+
+  if (selectedRecord) {
+    ACS_FINANCE_HISTORY_STATE.selectedMonth =
+      Number(selectedRecord.month);
+
+    ACS_FINANCE_renderMonthDetail(
+      selectedRecord
+    );
+  }
+}
+
+async function ACS_FINANCE_loadHistory(year) {
+  if (
+    ACS_FINANCE_HISTORY_STATE.loading
+  ) {
+    return;
+  }
+
+  ACS_FINANCE_HISTORY_STATE.loading = true;
+
+  ACS_FINANCE_setHistoryStatus(
+    "Loading financial records…",
+    true
+  );
+
+  try {
+    const url = new URL(
+      ACS_FINANCE_HISTORY_API
+    );
+
+    if (Number.isInteger(Number(year))) {
+      url.searchParams.set(
+        "year",
+        String(year)
+      );
+    }
+
+    const response = await fetch(
+      url.toString(),
+      {
+        credentials: "include"
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `FINANCE_HISTORY_HTTP_${response.status}`
+      );
+    }
+
+    const data = await response.json();
+
+    if (!data?.ok) {
+      throw new Error(
+        data?.error ||
+        "FINANCE_HISTORY_INVALID_RESPONSE"
+      );
+    }
+
+    ACS_FINANCE_HISTORY_STATE.data = data;
+    ACS_FINANCE_HISTORY_STATE.selectedYear =
+      Number(data.selected_year);
+
+    ACS_FINANCE_renderHistoryYears(data);
+    ACS_FINANCE_renderAnnualSummary(data);
+    ACS_FINANCE_renderHistoryMonths(data);
+
+    ACS_FINANCE_setHistoryStatus(
+      "",
+      false
+    );
+  } catch (error) {
+    console.error(
+      "FINANCE HISTORY UI ERROR",
+      error
+    );
+
+    ACS_FINANCE_setHistoryStatus(
+      "Financial history is temporarily unavailable.",
+      true
+    );
+  } finally {
+    ACS_FINANCE_HISTORY_STATE.loading = false;
+  }
+}
+
+function ACS_FINANCE_bindHistoryControls() {
+  if (
+    ACS_FINANCE_HISTORY_STATE.initialized
+  ) {
+    return;
+  }
+
+  const select = document.getElementById(
+    "historyYearSelect"
+  );
+
+  const previousButton = document.getElementById(
+    "historyPreviousYear"
+  );
+
+  const nextButton = document.getElementById(
+    "historyNextYear"
+  );
+
+  if (
+    !select ||
+    !previousButton ||
+    !nextButton
+  ) {
+    return;
+  }
+
+  ACS_FINANCE_HISTORY_STATE.initialized = true;
+
+  select.addEventListener(
+    "change",
+    () => {
+      ACS_FINANCE_HISTORY_STATE.selectedMonth =
+        null;
+
+      ACS_FINANCE_loadHistory(
+        Number(select.value)
+      );
+    }
+  );
+
+  previousButton.addEventListener(
+    "click",
+    () => {
+      const years =
+        ACS_FINANCE_HISTORY_STATE
+          .availableYears;
+
+      const currentIndex = years.indexOf(
+        ACS_FINANCE_HISTORY_STATE
+          .selectedYear
+      );
+
+      const targetYear =
+        years[currentIndex + 1];
+
+      if (Number.isInteger(targetYear)) {
+        ACS_FINANCE_HISTORY_STATE.selectedMonth =
+          null;
+
+        ACS_FINANCE_loadHistory(
+          targetYear
+        );
+      }
+    }
+  );
+
+  nextButton.addEventListener(
+    "click",
+    () => {
+      const years =
+        ACS_FINANCE_HISTORY_STATE
+          .availableYears;
+
+      const currentIndex = years.indexOf(
+        ACS_FINANCE_HISTORY_STATE
+          .selectedYear
+      );
+
+      const targetYear =
+        years[currentIndex - 1];
+
+      if (Number.isInteger(targetYear)) {
+        ACS_FINANCE_HISTORY_STATE.selectedMonth =
+          null;
+
+        ACS_FINANCE_loadHistory(
+          targetYear
+        );
+      }
+    }
+  );
+}
+
+window.addEventListener(
+  "ACS_FINANCE_UPDATED",
+  () => {
+    ACS_FINANCE_bindHistoryControls();
+
+    const selectedYear =
+      ACS_FINANCE_HISTORY_STATE
+        .selectedYear;
+
+    ACS_FINANCE_loadHistory(
+      selectedYear
+    );
+  }
+);
+
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
+    ACS_FINANCE_bindHistoryControls();
+  }
+);
