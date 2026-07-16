@@ -215,7 +215,11 @@ async function ACS_FINANCE_syncFromServer(){
     };
 
     console.log("🌍 FINANCE SYNC FROM RAILWAY OK");
-   
+
+    if (window.ACS_FINANCE_HISTORY) {
+    await window.ACS_FINANCE_HISTORY.init();
+    }
+     
      window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
      
        try {
@@ -665,4 +669,205 @@ window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
 
 });
 
+})();
+
+/* ============================================================
+   ACS FINANCE HISTORY — SINGLE CONTROLLED LOAD
+   PostgreSQL read-only authority
+   ============================================================ */
+
+window.ACS_FINANCE_HISTORY = (() => {
+  let loading = false;
+  let loaded = false;
+  let data = null;
+
+  function money(value) {
+    return Number(value || 0).toLocaleString(
+      "en-US",
+      {
+        style: "currency",
+        currency: "USD",
+        maximumFractionDigits: 0
+      }
+    );
+  }
+
+  function number(value) {
+    return Number(value || 0).toLocaleString(
+      "en-US"
+    );
+  }
+
+  function setText(id, value) {
+    const element =
+      document.getElementById(id);
+
+    if (element) {
+      element.textContent = value;
+    }
+  }
+
+  function renderYears(payload) {
+    const select =
+      document.getElementById(
+        "historyYearSelect"
+      );
+
+    if (!select) return;
+
+    const years = Array.isArray(
+      payload.available_years
+    )
+      ? payload.available_years
+          .map(Number)
+          .filter(Number.isInteger)
+      : [];
+
+    select.innerHTML = "";
+
+    years.forEach(year => {
+      const option =
+        document.createElement("option");
+
+      option.value = String(year);
+      option.textContent = String(year);
+      option.selected =
+        year === Number(
+          payload.selected_year
+        );
+
+      select.appendChild(option);
+    });
+  }
+
+  function renderSummary(payload) {
+    const summary =
+      payload.annual_summary || {};
+
+    setText(
+      "historyAnnualRevenue",
+      money(summary.revenue)
+    );
+
+    setText(
+      "historyAnnualExpenses",
+      money(summary.expenses)
+    );
+
+    setText(
+      "historyAnnualProfit",
+      money(summary.profit)
+    );
+
+    setText(
+      "historyAnnualFlights",
+      number(summary.flight_count)
+    );
+
+    setText(
+      "historyAnnualPassengers",
+      number(summary.passenger_count)
+    );
+
+    const profitElement =
+      document.getElementById(
+        "historyAnnualProfit"
+      );
+
+    if (profitElement) {
+      profitElement.style.color =
+        Number(summary.profit || 0) >= 0
+          ? "#00f59b"
+          : "#ff626b";
+    }
+  }
+
+  async function init() {
+    if (loading || loaded) {
+      return data;
+    }
+
+    loading = true;
+
+    const status =
+      document.getElementById(
+        "financeHistoryStatus"
+      );
+
+    if (status) {
+      status.hidden = false;
+      status.textContent =
+        "Loading financial records…";
+    }
+
+    try {
+      const response = await fetch(
+        "https://api.aviationcapitalsim.com/v1/finance/history",
+        {
+          credentials: "include"
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `FINANCE_HISTORY_HTTP_${response.status}`
+        );
+      }
+
+      const payload =
+        await response.json();
+
+      if (!payload?.ok) {
+        throw new Error(
+          payload?.error ||
+          "FINANCE_HISTORY_INVALID_RESPONSE"
+        );
+      }
+
+      data = payload;
+      loaded = true;
+
+      renderYears(payload);
+      renderSummary(payload);
+
+      if (status) {
+        status.textContent =
+          "PostgreSQL financial history ready.";
+      }
+
+      console.log(
+        "✅ FINANCE HISTORY SINGLE LOAD",
+        {
+          year: payload.selected_year,
+          months:
+            payload.months?.length || 0,
+          openMonth:
+            payload.open_month?.month || null
+        }
+      );
+
+      return payload;
+    } catch (error) {
+      console.error(
+        "FINANCE HISTORY LOAD ERROR",
+        error
+      );
+
+      if (status) {
+        status.textContent =
+          "Financial history unavailable.";
+      }
+
+      return null;
+    } finally {
+      loading = false;
+    }
+  }
+
+  return {
+    init,
+    getData() {
+      return data;
+    }
+  };
 })();
