@@ -1041,8 +1041,7 @@ async function RS_populateAircraftSelector(selectedAircraftId = "") {
     const condition = Number(ac.condition_pct || 0);
 
     opt.value = aircraftId;
-    opt.textContent =
-    `${registration} — ${aircraftName}`;
+    opt.textContent = `${aircraftName}`;
 
     opt.dataset.aircraftId = aircraftId;
     opt.dataset.registration = registration;
