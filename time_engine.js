@@ -486,3 +486,158 @@ window.startACSTime = startACSTime;
 window.stopACSTime = stopACSTime;
 window.computeSimTime = computeSimTime;
 window.registerTimeListener = registerTimeListener;
+
+/* ============================================================
+   ACS GLOBAL INACTIVITY LOGOUT v1.0
+   ------------------------------------------------------------
+   • 15 minutes without user interaction
+   • Shared across open ACS tabs
+   • PostgreSQL session invalidation
+   • No Date.now
+   • No localStorage
+   ============================================================ */
+
+(function ACS_initializeGlobalInactivityLogout() {
+
+  const ACS_INACTIVITY_LIMIT_MS = 15 * 60 * 1000;
+
+  const ACS_LOGOUT_ENDPOINT =
+    "https://api.aviationcapitalsim.com/v1/auth/logout";
+
+  const ACS_LOGIN_PAGE =
+    "login.html?reason=inactive";
+
+  let ACS_inactivityTimer = null;
+  let ACS_logoutStarted = false;
+
+  const ACS_activityChannel =
+    typeof BroadcastChannel === "function"
+      ? new BroadcastChannel("acs_user_activity")
+      : null;
+
+  function ACS_scheduleInactivityLogout() {
+
+    if (ACS_logoutStarted) {
+      return;
+    }
+
+    if (ACS_inactivityTimer !== null) {
+      clearTimeout(ACS_inactivityTimer);
+    }
+
+    ACS_inactivityTimer = setTimeout(
+      ACS_executeInactivityLogout,
+      ACS_INACTIVITY_LIMIT_MS
+    );
+  }
+
+  function ACS_registerUserActivity(event) {
+
+    if (ACS_logoutStarted) {
+      return;
+    }
+
+    if (event?.isTrusted === false) {
+      return;
+    }
+
+    ACS_scheduleInactivityLogout();
+
+    ACS_activityChannel?.postMessage({
+      type: "ACS_USER_ACTIVITY"
+    });
+  }
+
+  async function ACS_executeInactivityLogout() {
+
+    if (ACS_logoutStarted) {
+      return;
+    }
+
+    ACS_logoutStarted = true;
+
+    if (ACS_inactivityTimer !== null) {
+      clearTimeout(ACS_inactivityTimer);
+      ACS_inactivityTimer = null;
+    }
+
+    try {
+
+      await fetch(ACS_LOGOUT_ENDPOINT, {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+        keepalive: true
+      });
+
+    } catch (err) {
+
+      console.warn("ACS INACTIVITY LOGOUT REQUEST FAILED:", err);
+
+    } finally {
+
+      window.location.replace(ACS_LOGIN_PAGE);
+    }
+  }
+
+  function ACS_startInactivityControl() {
+
+    /*
+     * Public pages do not expose the authenticated ACS logout
+     * control and must not start the inactivity timer.
+     */
+    if (!document.querySelector(".logout-btn")) {
+      return;
+    }
+
+    const activityEvents = [
+      "pointerdown",
+      "keydown",
+      "scroll",
+      "touchstart"
+    ];
+
+    activityEvents.forEach(eventName => {
+      window.addEventListener(
+        eventName,
+        ACS_registerUserActivity,
+        {
+          passive: true
+        }
+      );
+    });
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        ACS_registerUserActivity();
+      }
+    });
+
+    if (ACS_activityChannel) {
+      ACS_activityChannel.addEventListener(
+        "message",
+        event => {
+          if (event.data?.type === "ACS_USER_ACTIVITY") {
+            ACS_scheduleInactivityLogout();
+          }
+        }
+      );
+    }
+
+    ACS_scheduleInactivityLogout();
+
+    console.log(
+      "ACS GLOBAL INACTIVITY CONTROL — 15 MINUTES"
+    );
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener(
+      "DOMContentLoaded",
+      ACS_startInactivityControl,
+      { once: true }
+    );
+  } else {
+    ACS_startInactivityControl();
+  }
+})();
