@@ -249,30 +249,68 @@ async function ACS_FINANCE_syncFromServer(){
 }
    
 /* ============================================================
-   🚀 AUTO BOOT — SESSION WATCHER (REAL, NO PATCH)
+   🚀 ACS FINANCE — SESSION BOOT + 3 MINUTE LIVE REFRESH
+   ------------------------------------------------------------
+   • Primera carga inmediata al recibir sesión
+   • Actualización visual cada 3 minutos
+   • Una sola sincronización programada simultánea
+   • El watcher de sesión se detiene después del arranque
    ============================================================ */
 
-function ACS_waitForSessionAndBoot(){
+const ACS_FINANCE_REFRESH_INTERVAL_MS = 180000;
+
+let ACS_FINANCE_SESSION_WATCHER = null;
+let ACS_FINANCE_REFRESH_TIMER = null;
+let ACS_FINANCE_REFRESH_RUNNING = false;
+
+async function ACS_FINANCE_runScheduledRefresh() {
+
+  if (ACS_FINANCE_REFRESH_RUNNING) {
+    return;
+  }
+
+  ACS_FINANCE_REFRESH_RUNNING = true;
+
+  try {
+    await ACS_FINANCE_syncFromServer();
+  } finally {
+    ACS_FINANCE_REFRESH_RUNNING = false;
+  }
+}
+
+async function ACS_waitForSessionAndBoot() {
 
   const airlineId =
     window.ACS_SERVER_SESSION?.airline_id ||
     window.ACS_activeUser?.airline_id;
 
-  if(airlineId && !__ACS_FINANCE_STARTED){
-
-    __ACS_FINANCE_STARTED = true;
-
-    console.log("🟢 FINANCE BOOT WITH SESSION", airlineId);
-
-    ACS_FINANCE_syncFromServer();
+  if (!airlineId || __ACS_FINANCE_STARTED) {
+    return;
   }
+
+  __ACS_FINANCE_STARTED = true;
+
+  if (ACS_FINANCE_SESSION_WATCHER !== null) {
+    clearInterval(ACS_FINANCE_SESSION_WATCHER);
+    ACS_FINANCE_SESSION_WATCHER = null;
+  }
+
+  console.log("🟢 FINANCE BOOT WITH SESSION", airlineId);
+
+  await ACS_FINANCE_runScheduledRefresh();
+
+  ACS_FINANCE_REFRESH_TIMER = setInterval(
+    ACS_FINANCE_runScheduledRefresh,
+    ACS_FINANCE_REFRESH_INTERVAL_MS
+  );
 }
 
-/* ============================================================
-   🔁 WATCH LOOP (LIGHTWEIGHT — SAFE FOR 700 PLAYERS)
-   ============================================================ */
+ACS_FINANCE_SESSION_WATCHER = setInterval(
+  ACS_waitForSessionAndBoot,
+  2000
+);
 
-setInterval(ACS_waitForSessionAndBoot, 2000);
+ACS_waitForSessionAndBoot();
    
 /* ============================================================
    🌍 RAILWAY FINANCE SYNC — WRITE BACK (CANONICAL BRIDGE)
