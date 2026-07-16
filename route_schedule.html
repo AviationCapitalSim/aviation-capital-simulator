@@ -1017,45 +1017,68 @@ async function RS_populateAircraftSelector(selectedAircraftId = "") {
     return;
   }
 
-    const uniqueFleet = [];
-  const seenAircraftIds = new Set();
+  const uniqueModels = [];
+const seenModelKeys = new Set();
 
-  fleet.forEach(ac => {
-    const aircraftId = String(ac.id || "").trim();
+fleet.forEach(ac => {
 
-    if (!aircraftId || seenAircraftIds.has(aircraftId)) {
-      return;
-    }
+  const aircraftId = String(ac.id || "").trim();
 
-    seenAircraftIds.add(aircraftId);
-    uniqueFleet.push(ac);
-  });
+  const modelKey = String(
+    ac.model_key ||
+    ac.aircraft_name ||
+    ""
+  )
+    .trim()
+    .toUpperCase();
 
-  uniqueFleet.forEach(ac => {
+  if (!aircraftId || !modelKey || seenModelKeys.has(modelKey)) {
+    return;
+  }
 
-    const opt = document.createElement("option");
+  seenModelKeys.add(modelKey);
+  uniqueModels.push(ac);
+});
 
-    const aircraftId = String(ac.id || "").trim();
-    const registration = String(ac.registration || "UNREGISTERED").trim();
-    const aircraftName = String(ac.aircraft_name || ac.model_key || "Aircraft").trim();
-    const condition = Number(ac.condition_pct || 0);
+uniqueModels.forEach(ac => {
 
-    opt.value = aircraftId;
-    opt.textContent = `${aircraftName}`;
+  const opt = document.createElement("option");
 
-    opt.dataset.aircraftId = aircraftId;
-    opt.dataset.registration = registration;
-    opt.dataset.aircraftName = aircraftName;
-    opt.dataset.modelKey = String(ac.model_key || "").trim();
-    opt.dataset.manufacturer = String(ac.manufacturer || "").trim();
-    opt.dataset.conditionPct = String(condition);
-    opt.dataset.totalHours = String(ac.total_hours || 0);
-    opt.dataset.totalCycles = String(ac.total_cycles || 0);
+  const aircraftId = String(ac.id || "").trim();
 
-    select.appendChild(opt);
+  const aircraftName = String(
+    ac.aircraft_name ||
+    ac.model_key ||
+    "Aircraft"
+  ).trim();
 
-  });
+  const modelKey = String(ac.model_key || "")
+    .trim()
+    .toUpperCase();
 
+  const condition = Number(ac.condition_pct || 0);
+
+  /*
+   * El ID representa inicialmente el modelo seleccionado.
+   * Railway resolverá la unidad física disponible.
+   */
+  opt.value = aircraftId;
+  opt.textContent = aircraftName;
+
+  opt.dataset.aircraftId = aircraftId;
+  opt.dataset.aircraftName = aircraftName;
+  opt.dataset.modelKey = modelKey;
+  opt.dataset.manufacturer =
+    String(ac.manufacturer || "").trim();
+  opt.dataset.conditionPct = String(condition);
+  opt.dataset.totalHours =
+    String(ac.total_hours || 0);
+  opt.dataset.totalCycles =
+    String(ac.total_cycles || 0);
+
+  select.appendChild(opt);
+});
+     
   if (selectedAircraftId) {
     select.value = String(selectedAircraftId);
   } else {
