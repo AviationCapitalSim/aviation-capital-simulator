@@ -1719,3 +1719,138 @@ body:has(#airportTable) #acs-clock.acs-cockpit-clock {
   font-weight: 700;
   letter-spacing: 0.025em;
 }
+
+/* ============================================================
+   ACS GLOBAL TRANSPARENT UI v1.0
+   Opt-in visual system — no module is affected automatically
+   ============================================================ */
+
+:root {
+  --acs-transparent-surface: rgba(255, 255, 255, 0.015);
+  --acs-transparent-row: rgba(255, 255, 255, 0.025);
+  --acs-transparent-header: rgba(255, 255, 255, 0.035);
+
+  --acs-transparent-border: rgba(91, 158, 255, 0.25);
+  --acs-transparent-border-gold: rgba(255, 179, 0, 0.18);
+}
+
+/* Global reusable components */
+
+body.acs-transparent-ui .acs-transparent-root,
+body.acs-transparent-ui .acs-surface {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.acs-transparent-ui .acs-card,
+body.acs-transparent-ui .acs-chip,
+body.acs-transparent-ui .acs-accordion {
+  background: var(--acs-transparent-surface) !important;
+  background-image: none !important;
+
+  border: 1px solid var(--acs-transparent-border);
+  box-shadow: none !important;
+
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.acs-transparent-ui .acs-table {
+  background: transparent !important;
+  border-collapse: collapse;
+}
+
+body.acs-transparent-ui .acs-table th {
+  background: var(--acs-transparent-header) !important;
+}
+
+body.acs-transparent-ui .acs-table td {
+  background: transparent !important;
+  border-bottom: 1px solid var(--acs-transparent-border-gold);
+}
+
+body.acs-transparent-ui .acs-table tr:nth-child(even) {
+  background: var(--acs-transparent-row) !important;
+}
+
+/* ============================================================
+   FINANCE ADAPTER — FIRST APPROVED ACS MODULE
+   ============================================================ */
+
+body.acs-transparent-ui #companyFinanceRoot {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+body.acs-transparent-ui #companyFinanceRoot::before,
+body.acs-transparent-ui #companyFinanceRoot::after {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+body.acs-transparent-ui #companyFinanceRoot .finance-section,
+body.acs-transparent-ui #companyFinanceRoot .activity-group,
+body.acs-transparent-ui #companyFinanceRoot .activity-body,
+body.acs-transparent-ui #companyFinanceRoot .leasing-grid,
+body.acs-transparent-ui #companyFinanceRoot #historyMonthGrid,
+body.acs-transparent-ui #companyFinanceRoot #historyMonthDetail,
+body.acs-transparent-ui #companyFinanceRoot #historyLegacyPanel {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.acs-transparent-ui #companyFinanceRoot .finance-section {
+  border: 1px solid var(--acs-transparent-border);
+}
+
+body.acs-transparent-ui #companyFinanceRoot .kpi-card,
+body.acs-transparent-ui #companyFinanceRoot .breakdown-item,
+body.acs-transparent-ui #companyFinanceRoot .finance-meter,
+body.acs-transparent-ui #companyFinanceRoot .activity-header,
+body.acs-transparent-ui #companyFinanceRoot .activity-card,
+body.acs-transparent-ui #companyFinanceRoot .leasing-card,
+body.acs-transparent-ui #companyFinanceRoot #historyMonthGrid > * {
+  background: var(--acs-transparent-surface) !important;
+  background-image: none !important;
+
+  border-color: var(--acs-transparent-border) !important;
+  box-shadow: none !important;
+
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.acs-transparent-ui #companyFinanceRoot .history-table,
+body.acs-transparent-ui #companyFinanceRoot .log-table,
+body.acs-transparent-ui #companyFinanceRoot .history-table tbody,
+body.acs-transparent-ui #companyFinanceRoot .log-table tbody {
+  background: transparent !important;
+}
+
+body.acs-transparent-ui #companyFinanceRoot .history-table th,
+body.acs-transparent-ui #companyFinanceRoot .log-table th {
+  background: var(--acs-transparent-header) !important;
+}
+
+body.acs-transparent-ui #companyFinanceRoot .history-table td,
+body.acs-transparent-ui #companyFinanceRoot .log-table td {
+  background: transparent !important;
+  border-bottom: 1px solid var(--acs-transparent-border-gold);
+}
+
+body.acs-transparent-ui #companyFinanceRoot .history-table tr:nth-child(even),
+body.acs-transparent-ui #companyFinanceRoot .log-table tr:nth-child(even) {
+  background: var(--acs-transparent-row) !important;
+}
