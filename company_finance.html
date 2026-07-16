@@ -1115,35 +1115,53 @@ body {
 }
 
 /* ============================================================
-   ACS FINANCE — ULTRA TRANSPARENT GLASS PILOT v1.1
-   88% transparency — background remains visible
+   ACS FINANCE — HR TRANSPARENCY MODEL v1.0
+   Background authority: ACS world map
    ============================================================ */
 
+/* Page canvas */
 #companyFinanceRoot {
   width: min(1680px, calc(100% - 48px));
   margin-inline: auto;
-}
 
-/* Large section containers */
-#companyFinanceRoot .finance-section {
-  background: rgba(5, 18, 48, 0.12) !important;
+  background: transparent !important;
+  background-color: transparent !important;
   background-image: none !important;
-  border: 1px solid rgba(91, 158, 255, 0.25);
-  box-shadow:
-    0 12px 30px rgba(0, 5, 20, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+
+  box-shadow: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
-/* Main monthly figures */
-#companyFinanceRoot .kpi-card {
-  background: rgba(5, 18, 48, 0.10) !important;
+#companyFinanceRoot::before,
+#companyFinanceRoot::after {
+  background: transparent !important;
   background-image: none !important;
-  border: 1px solid rgba(91, 158, 255, 0.32);
-  box-shadow:
-    0 8px 20px rgba(0, 5, 20, 0.10),
-    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  box-shadow: none !important;
+}
+
+/* Remove solid backgrounds from every main Finance section */
+#companyFinanceRoot .finance-section {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+
+  border: 1px solid rgba(91, 158, 255, 0.25);
+  box-shadow: none !important;
+
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Monthly KPI cards */
+#companyFinanceRoot .kpi-card {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+
+  border: 1px solid rgba(91, 158, 255, 0.30);
+  box-shadow: none !important;
+
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
@@ -1151,85 +1169,104 @@ body {
 /* Breakdown chips */
 #companyFinanceRoot .breakdown-item,
 #companyFinanceRoot .finance-meter {
-  background: rgba(5, 18, 48, 0.08) !important;
+  background: rgba(255, 255, 255, 0.015) !important;
   background-image: none !important;
-  border-color: rgba(91, 158, 255, 0.25) !important;
-  box-shadow:
-    0 7px 18px rgba(0, 5, 20, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+
+  border: 1px solid rgba(91, 158, 255, 0.24);
+  box-shadow: none !important;
+
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
-/* Accordion headers */
-#companyFinanceRoot .activity-header {
-  background: rgba(5, 18, 48, 0.10) !important;
-  background-image: none !important;
-  border-top: 1px solid rgba(91, 158, 255, 0.25);
-  border-right: 1px solid rgba(91, 158, 255, 0.25);
-  border-bottom: 1px solid rgba(91, 158, 255, 0.25);
-  box-shadow: 0 8px 20px rgba(0, 5, 20, 0.08);
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-/* Open accordion body */
-#companyFinanceRoot .activity-body {
+/* Activity and Leasing accordions */
+#companyFinanceRoot .activity-group,
+#companyFinanceRoot .activity-body,
+#companyFinanceRoot .leasing-grid {
   background: transparent !important;
+  background-color: transparent !important;
   background-image: none !important;
+  box-shadow: none !important;
 }
 
-/* Activity rows and leasing contracts */
+#companyFinanceRoot .activity-header {
+  background: rgba(255, 255, 255, 0.018) !important;
+  background-image: none !important;
+
+  border-top: 1px solid rgba(91, 158, 255, 0.22);
+  border-right: 1px solid rgba(91, 158, 255, 0.22);
+  border-bottom: 1px solid rgba(91, 158, 255, 0.22);
+
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
 #companyFinanceRoot .activity-card,
 #companyFinanceRoot .leasing-card {
-  background: rgba(5, 18, 48, 0.08) !important;
+  background: rgba(255, 255, 255, 0.018) !important;
   background-image: none !important;
-  border-color: rgba(91, 158, 255, 0.25) !important;
-  box-shadow:
-    0 7px 18px rgba(0, 5, 20, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+
+  border: 1px solid rgba(91, 158, 255, 0.24);
+  box-shadow: none !important;
+
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
-/* Tables */
+/* Tables directly over ACS background */
 #companyFinanceRoot .history-table,
-#companyFinanceRoot .log-table {
+#companyFinanceRoot .log-table,
+#companyFinanceRoot .history-table tbody,
+#companyFinanceRoot .log-table tbody {
   background: transparent !important;
 }
 
 #companyFinanceRoot .history-table th,
 #companyFinanceRoot .log-table th {
-  background: rgba(5, 18, 48, 0.14) !important;
+  background: rgba(255, 255, 255, 0.035) !important;
 }
 
 #companyFinanceRoot .history-table td,
 #companyFinanceRoot .log-table td {
-  background: rgba(5, 18, 48, 0.05) !important;
+  background: transparent !important;
+  border-bottom: 1px solid rgba(255, 179, 0, 0.15);
 }
 
-/* Financial History */
-#companyFinanceRoot #historyMonthGrid > *,
+#companyFinanceRoot .history-table tr:nth-child(even),
+#companyFinanceRoot .log-table tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.025) !important;
+}
+
+/* Financial History containers */
+#companyFinanceRoot #historyMonthGrid,
 #companyFinanceRoot #historyMonthDetail,
 #companyFinanceRoot #historyLegacyPanel {
-  background: rgba(5, 18, 48, 0.08) !important;
+  background: transparent !important;
+  background-color: transparent !important;
   background-image: none !important;
-  border-color: rgba(91, 158, 255, 0.25) !important;
-  box-shadow:
-    0 7px 18px rgba(0, 5, 20, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  box-shadow: none !important;
+
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
-/* Progress bars */
-#companyFinanceRoot .breakdown-bar,
-#companyFinanceRoot .finance-meter-bar {
-  background: rgba(8, 31, 76, 0.28) !important;
-  border-color: rgba(91, 158, 255, 0.22);
+#companyFinanceRoot #historyMonthGrid > * {
+  background: rgba(255, 255, 255, 0.018) !important;
+  background-image: none !important;
+
+  border: 1px solid rgba(91, 158, 255, 0.24);
+  box-shadow: none !important;
 }
 
-/* Mobile breathing room */
+/* Keep progress tracks visible */
+#companyFinanceRoot .breakdown-bar,
+#companyFinanceRoot .finance-meter-bar {
+  background: rgba(8, 31, 76, 0.30) !important;
+  border: 1px solid rgba(91, 158, 255, 0.18);
+}
+
+/* Mobile spacing */
 @media (max-width: 760px) {
   #companyFinanceRoot {
     width: min(100% - 24px, 1680px);
