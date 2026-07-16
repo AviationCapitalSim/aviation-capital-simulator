@@ -782,6 +782,387 @@ window.ACS_FINANCE_HISTORY = (() => {
     }
   }
 
+    const monthNames = [
+    "JANUARY",
+    "FEBRUARY",
+    "MARCH",
+    "APRIL",
+    "MAY",
+    "JUNE",
+    "JULY",
+    "AUGUST",
+    "SEPTEMBER",
+    "OCTOBER",
+    "NOVEMBER",
+    "DECEMBER"
+  ];
+
+  function detailItem(label, value) {
+    return `
+      <div class="history-detail-item">
+        <span>${label}</span>
+        <strong>${value}</strong>
+      </div>
+    `;
+  }
+
+  function renderMonthDetail(record) {
+    const detail =
+      document.getElementById(
+        "historyMonthDetail"
+      );
+
+    if (!detail || !record) return;
+
+    const monthName =
+      monthNames[
+        Number(record.month) - 1
+      ] || "MONTH";
+
+    const status =
+      record.record_kind === "OPEN_PERIOD"
+        ? "IN PROGRESS"
+        : "VERIFIED";
+
+    detail.innerHTML = `
+      <div class="history-legacy-title">
+        ${monthName} ${record.year}
+        · ${status}
+      </div>
+
+      <div class="history-detail-grid">
+        ${detailItem(
+          "Opening Capital",
+          money(record.opening_capital)
+        )}
+
+        ${detailItem(
+          "Closing Capital",
+          money(
+            record.closing_capital ??
+            record.capital
+          )
+        )}
+
+        ${detailItem(
+          "Revenue",
+          money(record.revenue)
+        )}
+
+        ${detailItem(
+          "Expenses",
+          money(record.expenses)
+        )}
+
+        ${detailItem(
+          "Profit",
+          money(record.profit)
+        )}
+
+        ${detailItem(
+          "Flights",
+          number(record.flight_count)
+        )}
+
+        ${detailItem(
+          "Passengers",
+          number(record.passenger_count)
+        )}
+
+        ${detailItem(
+          "Fuel",
+          money(record.cost_fuel)
+        )}
+
+        ${detailItem(
+          "Ground Handling",
+          money(record.cost_handling)
+        )}
+
+        ${detailItem(
+          "Landing",
+          money(record.cost_landing)
+        )}
+
+        ${detailItem(
+          "Navigation",
+          money(record.cost_navigation)
+        )}
+
+        ${detailItem(
+          "Overflight",
+          money(record.cost_overflight)
+        )}
+
+        ${detailItem(
+          "Slots",
+          money(record.cost_slots)
+        )}
+
+        ${detailItem(
+          "Maintenance",
+          money(record.cost_maintenance)
+        )}
+
+        ${detailItem(
+          "Salaries",
+          money(record.cost_hr)
+        )}
+
+        ${detailItem(
+          "Leasing",
+          money(record.cost_leasing)
+        )}
+
+        ${detailItem(
+          "Loans",
+          money(record.cost_loans)
+        )}
+
+        ${detailItem(
+          "Other Costs",
+          money(record.cost_other)
+        )}
+
+        ${detailItem(
+          "New Aircraft",
+          money(
+            record.cost_new_aircraft_purchase
+          )
+        )}
+
+        ${detailItem(
+          "Used Aircraft",
+          money(
+            record.cost_used_aircraft_purchase
+          )
+        )}
+      </div>
+    `;
+
+    detail.hidden = false;
+  }
+
+  function renderLegacy(record) {
+    const panel =
+      document.getElementById(
+        "historyLegacyPanel"
+      );
+
+    if (!panel) return;
+
+    if (!record) {
+      panel.hidden = true;
+      panel.innerHTML = "";
+      return;
+    }
+
+    const metadata =
+      record.metadata || {};
+
+    panel.innerHTML = `
+      <div class="history-legacy-title">
+        Legacy Financial Cutover
+      </div>
+
+      <div class="history-legacy-copy">
+        Consolidated financial record covering
+        ${metadata.coverage_start || "the initial period"}
+        through
+        ${metadata.coverage_end || "the cutover date"}.
+        Monthly values were not invented because
+        the original timestamps were not verifiable.
+      </div>
+
+      <div
+        class="history-detail-grid"
+        style="margin-top:16px;"
+      >
+        ${detailItem(
+          "Revenue",
+          money(record.revenue)
+        )}
+
+        ${detailItem(
+          "Expenses",
+          money(record.expenses)
+        )}
+
+        ${detailItem(
+          "Profit",
+          money(record.profit)
+        )}
+
+        ${detailItem(
+          "Capital",
+          money(
+            record.closing_capital ??
+            record.capital
+          )
+        )}
+      </div>
+    `;
+
+    panel.hidden = false;
+  }
+
+  function renderMonths(payload) {
+    const grid =
+      document.getElementById(
+        "historyMonthGrid"
+      );
+
+    if (!grid) return;
+
+    const historyRows =
+      Array.isArray(payload.months)
+        ? payload.months
+        : [];
+
+    const legacyRecord =
+      historyRows.find(
+        row =>
+          row.record_kind ===
+          "LEGACY_CUTOVER"
+      );
+
+    const monthMap = new Map();
+
+    historyRows
+      .filter(
+        row =>
+          row.record_kind !==
+          "LEGACY_CUTOVER"
+      )
+      .forEach(row => {
+        monthMap.set(
+          Number(row.month),
+          row
+        );
+      });
+
+    if (payload.open_month) {
+      monthMap.set(
+        Number(payload.open_month.month),
+        payload.open_month
+      );
+    }
+
+    grid.innerHTML = "";
+
+    for (
+      let month = 1;
+      month <= 12;
+      month += 1
+    ) {
+      const record =
+        monthMap.get(month);
+
+      const card =
+        document.createElement("button");
+
+      card.type = "button";
+      card.className =
+        "history-month-card";
+
+      if (!record) {
+        card.classList.add("is-empty");
+      }
+
+      const profit = Number(
+        record?.profit || 0
+      );
+
+      const live =
+        record?.record_kind ===
+        "OPEN_PERIOD";
+
+      card.innerHTML = `
+        <span class="history-month-name">
+          ${monthNames[month - 1]}
+        </span>
+
+        <span
+          class="
+            history-month-profit
+            ${profit < 0 ? "is-negative" : ""}
+          "
+        >
+          ${
+            record
+              ? money(profit)
+              : "—"
+          }
+        </span>
+
+        <span
+          class="
+            history-month-status
+            ${live ? "is-live" : ""}
+          "
+        >
+          ${
+            record
+              ? live
+                ? "IN PROGRESS"
+                : "VERIFIED"
+              : "NO ACTIVITY"
+          }
+        </span>
+      `;
+
+      card.disabled = !record;
+
+      if (record) {
+        card.addEventListener(
+          "click",
+          () => {
+            grid
+              .querySelectorAll(
+                ".history-month-card"
+              )
+              .forEach(item => {
+                item.classList.remove(
+                  "is-selected"
+                );
+              });
+
+            card.classList.add(
+              "is-selected"
+            );
+
+            renderMonthDetail(record);
+          }
+        );
+      }
+
+      grid.appendChild(card);
+    }
+
+    renderLegacy(legacyRecord);
+
+    const defaultRecord =
+      payload.open_month ||
+      Array.from(
+        monthMap.values()
+      ).at(-1);
+
+    if (defaultRecord) {
+      const defaultCard =
+        grid.children[
+          Number(defaultRecord.month) - 1
+        ];
+
+      if (defaultCard) {
+        defaultCard.classList.add(
+          "is-selected"
+        );
+      }
+
+      renderMonthDetail(defaultRecord);
+    }
+  }
+   
   async function init() {
     if (loading || loaded) {
       return data;
@@ -829,10 +1210,10 @@ window.ACS_FINANCE_HISTORY = (() => {
 
       renderYears(payload);
       renderSummary(payload);
+      renderMonths(payload);
 
       if (status) {
-        status.textContent =
-          "PostgreSQL financial history ready.";
+      status.hidden = true;
       }
 
       console.log(
