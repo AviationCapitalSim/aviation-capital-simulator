@@ -1854,3 +1854,62 @@ body.acs-transparent-ui #companyFinanceRoot .history-table tr:nth-child(even),
 body.acs-transparent-ui #companyFinanceRoot .log-table tr:nth-child(even) {
   background: var(--acs-transparent-row) !important;
 }
+
+/* ============================================================
+   ACS GLOBAL EXECUTION CARDS — TRANSPARENT OVERRIDE v1.0
+   Dashboard • Main Grid • Aircraft Center
+   ============================================================ */
+
+html body .dashboard-grid > .panel,
+html body .main-grid > .panel,
+html body .aircraft-panels > .panel {
+  background: rgba(255, 255, 255, 0.015) !important;
+  background-color: rgba(255, 255, 255, 0.015) !important;
+  background-image: none !important;
+
+  border-color: rgba(255, 179, 0, 0.42);
+
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 224, 138, 0.08) !important;
+}
+
+/* Keep only the fine gold upper reflection */
+html body .dashboard-grid > .panel::before,
+html body .main-grid > .panel::before,
+html body .aircraft-panels > .panel::before {
+  opacity: 0.42;
+}
+
+/* Remove opaque sapphire glow */
+html body .dashboard-grid > .panel::after,
+html body .main-grid > .panel::after,
+html body .aircraft-panels > .panel::after {
+  display: none !important;
+  content: none !important;
+  background: transparent !important;
+}
+
+/* Transparent hover */
+html body .dashboard-grid > .panel:hover,
+html body .main-grid > .panel:hover,
+html body .aircraft-panels > .panel:hover {
+  background: rgba(255, 255, 255, 0.025) !important;
+  background-image: none !important;
+
+  border-color: rgba(255, 190, 45, 0.82);
+
+  box-shadow:
+    0 0 22px rgba(255, 179, 0, 0.10),
+    inset 0 1px 0 rgba(255, 232, 172, 0.12) !important;
+}
+
+/* Disabled cards remain transparent */
+html body .dashboard-grid > .panel-disabled,
+html body .main-grid > .panel-disabled,
+html body .aircraft-panels > .panel-disabled {
+  background: rgba(255, 255, 255, 0.01) !important;
+  background-image: none !important;
+}
