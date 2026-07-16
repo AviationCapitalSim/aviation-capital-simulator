@@ -697,12 +697,12 @@ const totalStaff = deps.reduce(
 );
 
 const totalPayroll = deps.reduce(
-  (sum, d) => {
-    const staff = Number(d.staff || 0);
-    const salary = Number(d.salary || 0);
-
-    return sum + Math.round(staff * salary);
-  },
+  (sum, d) =>
+    sum +
+    Math.round(
+      (Number(d.staff) || 0) *
+      (Number(d.salary) || 0)
+    ),
   0
 );
 
