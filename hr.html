@@ -696,15 +696,20 @@ const totalStaff = deps.reduce(
   0
 );
 
-const totalPayroll = deps.reduce(
-  (sum, d) =>
-    sum +
-    Math.round(
-      (Number(d.staff) || 0) *
-      (Number(d.salary) || 0)
-    ),
-  0
-);
+// Espejo literal de Department Control
+       
+const totalPayroll =
+  typeof ACS_HR_getTotalPayroll === "function"
+    ? Number(ACS_HR_getTotalPayroll()) || 0
+    : deps.reduce(
+        (sum, d) =>
+          sum +
+          Math.round(
+            (Number(d.staff) || 0) *
+            (Number(d.salary) || 0)
+          ),
+        0
+      );
 
 const avgMorale = deps.length
   ? Math.round(
