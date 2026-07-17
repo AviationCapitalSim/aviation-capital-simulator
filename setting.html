@@ -809,13 +809,14 @@ function handleLogout(){
 
 const ACS_API_BASE = "https://api.aviationcapitalsim.com";
 
-window.ACS_COMPANY_SETTINGS =
-  window.ACS_COMPANY_SETTINGS || {
-    autoHire: true,
-    autoSalary: true,
-    manualSalaryOverride: false,
-    loadedFromBackend: false
-  };
+window.ACS_COMPANY_SETTINGS = {
+  autoHire: true,
+  autoSalary: true,
+  manualSalaryOverride: false,
+  autoCCheck: false,
+  autoDCheck: false,
+  loadedFromBackend: false
+};
 
 function ACS_getCompanySettings() {
 
@@ -824,12 +825,13 @@ function ACS_getCompanySettings() {
       autoHire: true,
       autoSalary: true,
       manualSalaryOverride: false,
+      autoCCheck: false,
+      autoDCheck: false,
       loadedFromBackend: false
     };
   }
 
   return window.ACS_COMPANY_SETTINGS;
-
 }
 
 function ACS_setCompanySettings(nextSettings) {
@@ -852,6 +854,16 @@ function ACS_setCompanySettings(nextSettings) {
         ? nextSettings.manualSalaryOverride
         : current.manualSalaryOverride,
 
+    autoCCheck:
+      typeof nextSettings?.autoCCheck === "boolean"
+        ? nextSettings.autoCCheck
+        : current.autoCCheck,
+
+    autoDCheck:
+      typeof nextSettings?.autoDCheck === "boolean"
+        ? nextSettings.autoDCheck
+        : current.autoDCheck,
+
     loadedFromBackend:
       typeof nextSettings?.loadedFromBackend === "boolean"
         ? nextSettings.loadedFromBackend
@@ -871,7 +883,6 @@ function ACS_setCompanySettings(nextSettings) {
   );
 
   return window.ACS_COMPANY_SETTINGS;
-
 }
 
 function ACS_mapBackendSettings(raw) {
@@ -879,27 +890,49 @@ function ACS_mapBackendSettings(raw) {
   return {
     autoHire: raw?.auto_hire === true,
     autoSalary: raw?.auto_salary === true,
-    manualSalaryOverride: raw?.manual_salary_override === true,
+    manualSalaryOverride:
+      raw?.manual_salary_override === true,
+    autoCCheck: raw?.auto_c_check === true,
+    autoDCheck: raw?.auto_d_check === true,
     loadedFromBackend: true
   };
-
 }
 
 function ACS_renderCompanySettings() {
 
   const settings = ACS_getCompanySettings();
 
-  const autoHireCB = document.getElementById("autoHire");
-  const autoSalaryCB = document.getElementById("autoSalary");
+  const autoHireCB =
+    document.getElementById("autoHire");
+
+  const autoSalaryCB =
+    document.getElementById("autoSalary");
+
+  const autoCCheckCB =
+    document.getElementById("autoCcheck");
+
+  const autoDCheckCB =
+    document.getElementById("autoDcheck");
 
   if (autoHireCB) {
-    autoHireCB.checked = settings.autoHire === true;
+    autoHireCB.checked =
+      settings.autoHire === true;
   }
 
   if (autoSalaryCB) {
-    autoSalaryCB.checked = settings.autoSalary === true;
+    autoSalaryCB.checked =
+      settings.autoSalary === true;
   }
 
+  if (autoCCheckCB) {
+    autoCCheckCB.checked =
+      settings.autoCCheck === true;
+  }
+
+  if (autoDCheckCB) {
+    autoDCheckCB.checked =
+      settings.autoDCheck === true;
+  }
 }
 
 /* ============================================================
