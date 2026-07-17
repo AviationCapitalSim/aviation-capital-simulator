@@ -667,6 +667,71 @@ body::after {
 }
 
 /* ============================================================
+   HERO FINAL SPACING — GOLDEN COMMAND SIGNATURE
+   ============================================================ */
+
+#welcomeMessage {
+  margin-top: 58px;
+  margin-bottom: 0;
+}
+
+.hero-subtitle {
+  margin-top: 24px;
+  margin-bottom: 0;
+}
+
+.hero-gold-line {
+  width: min(560px, 62vw);
+  margin-top: 30px;
+  margin-bottom: 0;
+}
+
+.hero-gold-line + .welcome-badges {
+  margin-top: 40px;
+}
+
+.welcome-badges {
+  margin-bottom: 44px;
+}
+
+.acs-main .sub {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.dashboard-grid {
+  margin-top: 5rem;
+}
+
+@media (max-width: 768px) {
+
+  #welcomeMessage {
+    margin-top: 34px;
+  }
+
+  .hero-subtitle {
+    margin-top: 18px;
+  }
+
+  .hero-gold-line {
+    width: 82vw;
+    margin-top: 24px;
+  }
+
+  .hero-gold-line + .welcome-badges {
+    margin-top: 30px;
+  }
+
+  .welcome-badges {
+    margin-bottom: 34px;
+  }
+
+  .dashboard-grid {
+    margin-top: 3.5rem;
+  }
+}
+  
+/* ============================================================
    ACS OCC GLOBAL RESPONSIVE SYSTEM
    iPad • Tablets • iPhone • Android
    ============================================================ */
@@ -1193,7 +1258,17 @@ button {
      ============================================================ -->
 
   <h2 id="welcomeMessage"></h2>
-  <p class="hero-subtitle">Global Fleet & Capital Center</p>  <div class="welcome-badges">
+
+<p class="hero-subtitle">
+  Global Operations Center
+</p>
+
+<div
+  class="hero-gold-line"
+  aria-hidden="true"
+></div>
+
+<div class="welcome-badges">
 
     <!-- RANK -->
     
