@@ -436,60 +436,234 @@ body::after {
 }
   
 /* ============================================================
-   === HERO — Airbus OCC Signature =============================
+   ACS AIRLINE COMMAND SIGNATURE
+   Metal plateado + línea orbital dorada
    ============================================================ */
 
-#welcomeMessage{
-  font-size:2.2rem;             
-  font-weight:700;
-  letter-spacing:6px;
-  text-transform:uppercase;
-  color:#C8CED8;
+.airline-command-signature {
+  width: 100%;
+  margin: 42px auto 30px;
+  text-align: center;
+}
 
-  margin-top:40px;
-  margin-bottom:30px;
+/* NOMBRE DINÁMICO DE LA AEROLÍNEA */
+
+#welcomeMessage {
+  margin: 0;
+  padding: 0 18px;
+
+  font-size: clamp(2.5rem, 4vw, 3.6rem);
+  font-weight: 500;
+  line-height: 1.1;
+
+  letter-spacing: clamp(0.32rem, 1.15vw, 0.82rem);
+  text-transform: uppercase;
+}
+
+/* Acabado metálico */
+
+#welcomeMessage .w-airline {
+  display: inline-block;
+
+  color: transparent;
+
+  background:
+    linear-gradient(
+      110deg,
+      #6f7783 0%,
+      #e8ebef 18%,
+      #969da7 35%,
+      #ffffff 49%,
+      #858d98 63%,
+      #d9dde3 82%,
+      #707984 100%
+    );
+
+  background-size: 240% auto;
+  background-position: 100% center;
+
+  -webkit-background-clip: text;
+  background-clip: text;
+
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 0.6px rgba(255, 255, 255, 0.42);
+
+  filter:
+    drop-shadow(0 1px 0 rgba(255, 255, 255, 0.38))
+    drop-shadow(0 3px 2px rgba(0, 0, 0, 0.72))
+    drop-shadow(0 0 12px rgba(150, 185, 230, 0.15));
+
+  animation: airlineMetalSweep 7s ease-in-out infinite alternate;
+}
+
+@keyframes airlineMetalSweep {
+  0% {
+    background-position: 100% center;
+  }
+
+  45% {
+    background-position: 100% center;
+  }
+
+  100% {
+    background-position: 0% center;
+  }
+}
+
+/* GLOBAL OPERATIONS CENTER */
+
+.hero-subtitle {
+  margin: 16px 0 0;
+
+  color: rgba(190, 199, 214, 0.82);
+
+  font-size: clamp(0.68rem, 1.15vw, 0.92rem);
+  font-weight: 500;
+
+  letter-spacing: clamp(0.24rem, 0.85vw, 0.58rem);
+  text-transform: uppercase;
 
   text-shadow:
-    0 1px 0 rgba(255,255,255,0.15),
-    0 0 6px rgba(180,200,230,0.20),
-    0 0 18px rgba(80,110,160,0.08);
+    0 1px 2px rgba(0, 0, 0, 0.85),
+    0 0 8px rgba(150, 185, 230, 0.12);
 }
 
-/* Línea técnica digital debajo del título */
+/* LÍNEA ORBITAL DORADA */
 
-#welcomeMessage::after{
-  content:"";
-  display:block;
-  width:160px;
-  height:2px;
-  margin:22px auto 0;
+.hero-gold-line {
+  position: relative;
 
-  background:linear-gradient(
-    to right,
-    transparent,
-    rgba(120,180,255,0.9),
-    transparent
-  );
+  width: min(620px, 72vw);
+  height: 1px;
 
-  animation:occPulse 3.5s ease-in-out infinite;
+  margin: 30px auto 0;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(181, 123, 20, 0.30) 8%,
+      rgba(226, 168, 58, 0.80) 42%,
+      #ffd77a 50%,
+      rgba(226, 168, 58, 0.80) 58%,
+      rgba(181, 123, 20, 0.30) 92%,
+      transparent 100%
+    );
+
+  box-shadow:
+    0 0 7px rgba(255, 185, 48, 0.20);
 }
 
-@keyframes occPulse{
-  0%{opacity:0.25;}
-  50%{opacity:1;}
-  100%{opacity:0.25;}
+/* Destello central */
+
+.hero-gold-line::before {
+  content: "";
+
+  position: absolute;
+  left: 50%;
+  top: 50%;
+
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: #fff5ce;
+
+  transform: translate(-50%, -50%);
+
+  box-shadow:
+    0 0 4px #ffffff,
+    0 0 9px #ffcc5b,
+    0 0 18px rgba(255, 170, 30, 0.82),
+    0 0 34px rgba(255, 170, 30, 0.34);
+
+  animation: airlineGoldPulse 3.5s ease-in-out infinite;
 }
 
-/* Subtítulo técnico */
+@keyframes airlineGoldPulse {
+  0%,
+  100% {
+    opacity: 0.72;
+    transform: translate(-50%, -50%) scale(0.82);
+  }
 
-.hero-subtitle{
-  font-size:0.9rem;
-  letter-spacing:4px;
-  text-transform:uppercase;
-  color:rgba(150,190,255,0.85);
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.18);
+  }
+}
 
-  margin-top:28px;
-  margin-bottom:48px;
+/* FRASE INFERIOR */
+
+.hero-motto {
+  margin: 27px 0 0;
+
+  color: rgba(176, 187, 205, 0.76);
+
+  font-size: clamp(0.59rem, 0.85vw, 0.76rem);
+  font-weight: 500;
+
+  letter-spacing: clamp(0.17rem, 0.72vw, 0.44rem);
+  text-transform: uppercase;
+}
+
+.hero-motto-separator {
+  display: inline-block;
+  margin: 0 14px;
+
+  color: #d8a43c;
+
+  text-shadow:
+    0 0 8px rgba(255, 179, 35, 0.65);
+}
+
+/* BADGES MÁS CERCA DE LA FIRMA */
+
+.airline-command-signature + .welcome-badges {
+  margin-top: 32px;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+
+  .airline-command-signature {
+    margin-top: 26px;
+  }
+
+  #welcomeMessage {
+    font-size: clamp(2rem, 10vw, 2.8rem);
+    letter-spacing: clamp(0.18rem, 2vw, 0.48rem);
+    padding: 0 8px;
+  }
+
+  .hero-subtitle {
+    letter-spacing: 0.20rem;
+  }
+
+  .hero-gold-line {
+    width: 84vw;
+    margin-top: 24px;
+  }
+
+  .hero-motto {
+    padding: 0 16px;
+    line-height: 1.8;
+    letter-spacing: 0.13rem;
+  }
+
+  .hero-motto-separator {
+    margin: 0 7px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  #welcomeMessage .w-airline,
+  .hero-gold-line::before {
+    animation: none;
+  }
 }
 
 /* ============================================================
