@@ -696,21 +696,31 @@ const totalStaff = deps.reduce(
   0
 );
 
-// Espejo literal de Department Control
+// Esperar a que el mismo motor usado por Department Control
+// termine de cargar y normalizar los salarios.
        
-const totalPayroll =
-  typeof ACS_HR_getTotalPayroll === "function"
-    ? Number(ACS_HR_getTotalPayroll()) || 0
-    : deps.reduce(
-        (sum, d) =>
-          sum +
-          Math.round(
-            (Number(d.staff) || 0) *
-            (Number(d.salary) || 0)
-          ),
-        0
-      );
+await new Promise(resolve => setTimeout(resolve, 600));
 
+const departmentControlState =
+  typeof ACS_HR_load === "function"
+    ? ACS_HR_load()
+    : null;
+
+const payrollDepartments =
+  departmentControlState && typeof departmentControlState === "object"
+    ? Object.values(departmentControlState)
+    : deps;
+
+const totalPayroll = payrollDepartments.reduce(
+  (sum, department) => {
+    const staff = Number(department.staff) || 0;
+    const salary = Number(department.salary) || 0;
+
+    return sum + Math.round(staff * salary);
+  },
+  0
+);
+       
 const avgMorale = deps.length
   ? Math.round(
       deps.reduce(
