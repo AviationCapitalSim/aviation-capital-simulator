@@ -682,9 +682,39 @@ async function loadHRDashboard() {
       throw new Error("INVALID HR DATA");
     }
 
-    const deps = data.departments;
+    // Construir el mismo estado canónico utilizado por Department Control
+const HR = {};
 
-   // =========================
+data.departments.forEach(dep => {
+
+  if (!dep?.dept_id) return;
+
+  HR[dep.dept_id] = {
+    id: dep.dept_id,
+    name: dep.dept_name,
+    base: dep.base_role,
+    role: dep.base_role,
+
+    staff: Number(dep.staff) || 0,
+    required: Number(dep.required) || 0,
+    morale: Number(dep.morale) || 100,
+
+    salary: Number(dep.salary) || 0,
+    payroll: Number(dep.payroll) || 0,
+
+    bonus: Number(dep.bonus) || 0,
+    years: Number(dep.years) || 0
+  };
+
+});
+
+// Exactamente el mismo normalizador que utiliza Department Control.
+// Completa los salarios en cero con su salario histórico correspondiente.
+ACS_HR_save(HR);
+
+const deps = Object.values(ACS_HR_load());
+
+// =========================
 // CALCULOS REALES
 // =========================
 
