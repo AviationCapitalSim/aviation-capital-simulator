@@ -716,8 +716,10 @@ window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
 
 window.ACS_FINANCE_HISTORY = (() => {
   let loading = false;
-  let loaded = false;
   let data = null;
+  let availableYears = [];
+  let selectedYear = null;
+  let controlsBound = false;
 
   function money(value) {
     return Number(value || 0).toLocaleString(
@@ -746,37 +748,48 @@ window.ACS_FINANCE_HISTORY = (() => {
   }
 
   function renderYears(payload) {
-    const select =
-      document.getElementById(
-        "historyYearSelect"
-      );
 
-    if (!select) return;
+  const yearField =
+    document.getElementById("historyYearSelect");
 
-    const years = Array.isArray(
-      payload.available_years
-    )
-      ? payload.available_years
+  const previousButton =
+    document.getElementById("historyPreviousYear");
+
+  const nextButton =
+    document.getElementById("historyNextYear");
+
+  availableYears = Array.isArray(payload.available_years)
+    ? [...new Set(
+        payload.available_years
           .map(Number)
           .filter(Number.isInteger)
-      : [];
+      )].sort((a, b) => a - b)
+    : [];
 
-    select.innerHTML = "";
+  selectedYear = Number(payload.selected_year);
 
-    years.forEach(year => {
-      const option =
-        document.createElement("option");
-
-      option.value = String(year);
-      option.textContent = String(year);
-      option.selected =
-        year === Number(
-          payload.selected_year
-        );
-
-      select.appendChild(option);
-    });
+  if (yearField) {
+    yearField.value = Number.isInteger(selectedYear)
+      ? String(selectedYear)
+      : "—";
   }
+
+  const selectedIndex =
+    availableYears.indexOf(selectedYear);
+
+  if (previousButton) {
+    previousButton.disabled =
+      loading ||
+      selectedIndex <= 0;
+  }
+
+  if (nextButton) {
+    nextButton.disabled =
+      loading ||
+      selectedIndex < 0 ||
+      selectedIndex >= availableYears.length - 1;
+  }
+}
 
   function renderSummary(payload) {
     const summary =
@@ -1201,92 +1214,168 @@ window.ACS_FINANCE_HISTORY = (() => {
     }
   }
    
-  async function init() {
-    if (loading || loaded) {
-      return data;
+  function bindControls() {
+
+  if (controlsBound) return;
+
+  const previousButton =
+    document.getElementById("historyPreviousYear");
+
+  const nextButton =
+    document.getElementById("historyNextYear");
+
+  previousButton?.addEventListener("click", async () => {
+
+    const currentIndex =
+      availableYears.indexOf(selectedYear);
+
+    if (currentIndex <= 0) return;
+
+    await loadYear(
+      availableYears[currentIndex - 1]
+    );
+  });
+
+  nextButton?.addEventListener("click", async () => {
+
+    const currentIndex =
+      availableYears.indexOf(selectedYear);
+
+    if (
+      currentIndex < 0 ||
+      currentIndex >= availableYears.length - 1
+    ) {
+      return;
     }
 
-    loading = true;
+    await loadYear(
+      availableYears[currentIndex + 1]
+    );
+  });
 
-    const status =
-      document.getElementById(
-        "financeHistoryStatus"
+  controlsBound = true;
+}
+
+async function loadYear(year = null) {
+
+  if (loading) return data;
+
+  loading = true;
+
+  const status =
+    document.getElementById("financeHistoryStatus");
+
+  const previousButton =
+    document.getElementById("historyPreviousYear");
+
+  const nextButton =
+    document.getElementById("historyNextYear");
+
+  if (previousButton) previousButton.disabled = true;
+  if (nextButton) nextButton.disabled = true;
+
+  if (status) {
+    status.hidden = false;
+    status.textContent = "Loading financial records…";
+  }
+
+  try {
+
+    const requestedYear = Number(year);
+
+    const url = Number.isInteger(requestedYear)
+      ? `https://api.aviationcapitalsim.com/v1/finance/history?year=${encodeURIComponent(requestedYear)}`
+      : "https://api.aviationcapitalsim.com/v1/finance/history";
+
+    const response = await fetch(url, {
+      credentials: "include"
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `FINANCE_HISTORY_HTTP_${response.status}`
       );
+    }
+
+    const payload = await response.json();
+
+    if (!payload?.ok) {
+      throw new Error(
+        payload?.error ||
+        "FINANCE_HISTORY_INVALID_RESPONSE"
+      );
+    }
+
+    data = payload;
+
+    renderYears(payload);
+    renderSummary(payload);
+    renderMonths(payload);
+
+    const hasRecords =
+      (Array.isArray(payload.months) &&
+        payload.months.length > 0) ||
+      Boolean(payload.open_month);
+
+    if (status) {
+      if (hasRecords) {
+        status.hidden = true;
+      } else {
+        status.hidden = false;
+        status.textContent =
+          `No financial activity recorded for ${payload.selected_year}.`;
+      }
+    }
+
+    console.log(
+      "✅ FINANCE HISTORY YEAR LOADED",
+      {
+        year: payload.selected_year,
+        months: payload.months?.length || 0,
+        openMonth: payload.open_month?.month || null
+      }
+    );
+
+    return payload;
+
+  } catch (error) {
+
+    console.error(
+      "FINANCE HISTORY LOAD ERROR",
+      error
+    );
 
     if (status) {
       status.hidden = false;
       status.textContent =
-        "Loading financial records…";
+        "Financial history unavailable.";
     }
 
-    try {
-      const response = await fetch(
-        "https://api.aviationcapitalsim.com/v1/finance/history",
-        {
-          credentials: "include"
-        }
-      );
+    return null;
 
-      if (!response.ok) {
-        throw new Error(
-          `FINANCE_HISTORY_HTTP_${response.status}`
-        );
-      }
+  } finally {
 
-      const payload =
-        await response.json();
+    loading = false;
 
-      if (!payload?.ok) {
-        throw new Error(
-          payload?.error ||
-          "FINANCE_HISTORY_INVALID_RESPONSE"
-        );
-      }
-
-      data = payload;
-      loaded = true;
-
-      renderYears(payload);
-      renderSummary(payload);
-      renderMonths(payload);
-
-      if (status) {
-      status.hidden = true;
-      }
-
-      console.log(
-        "✅ FINANCE HISTORY SINGLE LOAD",
-        {
-          year: payload.selected_year,
-          months:
-            payload.months?.length || 0,
-          openMonth:
-            payload.open_month?.month || null
-        }
-      );
-
-      return payload;
-    } catch (error) {
-      console.error(
-        "FINANCE HISTORY LOAD ERROR",
-        error
-      );
-
-      if (status) {
-        status.textContent =
-          "Financial history unavailable.";
-      }
-
-      return null;
-    } finally {
-      loading = false;
+    if (data) {
+      renderYears(data);
     }
   }
+}
 
-  return {
-    init,
-    getData() {
-      return data;
-    }
-  };
+async function init() {
+  bindControls();
+  return loadYear();
+}
+
+return {
+  init,
+  loadYear,
+  getData() {
+    return data;
+  }
+};
+
 })();
+
+
