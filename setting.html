@@ -1143,12 +1143,32 @@ async function saveAircraft() {
     return;
   }
 
+  const changes = [];
+
+  if (current.autoCCheck !== nextSettings.autoCCheck) {
+    changes.push(
+      nextSettings.autoCCheck
+        ? "Automatic C Check enabled."
+        : "Automatic C Check disabled."
+    );
+  }
+
+  if (current.autoDCheck !== nextSettings.autoDCheck) {
+    changes.push(
+      nextSettings.autoDCheck
+        ? "Automatic D Check enabled."
+        : "Automatic D Check disabled."
+    );
+  }
+
   openSaveModal(
     "Aircraft Settings",
-    "C Check and D Check automation saved successfully."
+    changes.length
+      ? changes.join("\n")
+      : "No aircraft automation changes were made."
   );
 }
-
+  
 async function resetAircraft() {
 
   const current = ACS_getCompanySettings();
