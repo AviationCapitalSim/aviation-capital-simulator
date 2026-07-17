@@ -646,31 +646,16 @@ th{
      ============================================================ -->
 <script src="acs_time_recovery.js"></script>
 <script src="time_engine.js"></script>
-
-<!-- ============================================================
-     💼 FINANCE + BANK ENGINE
-     (IMPORTANTE: estos dos deben existir en /engine/)
-     ============================================================ -->
-<script src="engine/acs_finance.js"></script>
-<script src="engine/acs_bank.js"></script>
-
+     
 <script>
+     
+const ACS_BANK_API =
+  "https://api.aviationcapitalsim.com/v1/bank/summary";
 
-/* ============================================================
-   🟩 B-50 — ACS BANK UI MASTER SCRIPT (FULL FIXED VERSION)
-   Fixes:
-   ✔ Correct maturity date (normalizes broken termMonths)
-   ✔ Adds formatAviationDate
-   ✔ Restores PAID rows
-   ✔ Fixes Closed Date display
-   ✔ Uses simulation date
-   ✔ Aviation-style colors
-   ✔ Fully safe engine integration
-   ============================================================ */
-
-function money(x){
-  const v = Number(x || 0);
-  return "$" + Math.round(v).toLocaleString();
+function money(value) {
+  return "$" +
+    Math.round(Number(value || 0))
+      .toLocaleString("en-US");
 }
 
 /* ========== LOGOUT ========== */ 
@@ -680,498 +665,473 @@ function handleLogout(){
   window.location.href = "login.html";
 } 
 
-function goLoan(){
+function goLoan() {
   window.location.href = "loan_request.html";
 }
 
-/* ============================================================
-   🟩 AVIATION DATE FORMATTER
-   ============================================================ */
+function formatAviationDate(value) {
+  if (!value) return "—";
 
-function formatAviationDate(input){
+  const date = new Date(value);
 
-  if(!input) return "—";
-
-  const d =
-    (input instanceof Date)
-    ? input
-    : new Date(input);
-
-  if(isNaN(d.getTime()))
+  if (Number.isNaN(date.getTime())) {
     return "—";
+  }
+
+  const months = [
+    "JAN", "FEB", "MAR", "APR",
+    "MAY", "JUN", "JUL", "AUG",
+    "SEP", "OCT", "NOV", "DEC"
+  ];
 
   const day =
-    String(d.getDate()).padStart(2,"0");
+    String(date.getUTCDate())
+      .padStart(2, "0");
 
-  const months =
-    ["JAN","FEB","MAR","APR","MAY","JUN",
-     "JUL","AUG","SEP","OCT","NOV","DEC"];
+  const month =
+    months[date.getUTCMonth()];
 
-  const mon =
-    months[d.getMonth()];
+  const year =
+    date.getUTCFullYear();
 
-  const yr =
-    d.getFullYear();
-
-  return `${day} ${mon} ${yr}`;
+  return `${day} ${month} ${year}`;
 }
 
-/* ============================================================
-   🟩 TERM NORMALIZER (FIX 72 → 864 BUG)
-   ============================================================ */
+function setText(id, value) {
+  const element =
+    document.getElementById(id);
 
-function normalizeTermMonths(loan){
+  if (element) {
+    element.textContent = value;
+  }
+}
 
-  let m =
-    Number(
-      loan?.termMonths ??
-      loan?.months ??
-      0
+function authorityColor(percentage) {
+  if (percentage >= 100) return "#00ffd0";
+  if (percentage >= 75) return "#00ff88";
+  if (percentage >= 55) return "#4da3ff";
+  if (percentage >= 35) return "#ffb300";
+
+  return "#ff8844";
+}
+
+function applyBankColors(summary) {
+  const fleetValue =
+    Number(summary.fleetValue || 0);
+
+  const capacity =
+    Number(summary.loanCapacity || 0);
+
+  const outstanding =
+    Number(summary.totalOutstanding || 0);
+
+  const monthly =
+    Number(summary.totalMonthly || 0);
+
+  const rate =
+    Number(summary.interestRate || 0);
+
+  const creditElement =
+    document.getElementById(
+      "creditAvailability"
     );
 
-  if(!m) return 0;
+  const debtElement =
+    document.getElementById(
+      "loanOutstanding"
+    );
 
-  /* detect legacy bug */
-  if(m > 240 && m % 12 === 0){
+  const monthlyElement =
+    document.getElementById(
+      "loanMonthly"
+    );
 
-    const divided = m / 12;
+  const rateElement =
+    document.getElementById("rate");
 
-    if(divided <= 240)
-      return divided;
-
-  }
-
-  return m;
-}
-
-/* ============================================================
-   🟩 TERM COLOR ENGINE
-   ============================================================ */
-
-function termColor(months){
-
-  if(months > 84) return "#00ff88";
-  if(months > 36) return "#4da3ff";
-  if(months > 12) return "#ffb300";
-  if(months > 0)  return "#ff4444";
-
-  return "#00ffcc";
-}
-
-/* ============================================================
-   🟩 MAIN BANK LOAD
-   ============================================================ */
-
-function loadBank(){
-
-  if(typeof ACS_BANK_getSummary !== "function"){
-    console.error("ACS_BANK_getSummary missing");
-    return;
-  }
-
-  const s =
-    ACS_BANK_getSummary();
-
-  const loans =
-    Array.isArray(s.loans)
-    ? s.loans
-    : [];
-
-  /* ============================================================
-     SUMMARY TOTALS
-     ============================================================ */
-
-  let totalOutstanding = 0;
-let totalOriginal    = 0;
-let totalMonthly     = 0;
-
-loans.forEach(loan=>{
-
-  const remaining =
-    Number(loan.remaining || 0);
-
-  totalOutstanding += remaining;
-
-  totalOriginal += Number(
-    loan.originalAmount ||
-    loan.amount ||
-    0
-  );
-
-  /* ✅ SOLO loans activos generan deuda mensual */
-
-  if(remaining > 0){
-
-    totalMonthly +=
-      Number(loan.monthlyPayment || 0);
-
-  }
-
-});
-
-  document.getElementById("loanOriginal").innerText =
-    money(totalOriginal);
-
-  document.getElementById("loanMonthly").innerText =
-    money(totalMonthly);
-
-  document.getElementById("loanOutstanding").innerText =
-    money(totalOutstanding);
-
-  /* ============================================================
-     STANDARD CARDS
-     ============================================================ */
-
-  document.getElementById("fleet").innerText =
-    money(s.fleetValue);
-
-  document.getElementById("capacity").innerText =
-    money(s.loanCapacity);
-
-/* ============================================================
-   🟩 B-61 — CREDIT AVAILABILITY ENGINE (AIRBUS FINANCIAL MODEL)
-   ============================================================ */
-
-const creditAvailability =
-  Number(s.loanCapacity || 0);
-
-const creditEl =
-  document.getElementById("creditAvailability");
-
-if(creditEl){
-
-  creditEl.innerText =
-    money(creditAvailability);
-
-  /* ========================================================
-     AIRBUS COLOR LOGIC
-     ======================================================== */
-
-  const fleetValue =
-    Number(s.fleetValue || 0);
-
-  const ratio =
+  const creditRatio =
     fleetValue > 0
-    ? creditAvailability / fleetValue
-    : 0;
+      ? capacity / fleetValue
+      : 0;
 
-  if(ratio >= 0.6){
-
-    creditEl.style.color = "#00ff88"; // STRONG
-
-  }
-  else if(ratio >= 0.35){
-
-    creditEl.style.color = "#4da3ff"; // MODERATE
-
-  }
-  else if(ratio >= 0.15){
-
-    creditEl.style.color = "#ffb300"; // RESTRICTED
-
-  }
-  else{
-
-    creditEl.style.color = "#ff4444"; // CRITICAL
-
+  if (creditElement) {
+    creditElement.style.color =
+      creditRatio >= 0.60
+        ? "#00ff88"
+        : creditRatio >= 0.35
+          ? "#4da3ff"
+          : creditRatio >= 0.15
+            ? "#ffb300"
+            : "#ff4444";
   }
 
-}
-     
-  /* ============================================================
-   🟩 B-BANK-FIX-FINAL — FORCE RATE = 0 WHEN NO ACTIVE LOANS
-   ============================================================ */
+  const debtColor =
+    outstanding === 0
+      ? "#00ff88"
+      : outstanding < fleetValue * 0.25
+        ? "#4da3ff"
+        : outstanding < fleetValue * 0.50
+          ? "#ffb300"
+          : "#ff4444";
 
-const activeLoans =
-  loans.filter(l => Number(l.remaining || 0) > 0);
-
-const effectiveRate =
-  activeLoans.length > 0
-    ? Number(s.interestRate || 0)
-    : 0;
-
-document.getElementById("rate").innerText =
-  effectiveRate.toFixed(2) + "%";
-
-/* ============================================================
-   🟩 B-71 — AIRBUS KPI COLOR ENGINE
-   Applies financial health color coding
-   ============================================================ */
-
-function setKPIColor(elementId, value, type){
-
-  const el = document.getElementById(elementId);
-
-  if(!el) return;
-
-  value = Number(value || 0);
-
-  switch(type){
-
-    case "availability":
-
-      if(value > s.fleetValue * 0.5)
-        el.style.color = "#00ff88";
-      else if(value > s.fleetValue * 0.25)
-        el.style.color = "#4da3ff";
-      else if(value > 0)
-        el.style.color = "#ffb300";
-      else
-        el.style.color = "#ff4444";
-
-    break;
-
-    case "debt":
-
-      if(value === 0)
-        el.style.color = "#00ff88";
-      else if(value < s.fleetValue * 0.25)
-        el.style.color = "#4da3ff";
-      else if(value < s.fleetValue * 0.5)
-        el.style.color = "#ffb300";
-      else
-        el.style.color = "#ff4444";
-
-    break;
-
-    case "rate":
-
-      if(value <= 5)
-        el.style.color = "#00ff88";
-      else if(value <= 8)
-        el.style.color = "#4da3ff";
-      else if(value <= 12)
-        el.style.color = "#ffb300";
-      else
-        el.style.color = "#ff4444";
-
-    break;
-
+  if (debtElement) {
+    debtElement.style.color =
+      debtColor;
   }
 
+  if (monthlyElement) {
+    monthlyElement.style.color =
+      monthly === 0
+        ? "#00ff88"
+        : debtColor;
+  }
+
+  if (rateElement) {
+    rateElement.style.color =
+      rate <= 5
+        ? "#00ff88"
+        : rate <= 8
+          ? "#4da3ff"
+          : rate <= 12
+            ? "#ffb300"
+            : "#ff4444";
+  }
 }
 
-/* APPLY COLORS */
+function renderAuthority(summary) {
+  const authority =
+    summary.financialAuthority || {};
 
-setKPIColor("creditAvailability", s.loanCapacity, "availability");
+  const percentage =
+    Number(authority.percentage || 15);
 
-setKPIColor("loanOutstanding", totalOutstanding, "debt");
+  const color =
+    authorityColor(percentage);
 
-setKPIColor("rate", effectiveRate, "rate");
+  const label =
+    document.getElementById(
+      "authorityLabel"
+    );
 
-setKPIColor("loanMonthly", totalMonthly, "debt");
+  const stability =
+    document.getElementById(
+      "authorityStability"
+    );
 
-     
-/* ============================================================
-   🟧 B-AUTH-03 — AUTHORITY MIRROR (LOAN REQUEST MASTER MODEL)
-   Bank Authority now mirrors Loan Request authority exactly
-   Source: fleetValue thresholds (NOT debt ratio)
-   ============================================================ */
+  const bar =
+    document.getElementById(
+      "authorityBar"
+    );
 
-function updateFinancialAuthority(summary){
+  if (label) {
+    label.textContent =
+      authority.level ||
+      "RESTRICTED AUTHORITY";
 
-  const fleetValue =
-    Number(summary?.fleetValue || 0);
-
-  let authorityText = "";
-  let stability     = "";
-  let authorityColor= "";
-  let authorityBar  = "";
-
-  /* ============================================================
-     MASTER AUTHORITY MODEL (IDENTICAL TO LOAN REQUEST)
-     ============================================================ */
-
-  if(fleetValue >= 100000000){
-
-    authorityText  = "GLOBAL AUTHORITY";
-    stability      = "SECURE";
-    authorityColor = "#00ffd0";
-    authorityBar   = "100%";
-
-  }
-  else if(fleetValue >= 25000000){
-
-    authorityText  = "EXTENDED AUTHORITY";
-    stability      = "STRONG";
-    authorityColor = "#00ff88";
-    authorityBar   = "75%";
-
-  }
-  else if(fleetValue >= 5000000){
-
-    authorityText  = "STANDARD AUTHORITY";
-    stability      = "STABLE";
-    authorityColor = "#4da3ff";
-    authorityBar   = "55%";
-
-  }
-  else if(fleetValue >= 1000000){
-
-    authorityText  = "LIMITED AUTHORITY";
-    stability      = "ELEVATED RISK";
-    authorityColor = "#ffb300";
-    authorityBar   = "35%";
-
-  }
-  else{
-
-    authorityText  = "RESTRICTED AUTHORITY";
-    stability      = "UNSTABLE";
-    authorityColor = "#ff8844";
-    authorityBar   = "15%";
-
+    label.style.color = color;
   }
 
-  /* ============================================================
-     APPLY TO UI
-     ============================================================ */
+  if (stability) {
+    stability.textContent =
+      authority.stability ||
+      "UNSTABLE";
 
-  const labelEl =
-    document.getElementById("authorityLabel");
-
-  const barEl =
-    document.getElementById("authorityBar");
-
-  const stabilityEl =
-    document.getElementById("authorityStability");
-
-  if(labelEl){
-    labelEl.innerText = authorityText;
-    labelEl.style.color = authorityColor;
+    stability.style.color = color;
   }
 
-  if(barEl){
-    barEl.style.width = authorityBar;
-    barEl.style.background =
-      `linear-gradient(90deg, ${authorityColor}, #00ff88)`;
-  }
+  if (bar) {
+    bar.style.width =
+      percentage + "%";
 
-  if(stabilityEl){
-    stabilityEl.innerText = stability;
-    stabilityEl.style.color = authorityColor;
+    bar.style.background =
+      `linear-gradient(
+        90deg,
+        ${color},
+        #00ff88
+      )`;
   }
-
 }
-     
-  /* ============================================================
-     LOAN TABLE (ACTIVE + PAID)
-     ============================================================ */
 
+function appendLoanCell(
+  row,
+  value,
+  color = null,
+  weight = null
+) {
+  const cell =
+    document.createElement("td");
+
+  cell.textContent = value;
+
+  if (color) {
+    cell.style.color = color;
+  }
+
+  if (weight) {
+    cell.style.fontWeight = weight;
+  }
+
+  row.appendChild(cell);
+}
+
+function renderLoans(loans) {
   const table =
-    document.getElementById("loanTable");
+    document.getElementById(
+      "loanTable"
+    );
+
+  if (!table) return;
 
   table.innerHTML = "";
 
-  if(loans.length === 0){
+  if (!Array.isArray(loans) ||
+      loans.length === 0) {
+    const row =
+      document.createElement("tr");
 
-    table.innerHTML =
-      `<tr>
-       <td colspan="7" style="color:#9fb3ff;">
-          No loan history.
-        </td>
-      </tr>`;
+    const cell =
+      document.createElement("td");
+
+    cell.colSpan = 8;
+    cell.textContent =
+      "No loan history.";
+
+    cell.style.color =
+      "#9fb3ff";
+
+    row.appendChild(cell);
+    table.appendChild(row);
 
     return;
   }
 
-loans.forEach((l, index)=>{
+  loans.forEach((loan, index) => {
+    const row =
+      document.createElement("tr");
 
-  const tr =
-    document.createElement("tr");
+    const remaining =
+      Number(loan.remaining || 0);
 
-  const remaining =
-    Number(l.remaining || 0);
+    const status =
+      String(
+        loan.status ||
+        (remaining <= 0
+          ? "PAID"
+          : "ACTIVE")
+      ).toUpperCase();
 
-  const status =
-    remaining <= 0
-    ? "PAID"
-    : "ACTIVE";
+    const statusColor =
+      status === "PAID"
+        ? "#00ff88"
+        : status === "ACTIVE"
+          ? "#4da3ff"
+          : "#ffb300";
 
-  const statusColor =
-    remaining <= 0
-    ? "#00ff88"
-    : "#4da3ff";
+    const reference =
+      loan.ref ||
+      "LN-" +
+      String(index + 1)
+        .padStart(3, "0");
 
-  const closed =
-    remaining <= 0
-    ? formatAviationDate(
-        l.closedDate
+    appendLoanCell(
+      row,
+      reference,
+      "#00ffd0",
+      "600"
+    );
+
+    appendLoanCell(
+      row,
+      status,
+      statusColor,
+      "600"
+    );
+
+    appendLoanCell(
+      row,
+      money(remaining)
+    );
+
+    appendLoanCell(
+      row,
+      Number(
+        loan.rate || 0
+      ).toFixed(2) + "%"
+    );
+
+    appendLoanCell(
+      row,
+      money(
+        loan.monthlyPayment
       )
-    : "—";
-
-  const openDate =
-    formatAviationDate(
-      l.startDate || l.startTS
     );
 
-  const maturityDate =
-    formatAviationDate(
-      l.maturityDate || l.maturitySimTime
+    appendLoanCell(
+      row,
+      formatAviationDate(
+        loan.startDate
+      ),
+      "#8ab4ff"
     );
 
-  /* Airbus-style reference number */
+    appendLoanCell(
+      row,
+      formatAviationDate(
+        loan.maturityDate
+      ),
+      "#ffd166"
+    );
 
-  const ref =
-    l.ref ||
-    "LN-" +
-    String(index + 1).padStart(3,"0");
+    appendLoanCell(
+      row,
+      status === "PAID"
+        ? formatAviationDate(
+            loan.closedDate
+          )
+        : "—",
+      "#00ffcc"
+    );
 
-  tr.innerHTML = `
-
-    <td style="font-weight:600;color:#00ffd0">
-      ${ref}
-    </td>
-
-    <td style="
-      font-weight:600;
-      color:${statusColor};
-    ">
-      ${status}
-    </td>
-
-    <td>${money(remaining)}</td>
-
-    <td>
-      ${Number(l.rate || 0).toFixed(2)}%
-    </td>
-
-    <td>${money(l.monthlyPayment)}</td>
-
-    <td style="color:#8ab4ff">
-      ${openDate}
-    </td>
-
-    <td style="color:#ffd166">
-      ${maturityDate}
-    </td>
-
-    <td style="color:#00ffcc">
-      ${closed}
-    </td>
-  `;
-
-  table.appendChild(tr);
-
-});
-
-  /* ============================================================
-     🟩 B-AUTH-02 — CALL AUTHORITY UPDATE (CORRECT LOCATION)
-  ============================================================ */
-
-  updateFinancialAuthority(s);
-
+    table.appendChild(row);
+  });
 }
-     
-/* ============================================================
-   INIT
-   ============================================================ */
+
+function renderBank(summary) {
+  setText(
+    "creditAvailability",
+    money(summary.creditAvailability)
+  );
+
+  setText(
+    "fleet",
+    money(summary.fleetValue)
+  );
+
+  setText(
+    "capacity",
+    money(summary.loanCapacity)
+  );
+
+  setText(
+    "rate",
+    Number(
+      summary.interestRate || 0
+    ).toFixed(2) + "%"
+  );
+
+  setText(
+    "loanOriginal",
+    money(summary.totalOriginal)
+  );
+
+  setText(
+    "loanMonthly",
+    money(summary.totalMonthly)
+  );
+
+  setText(
+    "loanOutstanding",
+    money(summary.totalOutstanding)
+  );
+
+  renderAuthority(summary);
+  applyBankColors(summary);
+  renderLoans(summary.loans);
+}
+
+function showBankError() {
+  [
+    "creditAvailability",
+    "fleet",
+    "capacity",
+    "rate",
+    "loanOriginal",
+    "loanMonthly",
+    "loanOutstanding"
+  ].forEach(id => {
+    setText(id, "ERROR");
+  });
+
+  const table =
+    document.getElementById(
+      "loanTable"
+    );
+
+  if (table) {
+    table.innerHTML = `
+      <tr>
+        <td
+          colspan="8"
+          style="color:#ff6677;">
+          Bank data could not be loaded.
+        </td>
+      </tr>
+    `;
+  }
+}
+
+async function loadBank() {
+  try {
+    const response =
+      await fetch(
+        ACS_BANK_API,
+        {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            Accept: "application/json"
+          }
+        }
+      );
+
+    const payload =
+      await response.json();
+
+    if (!response.ok ||
+        payload.ok !== true) {
+      throw new Error(
+        payload.error ||
+        "BANK_LOAD_FAILED"
+      );
+    }
+
+    renderBank(payload);
+
+    console.log(
+      "ACS BANK LOADED FROM RAILWAY",
+      {
+        airline_id:
+          payload.airline_id,
+
+        year:
+          payload.year,
+
+        policy:
+          payload.policy?.code,
+
+        fleetValue:
+          payload.fleetValue,
+
+        outstanding:
+          payload.totalOutstanding
+      }
+    );
+
+  } catch (error) {
+    console.error(
+      "ACS BANK LOAD ERROR:",
+      error
+    );
+
+    showBankError();
+  }
+}
 
 document.addEventListener(
   "DOMContentLoaded",
   loadBank
 );
-
+     
 </script>
 
 </body>
