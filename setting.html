@@ -1009,10 +1009,13 @@ async function ACS_saveCompanySettingsToBackend(settings) {
   try {
 
     const payload = {
-      auto_hire: settings.autoHire === true,
-      auto_salary: settings.autoSalary === true,
-      manual_salary_override: settings.manualSalaryOverride === true
-    };
+  auto_hire: settings.autoHire === true,
+  auto_salary: settings.autoSalary === true,
+  manual_salary_override:
+    settings.manualSalaryOverride === true,
+  auto_c_check: settings.autoCCheck === true,
+  auto_d_check: settings.autoDCheck === true
+};
 
     const res = await fetch(
       `${ACS_API_BASE}/v1/company/settings`,
@@ -1110,32 +1113,72 @@ document.addEventListener("DOMContentLoaded", async () => {
    We are NOT touching Aircraft Settings in this HR cleanup step.
    ============================================================ */
 
-function saveAircraft(){
+async function saveAircraft() {
 
-  console.warn(
-    "⚠ Aircraft Settings still use legacy storage. Not modified in HR cleanup step."
-  );
+  const autoC =
+    document.getElementById("autoCcheck");
+
+  const autoD =
+    document.getElementById("autoDcheck");
+
+  const current = ACS_getCompanySettings();
+
+  const nextSettings = {
+    ...current,
+    autoCCheck: autoC?.checked === true,
+    autoDCheck: autoD?.checked === true,
+    loadedFromBackend: true
+  };
+
+  const ok =
+    await ACS_saveCompanySettingsToBackend(
+      nextSettings
+    );
+
+  if (!ok) {
+    openSaveModal(
+      "Aircraft Settings",
+      "Aircraft settings could not be saved."
+    );
+    return;
+  }
 
   openSaveModal(
     "Aircraft Settings",
-    "Aircraft settings were not modified in this HR cleanup step."
+    "C Check and D Check automation saved successfully."
   );
-
 }
 
-function resetAircraft(){
+async function resetAircraft() {
 
-  const autoC = document.getElementById("autoCcheck");
-  const autoD = document.getElementById("autoDcheck");
+  const current = ACS_getCompanySettings();
 
-  if (autoC) autoC.checked = false;
-  if (autoD) autoD.checked = false;
+  const nextSettings = {
+    ...current,
+    autoCCheck: false,
+    autoDCheck: false,
+    loadedFromBackend: true
+  };
+
+  const ok =
+    await ACS_saveCompanySettingsToBackend(
+      nextSettings
+    );
+
+  if (!ok) {
+    openSaveModal(
+      "Aircraft Settings",
+      "Aircraft settings could not be reset."
+    );
+    return;
+  }
+
+  ACS_renderCompanySettings();
 
   openSaveModal(
     "Aircraft Settings",
-    "Aircraft settings reset visually. Backend persistence pending."
+    "C Check and D Check automation reset to OFF."
   );
-
 }
 
 /* ============================================================
@@ -1150,12 +1193,15 @@ async function saveCompany(){
   const autoHireEl = document.getElementById("autoHire");
   const autoSalaryEl = document.getElementById("autoSalary");
 
-  const nextSettings = {
-    autoHire: autoHireEl ? autoHireEl.checked === true : true,
-    autoSalary: autoSalaryEl ? autoSalaryEl.checked === true : true,
-    manualSalaryOverride: false,
-    loadedFromBackend: true
-  };
+  const current = ACS_getCompanySettings();
+
+const nextSettings = {
+  ...current,
+  autoHire: autoHireEl?.checked === true,
+  autoSalary: autoSalaryEl?.checked === true,
+  manualSalaryOverride: false,
+  loadedFromBackend: true
+};
 
   const ok = await ACS_saveCompanySettingsToBackend(nextSettings);
 
@@ -1262,12 +1308,15 @@ function syncAutoSalarySetting() {
 
 async function resetCompany(){
 
-  const nextSettings = {
-    autoHire: true,
-    autoSalary: true,
-    manualSalaryOverride: false,
-    loadedFromBackend: true
-  };
+  const current = ACS_getCompanySettings();
+
+const nextSettings = {
+  ...current,
+  autoHire: true,
+  autoSalary: true,
+  manualSalaryOverride: false,
+  loadedFromBackend: true
+};
 
   const ok = await ACS_saveCompanySettingsToBackend(nextSettings);
 
