@@ -723,11 +723,6 @@ const totalStaff = deps.reduce(
   0
 );
 
-const totalStaff = deps.reduce(
-  (sum, d) => sum + (Number(d.staff) || 0),
-  0
-);
-
 const totalPayroll = deps.reduce(
   (sum, d) =>
     sum +
