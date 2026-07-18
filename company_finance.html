@@ -1784,14 +1784,10 @@ async function loadTransactionLog() {
 
   try {
 
-    const res = await fetch(
-  "https://api.aviationcapitalsim.com/v1/finance/log",
+  const res = await fetch(
+  `https://api.aviationcapitalsim.com/v1/finance/log?_=${Date.now()}`,
   {
-    credentials: "include",
-    cache: "no-store",
-    headers: {
-      "Cache-Control": "no-cache"
-    }
+    credentials: "include"
   }
 );
 
