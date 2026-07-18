@@ -1802,6 +1802,14 @@ if (m && m.__acsMarkerKey && m.__acsMarkerKey !== markerKey) {
 
   delete markers[item.aircraftId];
 
+  if (traces[item.aircraftId]) {
+    if (map.hasLayer(traces[item.aircraftId])) {
+      map.removeLayer(traces[item.aircraftId]);
+    }
+
+    delete traces[item.aircraftId];
+  }
+
   m = null;
 }
          
