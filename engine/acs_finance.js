@@ -141,7 +141,7 @@ window.ACS_FINANCE_boot = async function(){
 
 let __ACS_FINANCE_STARTED = false;
 
-async function ACS_FINANCE_syncFromServer(){
+async function ACS_FINANCE_syncFromServer() {
 
   const airlineId =
     window.ACS_SERVER_SESSION?.airline_id ||
@@ -168,15 +168,25 @@ async function ACS_FINANCE_syncFromServer(){
 
     const data = await res.json();
 
-    if (!data?.ok) {
-      console.warn("FINANCE SYNC: server returned not ok");
+    if (!data?.ok || !data?.finance) {
+      console.warn("FINANCE SYNC: invalid server response");
       return;
     }
 
+    const officialSimTimeMs =
+      Number(data.current_sim_time_ms);
+
+    if (!Number.isFinite(officialSimTimeMs)) {
+      throw new Error("FINANCE_OFFICIAL_SIM_TIME_MISSING");
+    }
+
     const f = data.finance;
-    if (!f) return;
 
     window.ACS_Finance = {
+
+      authority: "RAILWAY_POSTGRESQL",
+      officialSimTimeMs,
+
       capital: Number(f.capital || 0),
       revenue: Number(f.revenue || 0),
       expenses: Number(f.expenses || 0),
@@ -188,7 +198,7 @@ async function ACS_FINANCE_syncFromServer(){
         current_week_key: null
       },
 
-        cost: {
+      cost: {
         fuel: Number(f.cost_fuel || 0),
         ground_handling: Number(f.cost_handling || 0),
         slot_fees: Number(f.cost_slots || 0),
@@ -198,76 +208,90 @@ async function ACS_FINANCE_syncFromServer(){
         salaries: Number(f.cost_hr || 0),
         maintenance: Number(f.cost_maintenance || 0),
         penalties: Number(f.cost_other || 0),
-
-        /* OEM / AIRCRAFT ACQUISITION */
-        used_aircraft_purchase: Number(f.cost_used_aircraft_purchase || 0),
-        new_aircraft_purchase: Number(f.cost_new_aircraft_purchase || 0)
+        used_aircraft_purchase:
+          Number(f.cost_used_aircraft_purchase || 0),
+        new_aircraft_purchase:
+          Number(f.cost_new_aircraft_purchase || 0)
       },
 
       leasing: {
-  contracts: Array.isArray(data.leasing_contracts)
-    ? data.leasing_contracts
-    : []
-},
+        contracts: Array.isArray(data.leasing_contracts)
+          ? data.leasing_contracts
+          : []
+      },
 
-bank: {
-  loans: Array.isArray(data.bank_loans)
-    ? data.bank_loans.map(loan => ({
-        id: Number(loan.id),
-        ref: loan.loan_reference,
-        status: loan.status,
-        collateralMode: loan.collateral_mode,
-        originalAmount: Number(loan.original_principal || 0),
-        remaining: Number(loan.remaining_principal || 0),
-        rate: Number(loan.annual_interest_rate || 0),
-        termMonths: Number(loan.term_months || 0),
-        monthlyPayment: Number(loan.monthly_payment || 0),
-        totalRepayment: Number(loan.total_repayment || 0),
-        totalInterest: Number(loan.total_interest || 0),
-        openedSimTime: loan.opened_sim_time,
-        maturitySimTime: loan.maturity_sim_time,
-        nextPaymentSimTime: loan.next_payment_sim_time,
-        lastPaymentSimTime: loan.last_payment_sim_time,
-        closedSimTime: loan.closed_sim_time,
-        paymentNumber: Number(loan.payment_number || 0)
-      }))
-    : []
-},
+      bank: {
+        loans: Array.isArray(data.bank_loans)
+          ? data.bank_loans.map(loan => ({
+              id: Number(loan.id),
+              ref: loan.loan_reference,
+              status: loan.status,
+              collateralMode: loan.collateral_mode,
+              originalAmount:
+                Number(loan.original_principal || 0),
+              remaining:
+                Number(loan.remaining_principal || 0),
+              rate:
+                Number(loan.annual_interest_rate || 0),
+              termMonths:
+                Number(loan.term_months || 0),
+              monthlyPayment:
+                Number(loan.monthly_payment || 0),
+              totalRepayment:
+                Number(loan.total_repayment || 0),
+              totalInterest:
+                Number(loan.total_interest || 0),
+              openedSimTime: loan.opened_sim_time,
+              maturitySimTime: loan.maturity_sim_time,
+              nextPaymentSimTime: loan.next_payment_sim_time,
+              lastPaymentSimTime: loan.last_payment_sim_time,
+              closedSimTime: loan.closed_sim_time,
+              paymentNumber:
+                Number(loan.payment_number || 0)
+            }))
+          : []
+      },
+
+      activity: Array.isArray(data.financial_activity)
+        ? data.financial_activity.map(item => ({
+            type: String(item.type || "")
+              .trim()
+              .toUpperCase(),
+            source: String(item.source || "UNKNOWN").trim(),
+            movementCount:
+              Number(item.movement_count || 0),
+            totalAmount:
+              Number(item.total_amount || 0)
+          }))
+        : [],
 
       history: [],
-      current_month: ACS_getMonthKey(Date.now())
+      current_month:
+        ACS_getMonthKey(officialSimTimeMs)
     };
 
-    console.log("🌍 FINANCE SYNC FROM RAILWAY OK");
-
     if (window.ACS_FINANCE_HISTORY) {
-    await window.ACS_FINANCE_HISTORY.init();
+      await window.ACS_FINANCE_HISTORY.init();
     }
-     
-     window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
-     
-       try {
 
-      const logRes = await fetch(
-        "https://api.aviationcapitalsim.com/v1/finance/log",
-        {
-          credentials: "include"
-        }
-      );
+    window.dispatchEvent(
+      new Event("ACS_FINANCE_UPDATED")
+    );
 
-      if (logRes.ok) {
-        const logData = await logRes.json();
-        if (logData?.ok) {
-          console.log("📊 FINANCE LOG SYNC OK", logData.logs?.length || 0);
-        }
+    console.log(
+      "🌍 FINANCE CANONICAL SNAPSHOT LOADED",
+      {
+        airlineId,
+        officialSimTimeMs,
+        activity:
+          window.ACS_Finance.activity.length
       }
-
-    } catch (err) {
-      console.warn("LOG SYNC FAILED", err);
-    }
+    );
 
   } catch (err) {
+
     console.warn("FINANCE SYNC FAILED", err);
+
   }
 
 }
