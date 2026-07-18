@@ -205,11 +205,35 @@ async function ACS_FINANCE_syncFromServer(){
       },
 
       leasing: {
-      contracts: Array.isArray(data.leasing_contracts)
-      ? data.leasing_contracts
-      : []
-      },
-       
+  contracts: Array.isArray(data.leasing_contracts)
+    ? data.leasing_contracts
+    : []
+},
+
+bank: {
+  loans: Array.isArray(data.bank_loans)
+    ? data.bank_loans.map(loan => ({
+        id: Number(loan.id),
+        ref: loan.loan_reference,
+        status: loan.status,
+        collateralMode: loan.collateral_mode,
+        originalAmount: Number(loan.original_principal || 0),
+        remaining: Number(loan.remaining_principal || 0),
+        rate: Number(loan.annual_interest_rate || 0),
+        termMonths: Number(loan.term_months || 0),
+        monthlyPayment: Number(loan.monthly_payment || 0),
+        totalRepayment: Number(loan.total_repayment || 0),
+        totalInterest: Number(loan.total_interest || 0),
+        openedSimTime: loan.opened_sim_time,
+        maturitySimTime: loan.maturity_sim_time,
+        nextPaymentSimTime: loan.next_payment_sim_time,
+        lastPaymentSimTime: loan.last_payment_sim_time,
+        closedSimTime: loan.closed_sim_time,
+        paymentNumber: Number(loan.payment_number || 0)
+      }))
+    : []
+},
+
       history: [],
       current_month: ACS_getMonthKey(Date.now())
     };
