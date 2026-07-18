@@ -1819,17 +1819,31 @@ async function loadTransactionLog() {
       return true;
     });
 
-    const groupedByType = {};
+    const groupedByType = {
+  INCOME: [],
+  EXPENSE: [],
+  FINANCING: []
+};
 
-    filtered.forEach(entry => {
-      if (!groupedByType[entry.type]) {
-        groupedByType[entry.type] = [];
-      }
-      groupedByType[entry.type].push(entry);
-    });
+filtered.forEach(entry => {
 
-    const types = ["INCOME", "EXPENSE", "FINANCING"];
+  const normalizedType = String(entry.type || "")
+    .trim()
+    .toUpperCase();
 
+  if (!groupedByType[normalizedType]) {
+    groupedByType[normalizedType] = [];
+  }
+
+  groupedByType[normalizedType].push({
+    ...entry,
+    type: normalizedType
+  });
+
+});
+
+const types = ["INCOME", "EXPENSE", "FINANCING"];
+       
     if (!filtered.length) {
       container.innerHTML = "<div style='opacity:.6'>No recent activity.</div>";
       return;
