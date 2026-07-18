@@ -388,30 +388,6 @@ body {
 
 .activity-group {
   margin-bottom: 1rem;
-}
-
-.activity-header {
-  background: #0d1a42;
-  padding: 0.9rem 1rem;
-  border-radius: 12px;
-  display: flex;
-  justify-content: space-between;
-  cursor: pointer;
-  box-shadow: 0 0 10px rgba(0,0,0,0.35);
-  border-left: 4px solid #999;
-}
-
-.activity-header.income {
-  border-left-color: #00ff80;
-}
-
-.activity-header.expense {
-  border-left-color: #ff4d4d;
-}
-
-.activity-header.info {
-  border-left-color: #8ab4ff;
-}
 
 .activity-body {
   display: none;
@@ -1428,7 +1404,7 @@ body {
 
   <div class="activity-group">
 
-    <div class="activity-header info" onclick="ACS_toggleGroup(this)">
+    <div class="activity-header leasing" onclick="ACS_toggleGroup(this)">
       <div>
         <strong>LEASING CONTRACTS</strong>
       </div>
