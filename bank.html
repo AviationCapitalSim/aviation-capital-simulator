@@ -377,6 +377,110 @@ th{
   }
 
 }
+
+/* ============================================================
+   ACS GLOBAL TITLE SYSTEM v3.0
+   QATAR LUXURY / AIRBUS OCC — NO SIDE BRACKETS
+============================================================ */
+
+.acs-title-global{
+  position:relative;
+  width:100%;
+  max-width:820px;
+  margin:18px auto 38px;
+  padding:18px 28px 20px;
+  text-align:center;
+  overflow:hidden;
+}
+
+/* elimina cualquier marco/paréntesis anterior */
+     
+.acs-title-global::before,
+.acs-title-global::after{
+  display:none !important;
+  content:none !important;
+}
+
+.acs-title-main{
+  font-family:"Orbitron","Eurostile","Exo 2",sans-serif;
+  font-size:32px;
+  font-weight:700;
+  letter-spacing:.34em;
+  line-height:1;
+  color:#f7f8fb;
+  text-transform:uppercase;
+
+  text-shadow:
+    0 1px 0 rgba(0,0,0,.85),
+    0 0 10px rgba(255,255,255,.20),
+    0 0 22px rgba(255,255,255,.10);
+}
+
+.acs-title-sub{
+  position:relative;
+  display:inline-block;
+  margin-top:11px;
+
+  font-family:"Orbitron","Eurostile","Exo 2",sans-serif;
+  font-size:15px;
+  font-weight:700;
+  letter-spacing:.42em;
+  color:#ffb300;
+  text-transform:uppercase;
+
+  text-shadow:
+    0 0 8px rgba(255,179,0,.35),
+    0 0 16px rgba(255,179,0,.18);
+}
+
+.acs-title-sub::before,
+.acs-title-sub::after{
+  content:"";
+  position:absolute;
+  top:50%;
+  width:82px;
+  height:2px;
+  background:linear-gradient(to right, transparent, #ffb300, transparent);
+  opacity:.8;
+}
+
+.acs-title-sub::before{
+  right:100%;
+  margin-right:18px;
+}
+
+.acs-title-sub::after{
+  left:100%;
+  margin-left:18px;
+}
+
+.acs-title-tag{
+  margin-top:10px;
+  font-size:13px;
+  font-weight:500;
+  letter-spacing:.24em;
+  color:rgba(220,226,238,.82);
+  text-shadow:0 0 8px rgba(255,255,255,.12);
+}
+
+/* textura digital muy sutil */
+.acs-title-global .acs-title-main::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  top:0;
+  bottom:0;
+  pointer-events:none;
+}
+
+/* ===== Footer ===== */
+     
+.acs-footer {
+  text-align: center;
+  padding: 16px 0;
+  color: rgba(255,255,255,0.65);
+}
        
 </style>
 </head>
@@ -400,23 +504,18 @@ th{
   <div class="acs-right">
     <a href="support.html" class="support-btn">Support</a>
     <a class="logout-btn" onclick="handleLogout()">Logout</a>
-   <div id="acs-clock" class="acs-clock-header">
-  <span class="clock-text">20:10 — MON 09 JUN 1941</span>
-</div>
-  
-</div>
-  
+    <div id="acs-clock" class="acs-clock-header">00:00 — 01 JAN 1940</div>
+  </div>
+    
 </header>
 
 <main class="acs-main">
 
-  <div class="title" style="margin-bottom:8px;">
-  Bank Authority
-  </div>
-
-  <div class="subtitle" style="margin-bottom:38px;">
-  Aviation Credit & Financing Authority — Loan Origination, Capacity, and Debt Service Control
-  </div>
+ <section class="acs-title-global">
+    <div class="acs-title-main">AVIATION BANK</div>
+    <div class="acs-title-sub">AVIATION CREDIT & FINANCING AUTHORITY</div>
+    <div class="acs-title-tag">Loan Origination, Capacity, and Debt Service Control</div>
+  </section>
 
   <section class="grid">
        
