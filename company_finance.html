@@ -1775,160 +1775,100 @@ function ACS_updateCapitalColor() {
 
 }
      
-async function loadTransactionLog() {
+function loadTransactionLog() {
 
-  const container = document.getElementById("financeActivityFeed");
+  const container =
+    document.getElementById("financeActivityFeed");
+
   if (!container) return;
 
   container.innerHTML = "";
 
-  try {
+  const activity =
+    Array.isArray(window.ACS_Finance?.activity)
+      ? window.ACS_Finance.activity
+      : [];
 
-  const res = await fetch(
-  `https://api.aviationcapitalsim.com/v1/finance/log?_=${Date.now()}`,
-  {
-    credentials: "include"
-  }
-);
+  const types = [
+    "INCOME",
+    "EXPENSE",
+    "FINANCING"
+  ];
 
-    if (!res.ok) {
-      throw new Error(`FINANCE_LOG_HTTP_${res.status}`);
-    }
+  types.forEach(type => {
 
-    const data = await res.json();
+    const items = activity
+      .filter(item => item.type === type)
+      .sort(
+        (a, b) =>
+          Number(b.totalAmount || 0) -
+          Number(a.totalAmount || 0)
+      );
 
-    if (!data?.ok) {
-      throw new Error(data?.error || "FINANCE_LOG_LOAD_FAILED");
-    }
+    const totalType = items.reduce(
+      (sum, item) =>
+        sum + Number(item.totalAmount || 0),
+      0
+    );
 
-    const logs = Array.isArray(data.logs) ? data.logs : [];
-    const recent = logs.slice(0, 100);
+    const wrapper =
+      document.createElement("div");
 
-    const filtered = recent.filter(entry => {
+    wrapper.className = "activity-group";
 
-      if (entry.type === "INCOME") {
-        if (
-          typeof entry.source === "string" &&
-          entry.source.startsWith("FLIGHT ") &&
-          entry.source.includes("→")
-        ) {
-          return false;
-        }
-      }
+    const typeClass =
+      type === "INCOME"
+        ? "income"
+        : type === "EXPENSE"
+          ? "expense"
+          : "info";
 
-      return true;
-    });
-
-    const groupedByType = {
-  INCOME: [],
-  EXPENSE: [],
-  FINANCING: []
-};
-
-filtered.forEach(entry => {
-
-  const normalizedType = String(entry.type || "")
-    .trim()
-    .toUpperCase();
-
-  if (!groupedByType[normalizedType]) {
-    groupedByType[normalizedType] = [];
-  }
-
-  groupedByType[normalizedType].push({
-    ...entry,
-    type: normalizedType
-  });
-
-});
-
-const types = ["INCOME", "EXPENSE", "FINANCING"];
-       
-    if (!filtered.length) {
-      container.innerHTML = "<div style='opacity:.6'>No recent activity.</div>";
-      return;
-    }
-
-    types.forEach(type => {
-
-      const entries = groupedByType[type] || [];
-      const grouped = {};
-
-      entries.forEach(entry => {
-
-        let key = entry.source || "UNKNOWN";
-
-     // 🔥 AGRUPAR TODOS LOS PAYROLL COMO UNO SOLO
-     if (key.startsWith("HR_PAYROLL")) {
-     key = "HR PAYROLL";
-     }
-
-        if (!grouped[key]) {
-          grouped[key] = {
-            source: key,
-            count: 0,
-            total: 0
-          };
-        }
-
-        grouped[key].count++;
-        grouped[key].total += Number(entry.amount || 0);
-
-      });
-
-      const items = Object.values(grouped)
-        .sort((a, b) => b.total - a.total);
-
-      const totalType = items.reduce((s, i) => s + i.total, 0);
-
-      const wrapper = document.createElement("div");
-      wrapper.className = "activity-group";
-
-      const typeClass =
-        type === "INCOME" ? "income" :
-        type === "EXPENSE" ? "expense" : "info";
-
-      wrapper.innerHTML = `
-        <div class="activity-header ${typeClass}" onclick="ACS_toggleGroup(this)">
-          <div>
-            <strong>${type}</strong> — ${ACS_money(totalType)}
-          </div>
-          <div>▼</div>
+    wrapper.innerHTML = `
+      <div
+        class="activity-header ${typeClass}"
+        onclick="ACS_toggleGroup(this)"
+      >
+        <div>
+          <strong>${type}</strong>
+          — ${ACS_money(totalType)}
         </div>
-        <div class="activity-body"></div>
+        <div>▼</div>
+      </div>
+
+      <div class="activity-body"></div>
+    `;
+
+    const body =
+      wrapper.querySelector(".activity-body");
+
+    items.forEach(item => {
+
+      const row =
+        document.createElement("div");
+
+      row.className = "activity-card";
+
+      row.innerHTML = `
+        <div class="activity-title">
+          ${item.source}
+        </div>
+
+        <div class="activity-meta">
+          ${item.movementCount} movements
+        </div>
+
+        <div class="activity-amount">
+          ${ACS_money(item.totalAmount)}
+        </div>
       `;
 
-      const body = wrapper.querySelector(".activity-body");
-
-      items.forEach(item => {
-
-        const row = document.createElement("div");
-        row.className = "activity-card";
-
-        row.innerHTML = `
-          <div class="activity-title">${item.source}</div>
-          <div class="activity-meta">${item.count} movements</div>
-          <div class="activity-amount">${ACS_money(item.total)}</div>
-        `;
-
-        body.appendChild(row);
-
-      });
-
-      container.appendChild(wrapper);
+      body.appendChild(row);
 
     });
 
-  } catch (err) {
+    container.appendChild(wrapper);
 
-    console.error("❌ Finance log load error:", err);
-
-    container.innerHTML = `
-      <div style="opacity:.6; color:#ff4d4d;">
-        Error loading financial activity
-      </div>
-    `;
-  }
+  });
 
 }
      
