@@ -388,6 +388,35 @@ body {
 
 .activity-group {
   margin-bottom: 1rem;
+}
+.activity-header {
+  background: #0d1a42;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0,0,0,0.35);
+
+  border: 1px solid rgba(95,168,255,0.22);
+  border-left-width: 4px;
+}
+
+.activity-header.income {
+  border-left-color: #00ff80;
+}
+
+.activity-header.expense {
+  border-left-color: #ff4d4d;
+}
+
+.activity-header.info {
+  border-left-color: #4da3ff;
+}
+
+.activity-header.leasing {
+  border-left-color: #7f8cff;
+}
 
 .activity-body {
   display: none;
