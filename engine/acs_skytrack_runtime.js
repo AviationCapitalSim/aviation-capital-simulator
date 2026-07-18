@@ -136,10 +136,14 @@ try {
     ? Number(data.now_abs_min)
     : null;
 
-const snapshotReceivedAt =
-  Date.now();
-
 const flights =
+  Array.isArray(data.flights)
+    ? data.flights.map(item => ({
+        ...item,
+        __snapshotNowAbsMin: snapshotNowAbsMin,
+        __snapshotRefreshMs: REFRESH_MS
+      }))
+    : [];
   Array.isArray(data.flights)
     ? data.flights.map(item => ({
         ...item,
@@ -165,7 +169,8 @@ const flights =
       ACS_SkyTrack_resolveBaseICAO(flights);
 
     ACS_SkyTrack.lastSnapshot = flights;
-    ACS_SkyTrack.lastFetchAt = snapshotReceivedAt;
+    ACS_SkyTrack.lastFetchAt =
+    data.current_sim_time || null;
     ACS_SkyTrack.error = null;
 
     window.__ACS_CANONICAL_SKYTRACK_SNAPSHOT__ = flights;
