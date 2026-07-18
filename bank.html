@@ -602,7 +602,37 @@ th{
 .btn:active {
   transform: translateY(1px);
 }
-      
+
+/* Credit Availability always positive green */
+#creditAvailability {
+  color: #00ff88 !important;
+}
+
+/* Align titles and KPI values without changing cards */
+.grid > .card h3 {
+  min-height: 2.7em;
+  margin-bottom: 8px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.grid > .card .kpi-value {
+  margin-top: 0;
+}
+
+/* Smaller ACS OCC button */
+.btn {
+  min-height: 38px;
+  padding: 0.5rem 0.9rem;
+
+  border-radius: 9px;
+
+  font-size: 0.68rem;
+  letter-spacing: 0.09rem;
+}
+       
 </style>
 </head>
 
