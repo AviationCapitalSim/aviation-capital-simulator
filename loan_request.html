@@ -641,86 +641,6 @@
 
 }
 
-/* ============================================================
-   ACS OCC — LOAN REQUEST VISUAL UPGRADE
-   Uses global Orbitron already loaded by styles.css
-   ============================================================ */
-
-.credit-hero {
-  padding: 40px 20px 18px;
-  text-align: center;
-}
-
-.credit-hero-title {
-  margin: 0 !important;
-
-  font-family:
-    "Orbitron",
-    "Eurostile",
-    "Segoe UI",
-    sans-serif;
-
-  font-size: clamp(2rem, 4vw, 3.1rem);
-  font-weight: 700;
-  line-height: 1.25;
-
-  letter-spacing: clamp(.28rem, 1vw, .7rem);
-
-  color: #f2f6ff;
-
-  text-shadow:
-    0 2px 0 rgba(0, 0, 0, .75),
-    0 0 18px rgba(117, 180, 255, .18);
-}
-
-.credit-hero-subtitle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 28px;
-
-  margin-top: 13px;
-
-  font-family:
-    "Orbitron",
-    "Eurostile",
-    "Segoe UI",
-    sans-serif;
-
-  font-size: clamp(.86rem, 1.7vw, 1.2rem);
-  font-weight: 700;
-
-  letter-spacing: clamp(.16rem, .7vw, .42rem);
-
-  color: #ffb300;
-}
-
-.credit-hero-subtitle span {
-  width: clamp(55px, 8vw, 125px);
-  height: 1px;
-
-  background:
-    linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 179, 0, .95),
-      transparent
-    );
-}
-
-.credit-hero-description {
-  margin: 16px 0 0 !important;
-
-  color: #aebbd2 !important;
-
-  font-family:
-    "Poppins",
-    "Segoe UI",
-    sans-serif;
-
-  font-size: clamp(.78rem, 1.1vw, .95rem);
-  letter-spacing: .08rem;
-}
 
 /* ============================================================
    FINANCIAL AUTHORITY — ACS OCC SEGMENTED CLEARANCE
@@ -983,21 +903,19 @@
   
   <main class="acs-main">
     
-    <section class="top-info credit-hero">
+  <section class="acs-page-title">
 
-  <h2 class="credit-hero-title">
+  <div class="acs-page-title-main">
     AVIATION CREDIT CENTER
-  </h2>
-
-  <div class="credit-hero-subtitle">
-    <span></span>
-    CAPITAL &amp; FLEET FINANCING
-    <span></span>
   </div>
 
-  <p class="credit-hero-description">
+  <div class="acs-page-title-sub">
+    CAPITAL &amp; FLEET FINANCING
+  </div>
+
+  <div class="acs-page-title-tag">
     Institutional Lending, Secured Assets &amp; Debt Service
-  </p>
+  </div>
 
 </section>
 
