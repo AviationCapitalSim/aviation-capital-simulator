@@ -257,9 +257,7 @@ async function ACS_SkyTrack_init(headless = false) {
       currentSimTime: ACS_SkyTrack.currentSimTime,
       count: ACS_SkyTrack.lastSnapshot.length,
       airports: Object.keys(window.ACS_AIRPORT_INDEX || {}).length,
-      lastFetchAt: ACS_SkyTrack.lastFetchAt
-        ? new Date(ACS_SkyTrack.lastFetchAt).toISOString()
-        : null,
+      lastFetchAt: ACS_SkyTrack.lastFetchAt,
       error: ACS_SkyTrack.error
     });
 
