@@ -1785,11 +1785,15 @@ async function loadTransactionLog() {
   try {
 
     const res = await fetch(
-      "https://api.aviationcapitalsim.com/v1/finance/log",
-      {
-        credentials: "include"
-      }
-    );
+  "https://api.aviationcapitalsim.com/v1/finance/log",
+  {
+    credentials: "include",
+    cache: "no-store",
+    headers: {
+      "Cache-Control": "no-cache"
+    }
+  }
+);
 
     if (!res.ok) {
       throw new Error(`FINANCE_LOG_HTTP_${res.status}`);
