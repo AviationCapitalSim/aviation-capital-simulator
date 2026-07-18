@@ -1650,33 +1650,6 @@ const delayMin = opsDisplay.delayMinutes;
      1 real second = 1 ACS simulated minute.
   */
 
-  if (
-    Number.isFinite(Number(item.__snapshotNowAbsMin)) &&
-    Number.isFinite(Number(item.__snapshotReceivedAt)) &&
-    Number.isFinite(Number(item.depAbsMin)) &&
-    Number.isFinite(Number(item.arrAbsMin)) &&
-    Number(item.arrAbsMin) > Number(item.depAbsMin)
-  ) {
-    const elapsedRealSeconds =
-      Math.max(
-        0,
-        (Date.now() - Number(item.__snapshotReceivedAt)) / 1000
-      );
-
-    const visualNowAbsMin =
-      Number(item.__snapshotNowAbsMin) + elapsedRealSeconds;
-
-    p =
-      Math.max(
-        0,
-        Math.min(
-          1,
-          (visualNowAbsMin - Number(item.depAbsMin)) /
-          (Number(item.arrAbsMin) - Number(item.depAbsMin))
-        )
-      );
-  }
-
   return [
     Number(o.latitude) + (Number(d.latitude) - Number(o.latitude)) * p,
     Number(o.longitude) + (Number(d.longitude) - Number(o.longitude)) * p
