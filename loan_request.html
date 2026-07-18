@@ -867,6 +867,110 @@
   cursor: not-allowed;
   transform: none;
 }
+
+/* ============================================================
+   ACS GLOBAL TITLE SYSTEM v3.0
+   QATAR LUXURY / AIRBUS OCC — NO SIDE BRACKETS
+============================================================ */
+
+.acs-title-global{
+  position:relative;
+  width:100%;
+  max-width:820px;
+  margin:18px auto 38px;
+  padding:18px 28px 20px;
+  text-align:center;
+  overflow:hidden;
+}
+
+/* elimina cualquier marco/paréntesis anterior */
+     
+.acs-title-global::before,
+.acs-title-global::after{
+  display:none !important;
+  content:none !important;
+}
+
+.acs-title-main{
+  font-family:"Orbitron","Eurostile","Exo 2",sans-serif;
+  font-size:32px;
+  font-weight:700;
+  letter-spacing:.34em;
+  line-height:1;
+  color:#f7f8fb;
+  text-transform:uppercase;
+
+  text-shadow:
+    0 1px 0 rgba(0,0,0,.85),
+    0 0 10px rgba(255,255,255,.20),
+    0 0 22px rgba(255,255,255,.10);
+}
+
+.acs-title-sub{
+  position:relative;
+  display:inline-block;
+  margin-top:11px;
+
+  font-family:"Orbitron","Eurostile","Exo 2",sans-serif;
+  font-size:15px;
+  font-weight:700;
+  letter-spacing:.42em;
+  color:#ffb300;
+  text-transform:uppercase;
+
+  text-shadow:
+    0 0 8px rgba(255,179,0,.35),
+    0 0 16px rgba(255,179,0,.18);
+}
+
+.acs-title-sub::before,
+.acs-title-sub::after{
+  content:"";
+  position:absolute;
+  top:50%;
+  width:82px;
+  height:2px;
+  background:linear-gradient(to right, transparent, #ffb300, transparent);
+  opacity:.8;
+}
+
+.acs-title-sub::before{
+  right:100%;
+  margin-right:18px;
+}
+
+.acs-title-sub::after{
+  left:100%;
+  margin-left:18px;
+}
+
+.acs-title-tag{
+  margin-top:10px;
+  font-size:13px;
+  font-weight:500;
+  letter-spacing:.24em;
+  color:rgba(220,226,238,.82);
+  text-shadow:0 0 8px rgba(255,255,255,.12);
+}
+
+/* textura digital muy sutil */
+.acs-title-global .acs-title-main::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  top:0;
+  bottom:0;
+  pointer-events:none;
+}
+
+/* ===== Footer ===== */
+     
+.acs-footer {
+  text-align: center;
+  padding: 16px 0;
+  color: rgba(255,255,255,0.65);
+}
     
 </style>
   
