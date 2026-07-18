@@ -129,59 +129,56 @@ try {
 }
 
   function ACS_SkyTrack_publishSnapshot(data) {
-    ACS_SkyTrack_buildAirportIndex();
+  ACS_SkyTrack_buildAirportIndex();
 
-    const snapshotNowAbsMin =
-  Number.isFinite(Number(data.now_abs_min))
-    ? Number(data.now_abs_min)
-    : null;
+  const snapshotNowAbsMin =
+    Number.isFinite(Number(data.now_abs_min))
+      ? Number(data.now_abs_min)
+      : null;
 
-const flights =
-  Array.isArray(data.flights)
-    ? data.flights.map(item => ({
-        ...item,
-        __snapshotNowAbsMin: snapshotNowAbsMin,
-        __snapshotRefreshMs: REFRESH_MS
-      }))
-    : [];
-  Array.isArray(data.flights)
-    ? data.flights.map(item => ({
-        ...item,
-        __snapshotNowAbsMin: snapshotNowAbsMin,
-        __snapshotReceivedAt: snapshotReceivedAt,
-        __snapshotRefreshMs: REFRESH_MS
-      }))
-    : [];
+  const flights =
+    Array.isArray(data.flights)
+      ? data.flights.map(item => ({
+          ...item,
+          __snapshotNowAbsMin: snapshotNowAbsMin,
+          __snapshotRefreshMs: REFRESH_MS
+        }))
+      : [];
 
-    ACS_SkyTrack.nowAbsMin =
-      Number.isFinite(Number(data.now_abs_min))
-        ? Number(data.now_abs_min)
-        : null;
+  ACS_SkyTrack.nowAbsMin = snapshotNowAbsMin;
 
-    ACS_SkyTrack.currentSimTime = data.current_sim_time || null;
-
-    ACS_SkyTrack.airlineId =
-      data.airline_id != null ? String(data.airline_id) : null;
-
-    ACS_SkyTrack.baseICAO =
-      data.base_icao ||
-      ACS_SkyTrack.baseICAO ||
-      ACS_SkyTrack_resolveBaseICAO(flights);
-
-    ACS_SkyTrack.lastSnapshot = flights;
-    ACS_SkyTrack.lastFetchAt =
+  ACS_SkyTrack.currentSimTime =
     data.current_sim_time || null;
-    ACS_SkyTrack.error = null;
 
-    window.__ACS_CANONICAL_SKYTRACK_SNAPSHOT__ = flights;
-    window.__ACS_LAST_SKYTRACK_SNAPSHOT__ = flights;
+  ACS_SkyTrack.airlineId =
+    data.airline_id != null
+      ? String(data.airline_id)
+      : null;
 
-    window.dispatchEvent(
-      new CustomEvent("ACS_SKYTRACK_SNAPSHOT", {
-        detail: flights
-      })
-    );
-  }
+  ACS_SkyTrack.baseICAO =
+    data.base_icao ||
+    ACS_SkyTrack.baseICAO ||
+    ACS_SkyTrack_resolveBaseICAO(flights);
+
+  ACS_SkyTrack.lastSnapshot = flights;
+
+  ACS_SkyTrack.lastFetchAt =
+    data.current_sim_time || null;
+
+  ACS_SkyTrack.error = null;
+
+  window.__ACS_CANONICAL_SKYTRACK_SNAPSHOT__ =
+    flights;
+
+  window.__ACS_LAST_SKYTRACK_SNAPSHOT__ =
+    flights;
+
+  window.dispatchEvent(
+    new CustomEvent("ACS_SKYTRACK_SNAPSHOT", {
+      detail: flights
+    })
+  );
+}
 
   async function ACS_SkyTrack_refreshOnce() {
 
