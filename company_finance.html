@@ -1828,7 +1828,7 @@ async function loadTransactionLog() {
       groupedByType[entry.type].push(entry);
     });
 
-    const types = ["INCOME", "EXPENSE"];
+    const types = ["INCOME", "EXPENSE", "FINANCING"];
 
     if (!filtered.length) {
       container.innerHTML = "<div style='opacity:.6'>No recent activity.</div>";
