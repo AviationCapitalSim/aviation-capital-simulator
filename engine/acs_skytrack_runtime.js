@@ -128,7 +128,7 @@ try {
   );
 }
 
-  function ACS_SkyTrack_publishSnapshot(data) {
+ function ACS_SkyTrack_publishSnapshot(data) {
   ACS_SkyTrack_buildAirportIndex();
 
   const snapshotNowAbsMin =
@@ -136,17 +136,19 @@ try {
       ? Number(data.now_abs_min)
       : null;
 
+  const snapshotReceivedAt = Date.now();
+
   const flights =
     Array.isArray(data.flights)
       ? data.flights.map(item => ({
           ...item,
           __snapshotNowAbsMin: snapshotNowAbsMin,
+          __snapshotReceivedAt: snapshotReceivedAt,
           __snapshotRefreshMs: REFRESH_MS
         }))
       : [];
 
   ACS_SkyTrack.nowAbsMin = snapshotNowAbsMin;
-
   ACS_SkyTrack.currentSimTime =
     data.current_sim_time || null;
 
@@ -161,17 +163,11 @@ try {
     ACS_SkyTrack_resolveBaseICAO(flights);
 
   ACS_SkyTrack.lastSnapshot = flights;
-
-  ACS_SkyTrack.lastFetchAt =
-    data.current_sim_time || null;
-
+  ACS_SkyTrack.lastFetchAt = snapshotReceivedAt;
   ACS_SkyTrack.error = null;
 
-  window.__ACS_CANONICAL_SKYTRACK_SNAPSHOT__ =
-    flights;
-
-  window.__ACS_LAST_SKYTRACK_SNAPSHOT__ =
-    flights;
+  window.__ACS_CANONICAL_SKYTRACK_SNAPSHOT__ = flights;
+  window.__ACS_LAST_SKYTRACK_SNAPSHOT__ = flights;
 
   window.dispatchEvent(
     new CustomEvent("ACS_SKYTRACK_SNAPSHOT", {
