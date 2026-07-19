@@ -1589,12 +1589,10 @@ const delayMin = opsDisplay.delayMinutes;
   }
 }
 
-    function resolvePosition(item) {
-
+ function resolvePosition(item) {
   if (!item) return null;
 
   if (item.state !== "EN_ROUTE") {
-
     const airportCode =
       item.position?.airport ||
       item.currentAirport ||
@@ -1611,50 +1609,95 @@ const delayMin = opsDisplay.delayMinutes;
 
     if (!ap) return null;
 
-    const lat =
-      Number(ap.latitude);
+    const lat = Number(ap.latitude);
+    const lng = Number(ap.longitude);
 
-    const lng =
-      Number(ap.longitude);
-
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    if (
+      !Number.isFinite(lat) ||
+      !Number.isFinite(lng)
+    ) {
       return null;
     }
 
     return [lat, lng];
   }
 
-  if (item.state === "EN_ROUTE" && item.position?.progress != null) {
+  if (
+    item.state === "EN_ROUTE" &&
+    item.position?.progress != null
+  ) {
+    const origin =
+      window.ACS_AIRPORT_INDEX?.[item.originICAO];
 
-  const o =
-    window.ACS_AIRPORT_INDEX?.[item.originICAO];
+    const destination =
+      window.ACS_AIRPORT_INDEX?.[item.destinationICAO];
 
-  const d =
-    window.ACS_AIRPORT_INDEX?.[item.destinationICAO];
+    if (!origin || !destination) {
+      return null;
+    }
 
-  if (!o || !d) return null;
+    let progress =
+      Math.max(
+        0,
+        Math.min(
+          1,
+          Number(item.position.progress)
+        )
+      );
 
-  let p =
-    Math.max(
-      0,
-      Math.min(
-        1,
-        Number(item.position.progress)
-      )
-    );
+    if (
+      Number.isFinite(Number(item.__snapshotNowAbsMin)) &&
+      Number.isFinite(Number(item.__snapshotReceivedAt)) &&
+      Number.isFinite(Number(item.depAbsMin)) &&
+      Number.isFinite(Number(item.arrAbsMin)) &&
+      Number(item.arrAbsMin) > Number(item.depAbsMin)
+    ) {
+      const elapsedRealSeconds =
+        Math.max(
+          0,
+          (
+            Date.now() -
+            Number(item.__snapshotReceivedAt)
+          ) / 1000
+        );
 
-  /*
-     ACS OCC / AIRBUS OCC — SMOOTH VISUAL INTERPOLATION
-     Backend remains authority.
-     Frontend only animates between canonical snapshots.
-     1 real second = 1 ACS simulated minute.
-  */
+      const visualNowAbsMin =
+        Number(item.__snapshotNowAbsMin) +
+        elapsedRealSeconds;
 
-  return [
-    Number(o.latitude) + (Number(d.latitude) - Number(o.latitude)) * p,
-    Number(o.longitude) + (Number(d.longitude) - Number(o.longitude)) * p
-  ];
- }
+      progress =
+        Math.max(
+          0,
+          Math.min(
+            1,
+            (
+              visualNowAbsMin -
+              Number(item.depAbsMin)
+            ) /
+            (
+              Number(item.arrAbsMin) -
+              Number(item.depAbsMin)
+            )
+          )
+        );
+    }
+
+    return [
+      Number(origin.latitude) +
+        (
+          Number(destination.latitude) -
+          Number(origin.latitude)
+        ) * progress,
+
+      Number(origin.longitude) +
+        (
+          Number(destination.longitude) -
+          Number(origin.longitude)
+        ) * progress
+    ];
+  }
+
+  return null;
 }
      
     function buildATCContent(item) {
