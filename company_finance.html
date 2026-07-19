@@ -1802,13 +1802,36 @@ function loadTransactionLog() {
 
   types.forEach(type => {
 
-    const items = activity
-      .filter(item => item.type === type)
-      .sort(
-        (a, b) =>
-          Number(b.totalAmount || 0) -
-          Number(a.totalAmount || 0)
-      );
+        const items =
+      type === "FINANCING"
+        ? (
+            Array.isArray(window.ACS_Finance?.bank?.loans)
+              ? window.ACS_Finance.bank.loans
+              : []
+          )
+            .filter(
+              loan =>
+                Number(loan?.remaining || 0) > 0
+            )
+            .map(loan => ({
+              type: "FINANCING",
+              source:
+                `BANK LOAN — ${loan?.ref || `LOAN #${loan?.id}`}`,
+              movementCount: 1,
+              totalAmount:
+                Number(loan?.remaining || 0)
+            }))
+            .sort(
+              (a, b) =>
+                b.totalAmount - a.totalAmount
+            )
+        : activity
+            .filter(item => item.type === type)
+            .sort(
+              (a, b) =>
+                Number(b.totalAmount || 0) -
+                Number(a.totalAmount || 0)
+            );
 
     const totalType = items.reduce(
       (sum, item) =>
