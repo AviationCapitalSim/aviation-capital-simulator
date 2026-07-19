@@ -1946,56 +1946,9 @@ function loadBreakdown() {
   });
 
        
-   // LOANS RECEIVED DURING THE CURRENT OFFICIAL SIM MONTH
-  const loans =
-    Array.isArray(f.bank?.loans)
-      ? f.bank.loans
-      : [];
-
-  const officialSimTimeMs =
-    Number(f.officialSimTimeMs);
-
-  let currentSimYear = null;
-  let currentSimMonth = null;
-
-  if (Number.isFinite(officialSimTimeMs)) {
-    const officialDate =
-      new Date(officialSimTimeMs);
-
-    currentSimYear =
-      officialDate.getUTCFullYear();
-
-    currentSimMonth =
-      officialDate.getUTCMonth();
-  }
-
-  const totalLoans = loans.reduce(
-    (sum, loan) => {
-
-      const openedSimTimeMs =
-        Number(loan?.openedSimTime);
-
-      if (
-        !Number.isFinite(openedSimTimeMs) ||
-        currentSimYear === null ||
-        currentSimMonth === null
-      ) {
-        return sum;
-      }
-
-      const openedDate =
-        new Date(openedSimTimeMs);
-
-      const belongsToCurrentMonth =
-        openedDate.getUTCFullYear() === currentSimYear &&
-        openedDate.getUTCMonth() === currentSimMonth;
-
-      return belongsToCurrentMonth
-        ? sum + Number(loan?.originalAmount || 0)
-        : sum;
-    },
-    0
-  );
+  // LOANS
+  const loans = Array.isArray(f.bank?.loans) ? f.bank.loans : [];
+  const totalLoans = loans.reduce((s,l)=>s + Number(l?.remaining || 0),0);
 
   categories.push({
     label: "Bank Loans",
