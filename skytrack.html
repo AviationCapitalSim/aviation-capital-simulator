@@ -1748,10 +1748,7 @@ const delayMin = opsDisplay.delayMinutes;
         </div>
       `;
     }
-     
-    // 🟦 A6.5 — MONOTONIC SNAPSHOT GUARD (per aircraft)
-    const lastSeenSnapshot = {}; // aircraftId -> last logical time
-     
+      
     function render(snapshot) {
 
     // 🟦 A7.2 — Update Live Track Panel
@@ -1796,23 +1793,6 @@ if(counter){
   counter.textContent = snapshot.length;
 }
          
-  // 🟦 A6.5.1 — IGNORE OUT-OF-ORDER SNAPSHOTS
-         
-  const key = item.aircraftId;
-  const logicalTime =
-    Number.isFinite(item.depAbsMin) ? item.depAbsMin :
-    Number.isFinite(item.arrAbsMin) ? item.arrAbsMin : 0;
-
-  if (
-  markers[key] &&
-  lastSeenSnapshot[key] != null &&
-  logicalTime < lastSeenSnapshot[key]
-) {
-  return; // ignore older position only while marker still exists
-}
-
-  lastSeenSnapshot[key] = logicalTime;
-
   // 🟦 A6.4.1 — STATE-AWARE POSITION (NO mixed states)
          
   let pos = null;
