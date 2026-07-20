@@ -684,8 +684,11 @@ tr:hover {
 
 <script src="acs_time_recovery.js"></script>
 <script src="time_engine.js"></script>
+<script src="engine/acs_passenger_markets.js?v=1.0.0"></script>
+
 
 <script>
+     
 const ACS_API_BASE = "https://api.aviationcapitalsim.com/v1";
 const ACS_CONTINENT = "South America";
 
@@ -842,32 +845,80 @@ async function ACS_loadCompanyContext() {
 async function ACS_loadAirportCatalog() {
   const simYear = ACS_currentYear();
 
-  const url =
+  const originIcao = ACS_icao(
+    ACS_COMPANY_CONTEXT?.user?.base_icao
+  );
+
+  if (!originIcao) {
+    throw new Error(
+      "ACS_PASSENGER_MARKETS_BASE_NOT_AVAILABLE"
+    );
+  }
+
+  if (
+    !window.ACS_PASSENGER_MARKETS ||
+    typeof window.ACS_PASSENGER_MARKETS.load !== "function"
+  ) {
+    throw new Error(
+      "ACS_PASSENGER_MARKETS_ENGINE_NOT_AVAILABLE"
+    );
+  }
+
+  const catalogUrl =
     `${ACS_API_BASE}/airports/catalog` +
     `?continent=${encodeURIComponent(ACS_CONTINENT)}` +
     `&sim_year=${encodeURIComponent(simYear)}` +
     `&limit=5000`;
 
-  const data = await ACS_fetchJson(url);
+  const [catalogData, marketSnapshot] =
+    await Promise.all([
+      ACS_fetchJson(catalogUrl),
+
+      window.ACS_PASSENGER_MARKETS.load({
+        origin: originIcao,
+        continent: ACS_CONTINENT,
+        force: true
+      })
+    ]);
+
+  const catalogRows =
+    Array.isArray(catalogData.airports)
+      ? catalogData.airports
+      : [];
+
+  const canonicalRows =
+    window.ACS_PASSENGER_MARKETS.mergeCatalogRows(
+      catalogRows,
+      marketSnapshot
+    );
 
   ACS_AIRPORTS =
-    (Array.isArray(data.airports) ? data.airports : [])
+    canonicalRows
       .map(ACS_adaptAirport)
-      .filter(a => a.icao);
+      .filter(airport => airport.icao);
 
   ACS_AIRPORT_CATALOG_YEAR = simYear;
 
-  console.log(`🟢 ACS AIRPORT BACKEND CATALOG LOADED — ${ACS_CONTINENT}:`, {
-    count: ACS_AIRPORTS.length,
-    source: data?.historical_resolution?.source || "UNKNOWN",
-    continent: ACS_CONTINENT,
-    sim_year: simYear,
-    version: data?.version || null
-  });
+  console.log(
+    `🟢 ACS AIRPORT + PASSENGER MARKET LOADED — ${ACS_CONTINENT}:`,
+    {
+      airports: ACS_AIRPORTS.length,
+      origin: originIcao,
+      continent: ACS_CONTINENT,
+      sim_year: simYear,
+      passenger_version: marketSnapshot.version,
+      passenger_authority:
+        marketSnapshot.authority,
+      evaluated_markets:
+        marketSnapshot.summary.evaluated_markets,
+      zero_demand_markets:
+        marketSnapshot.summary.zero_demand_markets
+    }
+  );
 
   return ACS_AIRPORTS;
 }
-
+     
 async function ACS_loadAirportByIcao(icao) {
   const code = ACS_icao(icao);
   if (!code) return null;
@@ -949,36 +1000,23 @@ function ACS_currentYear() {
   return 1940;
 }
 
-function getHistoricalFactor(year) {
-  if (year < 1940) return 0.05;
-  if (year < 1950) return 0.10;
-  if (year < 1958) return 0.25;
-  if (year < 1965) return 0.45;
-  if (year < 1975) return 0.60;
-  if (year < 1990) return 0.80;
-  if (year < 2005) return 1.00;
-  if (year < 2020) return 1.20;
-  return 1.35;
-}
-
 function adjustPassengerClasses(demand) {
-  const year = ACS_currentYear();
-  const factor = getHistoricalFactor(year);
-
-  let Y = Math.round(ACS_num(demand?.Y, 0) * factor);
-  let C = Math.round(ACS_num(demand?.C, 0) * factor);
-  let F = Math.round(ACS_num(demand?.F, 0) * factor);
-
-  if (year < 1955) {
-    C = 0;
-    F = 0;
-  } else if (year < 1975) {
-    F = 0;
-  }
-
-  return { Y, C, F };
+  return {
+    Y: Math.max(
+      0,
+      Math.round(ACS_num(demand?.Y, 0))
+    ),
+    C: Math.max(
+      0,
+      Math.round(ACS_num(demand?.C, 0))
+    ),
+    F: Math.max(
+      0,
+      Math.round(ACS_num(demand?.F, 0))
+    )
+  };
 }
-
+     
 function ACS_calculateEconomics(ap) {
   return {
     landingFee: ACS_num(ap.landing_fee_usd, 0),
@@ -1793,9 +1831,12 @@ function ACS_startAirportYearWatcher() {
   }, 30000);
 }
      
-function handleLogout() {
-  window.location.href = "index.html";
-}
+/* ========== LOGOUT ========== */ 
+  
+function handleLogout(){
+  alert("👋 Session closed. Your fleet awaits your command!");
+  window.location.href = "login.html";
+} 
 
 document.addEventListener("DOMContentLoaded", async () => {
   const tableBody = document.getElementById("airportTableBody");
