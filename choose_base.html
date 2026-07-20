@@ -410,33 +410,170 @@ text-shadow:
 
     tr:hover { background: rgba(255,255,255,0.07); }
 
-    /* ============================================================
-         DEMAND BAR + TOOLTIP
-       ============================================================ */
-    #demandTooltip {
-      position: absolute;
-      display: none;
-      background: rgba(10,25,60,0.95);
-      color: #fff;
-      border: 1px solid #FFB300;
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-size: 0.85rem;
-      pointer-events: none;
-      box-shadow: 0 0 10px rgba(255,179,0,0.3);
-      z-index: 1000;
-      width: 180px;
-    }
+  /* ============================================================
+   ACS BASE MARKET ANALYSIS
+   ============================================================ */
 
-    .demand-bar {
-      width: 100%;
-      height: 8px;
-      border-radius: 6px;
-      background: linear-gradient(to right, #1DB954 var(--eco), #FFB300 var(--eco) var(--biz), #FF6F00 var(--biz) 100%);
-      box-shadow: 0 0 6px rgba(255,179,0,0.3);
-      margin-top: 6px;
-    }
+.market-analysis-btn {
+  min-width: 104px;
 
+  background: rgba(58, 151, 255, 0.12);
+  color: #86c7ff;
+
+  border: 1px solid rgba(82, 170, 255, 0.48);
+  border-radius: 10px;
+
+  padding: 7px 12px;
+
+  font-size: 0.78rem;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.market-analysis-btn:hover {
+  background: rgba(58, 151, 255, 0.22);
+  border-color: #69b8ff;
+
+  box-shadow:
+    0 0 12px rgba(58, 151, 255, 0.34);
+}
+
+.market-analysis-btn:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.base-market-panel {
+  margin-top: 26px;
+  padding: 24px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(8, 22, 47, 0.96),
+      rgba(3, 12, 29, 0.98)
+    );
+
+  border: 1px solid rgba(74, 163, 255, 0.42);
+  border-radius: 18px;
+
+  box-shadow:
+    inset 0 0 22px rgba(74, 163, 255, 0.03),
+    0 14px 30px rgba(0, 0, 0, 0.28);
+}
+
+.base-market-panel[hidden] {
+  display: none;
+}
+
+.base-market-title {
+  margin: 0 0 7px;
+
+  color: #ffbd36;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+}
+
+.base-market-meta {
+  margin: 0 0 18px;
+
+  color: #aebedc;
+
+  font-size: 0.78rem;
+}
+
+.base-market-summary {
+  display: grid;
+  grid-template-columns:
+    repeat(6, minmax(110px, 1fr));
+
+  gap: 10px;
+
+  margin-bottom: 20px;
+}
+
+.base-market-card {
+  padding: 13px 10px;
+
+  text-align: center;
+
+  background: rgba(255, 255, 255, 0.035);
+
+  border: 1px solid rgba(138, 180, 255, 0.17);
+  border-radius: 11px;
+}
+
+.base-market-card strong {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: #ffbd36;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 1rem;
+}
+
+.base-market-card span {
+  color: #b9c5dc;
+
+  font-size: 0.68rem;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.base-market-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+
+  -webkit-overflow-scrolling: touch;
+}
+
+.base-market-table {
+  min-width: 850px;
+  margin-top: 0;
+}
+
+.base-market-zero {
+  color: #ff7474;
+}
+
+@media (max-width: 900px) {
+  .base-market-summary {
+    grid-template-columns:
+      repeat(3, minmax(100px, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .base-market-panel {
+    padding: 18px 13px;
+  }
+
+  .base-market-summary {
+    grid-template-columns:
+      repeat(2, minmax(95px, 1fr));
+  }
+}
+    
     /* ============================================================
          GREEN BUTTON
        ============================================================ */
@@ -1036,7 +1173,8 @@ button {
     </span>
 
     <h2 class="base-panel-title">
-      Select Your Operating Base
+    Select Your Operating Base
+    </h2>
 
     <div
       class="base-panel-separator"
@@ -1057,6 +1195,7 @@ button {
     ></span>
 
     Headquarters Assignment Required
+    
   </div>
 
   <div class="base-select-row">
@@ -1085,7 +1224,7 @@ button {
         <th>City</th>
         <th>Airport</th>
         <th>Category</th>
-        <th>Demand (Y/C/F)</th>
+        <th>Market Analysis</th>
         <th>Slots</th>
         <th>Cost (USD)</th>
         <th>Action</th>
@@ -1095,6 +1234,50 @@ button {
       <tr><td colspan="9">Select a continent and country to view airports.</td></tr>
     </tbody>
   </table>
+
+<div
+  id="baseMarketPanel"
+  class="base-market-panel"
+  hidden
+>
+  <h3
+    id="baseMarketTitle"
+    class="base-market-title"
+  >
+    Base Market Analysis
+  </h3>
+
+  <p
+    id="baseMarketMeta"
+    class="base-market-meta"
+  ></p>
+
+  <div
+    id="baseMarketSummary"
+    class="base-market-summary"
+  ></div>
+
+  <div class="base-market-table-wrapper">
+    <table class="base-market-table">
+      <thead>
+        <tr>
+          <th>Destination</th>
+          <th>City</th>
+          <th>Scope</th>
+          <th>Distance</th>
+          <th>Y</th>
+          <th>C</th>
+          <th>F</th>
+          <th>Weekly</th>
+          <th>Daily Avg.</th>
+        </tr>
+      </thead>
+
+      <tbody id="baseMarketList"></tbody>
+    </table>
+  </div>
+</div>
+  
 </section>
 
  <!-- global footer -->
@@ -1130,9 +1313,6 @@ button {
   </a>
 
 </footer>
-
-<div id="demandTooltip"></div>
-
   
 <!-- ============================================================
      ⏳ ACS TIME ENGINE V12 — 24/7 RECOVERY LAYER
@@ -1218,12 +1398,7 @@ function ACS_normalizeAirport(row) {
         row.aircraft_limit,
         "Not specified"
       ),
-    demand_y:
-      ACS_safeNumber(row.demand_y),
-    demand_c:
-      ACS_safeNumber(row.demand_c),
-    demand_f:
-      ACS_safeNumber(row.demand_f),
+    
     slot_capacity:
       ACS_safeNumber(row.slot_capacity),
     available_slots:
@@ -1450,7 +1625,16 @@ function loadAirports() {
   const tbody =
     document.getElementById("airportList");
 
+  const marketPanel =
+    document.getElementById(
+      "baseMarketPanel"
+    );
+
   tbody.innerHTML = "";
+
+  if (marketPanel) {
+    marketPanel.hidden = true;
+  }
 
   if (
     !ACS_SELECTED_CONTINENT ||
@@ -1465,6 +1649,11 @@ function loadAirports() {
     return;
   }
 
+  const categoryPriority = {
+    "Primary Hub": 1,
+    "Major Regional": 2
+  };
+
   const airports =
     ACS_BASE_AIRPORTS
       .filter(
@@ -1475,18 +1664,14 @@ function loadAirports() {
             ACS_SELECTED_COUNTRY
       )
       .sort((a, b) => {
-        const demandA =
-          a.demand_y +
-          a.demand_c +
-          a.demand_f;
+        const priorityA =
+          categoryPriority[a.category] || 99;
 
-        const demandB =
-          b.demand_y +
-          b.demand_c +
-          b.demand_f;
+        const priorityB =
+          categoryPriority[b.category] || 99;
 
         return (
-          demandB - demandA ||
+          priorityA - priorityB ||
           a.city.localeCompare(b.city) ||
           a.icao.localeCompare(b.icao)
         );
@@ -1503,30 +1688,6 @@ function loadAirports() {
   }
 
   for (const airport of airports) {
-    const totalDemand =
-      airport.demand_y +
-      airport.demand_c +
-      airport.demand_f;
-
-    const economyPercent =
-      totalDemand > 0
-        ? (
-            airport.demand_y /
-            totalDemand
-          ) * 100
-        : 0;
-
-    const businessPercent =
-      totalDemand > 0
-        ? (
-            (
-              airport.demand_y +
-              airport.demand_c
-            ) /
-            totalDemand
-          ) * 100
-        : 0;
-
     const row =
       document.createElement("tr");
 
@@ -1536,25 +1697,40 @@ function loadAirports() {
       <td>${ACS_escapeHtml(airport.city)}</td>
       <td>${ACS_escapeHtml(airport.city)}</td>
       <td>${ACS_escapeHtml(airport.category)}</td>
+
       <td>
-        ${airport.demand_y}/
-        ${airport.demand_c}/
-        ${airport.demand_f}
-        <div
-          class="demand-bar"
-          style="
-            --eco:${economyPercent}%;
-            --biz:${businessPercent}%;
+        <button
+          class="market-analysis-btn"
+          type="button"
+          onclick="
+            analyzeBaseMarket(
+              '${airport.icao}',
+              this
+            )
           "
-        ></div>
+        >
+          Analyze
+        </button>
       </td>
-      <td>${airport.slot_capacity.toLocaleString()}</td>
-      <td>$${airport.slot_cost_usd.toLocaleString()}</td>
+
+      <td>
+        ${airport.slot_capacity.toLocaleString()}
+      </td>
+
+      <td>
+        $${airport.slot_cost_usd.toLocaleString()}
+      </td>
+
       <td>
         <button
           class="acs-btn"
           type="button"
-          onclick="setBase('${airport.icao}', this)"
+          onclick="
+            setBase(
+              '${airport.icao}',
+              this
+            )
+          "
         >
           Set as Base
         </button>
@@ -1565,6 +1741,261 @@ function loadAirports() {
   }
 }
 
+function ACS_renderBaseMarketAnalysis(data) {
+  const panel =
+    document.getElementById(
+      "baseMarketPanel"
+    );
+
+  const title =
+    document.getElementById(
+      "baseMarketTitle"
+    );
+
+  const meta =
+    document.getElementById(
+      "baseMarketMeta"
+    );
+
+  const summary =
+    document.getElementById(
+      "baseMarketSummary"
+    );
+
+  const marketList =
+    document.getElementById(
+      "baseMarketList"
+    );
+
+  if (
+    !panel ||
+    !title ||
+    !meta ||
+    !summary ||
+    !marketList
+  ) {
+    throw new Error(
+      "BASE_MARKET_PANEL_NOT_FOUND"
+    );
+  }
+
+  const base = data.base || {};
+  const totals = data.summary || {};
+
+  title.textContent =
+    `Market Analysis — ` +
+    `${ACS_safeText(base.city, base.icao)} ` +
+    `(${ACS_safeText(base.icao)})`;
+
+  meta.textContent =
+    `${ACS_safeText(data.period_code)} · ` +
+    `ACS Year ${ACS_safeNumber(data.sim_year)} · ` +
+    `${ACS_safeText(data.version)} · ` +
+    `Global shared passenger market`;
+
+  const cards = [
+    {
+      value:
+        ACS_safeNumber(
+          totals.evaluated_markets
+        ),
+      label: "Markets evaluated"
+    },
+    {
+      value:
+        ACS_safeNumber(
+          totals.markets_with_demand
+        ),
+      label: "Markets with demand"
+    },
+    {
+      value:
+        ACS_safeNumber(
+          totals.zero_demand_markets
+        ),
+      label: "Zero-demand markets",
+      zero: true
+    },
+    {
+      value:
+        ACS_safeNumber(
+          totals.median_weekly_demand
+        ).toLocaleString(),
+      label: "Median weekly PAX"
+    },
+    {
+      value:
+        ACS_safeNumber(
+          totals.maximum_weekly_demand
+        ).toLocaleString(),
+      label: "Maximum weekly PAX"
+    },
+    {
+      value:
+        `${ACS_safeNumber(
+          totals.business_markets
+        )} / ${ACS_safeNumber(
+          totals.first_class_markets
+        )}`,
+      label: "C / F markets"
+    }
+  ];
+
+  summary.innerHTML =
+    cards
+      .map(card => `
+        <div class="base-market-card">
+          <strong
+            class="${
+              card.zero
+                ? "base-market-zero"
+                : ""
+            }"
+          >
+            ${ACS_escapeHtml(card.value)}
+          </strong>
+
+          <span>
+            ${ACS_escapeHtml(card.label)}
+          </span>
+        </div>
+      `)
+      .join("");
+
+  const topMarkets =
+    Array.isArray(data.top_markets)
+      ? data.top_markets
+      : [];
+
+  if (!topMarkets.length) {
+    marketList.innerHTML = `
+      <tr>
+        <td colspan="9">
+          No passenger markets currently
+          have demand from this base.
+        </td>
+      </tr>
+    `;
+  } else {
+    marketList.innerHTML =
+      topMarkets
+        .map(market => `
+          <tr>
+            <td>
+              ${ACS_escapeHtml(
+                market.destination_icao
+              )}
+            </td>
+
+            <td>
+              ${ACS_escapeHtml(
+                market.destination_city
+              )}
+            </td>
+
+            <td>
+              ${ACS_escapeHtml(
+                market.market_scope
+              )}
+            </td>
+
+            <td>
+              ${ACS_safeNumber(
+                market.distance_nm
+              ).toLocaleString()} NM
+            </td>
+
+            <td>
+              ${ACS_safeNumber(
+                market.weekly_y
+              ).toLocaleString()}
+            </td>
+
+            <td>
+              ${ACS_safeNumber(
+                market.weekly_c
+              ).toLocaleString()}
+            </td>
+
+            <td>
+              ${ACS_safeNumber(
+                market.weekly_f
+              ).toLocaleString()}
+            </td>
+
+            <td>
+              ${ACS_safeNumber(
+                market.weekly_total
+              ).toLocaleString()}
+            </td>
+
+            <td>
+              ${ACS_safeNumber(
+                market.average_daily
+              ).toLocaleString()}
+            </td>
+          </tr>
+        `)
+        .join("");
+  }
+
+  panel.hidden = false;
+
+  panel.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
+async function analyzeBaseMarket(
+  icao,
+  button
+) {
+  const code =
+    ACS_safeText(icao)
+      .toUpperCase();
+
+  if (!/^[A-Z0-9]{4}$/.test(code)) {
+    alert("Invalid airport ICAO.");
+    return;
+  }
+
+  const originalText =
+    button?.textContent || "Analyze";
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Analyzing...";
+  }
+
+  try {
+    const data = await ACS_fetchJson(
+      `${ACS_API_BASE}` +
+      `/airports/base-market/` +
+      `${encodeURIComponent(code)}`
+    );
+
+    ACS_renderBaseMarketAnalysis(data);
+
+  } catch (error) {
+    console.error(
+      "BASE MARKET ANALYSIS ERROR",
+      error
+    );
+
+    alert(
+      "Passenger market analysis " +
+      "is currently unavailable."
+    );
+
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
+  }
+}
+  
 async function setBase(icao, button) {
   const code =
     ACS_safeText(icao).toUpperCase();
@@ -1648,56 +2079,6 @@ async function setBase(icao, button) {
     }
   }
 }
-
-const tooltip =
-  document.getElementById(
-    "demandTooltip"
-  );
-
-document.addEventListener(
-  "mousemove",
-  event => {
-    const cell =
-      event.target.closest(
-        "td:nth-child(6)"
-      );
-
-    if (
-      cell &&
-      cell.textContent.includes("/")
-    ) {
-      const parts =
-        cell.textContent
-          .trim()
-          .split("/")
-          .map(Number);
-
-      if (
-        parts.length === 3 &&
-        parts.every(Number.isFinite)
-      ) {
-        const [Y, C, F] = parts;
-
-        tooltip.innerHTML = `
-          <h4>Airport Market Indicator</h4>
-          <div>Economy indicator: ${Y}</div>
-          <div>Business indicator: ${C}</div>
-          <div>First indicator: ${F}</div>
-        `;
-
-        tooltip.style.display = "block";
-        tooltip.style.left =
-          event.pageX + 15 + "px";
-        tooltip.style.top =
-          event.pageY - 60 + "px";
-
-        return;
-      }
-    }
-
-    tooltip.style.display = "none";
-  }
-);
 
 /* ========== LOGOUT ========== */ 
   
