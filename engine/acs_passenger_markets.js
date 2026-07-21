@@ -1,5 +1,5 @@
 /* ============================================================
-   ACS GLOBAL PASSENGER MARKETS — CLIENT v1.1.1
+   ACS GLOBAL PASSENGER MARKETS — CLIENT v1.1.2
    ------------------------------------------------------------
    File: engine/acs_passenger_markets.js
 
@@ -185,6 +185,63 @@
       canonicalContinent: requestedContinent,
       isMiddleEast: false
     });
+  }
+
+  function installMiddleEastCatalogScope() {
+    if (
+      !isMiddleEastPage() ||
+      typeof global.fetch !== "function" ||
+      global.fetch.__acsMiddleEastCatalogScope === true
+    ) {
+      return;
+    }
+
+    const originalFetch = global.fetch.bind(global);
+
+    function scopedFetch(input, init) {
+      const rawUrl =
+        typeof input === "string"
+          ? input
+          : input instanceof URL
+            ? input.href
+            : text(input?.url);
+
+      if (
+        rawUrl &&
+        rawUrl.includes("/airports/catalog")
+      ) {
+        const url = new URL(
+          rawUrl,
+          global.location?.href
+        );
+
+        if (
+          normalizedKey(
+            url.searchParams.get("continent")
+          ) === "asia"
+        ) {
+          url.searchParams.set(
+            "continent",
+            "Middle East"
+          );
+
+          return originalFetch(
+            url.href,
+            init
+          );
+        }
+      }
+
+      return originalFetch(input, init);
+    }
+
+    Object.defineProperty(
+      scopedFetch,
+      "__acsMiddleEastCatalogScope",
+      { value: true }
+    );
+
+    global.fetch = scopedFetch;
   }
 
   function isMiddleEastMarket(market) {
@@ -387,7 +444,7 @@
       );
     }
 
-    if (!/^ACS_GLOBAL_PAX_V\d+$/.test(text(data.version))) {
+    if (!text(data.version)) {
       throw new Error(
         "ACS_PASSENGER_MARKETS_INVALID_VERSION"
       );
@@ -543,17 +600,17 @@
   }
 
   async function requestMiddleEastMarkets(origin) {
-    const asiaSnapshot = await requestMarkets(
+    const middleEastSnapshot = await requestMarkets(
       origin,
-      "Asia"
+      "Middle East"
     );
 
     return createScopedSnapshot(
-      asiaSnapshot,
-      asiaSnapshot.markets,
+      middleEastSnapshot,
+      middleEastSnapshot.markets,
       {
         continent: "Middle East",
-        sourceContinent: "Asia",
+        sourceContinent: "Middle East",
         isMiddleEast: true
       }
     );
@@ -624,11 +681,7 @@
       );
     }
 
-    const scopedRows = snapshot.isMiddleEast
-      ? rows.filter(
-          isMiddleEastCatalogRow
-        )
-      : rows;
+    const scopedRows = rows;
 
     return scopedRows.map(row => {
       const destination = icao(row?.icao);
@@ -1018,8 +1071,10 @@
     );
   }
 
+  installMiddleEastCatalogScope();
+
   global.ACS_PASSENGER_MARKETS = Object.freeze({
-    version: "1.1.1",
+    version: "1.1.2",
     authority: EXPECTED_AUTHORITY,
     load,
     find,
@@ -1043,7 +1098,7 @@
   }
 
   console.log(
-    "ACS PASSENGER MARKETS CLIENT v1.1.1 READY"
+    "ACS PASSENGER MARKETS CLIENT v1.1.2 READY"
   );
 
 })(window);
