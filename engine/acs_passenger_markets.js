@@ -1,5 +1,5 @@
 /* ============================================================
-   ACS GLOBAL PASSENGER MARKETS — CLIENT v1.0
+   ACS GLOBAL PASSENGER MARKETS — CLIENT v1.0.1
    ------------------------------------------------------------
    File: engine/acs_passenger_markets.js
 
@@ -30,6 +30,11 @@
 
   const memoryCache = new Map();
   const pendingRequests = new Map();
+
+  const MIDDLE_EAST_COUNTRY_ISO2 = new Set([
+    "BH", "IR", "IQ", "IL", "JO", "KW", "LB",
+    "OM", "QA", "SA", "SY", "AE", "YE"
+  ]);
 
   function text(value) {
     return String(value ?? "").trim();
@@ -408,7 +413,20 @@
       );
     }
 
-    return rows.map(row => {
+    const isMiddleEastPage =
+      String(global.location?.pathname || "")
+        .toLowerCase()
+        .endsWith("/airport_list_middleeast.html");
+
+    const scopedRows = isMiddleEastPage
+      ? rows.filter(row =>
+          MIDDLE_EAST_COUNTRY_ISO2.has(
+            text(row?.country).toUpperCase()
+          )
+        )
+      : rows;
+
+    return scopedRows.map(row => {
       const destination = icao(row?.icao);
       const market = find(snapshot, destination);
 
@@ -455,7 +473,7 @@
   }
 
   global.ACS_PASSENGER_MARKETS = Object.freeze({
-    version: "1.0.0",
+    version: "1.0.1",
     authority: EXPECTED_AUTHORITY,
     load,
     find,
@@ -464,7 +482,7 @@
   });
 
   console.log(
-    "ACS PASSENGER MARKETS CLIENT v1.0 READY"
+    "ACS PASSENGER MARKETS CLIENT v1.0.1 READY"
   );
 
 })(window);
