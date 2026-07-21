@@ -523,18 +523,42 @@ tr:hover {
 }
 
 .acs-demand-segY{
-  background:#00AEEF;
-  box-shadow:0 0 6px rgba(0,174,239,0.7);
+  background:linear-gradient(
+    90deg,
+    #315f7a 0%,
+    #4d91b8 65%,
+    #74b8d8 100%
+  );
+  box-shadow:
+    inset 0 0 3px rgba(255,255,255,0.18),
+    0 0 4px rgba(77,145,184,0.28);
+  border-radius:2px;
 }
 
 .acs-demand-segC{
-  background:#FF8C00;
-  box-shadow:0 0 6px rgba(255,140,0,0.7);
+  background:linear-gradient(
+    90deg,
+    #725137 0%,
+    #a9784f 65%,
+    #c99a70 100%
+  );
+  box-shadow:
+    inset 0 0 3px rgba(255,255,255,0.16),
+    0 0 4px rgba(169,120,79,0.24);
+  border-radius:2px;
 }
 
 .acs-demand-segF{
-  background:#FFD700;
-  box-shadow:0 0 8px rgba(255,215,0,0.9);
+  background:linear-gradient(
+    90deg,
+    #75663f 0%,
+    #ad9658 65%,
+    #d0bc7a 100%
+  );
+  box-shadow:
+    inset 0 0 3px rgba(255,255,255,0.18),
+    0 0 4px rgba(173,150,88,0.25);
+  border-radius:2px;
 }
 
 .acs-demand-values{
@@ -684,6 +708,7 @@ tr:hover {
 
 <script src="acs_time_recovery.js"></script>
 <script src="time_engine.js"></script>
+<script src="engine/acs_passenger_markets.js?v=1.0.0"></script>
 
 <script>
 const ACS_API_BASE = "https://api.aviationcapitalsim.com/v1";
@@ -841,32 +866,80 @@ async function ACS_loadCompanyContext() {
 async function ACS_loadAirportCatalog() {
   const simYear = ACS_currentYear();
 
-  const url =
+  const originIcao = ACS_icao(
+    ACS_COMPANY_CONTEXT?.user?.base_icao
+  );
+
+  if (!originIcao) {
+    throw new Error(
+      "ACS_PASSENGER_MARKETS_BASE_NOT_AVAILABLE"
+    );
+  }
+
+  if (
+    !window.ACS_PASSENGER_MARKETS ||
+    typeof window.ACS_PASSENGER_MARKETS.load !== "function"
+  ) {
+    throw new Error(
+      "ACS_PASSENGER_MARKETS_ENGINE_NOT_AVAILABLE"
+    );
+  }
+
+  const catalogUrl =
     `${ACS_API_BASE}/airports/catalog` +
     `?continent=${encodeURIComponent(ACS_CONTINENT)}` +
     `&sim_year=${encodeURIComponent(simYear)}` +
     `&limit=5000`;
 
-  const data = await ACS_fetchJson(url);
+  const [catalogData, marketSnapshot] =
+    await Promise.all([
+      ACS_fetchJson(catalogUrl),
+
+      window.ACS_PASSENGER_MARKETS.load({
+        origin: originIcao,
+        continent: ACS_CONTINENT,
+        force: true
+      })
+    ]);
+
+  const catalogRows =
+    Array.isArray(catalogData.airports)
+      ? catalogData.airports
+      : [];
+
+  const canonicalRows =
+    window.ACS_PASSENGER_MARKETS.mergeCatalogRows(
+      catalogRows,
+      marketSnapshot
+    );
 
   ACS_AIRPORTS =
-    (Array.isArray(data.airports) ? data.airports : [])
+    canonicalRows
       .map(ACS_adaptAirport)
-      .filter(a => a.icao);
+      .filter(airport => airport.icao);
 
   ACS_AIRPORT_CATALOG_YEAR = simYear;
 
-  console.log(`🟢 ACS AIRPORT BACKEND CATALOG LOADED — ${ACS_CONTINENT}:`, {
-    count: ACS_AIRPORTS.length,
-    source: data?.historical_resolution?.source || "UNKNOWN",
-    continent: ACS_CONTINENT,
-    sim_year: simYear,
-    version: data?.version || null
-  });
+  console.log(
+    `🟢 ACS AIRPORT + PASSENGER MARKET LOADED — ${ACS_CONTINENT}:`,
+    {
+      airports: ACS_AIRPORTS.length,
+      origin: originIcao,
+      continent: ACS_CONTINENT,
+      sim_year: simYear,
+      passenger_version: marketSnapshot.version,
+      passenger_authority:
+        marketSnapshot.authority,
+      evaluated_markets:
+        marketSnapshot.summary.evaluated_markets,
+      zero_demand_markets:
+        marketSnapshot.summary.zero_demand_markets
+    }
+  );
 
   return ACS_AIRPORTS;
 }
-
+     
 async function ACS_loadAirportByIcao(icao) {
   const code = ACS_icao(icao);
   if (!code) return null;
@@ -948,36 +1021,23 @@ function ACS_currentYear() {
   return 1940;
 }
 
-function getHistoricalFactor(year) {
-  if (year < 1940) return 0.05;
-  if (year < 1950) return 0.10;
-  if (year < 1958) return 0.25;
-  if (year < 1965) return 0.45;
-  if (year < 1975) return 0.60;
-  if (year < 1990) return 0.80;
-  if (year < 2005) return 1.00;
-  if (year < 2020) return 1.20;
-  return 1.35;
-}
-
 function adjustPassengerClasses(demand) {
-  const year = ACS_currentYear();
-  const factor = getHistoricalFactor(year);
-
-  let Y = Math.round(ACS_num(demand?.Y, 0) * factor);
-  let C = Math.round(ACS_num(demand?.C, 0) * factor);
-  let F = Math.round(ACS_num(demand?.F, 0) * factor);
-
-  if (year < 1955) {
-    C = 0;
-    F = 0;
-  } else if (year < 1975) {
-    F = 0;
-  }
-
-  return { Y, C, F };
+  return {
+    Y: Math.max(
+      0,
+      Math.round(ACS_num(demand?.Y, 0))
+    ),
+    C: Math.max(
+      0,
+      Math.round(ACS_num(demand?.C, 0))
+    ),
+    F: Math.max(
+      0,
+      Math.round(ACS_num(demand?.F, 0))
+    )
+  };
 }
-
+     
 function ACS_calculateEconomics(ap) {
   return {
     landingFee: ACS_num(ap.landing_fee_usd, 0),
@@ -1304,7 +1364,7 @@ function openAirportInfo(icao) {
           </div>
 
           <div style="margin-top:6px; color:#00ff80; font-size:12px; font-weight:600;">
-            Total: ${ACS_formatNumber(totalDemand)} pax/day
+            Total: ${ACS_formatNumber(totalDemand)} pax/week
           </div>
         </div>
 
@@ -1368,13 +1428,13 @@ function closeAirportInfo() {
    Backend-only data source / Original South America visual style
    ============================================================ */
 
-function ACS_openDemandModal(icao){
+function ACS_openDemandModal(icao) {
 
   const ap = ACS_findAirport(icao);
-  if(!ap) return;
+  if (!ap) return;
 
-  const modal   = document.getElementById("acsDemandModal");
-  const title   = document.getElementById("acsDemandTitle");
+  const modal = document.getElementById("acsDemandModal");
+  const title = document.getElementById("acsDemandTitle");
   const content = document.getElementById("acsDemandContent");
 
   /* ---------- TITLE ---------- */
@@ -1406,36 +1466,93 @@ function ACS_openDemandModal(icao){
     </div>
   `;
 
-  /* ---------- REAL DEMAND SOURCE ---------- */
+  /* ---------- CANONICAL RAILWAY DEMAND ---------- */
 
   const demand = adjustPassengerClasses(ap.demand);
 
-  const days = ["MON","TUE","WED","THU","FRI","SAT","SUN"];
+  const days = [
+    "MON",
+    "TUE",
+    "WED",
+    "THU",
+    "FRI",
+    "SAT",
+    "SUN"
+  ];
 
-  const distribution =
-    [0.14,0.13,0.14,0.13,0.16,0.17,0.13];
+  const distribution = [
+    0.14,
+    0.13,
+    0.14,
+    0.13,
+    0.16,
+    0.17,
+    0.13
+  ];
 
-  /* ============================================================
-     🟦 ACS WEEKLY MAX CALCULATION — REQUIRED FOR HYBRID SCALING
-     ============================================================ */
-
-  const dailyTotals = distribution.map(p =>
-    Math.round(
-      (demand.Y + demand.C + demand.F) * p
-    )
-  );
-
-  const weeklyMax =
-    Math.max(...dailyTotals, 1);
-
-  /* ---------- STRUCTURAL LIMIT ---------- */
+  /* ---------- STRUCTURAL VISUAL CAPACITY ---------- */
 
   let structuralMax = 300;
 
-  if(ap.category === "Primary Hub") structuralMax = 1200;
-  else if(ap.category === "Major Regional") structuralMax = 700;
-  else if(ap.category === "Regional") structuralMax = 350;
-  else structuralMax = 180;
+  if (ap.category === "Primary Hub") {
+    structuralMax = 1200;
+  } else if (ap.category === "Major Regional") {
+    structuralMax = 700;
+  } else if (ap.category === "Regional") {
+    structuralMax = 350;
+  } else {
+    structuralMax = 180;
+  }
+
+  /* ---------- DAILY VALUES BY CLASS ---------- */
+
+  const dailyYValues = distribution.map(
+    value => Math.round(demand.Y * value)
+  );
+
+  const dailyCValues = distribution.map(
+    value => Math.round(demand.C * value)
+  );
+
+  const dailyFValues = distribution.map(
+    value => Math.round(demand.F * value)
+  );
+
+  const peakY = Math.max(...dailyYValues, 1);
+  const peakC = Math.max(...dailyCValues, 1);
+  const peakF = Math.max(...dailyFValues, 1);
+
+  /* ---------- INDEPENDENT CLASS INDICATOR ---------- */
+
+  function ACS_getClassIndicator(
+    value,
+    peak,
+    structuralCapacity
+  ) {
+
+    if (value <= 0) {
+      return 0;
+    }
+
+    const structuralPct =
+      structuralCapacity > 0
+        ? (value / structuralCapacity) * 100
+        : 0;
+
+    const relativePct =
+      peak > 0
+        ? (value / peak) * 100
+        : 0;
+
+    const indicatorPct =
+      (structuralPct * 0.65) +
+      (relativePct * 0.35);
+
+    return Math.max(
+      8,
+      Math.min(100, indicatorPct)
+    );
+  }
 
   /* ---------- BUILD GRID ---------- */
 
@@ -1449,38 +1566,31 @@ function ACS_openDemandModal(icao){
     ">
   `;
 
-  days.forEach((day, i)=>{
+  days.forEach((day, index) => {
 
-    const Y = Math.round(demand.Y * distribution[i]);
-    const C = Math.round(demand.C * distribution[i]);
-    const F = Math.round(demand.F * distribution[i]);
+    const Y = dailyYValues[index];
+    const C = dailyCValues[index];
+    const F = dailyFValues[index];
 
-    /* ============================================================
-       🟦 ACS HYBRID DEMAND SCALING ENGINE v1.0
-       Airbus OCC professional scaling
-       Prevents stagnation and preserves realism
-       ============================================================ */
+    const yIndicatorPct = ACS_getClassIndicator(
+      Y,
+      peakY,
+      structuralMax * 0.80
+    );
 
-    const total = Y + C + F;
+    const cIndicatorPct = ACS_getClassIndicator(
+      C,
+      peakC,
+      structuralMax * 0.15
+    );
 
-    const structuralPct =
-      structuralMax > 0
-        ? (total / structuralMax) * 100
-        : 0;
-
-    const relativePct =
-      weeklyMax > 0
-        ? (total / weeklyMax) * 100
-        : 0;
-
-    let pct =
-      (structuralPct * 0.65) +
-      (relativePct * 0.35);
-
-    pct = Math.max(12, Math.min(100, pct));
+    const fIndicatorPct = ACS_getClassIndicator(
+      F,
+      peakF,
+      structuralMax * 0.05
+    );
 
     html += `
-
       <div style="
         text-align:center;
         width:100%;
@@ -1498,81 +1608,106 @@ function ACS_openDemandModal(icao){
           ${day}
         </div>
 
-        <!-- BAR -->
+        <!-- Y / C / F INDEPENDENT INDICATORS -->
         <div style="
           width:100%;
           height:8px;
+          display:grid;
+          grid-template-columns:1fr 1fr 1fr;
           background:rgba(255,255,255,0.06);
-          border-radius:4px;
-          position:relative;
           border:1px solid rgba(255,179,0,0.25);
+          border-radius:4px;
           overflow:hidden;
         ">
 
-          <!-- DIVISION 1 -->
+          <!-- Y -->
           <div style="
-            position:absolute;
-            left:33.33%;
-            top:0;
-            bottom:0;
-            width:1px;
-            background:rgba(255,179,0,0.4);
-          "></div>
-
-          <!-- DIVISION 2 -->
-          <div style="
-            position:absolute;
-            left:66.66%;
-            top:0;
-            bottom:0;
-            width:1px;
-            background:rgba(255,179,0,0.4);
-          "></div>
-
-          <!-- DEMAND -->
-          <div style="
-            width:${pct}%;
-            height:100%;
-            background:
-              linear-gradient(
-                90deg,
-                #003a7a,
-                #0066cc,
-                #00AEEF,
-                #33d6ff
-              );
-            box-shadow:
-              0 0 6px rgba(0,174,239,0.6);
+            position:relative;
+            overflow:hidden;
+            border-right:1px solid rgba(255,179,0,0.4);
           ">
+            <div
+              class="acs-demand-segY"
+              style="
+                width:${yIndicatorPct}%;
+                height:100%;
+              ">
+            </div>
+          </div>
+
+          <!-- C -->
+          <div style="
+            position:relative;
+            overflow:hidden;
+            border-right:1px solid rgba(255,179,0,0.4);
+          ">
+            <div
+              class="acs-demand-segC"
+              style="
+                width:${cIndicatorPct}%;
+                height:100%;
+              ">
+            </div>
+          </div>
+
+          <!-- F -->
+          <div style="
+            position:relative;
+            overflow:hidden;
+          ">
+            <div
+              class="acs-demand-segF"
+              style="
+                width:${fIndicatorPct}%;
+                height:100%;
+              ">
+            </div>
           </div>
 
         </div>
 
-        <!-- Y C F -->
+        <!-- CLASS VALUES -->
         <div style="
           display:grid;
           grid-template-columns:1fr 1fr 1fr;
           font-family:Orbitron;
           font-size:11px;
-          color:#ffb300;
           margin-top:4px;
         ">
 
-          <div>Y ${Y}</div>
-          <div>C ${C}</div>
-          <div>F ${F}</div>
+         <div style="
+  color:#74b8d8;
+  font-weight:500;
+  text-shadow:0 0 3px rgba(116,184,216,0.18);
+">
+  Y ${Y}
+</div>
+
+<div style="
+  color:#c99a70;
+  font-weight:500;
+  text-shadow:0 0 3px rgba(201,154,112,0.16);
+">
+  C ${C}
+</div>
+
+<div style="
+  color:#d0bc7a;
+  font-weight:500;
+  text-shadow:0 0 3px rgba(208,188,122,0.17);
+">
+  F ${F}
+</div>
 
         </div>
 
       </div>
-
     `;
   });
 
   html += `</div>`;
 
   content.innerHTML = html;
-
   modal.classList.add("is-open");
 }
 
