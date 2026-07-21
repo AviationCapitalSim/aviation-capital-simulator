@@ -1,5 +1,5 @@
 /* ============================================================
-   ACS GLOBAL PASSENGER MARKETS — CLIENT v1.1
+   ACS GLOBAL PASSENGER MARKETS — CLIENT v1.1.1
    ------------------------------------------------------------
    File: engine/acs_passenger_markets.js
 
@@ -193,6 +193,23 @@
     );
     const country = normalizedKey(
       market?.destination_country
+    );
+
+    return (
+      MIDDLE_EAST_REGIONS.has(region) ||
+      MIDDLE_EAST_COUNTRIES.has(country)
+    );
+  }
+
+  function isMiddleEastCatalogRow(row) {
+    const region = normalizedKey(
+      row?.region ||
+      row?.destination_region
+    );
+    const country = normalizedKey(
+      row?.country ||
+      row?.country_name ||
+      row?.destination_country
     );
 
     return (
@@ -526,52 +543,14 @@
   }
 
   async function requestMiddleEastMarkets(origin) {
-    try {
-      const directSnapshot = await requestMarkets(
-        origin,
-        "Middle East"
-      );
-      const directMiddleEastMarkets =
-        directSnapshot.markets.filter(
-          isMiddleEastMarket
-        );
-
-      if (directMiddleEastMarkets.length > 0) {
-        return createScopedSnapshot(
-          directSnapshot,
-          directMiddleEastMarkets,
-          {
-            continent: "Middle East",
-            sourceContinent: "Middle East",
-            isMiddleEast: true
-          }
-        );
-      }
-    } catch (error) {
-      console.warn(
-        "ACS MIDDLE EAST DIRECT SCOPE UNAVAILABLE — USING ASIA REGION FILTER:",
-        error
-      );
-    }
-
     const asiaSnapshot = await requestMarkets(
       origin,
       "Asia"
     );
-    const middleEastMarkets =
-      asiaSnapshot.markets.filter(
-        isMiddleEastMarket
-      );
-
-    if (middleEastMarkets.length === 0) {
-      throw new Error(
-        "ACS_PASSENGER_MARKETS_MIDDLE_EAST_SCOPE_EMPTY"
-      );
-    }
 
     return createScopedSnapshot(
       asiaSnapshot,
-      middleEastMarkets,
+      asiaSnapshot.markets,
       {
         continent: "Middle East",
         sourceContinent: "Asia",
@@ -646,10 +625,8 @@
     }
 
     const scopedRows = snapshot.isMiddleEast
-      ? rows.filter(row =>
-          snapshot.byDestination.has(
-            icao(row?.icao)
-          )
+      ? rows.filter(
+          isMiddleEastCatalogRow
         )
       : rows;
 
@@ -1042,7 +1019,7 @@
   }
 
   global.ACS_PASSENGER_MARKETS = Object.freeze({
-    version: "1.1.0",
+    version: "1.1.1",
     authority: EXPECTED_AUTHORITY,
     load,
     find,
@@ -1066,7 +1043,7 @@
   }
 
   console.log(
-    "ACS PASSENGER MARKETS CLIENT v1.1 READY"
+    "ACS PASSENGER MARKETS CLIENT v1.1.1 READY"
   );
 
 })(window);
