@@ -1,5 +1,5 @@
 /* ============================================================
-   ACS GLOBAL PASSENGER MARKETS — CLIENT v1.0.2
+   ACS GLOBAL PASSENGER MARKETS — CLIENT v1.0.3
    ------------------------------------------------------------
    File: engine/acs_passenger_markets.js
 
@@ -712,10 +712,39 @@
       "FRI", "SAT", "SUN"
     ];
 
-    const maximum = Math.max(
+    const maximumTotal = Math.max(
       ...week.days.map(day => day.daily_total),
       1
     );
+
+    const classSegment = (
+      value,
+      color,
+      glow
+    ) => {
+      const fill = Math.max(
+        0,
+        Math.min(
+          100,
+          (value / maximumTotal) * 100
+        )
+      );
+
+      return (
+        '<div style="' +
+          'height:100%;' +
+          'position:relative;' +
+          'overflow:hidden' +
+        '">' +
+          '<div style="' +
+            'width:' + fill + '%;' +
+            'height:100%;' +
+            'background:' + color + ';' +
+            'box-shadow:0 0 6px ' + glow +
+          '"></div>' +
+        '</div>'
+      );
+    };
 
     let html =
       '<div style="' +
@@ -727,71 +756,78 @@
       '">';
 
     week.days.forEach(day => {
-      const percentage = Math.max(
-        12,
-        Math.min(
-          100,
-          (day.daily_total / maximum) * 100
-        )
-      );
-
       html +=
         '<div style="' +
           'text-align:center;' +
           'width:100%;' +
           'max-width:180px' +
         '">' +
+
           '<div style="' +
             'font-family:Orbitron;' +
             'font-size:13px;' +
-            'color:#fff;' +
+            'color:#ffffff;' +
             'letter-spacing:2px;' +
             'margin-bottom:4px' +
           '">' +
             dayNames[day.weekday_iso - 1] +
           '</div>' +
+
           '<div style="' +
+            'display:grid;' +
+            'grid-template-columns:1fr 1fr 1fr;' +
             'width:100%;' +
             'height:8px;' +
             'background:rgba(255,255,255,.06);' +
             'border-radius:4px;' +
-            'position:relative;' +
             'border:1px solid rgba(255,179,0,.25);' +
             'overflow:hidden' +
           '">' +
+
+            classSegment(
+              day.daily_y,
+              'linear-gradient(90deg,#004f7a,#00AEEF,#55ddff)',
+              'rgba(0,174,239,.75)'
+            ) +
+
             '<div style="' +
-              'position:absolute;' +
-              'left:33.33%;top:0;bottom:0;' +
-              'width:1px;' +
-              'background:rgba(255,179,0,.4)' +
-            '"></div>' +
-            '<div style="' +
-              'position:absolute;' +
-              'left:66.66%;top:0;bottom:0;' +
-              'width:1px;' +
-              'background:rgba(255,179,0,.4)' +
-            '"></div>' +
-            '<div style="' +
-              'width:' + percentage + '%;' +
-              'height:100%;' +
-              'background:linear-gradient(' +
-                '90deg,#003a7a,#0066cc,#00AEEF,#33d6ff' +
-              ');' +
-              'box-shadow:0 0 6px rgba(0,174,239,.6)' +
-            '"></div>' +
+              'border-left:1px solid rgba(255,179,0,.4);' +
+              'border-right:1px solid rgba(255,179,0,.4);' +
+              'height:100%' +
+            '">' +
+              classSegment(
+                day.daily_c,
+                'linear-gradient(90deg,#8a3f00,#ff8c42,#ffb066)',
+                'rgba(255,140,66,.75)'
+              ) +
+            '</div>' +
+
+            classSegment(
+              day.daily_f,
+              'linear-gradient(90deg,#9a7200,#ffd166,#fff0a0)',
+              'rgba(255,209,102,.8)'
+            ) +
+
           '</div>' +
+
           '<div style="' +
             'display:grid;' +
             'grid-template-columns:1fr 1fr 1fr;' +
             'font-family:Orbitron;' +
             'font-size:11px;' +
-            'color:#ffb300;' +
             'margin-top:4px' +
           '">' +
-            '<div>Y ' + day.daily_y + '</div>' +
-            '<div>C ' + day.daily_c + '</div>' +
-            '<div>F ' + day.daily_f + '</div>' +
+            '<div style="color:#33d6ff">' +
+              'Y ' + day.daily_y +
+            '</div>' +
+            '<div style="color:#ff9b55">' +
+              'C ' + day.daily_c +
+            '</div>' +
+            '<div style="color:#ffd166">' +
+              'F ' + day.daily_f +
+            '</div>' +
           '</div>' +
+
         '</div>';
     });
 
@@ -943,7 +979,7 @@
   }
 
   global.ACS_PASSENGER_MARKETS = Object.freeze({
-    version: "1.0.2",
+    version: "1.0.3",
     loadWeek,
     authority: EXPECTED_AUTHORITY,
     load,
@@ -953,7 +989,8 @@
   });
 
   console.log(
-    "ACS PASSENGER MARKETS CLIENT v1.0.2 READY"
+    "ACS PASSENGER MARKETS CLIENT v1.0.3 READY"
   );
 
 })(window);
+
