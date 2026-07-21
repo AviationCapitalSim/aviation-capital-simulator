@@ -1407,13 +1407,13 @@ function closeAirportInfo() {
    Backend-only data source / Original South America visual style
    ============================================================ */
 
-function ACS_openDemandModal(icao){
+function ACS_openDemandModal(icao) {
 
   const ap = ACS_findAirport(icao);
-  if(!ap) return;
+  if (!ap) return;
 
-  const modal   = document.getElementById("acsDemandModal");
-  const title   = document.getElementById("acsDemandTitle");
+  const modal = document.getElementById("acsDemandModal");
+  const title = document.getElementById("acsDemandTitle");
   const content = document.getElementById("acsDemandContent");
 
   /* ---------- TITLE ---------- */
@@ -1445,95 +1445,45 @@ function ACS_openDemandModal(icao){
     </div>
   `;
 
-  /* ---------- REAL DEMAND SOURCE ---------- */
+  /* ---------- CANONICAL RAILWAY DEMAND ---------- */
 
   const demand = adjustPassengerClasses(ap.demand);
 
-  const days = ["MON","TUE","WED","THU","FRI","SAT","SUN"];
+  const days = [
+    "MON",
+    "TUE",
+    "WED",
+    "THU",
+    "FRI",
+    "SAT",
+    "SUN"
+  ];
 
-  const distribution =
-    [0.14,0.13,0.14,0.13,0.16,0.17,0.13];
+  const distribution = [
+    0.14,
+    0.13,
+    0.14,
+    0.13,
+    0.16,
+    0.17,
+    0.13
+  ];
 
-  /* ============================================================
-     🟦 ACS WEEKLY MAX CALCULATION — REQUIRED FOR HYBRID SCALING
-     ============================================================ */
-
-  const dailyTotals = distribution.map(p =>
-    Math.round(
-      (demand.Y + demand.C + demand.F) * p
-    )
-  );
-
-  const weeklyMax =
-    Math.max(...dailyTotals, 1);
-
-  /* ---------- STRUCTURAL LIMIT ---------- */
+  /* ---------- STRUCTURAL VISUAL CAPACITY ---------- */
 
   let structuralMax = 300;
 
-  if(ap.category === "Primary Hub") structuralMax = 1200;
-  else if(ap.category === "Major Regional") structuralMax = 700;
-  else if(ap.category === "Regional") structuralMax = 350;
-  else structuralMax = 180;
-
-    const dailyYValues =
-    distribution.map(value =>
-      Math.round(demand.Y * value)
-    );
-
-  const dailyCValues =
-    distribution.map(value =>
-      Math.round(demand.C * value)
-    );
-
-  const dailyFValues =
-    distribution.map(value =>
-      Math.round(demand.F * value)
-    );
-
-  const peakY = Math.max(...dailyYValues, 1);
-  const peakC = Math.max(...dailyCValues, 1);
-  const peakF = Math.max(...dailyFValues, 1);
-
-  function ACS_classIndicator(
-    value,
-    peak,
-    structuralCapacity
-  ) {
-    if (value <= 0) return 0;
-
-    const structuralPct =
-      (value / Math.max(structuralCapacity, 1)) * 100;
-
-    const relativePct =
-      (value / Math.max(peak, 1)) * 100;
-
-    return Math.max(
-      8,
-      Math.min(
-        100,
-        (structuralPct * 0.65) +
-        (relativePct * 0.35)
-      )
-    );
+  if (ap.category === "Primary Hub") {
+    structuralMax = 1200;
+  } else if (ap.category === "Major Regional") {
+    structuralMax = 700;
+  } else if (ap.category === "Regional") {
+    structuralMax = 350;
+  } else {
+    structuralMax = 180;
   }
-     
-  /* ---------- BUILD GRID ---------- */
 
-  let html = `
-    <div style="
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:18px 12px;
-      justify-items:center;
-      margin-top:10px;
-    ">
-  `;
-
-  /* ============================================================
-     ACS DEMAND BY CLASS — INDEPENDENT Y / C / F INDICATORS
-     Cada tercio de la barra representa una clase independiente.
-     ============================================================ */
+  /* ---------- DAILY VALUES BY CLASS ---------- */
 
   const dailyYValues = distribution.map(
     value => Math.round(demand.Y * value)
@@ -1551,9 +1501,17 @@ function ACS_openDemandModal(icao){
   const peakC = Math.max(...dailyCValues, 1);
   const peakF = Math.max(...dailyFValues, 1);
 
-  function ACS_getClassIndicator(value, peak, structuralCapacity) {
+  /* ---------- INDEPENDENT CLASS INDICATOR ---------- */
 
-    if (value <= 0) return 0;
+  function ACS_getClassIndicator(
+    value,
+    peak,
+    structuralCapacity
+  ) {
+
+    if (value <= 0) {
+      return 0;
+    }
 
     const structuralPct =
       structuralCapacity > 0
@@ -1575,11 +1533,23 @@ function ACS_openDemandModal(icao){
     );
   }
 
-  days.forEach((day, i) => {
+  /* ---------- BUILD GRID ---------- */
 
-    const Y = dailyYValues[i];
-    const C = dailyCValues[i];
-    const F = dailyFValues[i];
+  let html = `
+    <div style="
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px 12px;
+      justify-items:center;
+      margin-top:10px;
+    ">
+  `;
+
+  days.forEach((day, index) => {
+
+    const Y = dailyYValues[index];
+    const C = dailyCValues[index];
+    const F = dailyFValues[index];
 
     const yIndicatorPct = ACS_getClassIndicator(
       Y,
@@ -1600,7 +1570,6 @@ function ACS_openDemandModal(icao){
     );
 
     html += `
-
       <div style="
         text-align:center;
         width:100%;
@@ -1618,7 +1587,7 @@ function ACS_openDemandModal(icao){
           ${day}
         </div>
 
-        <!-- INDEPENDENT Y / C / F BAR -->
+        <!-- Y / C / F INDEPENDENT INDICATORS -->
         <div style="
           width:100%;
           height:8px;
@@ -1630,44 +1599,53 @@ function ACS_openDemandModal(icao){
           overflow:hidden;
         ">
 
-          <!-- Y SECTION -->
+          <!-- Y -->
           <div style="
             position:relative;
             overflow:hidden;
             border-right:1px solid rgba(255,179,0,0.4);
           ">
-            <div class="acs-demand-segY" style="
-              width:${yIndicatorPct}%;
-              height:100%;
-            "></div>
+            <div
+              class="acs-demand-segY"
+              style="
+                width:${yIndicatorPct}%;
+                height:100%;
+              ">
+            </div>
           </div>
 
-          <!-- C SECTION -->
+          <!-- C -->
           <div style="
             position:relative;
             overflow:hidden;
             border-right:1px solid rgba(255,179,0,0.4);
           ">
-            <div class="acs-demand-segC" style="
-              width:${cIndicatorPct}%;
-              height:100%;
-            "></div>
+            <div
+              class="acs-demand-segC"
+              style="
+                width:${cIndicatorPct}%;
+                height:100%;
+              ">
+            </div>
           </div>
 
-          <!-- F SECTION -->
+          <!-- F -->
           <div style="
             position:relative;
             overflow:hidden;
           ">
-            <div class="acs-demand-segF" style="
-              width:${fIndicatorPct}%;
-              height:100%;
-            "></div>
+            <div
+              class="acs-demand-segF"
+              style="
+                width:${fIndicatorPct}%;
+                height:100%;
+              ">
+            </div>
           </div>
 
         </div>
 
-        <!-- Y / C / F VALUES -->
+        <!-- CLASS VALUES -->
         <div style="
           display:grid;
           grid-template-columns:1fr 1fr 1fr;
@@ -1691,9 +1669,14 @@ function ACS_openDemandModal(icao){
         </div>
 
       </div>
-
     `;
   });
+
+  html += `</div>`;
+
+  content.innerHTML = html;
+  modal.classList.add("is-open");
+}
 
 function ACS_closeDemandModal(){
   document.getElementById("acsDemandModal").classList.remove("is-open");
