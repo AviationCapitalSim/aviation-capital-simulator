@@ -1476,6 +1476,48 @@ function ACS_openDemandModal(icao){
   else if(ap.category === "Regional") structuralMax = 350;
   else structuralMax = 180;
 
+    const dailyYValues =
+    distribution.map(value =>
+      Math.round(demand.Y * value)
+    );
+
+  const dailyCValues =
+    distribution.map(value =>
+      Math.round(demand.C * value)
+    );
+
+  const dailyFValues =
+    distribution.map(value =>
+      Math.round(demand.F * value)
+    );
+
+  const peakY = Math.max(...dailyYValues, 1);
+  const peakC = Math.max(...dailyCValues, 1);
+  const peakF = Math.max(...dailyFValues, 1);
+
+  function ACS_classIndicator(
+    value,
+    peak,
+    structuralCapacity
+  ) {
+    if (value <= 0) return 0;
+
+    const structuralPct =
+      (value / Math.max(structuralCapacity, 1)) * 100;
+
+    const relativePct =
+      (value / Math.max(peak, 1)) * 100;
+
+    return Math.max(
+      8,
+      Math.min(
+        100,
+        (structuralPct * 0.65) +
+        (relativePct * 0.35)
+      )
+    );
+  }
+     
   /* ---------- BUILD GRID ---------- */
 
   let html = `
@@ -1488,45 +1530,74 @@ function ACS_openDemandModal(icao){
     ">
   `;
 
-  days.forEach((day, i)=>{
+  /* ============================================================
+     ACS DEMAND BY CLASS — INDEPENDENT Y / C / F INDICATORS
+     Cada tercio de la barra representa una clase independiente.
+     ============================================================ */
 
-    const Y = Math.round(demand.Y * distribution[i]);
-    const C = Math.round(demand.C * distribution[i]);
-    const F = Math.round(demand.F * distribution[i]);
+  const dailyYValues = distribution.map(
+    value => Math.round(demand.Y * value)
+  );
 
-    /* ============================================================
-       🟦 ACS HYBRID DEMAND SCALING ENGINE v1.0
-       Airbus OCC professional scaling
-       Prevents stagnation and preserves realism
-       ============================================================ */
+  const dailyCValues = distribution.map(
+    value => Math.round(demand.C * value)
+  );
 
-        const total = Y + C + F;
+  const dailyFValues = distribution.map(
+    value => Math.round(demand.F * value)
+  );
 
-    const yClassPct =
-      total > 0 ? (Y / total) * 100 : 0;
+  const peakY = Math.max(...dailyYValues, 1);
+  const peakC = Math.max(...dailyCValues, 1);
+  const peakF = Math.max(...dailyFValues, 1);
 
-    const cClassPct =
-      total > 0 ? (C / total) * 100 : 0;
+  function ACS_getClassIndicator(value, peak, structuralCapacity) {
 
-    const fClassPct =
-      total > 0 ? (F / total) * 100 : 0;
+    if (value <= 0) return 0;
 
     const structuralPct =
-         
-      structuralMax > 0
-        ? (total / structuralMax) * 100
+      structuralCapacity > 0
+        ? (value / structuralCapacity) * 100
         : 0;
 
     const relativePct =
-      weeklyMax > 0
-        ? (total / weeklyMax) * 100
+      peak > 0
+        ? (value / peak) * 100
         : 0;
 
-    let pct =
+    const indicatorPct =
       (structuralPct * 0.65) +
       (relativePct * 0.35);
 
-    pct = Math.max(12, Math.min(100, pct));
+    return Math.max(
+      8,
+      Math.min(100, indicatorPct)
+    );
+  }
+
+  days.forEach((day, i) => {
+
+    const Y = dailyYValues[i];
+    const C = dailyCValues[i];
+    const F = dailyFValues[i];
+
+    const yIndicatorPct = ACS_getClassIndicator(
+      Y,
+      peakY,
+      structuralMax * 0.80
+    );
+
+    const cIndicatorPct = ACS_getClassIndicator(
+      C,
+      peakC,
+      structuralMax * 0.15
+    );
+
+    const fIndicatorPct = ACS_getClassIndicator(
+      F,
+      peakF,
+      structuralMax * 0.05
+    );
 
     html += `
 
@@ -1547,71 +1618,65 @@ function ACS_openDemandModal(icao){
           ${day}
         </div>
 
-        <!-- BAR -->
+        <!-- INDEPENDENT Y / C / F BAR -->
         <div style="
           width:100%;
           height:8px;
+          display:grid;
+          grid-template-columns:1fr 1fr 1fr;
           background:rgba(255,255,255,0.06);
-          border-radius:4px;
-          position:relative;
           border:1px solid rgba(255,179,0,0.25);
+          border-radius:4px;
           overflow:hidden;
         ">
 
-          <!-- DIVISION 1 -->
+          <!-- Y SECTION -->
           <div style="
-            position:absolute;
-            left:33.33%;
-            top:0;
-            bottom:0;
-            width:1px;
-            background:rgba(255,179,0,0.4);
-          "></div>
-
-          <!-- DIVISION 2 -->
-          <div style="
-            position:absolute;
-            left:66.66%;
-            top:0;
-            bottom:0;
-            width:1px;
-            background:rgba(255,179,0,0.4);
-          "></div>
-
-                    <!-- DEMAND BY CLASS -->
-          <div style="
-            width:${pct}%;
-            height:100%;
-            display:flex;
+            position:relative;
             overflow:hidden;
-            border-radius:4px;
+            border-right:1px solid rgba(255,179,0,0.4);
           ">
-            <div class="acs-demand-segY"
-                 style="width:${yClassPct}%">
-            </div>
+            <div class="acs-demand-segY" style="
+              width:${yIndicatorPct}%;
+              height:100%;
+            "></div>
+          </div>
 
-            <div class="acs-demand-segC"
-                 style="width:${cClassPct}%">
-            </div>
+          <!-- C SECTION -->
+          <div style="
+            position:relative;
+            overflow:hidden;
+            border-right:1px solid rgba(255,179,0,0.4);
+          ">
+            <div class="acs-demand-segC" style="
+              width:${cIndicatorPct}%;
+              height:100%;
+            "></div>
+          </div>
 
-            <div class="acs-demand-segF"
-                 style="width:${fClassPct}%">
-            </div>
+          <!-- F SECTION -->
+          <div style="
+            position:relative;
+            overflow:hidden;
+          ">
+            <div class="acs-demand-segF" style="
+              width:${fIndicatorPct}%;
+              height:100%;
+            "></div>
           </div>
 
         </div>
 
-        <!-- Y C F -->
+        <!-- Y / C / F VALUES -->
         <div style="
           display:grid;
           grid-template-columns:1fr 1fr 1fr;
           font-family:Orbitron;
           font-size:11px;
-          color:#ffb300;
           margin-top:4px;
         ">
 
-       <div style="color:#00AEEF;">
+          <div style="color:#00AEEF;">
             Y ${Y}
           </div>
 
@@ -1629,13 +1694,6 @@ function ACS_openDemandModal(icao){
 
     `;
   });
-
-  html += `</div>`;
-
-  content.innerHTML = html;
-
-  modal.classList.add("is-open");
-}
 
 function ACS_closeDemandModal(){
   document.getElementById("acsDemandModal").classList.remove("is-open");
