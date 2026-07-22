@@ -1813,6 +1813,7 @@ if (
       await resolveCompletedMaintenanceEvents();
 
       await loadFleetFromBackend();
+      await loadAircraftOrdersFromBackend();
        
       /* ============================================================
          ACS-RA-UI3 — AUTO REGISTRATION BEFORE RENDER
