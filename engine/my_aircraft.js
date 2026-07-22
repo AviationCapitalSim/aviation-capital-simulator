@@ -1916,9 +1916,8 @@ function renderPendingDeliveryModal() {
   }
 
   if (navigation) {
-    navigation.style.display =
-      orders.length > 1 ? "grid" : "none";
-  }
+  navigation.style.display = "grid";
+}
 
   setText(
     "pendingPageIndicator",
