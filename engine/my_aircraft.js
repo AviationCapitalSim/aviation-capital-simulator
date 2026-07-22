@@ -42,9 +42,13 @@
   const ACS_MY_AIRCRAFT = {
     version: "ACS_MY_AIRCRAFT_BACKEND_AUTHORITY_V1_1",
     endpoint: `${ACS_MY_AIRCRAFT_API_BASE}/v1/aircraft/fleet`,
-    fleet: [],
-    filteredFleet: [],
-    selectedAircraft: null
+ordersEndpoint: `${ACS_MY_AIRCRAFT_API_BASE}/v1/aircraft/orders`,
+
+fleet: [],
+filteredFleet: [],
+orders: [],
+pendingOrders: [],
+selectedAircraft: null
   };
 
   /* ============================================================
@@ -617,6 +621,69 @@ async function resolveCompletedMaintenanceEvents() {
     });
   }
 
+  async function loadAircraftOrdersFromBackend() {
+  const response = await fetch(ACS_MY_AIRCRAFT.ordersEndpoint, {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "Accept": "application/json"
+    }
+  });
+
+  if (!response.ok) {
+    let details = "";
+
+    try {
+      const payload = await response.json();
+      details = payload?.error || payload?.details || "";
+    } catch (_) {
+      details = response.statusText;
+    }
+
+    throw new Error(
+      `Aircraft orders load failed: ${response.status} ${details}`
+    );
+  }
+
+  const payload = await response.json();
+
+  if (!payload || payload.ok !== true || !Array.isArray(payload.orders)) {
+    throw new Error("Invalid aircraft orders payload from backend.");
+  }
+
+  ACS_MY_AIRCRAFT.orders = payload.orders;
+
+  ACS_MY_AIRCRAFT.pendingOrders = payload.orders
+    .filter(order => {
+      const orderStatus = normalizeStatus(order.order_status);
+      const deliveryStatus = normalizeStatus(order.delivery_status);
+
+      return (
+        orderStatus === "ORDERED" &&
+        (
+          deliveryStatus === "PENDING_DELIVERY" ||
+          deliveryStatus === "PAYMENT_HOLD"
+        )
+      );
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.estimated_delivery_date || 0).getTime();
+      const dateB = new Date(b.estimated_delivery_date || 0).getTime();
+
+      return dateA - dateB;
+    });
+
+  console.log("🟦 ACS MY AIRCRAFT — Orders loaded:", {
+    total_orders: ACS_MY_AIRCRAFT.orders.length,
+    pending_orders: ACS_MY_AIRCRAFT.pendingOrders.length,
+    pending_aircraft: ACS_MY_AIRCRAFT.pendingOrders.reduce(
+      (total, order) =>
+        total + Math.max(1, safeNumber(order.quantity, 1)),
+      0
+    )
+  });
+}
+   
   /* ============================================================
    🟦 ACS-RA-UI3 — AUTO REGISTRATION SYNC
    ------------------------------------------------------------
@@ -743,13 +810,24 @@ async function resolveCompletedMaintenanceEvents() {
       ? ACS_MY_AIRCRAFT.fleet
       : [];
 
-    const counts = {
-      totalFleet: fleet.length,
-      active: 0,
-      pendingDelivery: 0,
-      maintenance: 0,
-      leased: 0
-    };
+    const pendingOrders =
+  Array.isArray(ACS_MY_AIRCRAFT.pendingOrders)
+    ? ACS_MY_AIRCRAFT.pendingOrders
+    : [];
+
+const pendingDeliveryCount = pendingOrders.reduce(
+  (total, order) =>
+    total + Math.max(1, safeNumber(order.quantity, 1)),
+  0
+);
+
+const counts = {
+  totalFleet: fleet.length,
+  active: 0,
+  pendingDelivery: pendingDeliveryCount,
+  maintenance: 0,
+  leased: 0
+};
 
     for (const aircraft of fleet) {
       const status = normalizeStatus(aircraft.status);
@@ -766,13 +844,6 @@ async function resolveCompletedMaintenanceEvents() {
         maintenanceControl !== "MAINTENANCE_REQUIRED"
       ) {
         counts.active += 1;
-      }
-
-      if (
-        status === "PENDING_DELIVERY" ||
-        statusInfo.key === "PENDING_DELIVERY"
-      ) {
-        counts.pendingDelivery += 1;
       }
 
       if (
