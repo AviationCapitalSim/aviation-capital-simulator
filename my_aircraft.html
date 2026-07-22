@@ -2991,13 +2991,23 @@ html body .order-book-table tbody tr:hover {
 }
 
 .pending-occ-nav-button {
-  padding: 10px 17px;
+  width: 108px;
+  padding: 10px 12px;
   cursor: pointer;
   color: #ffc84f;
   font-weight: 700;
+  text-align: center;
   background: rgba(255, 179, 0, 0.07);
   border: 1px solid rgba(255, 179, 0, 0.42);
   border-radius: 10px;
+}
+
+#pendingPreviousButton {
+  justify-self: start;
+}
+
+#pendingNextButton {
+  justify-self: end;
 }
 
 .pending-occ-nav-button:last-child {
@@ -3236,7 +3246,7 @@ html body .order-book-table tbody tr:hover {
         class="pending-occ-nav-button"
         type="button"
       >
-        ◀ Previous
+        ◀ PREV
       </button>
 
       <span
@@ -3251,7 +3261,7 @@ html body .order-book-table tbody tr:hover {
         class="pending-occ-nav-button"
         type="button"
       >
-        Next ▶
+        NEXT ▶
       </button>
     </footer>
   </section>
