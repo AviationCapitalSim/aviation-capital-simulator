@@ -48,6 +48,7 @@ fleet: [],
 filteredFleet: [],
 orders: [],
 pendingOrders: [],
+pendingOrderIndex: 0,     
 selectedAircraft: null
   };
 
@@ -1803,6 +1804,246 @@ if (
   }
 
   /* ============================================================
+   🟦 PENDING DELIVERY MODAL — ACS OCC
+   ============================================================ */
+
+function getPendingAircraftTotal() {
+  const pendingOrders =
+    Array.isArray(ACS_MY_AIRCRAFT.pendingOrders)
+      ? ACS_MY_AIRCRAFT.pendingOrders
+      : [];
+
+  return pendingOrders.reduce(
+    (total, order) =>
+      total + Math.max(1, safeNumber(order.quantity, 1)),
+    0
+  );
+}
+
+function getPendingOrderImage(order) {
+  const imageObject = normalizeMyAircraftImageObject({
+    manufacturer: order.manufacturer,
+    aircraft_name: order.aircraft_name,
+    model_key: order.model_key
+  });
+
+  return getAircraftImage(imageObject);
+}
+
+function renderPendingDeliveryModal() {
+  const orders =
+    Array.isArray(ACS_MY_AIRCRAFT.pendingOrders)
+      ? ACS_MY_AIRCRAFT.pendingOrders
+      : [];
+
+  if (!orders.length) {
+    closePendingDeliveryModal();
+    return;
+  }
+
+  ACS_MY_AIRCRAFT.pendingOrderIndex = Math.min(
+    Math.max(ACS_MY_AIRCRAFT.pendingOrderIndex, 0),
+    orders.length - 1
+  );
+
+  const index = ACS_MY_AIRCRAFT.pendingOrderIndex;
+  const order = orders[index];
+  const totalAircraft = getPendingAircraftTotal();
+
+  setText(
+    "pendingDeliverySummary",
+    `${totalAircraft} aircraft pending · Order ${index + 1} of ${orders.length}`
+  );
+
+  setText("pendingFactory", safeText(order.manufacturer));
+  setText("pendingModel", safeText(order.aircraft_name));
+  setText(
+    "pendingQuantity",
+    Math.max(1, safeNumber(order.quantity, 1))
+  );
+  setText(
+    "pendingOwnership",
+    normalizeDisplay(order.ownership_type)
+  );
+  setText(
+    "pendingPayment",
+    normalizeDisplay(order.payment_status)
+  );
+  setText(
+    "pendingEstimatedDelivery",
+    formatDate(order.estimated_delivery_date)
+  );
+
+  const deliveryStatus =
+    normalizeStatus(order.delivery_status);
+
+  const statusElement = $("pendingDeliveryStatus");
+
+  if (statusElement) {
+    statusElement.textContent =
+      normalizeDisplay(deliveryStatus);
+
+    statusElement.className =
+      deliveryStatus === "PAYMENT_HOLD"
+        ? "pending-occ-status pending-occ-status-hold"
+        : "pending-occ-status pending-occ-status-waiting";
+  }
+
+  const image = $("pendingAircraftImage");
+
+  if (image) {
+    image.dataset.fallback = "0";
+    image.alt =
+      safeText(order.aircraft_name, "Pending aircraft");
+
+    image.onerror = function () {
+      ACS_handleImageFallback(this);
+    };
+
+    image.src = getPendingOrderImage(order);
+  }
+
+  const previousButton = $("pendingPreviousButton");
+  const nextButton = $("pendingNextButton");
+  const navigation = $("pendingDeliveryNavigation");
+
+  if (previousButton) {
+    previousButton.disabled = index === 0;
+  }
+
+  if (nextButton) {
+    nextButton.disabled = index === orders.length - 1;
+  }
+
+  if (navigation) {
+    navigation.style.display =
+      orders.length > 1 ? "grid" : "none";
+  }
+
+  setText(
+    "pendingPageIndicator",
+    `${index + 1} OF ${orders.length}`
+  );
+}
+
+function openPendingDeliveryModal() {
+  if (!ACS_MY_AIRCRAFT.pendingOrders.length) {
+    return;
+  }
+
+  ACS_MY_AIRCRAFT.pendingOrderIndex = 0;
+
+  const modal = $("pendingDeliveryModal");
+
+  if (!modal) return;
+
+  renderPendingDeliveryModal();
+  modal.style.display = "flex";
+  modal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("pending-modal-open");
+}
+
+function closePendingDeliveryModal() {
+  const modal = $("pendingDeliveryModal");
+
+  if (!modal) return;
+
+  modal.style.display = "none";
+  modal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("pending-modal-open");
+}
+
+function changePendingDeliveryPage(direction) {
+  const orders = ACS_MY_AIRCRAFT.pendingOrders;
+
+  if (!Array.isArray(orders) || orders.length < 2) {
+    return;
+  }
+
+  const nextIndex =
+    ACS_MY_AIRCRAFT.pendingOrderIndex + Number(direction);
+
+  if (nextIndex < 0 || nextIndex >= orders.length) {
+    return;
+  }
+
+  ACS_MY_AIRCRAFT.pendingOrderIndex = nextIndex;
+  renderPendingDeliveryModal();
+}
+
+function bindPendingDeliveryModal() {
+  const card = $("foPendingDelivery");
+  const modal = $("pendingDeliveryModal");
+  const closeButton = $("pendingDeliveryClose");
+  const previousButton = $("pendingPreviousButton");
+  const nextButton = $("pendingNextButton");
+
+  if (card) {
+    card.setAttribute("role", "button");
+    card.setAttribute("tabindex", "0");
+    card.setAttribute(
+      "aria-label",
+      "Open pending aircraft deliveries"
+    );
+
+    card.addEventListener("click", openPendingDeliveryModal);
+
+    card.addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openPendingDeliveryModal();
+      }
+    });
+  }
+
+  if (closeButton) {
+    closeButton.addEventListener(
+      "click",
+      closePendingDeliveryModal
+    );
+  }
+
+  if (previousButton) {
+    previousButton.addEventListener("click", () => {
+      changePendingDeliveryPage(-1);
+    });
+  }
+
+  if (nextButton) {
+    nextButton.addEventListener("click", () => {
+      changePendingDeliveryPage(1);
+    });
+  }
+
+  if (modal) {
+    modal.addEventListener("click", event => {
+      if (event.target === modal) {
+        closePendingDeliveryModal();
+      }
+    });
+  }
+
+  document.addEventListener("keydown", event => {
+    const isOpen =
+      $("pendingDeliveryModal")?.style.display === "flex";
+
+    if (!isOpen) return;
+
+    if (event.key === "Escape") {
+      closePendingDeliveryModal();
+    }
+
+    if (event.key === "ArrowLeft") {
+      changePendingDeliveryPage(-1);
+    }
+
+    if (event.key === "ArrowRight") {
+      changePendingDeliveryPage(1);
+    }
+  });
+}
+ 
+  /* ============================================================
      🟦 INIT
      ============================================================ */
 
@@ -1831,6 +2072,7 @@ if (
 
       populateFilters();
       bindFilters();
+      bindPendingDeliveryModal();
       renderFleetOverview();
       renderFleetTable();
 
