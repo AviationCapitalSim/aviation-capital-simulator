@@ -1003,6 +1003,332 @@ function closeBuyModal() {
 }
 
 /* ============================================================
+   ACS OCC — BUY NEW SEAT CONFIGURATION PROTOTYPE
+   ------------------------------------------------------------
+   Visual memory only.
+   Does not modify factory order payload.
+   ============================================================ */
+
+let ACS_cabinDraft = null;
+const ACS_cabinPreviewByAircraft = new Map();
+
+function ACS_cloneCabinConfiguration(configuration) {
+  return JSON.parse(JSON.stringify(configuration));
+}
+
+function ACS_getSelectedCabinAircraftConfig() {
+  if (!selectedAircraft || !window.ACS_CABIN) {
+    return null;
+  }
+
+  return window.ACS_CABIN.getAircraftConfig(selectedAircraft);
+}
+
+function ACS_syncSeatConfigurationButton() {
+  const button =
+    document.getElementById("seatConfigurationBtn");
+
+  if (!button) return;
+
+  button.hidden =
+    !ACS_getSelectedCabinAircraftConfig();
+}
+
+function ACS_getCabinClassName(cabinClass) {
+  if (cabinClass === "Y") return "ECONOMY";
+  if (cabinClass === "C") return "BUSINESS";
+  if (cabinClass === "F") return "FIRST";
+  return cabinClass;
+}
+
+function ACS_getCabinProductOptions(
+  aircraftConfig,
+  cabinClass,
+  selectedProduct
+) {
+  return aircraftConfig.allowedProducts[cabinClass]
+    .map(productCode => {
+      const product =
+        window.ACS_CABIN.products[productCode];
+
+      const selected =
+        productCode === selectedProduct
+          ? " selected"
+          : "";
+
+      return `
+        <option value="${productCode}"${selected}>
+          ${product.name}
+        </option>
+      `;
+    })
+    .join("");
+}
+
+function ACS_renderCabinControls() {
+  const container =
+    document.getElementById("cabinConfigControls");
+
+  const aircraftConfig =
+    ACS_getSelectedCabinAircraftConfig();
+
+  if (!container || !aircraftConfig || !ACS_cabinDraft) {
+    return;
+  }
+
+  const readOnly =
+    aircraftConfig.mode === "READ_ONLY";
+
+  container.innerHTML = ["Y", "C", "F"]
+    .map(cabinClass => {
+      const allowedProducts =
+        aircraftConfig.allowedProducts[cabinClass];
+
+      if (!allowedProducts.length) {
+        return "";
+      }
+
+      const selection =
+        ACS_cabinDraft[cabinClass];
+
+      return `
+        <div class="cabin-class-control">
+
+          <div class="cabin-class-heading">
+            <span>
+              ${ACS_getCabinClassName(cabinClass)}
+            </span>
+
+            <span>
+              ${selection.seats} seats
+            </span>
+          </div>
+
+          <select
+            data-cabin-product="${cabinClass}"
+            ${readOnly ? "disabled" : ""}
+          >
+            ${ACS_getCabinProductOptions(
+              aircraftConfig,
+              cabinClass,
+              selection.product
+            )}
+          </select>
+
+          <div class="cabin-seat-stepper">
+
+            <button
+              type="button"
+              data-cabin-step="${cabinClass}"
+              data-cabin-delta="-1"
+              ${readOnly ? "disabled" : ""}
+            >
+              −
+            </button>
+
+            <input
+              type="number"
+              min="0"
+              step="1"
+              value="${selection.seats}"
+              data-cabin-seats="${cabinClass}"
+              ${readOnly ? "readonly" : ""}
+            />
+
+            <button
+              type="button"
+              data-cabin-step="${cabinClass}"
+              data-cabin-delta="1"
+              ${readOnly ? "disabled" : ""}
+            >
+              +
+            </button>
+
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+function ACS_renderDoveCabinMap() {
+  const map =
+    document.getElementById("cabinConfigMap");
+
+  if (!map) return;
+
+  map.innerHTML = `
+    <div class="cabin-fixed-row">
+      <span class="cabin-seat"></span>
+      <span class="cabin-seat"></span>
+
+      <span class="cabin-fixed-aisle"></span>
+
+      <span class="cabin-seat"></span>
+      <span class="cabin-seat"></span>
+
+      <small>Row 1</small>
+    </div>
+
+    <div class="cabin-fixed-row">
+      <span class="cabin-seat"></span>
+      <span class="cabin-seat"></span>
+
+      <span class="cabin-fixed-aisle"></span>
+
+      <span class="cabin-seat"></span>
+      <span class="cabin-seat"></span>
+
+      <small>Row 2</small>
+    </div>
+  `;
+}
+
+function ACS_renderDC8CabinMap() {
+  const map =
+    document.getElementById("cabinConfigMap");
+
+  if (!map || !ACS_cabinDraft) return;
+
+  const totalSeats = Math.max(
+    1,
+    ACS_cabinDraft.Y.seats +
+    ACS_cabinDraft.C.seats +
+    ACS_cabinDraft.F.seats
+  );
+
+  map.innerHTML = ["F", "C", "Y"]
+    .map(cabinClass => {
+      const seats =
+        ACS_cabinDraft[cabinClass].seats;
+
+      if (seats === 0) return "";
+
+      const width = Math.max(
+        5,
+        (seats / totalSeats) * 100
+      );
+
+      return `
+        <div class="cabin-zone-row">
+          <span>${cabinClass}</span>
+
+          <div
+            class="cabin-zone cabin-zone-${cabinClass}"
+            style="width:${width}%"
+          ></div>
+
+          <strong>${seats}</strong>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+function ACS_refreshCabinConfigurationModal() {
+  const aircraftConfig =
+    ACS_getSelectedCabinAircraftConfig();
+
+  if (!aircraftConfig || !ACS_cabinDraft) {
+    return;
+  }
+
+  ACS_renderCabinControls();
+
+  if (aircraftConfig.model === "DH.104 Dove") {
+    ACS_renderDoveCabinMap();
+  } else {
+    ACS_renderDC8CabinMap();
+  }
+
+  const validation =
+    window.ACS_CABIN.validateConfiguration(
+      selectedAircraft,
+      ACS_cabinDraft
+    );
+
+  const status =
+    document.getElementById("cabinConfigStatus");
+
+  const applyButton =
+    document.getElementById("cabinConfigApply");
+
+  if (status) {
+    status.textContent = validation.message;
+
+    status.classList.toggle(
+      "is-invalid",
+      !validation.valid
+    );
+  }
+
+  if (applyButton) {
+    applyButton.disabled = !validation.valid;
+  }
+}
+
+function openSeatConfigurationModal() {
+  const aircraftConfig =
+    ACS_getSelectedCabinAircraftConfig();
+
+  const modal =
+    document.getElementById(
+      "seatConfigurationModal"
+    );
+
+  if (!aircraftConfig || !modal) return;
+
+  const aircraftKey =
+    window.ACS_CABIN.makeAircraftKey(
+      selectedAircraft
+    );
+
+  const previousPreview =
+    ACS_cabinPreviewByAircraft.get(aircraftKey);
+
+  ACS_cabinDraft = ACS_cloneCabinConfiguration(
+    previousPreview ||
+    window.ACS_CABIN.getFactoryDefault(
+      selectedAircraft
+    )
+  );
+
+  document.getElementById(
+    "cabinConfigTitle"
+  ).textContent =
+    `${aircraftConfig.manufacturer} ${aircraftConfig.model}`;
+
+  document.getElementById(
+    "cabinConfigSubtitle"
+  ).textContent =
+    aircraftConfig.mode === "READ_ONLY"
+      ? "Factory fixed cabin · View only"
+      : "Factory Default or Custom Configuration";
+
+  document.getElementById(
+    "cabinConfigApply"
+  ).hidden =
+    aircraftConfig.mode === "READ_ONLY";
+
+  ACS_refreshCabinConfigurationModal();
+
+  modal.style.display = "flex";
+  modal.setAttribute("aria-hidden", "false");
+}
+
+function closeSeatConfigurationModal() {
+  const modal =
+    document.getElementById(
+      "seatConfigurationModal"
+    );
+
+  if (!modal) return;
+
+  modal.style.display = "none";
+  modal.setAttribute("aria-hidden", "true");
+}
+
+/* ============================================================
    ACS OCC — FACTORY ORDER → AIRCRAFT INFO
    Uses the aircraft already selected in the order modal.
    ============================================================ */
