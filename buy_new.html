@@ -1369,6 +1369,372 @@
   box-shadow:
     inset 0 2px 8px rgba(0, 0, 0, 0.3);
 }
+
+/* ============================================================
+   ACS OCC — FACTORY ORDER CONTROL
+   Scoped exclusively to #buyModal
+   ============================================================ */
+
+#buyModal {
+  padding: 24px;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(9, 28, 60, 0.34),
+      rgba(0, 4, 14, 0.88)
+    );
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+}
+
+#buyModal .buy-order-modal-content {
+  position: relative;
+  width: min(920px, 94vw);
+  max-width: 920px;
+  max-height: 90vh;
+  padding: 0;
+  overflow: hidden;
+  text-align: left;
+  border: 1px solid rgba(255, 179, 0, 0.68);
+  border-radius: 18px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(13, 32, 68, 0.98),
+      rgba(3, 11, 28, 0.99)
+    );
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.72),
+    0 0 32px rgba(255, 179, 0, 0.10);
+}
+
+#buyModal .buy-order-close {
+  position: absolute;
+  top: 17px;
+  right: 18px;
+  z-index: 3;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid rgba(255, 179, 0, 0.55);
+  border-radius: 12px;
+  background: rgba(255, 179, 0, 0.06);
+  color: #ffb300;
+  font-size: 1.55rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: 160ms ease;
+}
+
+#buyModal .buy-order-close:hover {
+  background: rgba(255, 179, 0, 0.16);
+  box-shadow: 0 0 16px rgba(255, 179, 0, 0.20);
+}
+
+#buyModal .buy-order-header {
+  padding: 20px 76px 17px 28px;
+  border-bottom: 1px solid rgba(255, 179, 0, 0.38);
+  background:
+    linear-gradient(
+      100deg,
+      rgba(27, 67, 130, 0.38),
+      rgba(9, 22, 49, 0.12)
+    );
+}
+
+#buyModal .buy-order-manufacturer {
+  margin-bottom: 5px;
+  color: #ffb300;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+#buyModal .buy-order-title-line {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+#buyModal .modal-title {
+  margin: 0;
+  color: #f5f8ff;
+  font-size: clamp(1.25rem, 2.2vw, 1.75rem);
+  line-height: 1.1;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
+
+#buyModal .buy-order-status {
+  padding: 5px 10px;
+  border: 1px solid rgba(49, 224, 150, 0.55);
+  border-radius: 999px;
+  background: rgba(21, 191, 123, 0.09);
+  color: #35e4a1;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+#buyModal .buy-order-subtitle {
+  margin: 7px 0 0;
+  color: #8fa5ca;
+  font-size: 0.75rem;
+  letter-spacing: 0.10em;
+}
+
+#buyModal .buy-order-workspace {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.9fr) minmax(360px, 1.35fr);
+  gap: 18px;
+  padding: 20px 22px 18px;
+}
+
+#buyModal .buy-order-aircraft-panel,
+#buyModal .buy-order-control-panel {
+  border: 1px solid rgba(90, 142, 218, 0.32);
+  border-radius: 14px;
+  background: rgba(4, 16, 40, 0.62);
+}
+
+#buyModal .buy-order-aircraft-panel {
+  padding: 13px;
+  display: flex;
+  flex-direction: column;
+}
+
+#buyModal .modal-image.buy-order-image {
+  display: block;
+  width: 100%;
+  height: 220px;
+  margin: 0;
+  border: 1px solid rgba(117, 163, 228, 0.28);
+  border-radius: 11px;
+  object-fit: cover;
+  background: #07152f;
+}
+
+#buyModal .buy-order-price-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(32, 218, 166, 0.42);
+  border-radius: 10px;
+  background: rgba(10, 73, 77, 0.18);
+}
+
+#buyModal .buy-order-price-label {
+  color: #91a5c7;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+#buyModal .buy-order-price-value {
+  color: #22e3b0;
+  font-family: monospace;
+  font-size: 1.18rem;
+  letter-spacing: 0.03em;
+}
+
+#buyModal .buy-order-info-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 179, 0, 0.62);
+  border-radius: 9px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 179, 0, 0.10),
+      rgba(255, 179, 0, 0.025)
+    );
+  color: #ffd36a;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.10em;
+  cursor: pointer;
+  transition: 160ms ease;
+}
+
+#buyModal .buy-order-info-btn:hover {
+  background: rgba(255, 179, 0, 0.18);
+  box-shadow: 0 0 17px rgba(255, 179, 0, 0.17);
+  transform: translateY(-1px);
+}
+
+#buyModal .buy-order-control-panel {
+  padding: 16px;
+}
+
+#buyModal .buy-order-section-title {
+  margin: 0 0 12px;
+  color: #ffb300;
+  font-size: 0.77rem;
+  font-weight: 800;
+  letter-spacing: 0.17em;
+}
+
+#buyModal .modal-body {
+  margin: 0;
+}
+
+#buyModal .modal-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 13px;
+  align-items: start;
+}
+
+#buyModal .modal-col {
+  min-width: 0;
+}
+
+#buyModal .modal-label {
+  margin: 0 0 5px;
+  color: #99acd0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+#buyModal select,
+#buyModal input[type="number"] {
+  width: 100%;
+  min-height: 38px;
+  margin: 0 0 12px;
+  padding: 7px 10px;
+  border: 1px solid rgba(87, 139, 218, 0.48);
+  border-radius: 8px;
+  outline: none;
+  background: rgba(5, 18, 43, 0.92);
+  color: #f3f6ff;
+  font-size: 0.82rem;
+}
+
+#buyModal select:focus,
+#buyModal input[type="number"]:focus {
+  border-color: rgba(255, 179, 0, 0.78);
+  box-shadow: 0 0 0 2px rgba(255, 179, 0, 0.09);
+}
+
+#buyModal .buy-order-finance-panel {
+  margin-top: 4px;
+  padding-top: 13px;
+  border-top: 1px solid rgba(90, 142, 218, 0.24);
+}
+
+#buyModal .modal-summary-box {
+  margin: 0;
+  padding: 13px 15px;
+  min-height: 74px;
+  border: 1px solid rgba(32, 218, 166, 0.38);
+  border-radius: 10px;
+  background:
+    linear-gradient(
+      120deg,
+      rgba(8, 71, 77, 0.24),
+      rgba(4, 15, 36, 0.72)
+    );
+}
+
+#buyModal .modal-summary {
+  margin: 0;
+  color: #dbe6fb;
+  font-size: 0.80rem;
+  line-height: 1.48;
+}
+
+#buyModal .modal-summary b {
+  color: #f8fbff;
+}
+
+#buyModal .buy-order-footer {
+  margin: 0;
+  padding: 14px 22px 17px;
+  display: grid;
+  grid-template-columns: 1fr 1.25fr 1fr;
+  gap: 11px;
+  border-top: 1px solid rgba(255, 179, 0, 0.25);
+  background: rgba(2, 9, 24, 0.72);
+}
+
+#buyModal .buy-order-footer button {
+  width: 100%;
+  min-height: 42px;
+  margin: 0;
+  border-radius: 9px;
+  font-size: 0.77rem;
+  font-weight: 800;
+  letter-spacing: 0.065em;
+}
+
+#buyModal .factory-slots-btn {
+  border: 1px solid rgba(108, 158, 231, 0.58);
+  background: rgba(67, 119, 195, 0.09);
+  color: #b9d2ff;
+}
+
+#buyModal .primary-btn {
+  border: 1px solid rgba(255, 179, 0, 0.72);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 179, 0, 0.23),
+      rgba(255, 179, 0, 0.08)
+    );
+  color: #ffd36a;
+  box-shadow: 0 0 15px rgba(255, 179, 0, 0.13);
+}
+
+#buyModal .close-btn {
+  border: 1px solid rgba(225, 84, 92, 0.55);
+  background: rgba(190, 44, 55, 0.09);
+  color: #ff9ba1;
+}
+
+#buyModal .buy-order-footer button:hover {
+  filter: brightness(1.18);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 760px) {
+  #buyModal {
+    padding: 12px;
+    align-items: flex-start;
+  }
+
+  #buyModal .buy-order-modal-content {
+    width: 96vw;
+    max-height: none;
+    overflow: visible;
+  }
+
+  #buyModal .buy-order-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  #buyModal .modal-image.buy-order-image {
+    height: 190px;
+  }
+
+  #buyModal .modal-row {
+    grid-template-columns: 1fr;
+  }
+
+  #buyModal .buy-order-footer {
+    grid-template-columns: 1fr;
+  }
+}
        
 </style>
      
@@ -1610,131 +1976,253 @@
   </div>
 </div>
      
-<!-- MODAL -->
+<!-- ============================================================
+     ACS OCC — FACTORY ORDER CONTROL
+     Visual redesign only. Existing functional IDs preserved.
+     ============================================================ -->
+
 <div id="buyModal" class="modal">
-    <div class="modal-content">
-         
-    <!-- ===================================================== -->
-    <!-- 5️⃣ STEP 5 — QATAR LUXURY MODAL BUY / LEASE           -->
-    <!--     (Reemplaza TODO el contenido anterior de          -->
-    <!--      <div class="modal-content"> ... </div>)          -->
-    <!-- ===================================================== -->
+  <div class="modal-content buy-order-modal-content">
 
-    <div class="modal-header-row">
-      <div class="modal-header-text">
-        <h3 id="modalTitle" class="modal-title"></h3>
-        <p class="modal-subtitle">
-          OEM Production Slots • Initial vs Final Payment • Real Delivery Date
-        </p>
+    <button
+      class="buy-order-close"
+      type="button"
+      onclick="closeBuyModal()"
+      aria-label="Close factory order"
+    >
+      ×
+    </button>
+
+    <header class="buy-order-header">
+      <div class="buy-order-manufacturer" id="modalManufacturer">
+        MANUFACTURER
       </div>
-      <img id="modalImage" src="" alt="" class="modal-image" />
-    </div>
 
-    <div class="modal-body">
+      <div class="buy-order-title-line">
+        <h3 id="modalTitle" class="modal-title"></h3>
 
-      <div class="modal-row">
-        <div class="modal-col">
-          <label class="modal-label">Operation Type</label>
-          <select id="modalOperation">
-            <option value="BUY">Buy New</option>
-            <option value="LEASE">Lease New</option>
-          </select>
+        <span class="buy-order-status">
+          OEM SLOT AVAILABLE
+        </span>
+      </div>
 
-          <label class="modal-label">Quantity</label>
-<select id="modalQty">
-  <option value="1">1</option>
-  <option value="2">2</option>
-  <option value="3">3</option>
-  <option value="4">4</option>
-  <option value="5">5</option>
-  <option value="6">6</option>
-  <option value="7">7</option>
-  <option value="8">8</option>
-  <option value="9">9</option>
-  <option value="10">10</option>
-  <option value="11">11</option>
-  <option value="12">12</option>
-  <option value="13">13</option>
-  <option value="14">14</option>
-  <option value="15">15</option>
-  <option value="16">16</option>
-  <option value="17">17</option>
-  <option value="18">18</option>
-  <option value="19">19</option>
-  <option value="20">20</option>
-  <option value="21">21</option>
-  <option value="22">22</option>
-  <option value="23">23</option>
-  <option value="24">24</option>
-  <option value="25">25</option>
-  <option value="26">26</option>
-  <option value="27">27</option>
-  <option value="28">28</option>
-  <option value="29">29</option>
-  <option value="30">30</option>
-  <option value="31">31</option>
-  <option value="32">32</option>
-  <option value="33">33</option>
-  <option value="34">34</option>
-  <option value="35">35</option>
-  <option value="36">36</option>
-  <option value="37">37</option>
-  <option value="38">38</option>
-  <option value="39">39</option>
-  <option value="40">40</option>
-  <option value="41">41</option>
-  <option value="42">42</option>
-  <option value="43">43</option>
-  <option value="44">44</option>
-  <option value="45">45</option>
-  <option value="46">46</option>
-  <option value="47">47</option>
-  <option value="48">48</option>
-  <option value="49">49</option>
-  <option value="50">50</option>
-</select>
+      <p class="buy-order-subtitle">
+        FACTORY ORDER CONTROL · PURCHASE, LEASING & DELIVERY
+      </p>
+    </header>
 
-</div>
+    <div class="buy-order-workspace">
 
-<div class="modal-col">
+      <!-- LEFT: AIRCRAFT / CATALOG ACCESS -->
+      <aside class="buy-order-aircraft-panel">
 
-          <!-- 🟡 BUY NEW — INITIAL PAYMENT (%) -->
-             
-          <div id="buyInitialPayment">
-            <label class="modal-label">Initial Payment (%)</label>
-            <select id="modalBuyInitialPct">
-              <option value="50">50% — Balanced cash flow</option>
-              <option value="75">75% — Lower final payment</option>
-              <option value="100" selected>100% — Full upfront</option>
-            </select>
+        <img
+          id="modalImage"
+          src=""
+          alt=""
+          class="modal-image buy-order-image"
+        />
+
+        <div class="buy-order-price-panel">
+          <span class="buy-order-price-label">
+            UNIT PRICE
+          </span>
+
+          <strong
+            id="modalUnitPrice"
+            class="buy-order-price-value"
+          >
+            $0
+          </strong>
+        </div>
+
+        <button
+          id="buyModalAircraftInfoBtn"
+          class="buy-order-info-btn"
+          type="button"
+        >
+          AIRCRAFT INFO
+        </button>
+
+      </aside>
+
+      <!-- RIGHT: ORDER CONFIGURATION -->
+      <section class="buy-order-control-panel">
+
+        <h4 class="buy-order-section-title">
+          ORDER CONFIGURATION
+        </h4>
+
+        <div class="modal-body">
+
+          <div class="modal-row">
+
+            <div class="modal-col">
+
+              <label class="modal-label">
+                Operation Type
+              </label>
+
+              <select id="modalOperation">
+                <option value="BUY">Buy New</option>
+                <option value="LEASE">Lease New</option>
+              </select>
+
+              <label class="modal-label">
+                Quantity
+              </label>
+
+              <select id="modalQty">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+                <option value="13">13</option>
+                <option value="14">14</option>
+                <option value="15">15</option>
+                <option value="16">16</option>
+                <option value="17">17</option>
+                <option value="18">18</option>
+                <option value="19">19</option>
+                <option value="20">20</option>
+                <option value="21">21</option>
+                <option value="22">22</option>
+                <option value="23">23</option>
+                <option value="24">24</option>
+                <option value="25">25</option>
+                <option value="26">26</option>
+                <option value="27">27</option>
+                <option value="28">28</option>
+                <option value="29">29</option>
+                <option value="30">30</option>
+                <option value="31">31</option>
+                <option value="32">32</option>
+                <option value="33">33</option>
+                <option value="34">34</option>
+                <option value="35">35</option>
+                <option value="36">36</option>
+                <option value="37">37</option>
+                <option value="38">38</option>
+                <option value="39">39</option>
+                <option value="40">40</option>
+                <option value="41">41</option>
+                <option value="42">42</option>
+                <option value="43">43</option>
+                <option value="44">44</option>
+                <option value="45">45</option>
+                <option value="46">46</option>
+                <option value="47">47</option>
+                <option value="48">48</option>
+                <option value="49">49</option>
+                <option value="50">50</option>
+              </select>
+
+            </div>
+
+            <div class="modal-col">
+
+              <div id="buyInitialPayment">
+
+                <label class="modal-label">
+                  Initial Payment
+                </label>
+
+                <select id="modalBuyInitialPct">
+                  <option value="50">
+                    50% — Balanced cash flow
+                  </option>
+
+                  <option value="75">
+                    75% — Lower final payment
+                  </option>
+
+                  <option value="100" selected>
+                    100% — Full upfront
+                  </option>
+                </select>
+
+              </div>
+
+              <div
+                id="leaseOptions"
+                style="display:none;"
+              >
+
+                <label class="modal-label">
+                  Lease Duration
+                </label>
+
+                <select id="modalLeaseYears">
+                  <option value="5">5 years</option>
+                  <option value="10" selected>10 years</option>
+                  <option value="15">15 years</option>
+                </select>
+
+              </div>
+
+            </div>
+
           </div>
 
-          <!-- 🔷 LEASE OPTIONS -->
-             
-          <div id="leaseOptions" style="display:none; margin-top:0.4rem;">
-          <label class="modal-label">Lease Duration (years)</label>
-          <select id="modalLeaseYears">
-          <option value="5">5 years</option>
-          <option value="10" selected>10 years</option>
-          <option value="15">15 years</option>
-          </select>
+          <div class="buy-order-finance-panel">
+
+            <h4 class="buy-order-section-title">
+              DELIVERY & FINANCE
+            </h4>
+
+            <div class="modal-summary-box">
+              <p
+                id="modalSummary"
+                class="modal-summary"
+              ></p>
+            </div>
+
+          </div>
 
         </div>
-     
-        </div>
-      </div>
 
-      <div class="modal-summary-box">
-        <p id="modalSummary" class="modal-summary"></p>
-      </div>
+      </section>
+
     </div>
 
-    <div class="modal-footer">
-  <button id="factorySlotsBtn" class="factory-slots-btn" type="button">Factory Slots</button>
-  <button id="modalConfirm" class="primary-btn">Confirm Order</button>
-  <button class="close-btn" onclick="closeBuyModal()">Cancel</button>
+    <footer class="modal-footer buy-order-footer">
+
+      <button
+        id="factorySlotsBtn"
+        class="factory-slots-btn"
+        type="button"
+      >
+        FACTORY SLOTS
+      </button>
+
+      <button
+        id="modalConfirm"
+        class="primary-btn"
+        type="button"
+      >
+        CONFIRM ORDER
+      </button>
+
+      <button
+        class="close-btn"
+        type="button"
+        onclick="closeBuyModal()"
+      >
+        CANCEL
+      </button>
+
+    </footer>
+
   </div>
-  </div>
+</div>
 
 <!-- ============================================================
      🟦 FACTORY SLOTS MODAL — OEM SLOT BOARD
