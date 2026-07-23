@@ -1735,7 +1735,432 @@
     grid-template-columns: 1fr;
   }
 }
-       
+
+/* ============================================================
+   ACS OCC — OEM PRODUCTION LINE
+   Scoped exclusively to #factorySlotsModal
+   ============================================================ */
+
+#factorySlotsModal {
+  padding: 24px;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  background: rgba(0, 5, 16, 0.80);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+#factorySlotsModal .factory-slots-modal-content {
+  position: relative;
+  width: min(760px, 94vw);
+  max-width: 760px;
+  max-height: 92vh;
+  padding: 0;
+  overflow: hidden;
+  text-align: left;
+  border: 1px solid rgba(255, 179, 0, 0.62);
+  border-radius: 17px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(14, 34, 71, 0.99),
+      rgba(3, 11, 28, 0.99)
+    );
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.75),
+    0 0 30px rgba(255, 179, 0, 0.10);
+}
+
+#factorySlotsModal .factory-slots-close-x {
+  position: absolute;
+  top: 17px;
+  right: 18px;
+  z-index: 3;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid rgba(255, 179, 0, 0.52);
+  border-radius: 12px;
+  background: rgba(255, 179, 0, 0.06);
+  color: #ffb300;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+#factorySlotsModal .factory-slots-close-x:hover {
+  background: rgba(255, 179, 0, 0.16);
+  box-shadow: 0 0 16px rgba(255, 179, 0, 0.20);
+}
+
+#factorySlotsModal .factory-slots-header {
+  padding: 21px 76px 18px 28px;
+  border-bottom: 1px solid rgba(255, 179, 0, 0.35);
+  background:
+    linear-gradient(
+      100deg,
+      rgba(28, 67, 132, 0.40),
+      rgba(6, 18, 43, 0.12)
+    );
+}
+
+#factorySlotsModal .factory-slots-manufacturer {
+  margin-bottom: 5px;
+  color: #ffb300;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+#factorySlotsModal .factory-slots-model {
+  margin: 0;
+  color: #f5f8ff;
+  font-size: 1.55rem;
+  line-height: 1.1;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+#factorySlotsModal .factory-slots-header-subtitle {
+  margin: 7px 0 0;
+  color: #8fa5ca;
+  font-size: 0.72rem;
+  letter-spacing: 0.11em;
+}
+
+#factorySlotsModal .factory-slots-board {
+  margin: 0;
+  padding: 18px 22px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+#factorySlotsModal .factory-slots-nav {
+  display: grid;
+  grid-template-columns: 42px 1fr 42px;
+  gap: 12px;
+  align-items: center;
+  margin: 0 0 15px;
+}
+
+#factorySlotsModal .factory-slots-nav-btn {
+  width: 42px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid rgba(104, 153, 225, 0.56);
+  border-radius: 9px;
+  background: rgba(70, 120, 194, 0.09);
+  color: #c7d9f9;
+  cursor: pointer;
+}
+
+#factorySlotsModal .factory-slots-months {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr 1fr;
+  gap: 10px;
+  align-items: center;
+  text-align: center;
+  font-family: monospace;
+  color: #8195bb;
+  font-size: 0.78rem;
+}
+
+#factorySlotsModal .factory-slots-months strong {
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 179, 0, 0.38);
+  border-radius: 8px;
+  background: rgba(255, 179, 0, 0.07);
+  color: #ffbd2e;
+  font-size: 0.96rem;
+}
+
+#factorySlotsModal .factory-production-load {
+  padding: 13px 15px;
+  border: 1px solid rgba(91, 143, 220, 0.30);
+  border-radius: 11px;
+  background: rgba(4, 16, 40, 0.56);
+}
+
+#factorySlotsModal .factory-production-load-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+#factorySlotsModal .factory-production-load-header > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+#factorySlotsModal .factory-production-eyebrow {
+  color: #9aadd0;
+  font-size: 0.70rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+}
+
+#factorySlotsModal #factorySlotsLoadStatus {
+  padding: 4px 9px;
+  border: 1px solid rgba(49, 224, 150, 0.42);
+  border-radius: 999px;
+  color: #35e4a1;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+}
+
+#factorySlotsModal #factorySlotsLoadValue {
+  color: #f4f7ff;
+  font-family: monospace;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+#factorySlotsModal .factory-production-load-track {
+  height: 8px;
+  margin-top: 11px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(116, 143, 190, 0.18);
+}
+
+#factorySlotsModal .factory-production-load-bar {
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  background:
+    linear-gradient(
+      90deg,
+      #22dca4,
+      #5da7ff
+    );
+  box-shadow: 0 0 12px rgba(42, 222, 166, 0.30);
+  transition: width 260ms ease;
+}
+
+#factorySlotsModal .factory-production-section {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid rgba(91, 143, 220, 0.30);
+  border-radius: 11px;
+  background: rgba(4, 16, 40, 0.56);
+}
+
+#factorySlotsModal .factory-production-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 12px;
+  color: #ffb300;
+  font-size: 0.70rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+}
+
+#factorySlotsModal .factory-production-legend {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #8fa2c5;
+  font-size: 0.60rem;
+  letter-spacing: 0.06em;
+}
+
+#factorySlotsModal .factory-production-legend i {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+}
+
+#factorySlotsModal .factory-legend-open {
+  background: rgba(35, 221, 164, 0.65);
+}
+
+#factorySlotsModal .factory-legend-reserved {
+  margin-left: 6px;
+  background: rgba(255, 179, 0, 0.75);
+}
+
+#factorySlotsModal .factory-slots-stations {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(74px, 1fr));
+  gap: 9px;
+}
+
+#factorySlotsModal .factory-slot-station {
+  position: relative;
+  min-height: 80px;
+  padding: 10px 7px 8px;
+  overflow: hidden;
+  border-radius: 9px;
+  text-align: center;
+}
+
+#factorySlotsModal .factory-slot-station::before {
+  content: "✈";
+  display: block;
+  margin-bottom: 4px;
+  font-size: 1.2rem;
+  opacity: 0.72;
+}
+
+#factorySlotsModal .factory-slot-station-number {
+  display: block;
+  color: #f3f7ff;
+  font-family: monospace;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+#factorySlotsModal .factory-slot-station-status {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+#factorySlotsModal .factory-slot-station.is-open {
+  border: 1px solid rgba(35, 221, 164, 0.46);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(35, 221, 164, 0.13),
+      rgba(5, 28, 42, 0.64)
+    );
+  color: #35e4a1;
+}
+
+#factorySlotsModal .factory-slot-station.is-reserved {
+  border: 1px solid rgba(255, 179, 0, 0.48);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 179, 0, 0.14),
+      rgba(37, 27, 6, 0.52)
+    );
+  color: #ffc23c;
+}
+
+#factorySlotsModal .factory-slots-loading,
+#factorySlotsModal .factory-slots-empty {
+  grid-column: 1 / -1;
+  padding: 20px;
+  color: #8398be;
+  text-align: center;
+  font-size: 0.76rem;
+  letter-spacing: 0.06em;
+}
+
+#factorySlotsModal .factory-slots-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 9px;
+  margin-top: 14px;
+}
+
+#factorySlotsModal .factory-slot-line {
+  display: block;
+  padding: 10px;
+  border: 1px solid rgba(91, 143, 220, 0.24);
+  border-radius: 9px;
+  background: rgba(4, 16, 40, 0.48);
+  text-align: center;
+}
+
+#factorySlotsModal .factory-slot-line span {
+  display: block;
+  color: #8195b9;
+  font-size: 0.61rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+#factorySlotsModal .factory-slot-line strong {
+  display: block;
+  margin-top: 5px;
+  color: #f6f8ff;
+  font-family: monospace;
+  font-size: 0.92rem;
+}
+
+#factorySlotsModal .factory-slots-next-window {
+  margin-top: 14px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border: 1px solid rgba(34, 220, 164, 0.38);
+  border-radius: 10px;
+  background: rgba(9, 73, 75, 0.18);
+}
+
+#factorySlotsModal .factory-slots-next-window span {
+  color: #8fa4c8;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+}
+
+#factorySlotsModal .factory-slots-next-window strong {
+  color: #29e1ae;
+  font-family: monospace;
+  font-size: 1rem;
+}
+
+#factorySlotsModal .factory-slots-footer {
+  margin: 0;
+  padding: 13px 22px 17px;
+  border-top: 1px solid rgba(255, 179, 0, 0.22);
+  background: rgba(2, 9, 24, 0.72);
+}
+
+#factorySlotsModal .factory-slots-close-btn {
+  min-width: 150px;
+  padding: 10px 20px;
+  border: 1px solid rgba(255, 179, 0, 0.55);
+  border-radius: 9px;
+  background: rgba(255, 179, 0, 0.07);
+  color: #ffd16b;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.10em;
+  cursor: pointer;
+}
+
+#factorySlotsModal .factory-slots-close-btn:hover {
+  background: rgba(255, 179, 0, 0.16);
+}
+
+@media (max-width: 680px) {
+  #factorySlotsModal {
+    padding: 12px;
+    align-items: flex-start;
+  }
+
+  #factorySlotsModal .factory-slots-metrics {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  #factorySlotsModal .factory-production-section-header,
+  #factorySlotsModal .factory-slots-next-window {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  #factorySlotsModal .factory-production-legend {
+    flex-wrap: wrap;
+  }
+}       
 </style>
      
 </head>
@@ -2225,66 +2650,175 @@
 </div>
 
 <!-- ============================================================
-     🟦 FACTORY SLOTS MODAL — OEM SLOT BOARD
+     ACS OCC — OEM PRODUCTION LINE
      ============================================================ -->
 
 <div id="factorySlotsModal" class="modal">
   <div class="modal-content factory-slots-modal-content">
 
-    <div class="modal-header-row">
-      <div class="modal-header-text">
-        <h3 id="factorySlotsTitle" class="modal-title">OEM SLOT BOARD</h3>
-        <p id="factorySlotsSubtitle" class="modal-subtitle">
-          Aircraft Model · Simulation Year
-        </p>
+    <button
+      class="factory-slots-close-x"
+      type="button"
+      onclick="closeFactorySlotsModal()"
+      aria-label="Close production line"
+    >
+      ×
+    </button>
+
+    <header class="factory-slots-header">
+
+      <div
+        id="factorySlotsTitle"
+        class="factory-slots-manufacturer"
+      >
+        MANUFACTURER
       </div>
-    </div>
+
+      <h3
+        id="factorySlotsSubtitle"
+        class="factory-slots-model"
+      >
+        Aircraft Model
+      </h3>
+
+      <p class="factory-slots-header-subtitle">
+        OEM PRODUCTION CONTROL · MONTHLY ASSEMBLY CAPACITY
+      </p>
+
+    </header>
 
     <div class="factory-slots-board">
 
+      <!-- MONTH NAVIGATION -->
       <div class="factory-slots-nav">
-        <button id="factorySlotsPrevMonth" class="factory-slots-nav-btn" type="button">←</button>
+
+        <button
+          id="factorySlotsPrevMonth"
+          class="factory-slots-nav-btn"
+          type="button"
+        >
+          ←
+        </button>
 
         <div class="factory-slots-months">
-          <span id="factorySlotsPrevLabel">AUG 1951</span>
-          <strong id="factorySlotsCurrentLabel">SEP 1951</strong>
-          <span id="factorySlotsNextLabel">OCT 1951</span>
+          <span id="factorySlotsPrevLabel">—</span>
+
+          <strong id="factorySlotsCurrentLabel">
+            —
+          </strong>
+
+          <span id="factorySlotsNextLabel">—</span>
         </div>
 
-        <button id="factorySlotsNextMonth" class="factory-slots-nav-btn" type="button">→</button>
+        <button
+          id="factorySlotsNextMonth"
+          class="factory-slots-nav-btn"
+          type="button"
+        >
+          →
+        </button>
+
       </div>
 
+      <!-- PRODUCTION LOAD -->
+      <section class="factory-production-load">
+
+        <div class="factory-production-load-header">
+
+          <div>
+            <span class="factory-production-eyebrow">
+              MONTHLY PRODUCTION LINE
+            </span>
+
+            <strong id="factorySlotsLoadStatus">
+              LOADING
+            </strong>
+          </div>
+
+          <span id="factorySlotsLoadValue">
+            —%
+          </span>
+
+        </div>
+
+        <div class="factory-production-load-track">
+          <div
+            id="factorySlotsLoadBar"
+            class="factory-production-load-bar"
+          ></div>
+        </div>
+
+      </section>
+
+      <!-- VISUAL ASSEMBLY STATIONS -->
+      <section class="factory-production-section">
+
+        <div class="factory-production-section-header">
+          <span>ASSEMBLY STATIONS</span>
+
+          <span class="factory-production-legend">
+            <i class="factory-legend-open"></i> OPEN
+            <i class="factory-legend-reserved"></i> RESERVED
+          </span>
+        </div>
+
+        <div
+          id="factorySlotsStations"
+          class="factory-slots-stations"
+        >
+          <div class="factory-slots-loading">
+            Loading production line...
+          </div>
+        </div>
+
+      </section>
+
+      <!-- EXISTING METRICS -->
       <div class="factory-slots-metrics">
+
         <div class="factory-slot-line">
-          <span>Capacity:</span>
+          <span>Monthly Capacity</span>
           <strong id="factorySlotsCapacity">—</strong>
         </div>
 
         <div class="factory-slot-line">
-          <span>Reserved:</span>
+          <span>Reserved</span>
           <strong id="factorySlotsReserved">—</strong>
         </div>
 
         <div class="factory-slot-line">
-          <span>Available:</span>
+          <span>Available</span>
           <strong id="factorySlotsAvailable">—</strong>
         </div>
 
         <div class="factory-slot-line">
-          <span>Utilization:</span>
+          <span>Utilization</span>
           <strong id="factorySlotsUtilization">—</strong>
         </div>
+
       </div>
 
+      <!-- DELIVERY WINDOW -->
       <div class="factory-slots-next-window">
-        Next available delivery window:
-        <strong id="factorySlotsNextWindow">—</strong>
+
+        <span>NEXT AVAILABLE DELIVERY WINDOW</span>
+
+        <strong id="factorySlotsNextWindow">
+          —
+        </strong>
+
       </div>
 
     </div>
 
-    <div class="modal-footer">
-      <button class="close-btn" type="button" onclick="closeFactorySlotsModal()">Close</button>
+    <div class="modal-footer factory-slots-footer">
+      <button
+        class="factory-slots-close-btn"
+        type="button"
+        onclick="closeFactorySlotsModal()"
+      >
+        CLOSE
+      </button>
     </div>
 
   </div>
