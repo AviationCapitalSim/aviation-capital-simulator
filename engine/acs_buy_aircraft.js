@@ -941,25 +941,77 @@ function openBuyModal(ac) {
   selectedAircraft = ac;
   selectedAircraftImage = getAircraftImage(ac);
 
-  document.getElementById("modalImage").src = selectedAircraftImage;
-  document.getElementById("modalTitle").textContent =
-  ACS_getAircraftDisplayName(ac);
+  const modalImage =
+    document.getElementById("modalImage");
 
-  // BUY como default
-   
-  const opSel = document.getElementById("modalOperation");
-  opSel.value = "BUY";
+  const modalTitle =
+    document.getElementById("modalTitle");
 
-  document.getElementById("buyInitialPayment").style.display = "block";
-  document.getElementById("leaseOptions").style.display = "none";
+  const modalManufacturer =
+    document.getElementById("modalManufacturer");
+
+  const modalUnitPrice =
+    document.getElementById("modalUnitPrice");
+
+  if (modalImage) {
+    modalImage.src = selectedAircraftImage;
+    modalImage.alt = ACS_getAircraftDisplayName(ac);
+  }
+
+  if (modalTitle) {
+    modalTitle.textContent =
+      ACS_getAircraftDisplayModel(ac);
+  }
+
+  if (modalManufacturer) {
+    modalManufacturer.textContent =
+      ACS_resolveAircraftManufacturer(ac);
+  }
+
+  if (modalUnitPrice) {
+    modalUnitPrice.textContent =
+      ACS_formatUSD(
+        Number(ac.price_acs_usd || 0),
+        "$0"
+      );
+  }
+
+  const opSel =
+    document.getElementById("modalOperation");
+
+  if (opSel) {
+    opSel.value = "BUY";
+  }
+
+  document.getElementById(
+    "buyInitialPayment"
+  ).style.display = "block";
+
+  document.getElementById(
+    "leaseOptions"
+  ).style.display = "none";
 
   updateModalSummary();
 
-  document.getElementById("buyModal").style.display = "flex";
+  document.getElementById(
+    "buyModal"
+  ).style.display = "flex";
 }
 
 function closeBuyModal() {
   document.getElementById("buyModal").style.display = "none";
+}
+
+/* ============================================================
+   ACS OCC — FACTORY ORDER → AIRCRAFT INFO
+   Uses the aircraft already selected in the order modal.
+   ============================================================ */
+
+function openSelectedAircraftInfoFromOrder() {
+  if (!selectedAircraft) return;
+
+  closeBuyModal();
+  openAircraftInfoModal(selectedAircraft);
 }
 
 /* ============================================================
