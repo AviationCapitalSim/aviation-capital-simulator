@@ -1044,6 +1044,146 @@
   }
 
 }
+
+/* ============================================================
+   ACS OCC — COMPACT AIRCRAFT DOSSIER OVERRIDE
+   ============================================================ */
+
+#aircraftInfoModal {
+  z-index: 999999;
+  box-sizing: border-box;
+  padding: 18px;
+  align-items: center;
+  justify-content: center;
+}
+
+.aircraft-info-modal-content {
+  box-sizing: border-box;
+  width: min(860px, 94vw);
+  max-width: 860px;
+  max-height: 88vh;
+  padding: 0;
+  overflow-y: auto;
+  border-radius: 14px;
+}
+
+.aircraft-info-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  z-index: 10;
+  width: 38px;
+  height: 38px;
+  font-size: 1.15rem;
+}
+
+.aircraft-info-header {
+  padding: 16px 60px 13px 20px;
+}
+
+.aircraft-info-kicker {
+  font-size: 0.62rem;
+  letter-spacing: 0.15em;
+}
+
+.aircraft-info-title {
+  margin: 4px 0 2px;
+  font-size: 1.25rem;
+}
+
+.aircraft-info-subtitle {
+  font-size: 0.76rem;
+}
+
+.aircraft-info-body {
+  grid-template-columns: minmax(280px, 0.95fr) minmax(330px, 1.05fr);
+  gap: 13px;
+  padding: 14px 18px 16px;
+}
+
+.aircraft-info-photo-panel {
+  padding: 10px;
+}
+
+.aircraft-info-photo {
+  height: 210px;
+}
+
+.aircraft-info-photo-caption {
+  padding: 9px 3px 1px;
+  font-size: 0.65rem;
+}
+
+.aircraft-info-right {
+  gap: 9px;
+}
+
+.aircraft-info-panel {
+  padding: 10px 13px;
+}
+
+.aircraft-info-panel-title {
+  margin: 0 0 5px;
+  font-size: 0.68rem;
+}
+
+.aircraft-info-row {
+  gap: 12px;
+  padding: 5px 0;
+}
+
+.aircraft-info-label {
+  font-size: 0.73rem;
+}
+
+.aircraft-info-value {
+  font-size: 0.76rem;
+}
+
+.aircraft-info-runway {
+  font-size: 0.86rem;
+}
+
+.aircraft-info-price-panel {
+  padding: 11px 13px;
+}
+
+.aircraft-info-price-label {
+  font-size: 0.67rem;
+}
+
+.aircraft-info-price-value {
+  font-size: 1.05rem;
+}
+
+.aircraft-info-footer {
+  padding: 0 18px 14px;
+  font-size: 0.62rem;
+}
+
+@media (max-width: 720px) {
+  #aircraftInfoModal {
+    padding: 10px;
+  }
+
+  .aircraft-info-modal-content {
+    width: 96vw;
+    max-height: 92vh;
+  }
+
+  .aircraft-info-body {
+    grid-template-columns: 1fr;
+  }
+
+  .aircraft-info-photo {
+    height: 175px;
+  }
+
+  .aircraft-info-price-panel {
+    flex-direction: row;
+    align-items: center;
+  }
+}
        
 </style>
      
