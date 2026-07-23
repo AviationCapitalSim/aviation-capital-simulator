@@ -1719,6 +1719,52 @@ const leasePolicyVersion =
 
 });    // ← Cierra DOMContentLoaded (ÚNICA Y CORRECTA)
 
+/* ---- Aircraft Info click → open ACS OCC dossier ---- */
+
+document.addEventListener("click", e => {
+  const btn = e.target.closest(".aircraft-info-btn");
+  if (!btn) return;
+
+  const idx = Number.parseInt(
+    btn.dataset.index,
+    10
+  );
+
+  const ac = ACS_currentRenderedList[idx];
+  if (!ac) return;
+
+  openAircraftInfoModal(ac);
+});
+
+/* Close dossier by clicking the dark background */
+
+document.addEventListener("click", e => {
+  const modal = document.getElementById(
+    "aircraftInfoModal"
+  );
+
+  if (modal && e.target === modal) {
+    closeAircraftInfoModal();
+  }
+});
+
+/* Close dossier with Escape */
+
+document.addEventListener("keydown", e => {
+  if (e.key !== "Escape") return;
+
+  const modal = document.getElementById(
+    "aircraftInfoModal"
+  );
+
+  if (
+    modal &&
+    modal.style.display === "flex"
+  ) {
+    closeAircraftInfoModal();
+  }
+});
+
 /* ---- Card click → open modal ---- */
 
 document.addEventListener("click", e => {
