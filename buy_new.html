@@ -2160,7 +2160,73 @@
   #factorySlotsModal .factory-production-legend {
     flex-wrap: wrap;
   }
-}       
+} 
+
+/* ============================================================
+   ACS OCC — SAFE MODAL VIEWPORT
+   Prevents modal clipping on desktop, iPad and tablets.
+   ============================================================ */
+
+#buyModal,
+#aircraftInfoModal,
+#factorySlotsModal {
+  z-index: 10000;
+  box-sizing: border-box;
+  height: 100dvh;
+  padding:
+    max(18px, env(safe-area-inset-top))
+    max(18px, env(safe-area-inset-right))
+    max(18px, env(safe-area-inset-bottom))
+    max(18px, env(safe-area-inset-left));
+  align-items: center;
+  justify-content: center;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+#buyModal > .modal-content,
+#aircraftInfoModal > .modal-content,
+#factorySlotsModal > .modal-content {
+  flex: 0 0 auto;
+  max-height: calc(
+    100dvh
+    - max(18px, env(safe-area-inset-top))
+    - max(18px, env(safe-area-inset-bottom))
+  );
+  margin: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 1024px), (max-height: 820px) {
+  #buyModal,
+  #aircraftInfoModal,
+  #factorySlotsModal {
+    align-items: flex-start;
+    padding:
+      max(14px, env(safe-area-inset-top))
+      max(14px, env(safe-area-inset-right))
+      max(14px, env(safe-area-inset-bottom))
+      max(14px, env(safe-area-inset-left));
+  }
+
+  #buyModal > .modal-content,
+  #aircraftInfoModal > .modal-content,
+  #factorySlotsModal > .modal-content {
+    width: min(96vw, 920px);
+    max-height: calc(
+      100dvh
+      - max(14px, env(safe-area-inset-top))
+      - max(14px, env(safe-area-inset-bottom))
+    );
+    margin: 0 auto;
+  }
+}
+     
 </style>
      
 </head>
