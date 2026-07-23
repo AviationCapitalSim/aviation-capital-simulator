@@ -993,6 +993,8 @@ function openBuyModal(ac) {
 
   updateModalSummary();
 
+  ACS_syncSeatConfigurationButton();
+
   document.getElementById(
     "buyModal"
   ).style.display = "flex";
@@ -2049,6 +2051,205 @@ function updateModalSummary() {
 
   document.getElementById("modalSummary").innerHTML = summary;
 }
+
+/* ============================================================
+   ACS OCC — SEAT CONFIGURATION EVENTS
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const openButton =
+    document.getElementById(
+      "seatConfigurationBtn"
+    );
+
+  const closeX =
+    document.getElementById(
+      "cabinConfigCloseX"
+    );
+
+  const closeButton =
+    document.getElementById(
+      "cabinConfigClose"
+    );
+
+  const factoryDefaultButton =
+    document.getElementById(
+      "cabinConfigFactoryDefault"
+    );
+
+  const applyButton =
+    document.getElementById(
+      "cabinConfigApply"
+    );
+
+  const controls =
+    document.getElementById(
+      "cabinConfigControls"
+    );
+
+  const modal =
+    document.getElementById(
+      "seatConfigurationModal"
+    );
+
+  if (openButton) {
+    openButton.addEventListener(
+      "click",
+      openSeatConfigurationModal
+    );
+  }
+
+  if (closeX) {
+    closeX.addEventListener(
+      "click",
+      closeSeatConfigurationModal
+    );
+  }
+
+  if (closeButton) {
+    closeButton.addEventListener(
+      "click",
+      closeSeatConfigurationModal
+    );
+  }
+
+  if (factoryDefaultButton) {
+    factoryDefaultButton.addEventListener(
+      "click",
+      () => {
+        if (!selectedAircraft) return;
+
+        ACS_cabinDraft =
+          window.ACS_CABIN.getFactoryDefault(
+            selectedAircraft
+          );
+
+        ACS_refreshCabinConfigurationModal();
+      }
+    );
+  }
+
+  if (applyButton) {
+    applyButton.addEventListener(
+      "click",
+      () => {
+        if (!selectedAircraft || !ACS_cabinDraft) {
+          return;
+        }
+
+        const validation =
+          window.ACS_CABIN.validateConfiguration(
+            selectedAircraft,
+            ACS_cabinDraft
+          );
+
+        if (!validation.valid) return;
+
+        const aircraftKey =
+          window.ACS_CABIN.makeAircraftKey(
+            selectedAircraft
+          );
+
+        ACS_cabinPreviewByAircraft.set(
+          aircraftKey,
+          ACS_cloneCabinConfiguration(
+            ACS_cabinDraft
+          )
+        );
+
+        closeSeatConfigurationModal();
+      }
+    );
+  }
+
+  if (controls) {
+    controls.addEventListener(
+      "click",
+      event => {
+        const button =
+          event.target.closest(
+            "[data-cabin-step]"
+          );
+
+        if (!button || !ACS_cabinDraft) {
+          return;
+        }
+
+        const cabinClass =
+          button.dataset.cabinStep;
+
+        const delta =
+          Number(button.dataset.cabinDelta);
+
+        ACS_cabinDraft[cabinClass].seats =
+          Math.max(
+            0,
+            ACS_cabinDraft[cabinClass].seats +
+            delta
+          );
+
+        ACS_refreshCabinConfigurationModal();
+      }
+    );
+
+    controls.addEventListener(
+      "change",
+      event => {
+        if (!ACS_cabinDraft) return;
+
+        const productClass =
+          event.target.dataset.cabinProduct;
+
+        const seatsClass =
+          event.target.dataset.cabinSeats;
+
+        if (productClass) {
+          ACS_cabinDraft[
+            productClass
+          ].product = event.target.value;
+        }
+
+        if (seatsClass) {
+          ACS_cabinDraft[
+            seatsClass
+          ].seats = Math.max(
+            0,
+            Math.trunc(
+              Number(event.target.value) || 0
+            )
+          );
+        }
+
+        ACS_refreshCabinConfigurationModal();
+      }
+    );
+  }
+
+  if (modal) {
+    modal.addEventListener(
+      "click",
+      event => {
+        if (event.target === modal) {
+          closeSeatConfigurationModal();
+        }
+      }
+    );
+  }
+
+  document.addEventListener(
+    "keydown",
+    event => {
+      if (
+        event.key === "Escape" &&
+        modal &&
+        modal.style.display === "flex"
+      ) {
+        closeSeatConfigurationModal();
+      }
+    }
+  );
+});
 
 /* ============================================================
    10) CONFIRM BUY / LEASE
