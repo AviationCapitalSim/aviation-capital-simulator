@@ -254,6 +254,12 @@ function ACS_normalizeFactoryAircraft(row) {
     0
   );
 
+    const required_runway_m = Number(
+    row.required_runway_m ??
+    row.raw_data?.required_runway_m ??
+    0
+  );
+   
     const engines =
     String(
       row.engines ??
@@ -289,7 +295,8 @@ function ACS_normalizeFactoryAircraft(row) {
     range_nm,
     speed_kts,
     price_acs_usd,
-    engines
+    engines,
+    required_runway_m
   };
 }
 
@@ -718,7 +725,21 @@ async function renderCards(filterManufacturer = "All") {
         Price: $${priceLine}
       </div>
 
-      <button data-index="${idx}" class="view-options-btn">VIEW OPTIONS</button>
+            <button
+        data-index="${idx}"
+        class="view-options-btn"
+        type="button"
+      >
+        VIEW OPTIONS
+      </button>
+
+      <button
+        data-index="${idx}"
+        class="aircraft-info-btn"
+        type="button"
+      >
+        AIRCRAFT INFO
+      </button>
     `;
 
     card.dataset.idx = idx;
@@ -761,6 +782,152 @@ function ACS_handleImageFallback(img) {
 
   img.onerror = null;
   img.src = "img/placeholder_aircraft.jpg";
+}
+
+/* ============================================================
+   6A) ACS OCC — AIRCRAFT ACQUISITION DOSSIER
+   ------------------------------------------------------------
+   Read-only catalog presentation.
+   Does not touch orders, Finance, leasing or Factory Slots.
+   ============================================================ */
+
+function ACS_setAircraftInfoText(id, value, fallback = "—") {
+  const element = document.getElementById(id);
+  if (!element) return;
+
+  const normalized = String(value ?? "").trim();
+  element.textContent = normalized || fallback;
+}
+
+function ACS_formatAircraftInfoNumber(value, suffix = "") {
+  const number = Number(value);
+
+  if (!Number.isFinite(number) || number <= 0) {
+    return "—";
+  }
+
+  return (
+    Math.round(number).toLocaleString("en-US") +
+    suffix
+  );
+}
+
+function openAircraftInfoModal(ac) {
+  if (!ac) return;
+
+  const modal = document.getElementById("aircraftInfoModal");
+  const image = document.getElementById("aircraftInfoImage");
+
+  if (!modal || !image) return;
+
+  const displayName = ACS_getAircraftDisplayName(ac);
+  const displayModel = ACS_getAircraftDisplayModel(ac);
+  const manufacturer = ACS_resolveAircraftManufacturer(ac);
+
+  image.dataset.fallbackStep = "0";
+  image.src = getAircraftImage(ac);
+  image.alt = displayName;
+
+  ACS_setAircraftInfoText(
+    "aircraftInfoTitle",
+    displayName
+  );
+
+  ACS_setAircraftInfoText(
+    "aircraftInfoSubtitle",
+    "Aircraft Acquisition Dossier · Factory Catalog"
+  );
+
+  ACS_setAircraftInfoText(
+    "aircraftInfoPhotoCaption",
+    `${manufacturer} · ${displayModel}`
+  );
+
+  ACS_setAircraftInfoText(
+    "aircraftInfoManufacturer",
+    manufacturer
+  );
+
+  ACS_setAircraftInfoText(
+    "aircraftInfoModel",
+    displayModel
+  );
+
+  ACS_setAircraftInfoText(
+    "aircraftInfoYear",
+    ac.year
+  );
+
+  ACS_setAircraftInfoText(
+    "aircraftInfoCategory",
+    ac.aircraft_category ||
+    ac.production_category ||
+    "Factory Aircraft"
+  );
+
+  ACS_setAircraftInfoText(
+    "aircraftInfoSeats",
+    ACS_formatAircraftInfoNumber(ac.seats)
+  );
+
+  ACS_setAircraftInfoText(
+    "aircraftInfoRange",
+    ACS_formatAircraftInfoNumber(ac.range_nm, " nm")
+  );
+
+  ACS_setAircraftInfoText(
+    "aircraftInfoSpeed",
+    ACS_formatAircraftInfoNumber(ac.speed_kts, " kts")
+  );
+
+  ACS_setAircraftInfoText(
+    "aircraftInfoRunway",
+    ACS_formatAircraftInfoNumber(
+      ac.required_runway_m,
+      " m"
+    )
+  );
+
+  ACS_setAircraftInfoText(
+    "aircraftInfoEngines",
+    ac.engines || "Not specified"
+  );
+
+  ACS_setAircraftInfoText(
+    "aircraftInfoMtow",
+    ACS_formatAircraftInfoNumber(ac.mtow_kg, " kg")
+  );
+
+  ACS_setAircraftInfoText(
+    "aircraftInfoFuelBurn",
+    ACS_formatAircraftInfoNumber(
+      ac.fuel_burn_kgph,
+      " kg/h"
+    )
+  );
+
+  ACS_setAircraftInfoText(
+    "aircraftInfoPrice",
+    ACS_formatUSD(
+      Number(ac.price_acs_usd || 0)
+    ),
+    "$0"
+  );
+
+  modal.style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+
+function closeAircraftInfoModal() {
+  const modal = document.getElementById(
+    "aircraftInfoModal"
+  );
+
+  if (modal) {
+    modal.style.display = "none";
+  }
+
+  document.body.style.overflow = "";
 }
 
 /* ============================================================
@@ -1376,7 +1543,7 @@ document.addEventListener("DOMContentLoaded", () => {
         parseInt(document.getElementById("modalQty").value, 10) || 1
       );
 
-      /* ============================================================
+   /* ============================================================
    🟦 ACS LEASE NEW OCC PAYLOAD RULE v1.0
    ------------------------------------------------------------
    BUY:
