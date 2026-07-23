@@ -1312,6 +1312,11 @@ function openSeatConfigurationModal() {
   ).hidden =
     aircraftConfig.mode === "READ_ONLY";
 
+    document.getElementById(
+    "cabinConfigFactoryDefault"
+  ).hidden =
+    aircraftConfig.mode === "READ_ONLY";
+   
   ACS_refreshCabinConfigurationModal();
 
   modal.style.display = "flex";
