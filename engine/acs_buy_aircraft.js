@@ -1548,6 +1548,16 @@ function updateModalSummary() {
 
 document.addEventListener("DOMContentLoaded", () => {
 
+  const buyModalAircraftInfoBtn =
+    document.getElementById("buyModalAircraftInfoBtn");
+
+  if (buyModalAircraftInfoBtn) {
+    buyModalAircraftInfoBtn.addEventListener(
+      "click",
+      openSelectedAircraftInfoFromOrder
+    );
+  }
+
   const opSel = document.getElementById("modalOperation");
 
   /* Mostrar/ocultar opciones BUY vs LEASE */
