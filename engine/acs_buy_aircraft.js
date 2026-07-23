@@ -1197,6 +1197,151 @@ function closeFactorySlotsModal() {
   }
 }
 
+/* ============================================================
+   ACS OCC — VISUAL OEM PRODUCTION LINE
+   Presentation only. No reservation or availability changes.
+   ============================================================ */
+
+function ACS_renderFactoryProductionLine(
+  capacity,
+  reserved,
+  utilization
+) {
+  const stationsContainer =
+    document.getElementById("factorySlotsStations");
+
+  const loadBar =
+    document.getElementById("factorySlotsLoadBar");
+
+  const loadValue =
+    document.getElementById("factorySlotsLoadValue");
+
+  const loadStatus =
+    document.getElementById("factorySlotsLoadStatus");
+
+  const normalizedCapacity =
+    Math.max(0, Math.floor(Number(capacity) || 0));
+
+  const normalizedReserved =
+    Math.max(
+      0,
+      Math.min(
+        normalizedCapacity,
+        Math.floor(Number(reserved) || 0)
+      )
+    );
+
+  const normalizedUtilization =
+    Math.max(
+      0,
+      Math.min(100, Number(utilization) || 0)
+    );
+
+  if (loadBar) {
+    loadBar.style.width =
+      `${normalizedUtilization}%`;
+
+    if (normalizedUtilization >= 100) {
+      loadBar.style.background =
+        "linear-gradient(90deg, #f05a62, #ff8c63)";
+    } else if (normalizedUtilization >= 75) {
+      loadBar.style.background =
+        "linear-gradient(90deg, #ffb300, #ffd666)";
+    } else if (normalizedUtilization >= 40) {
+      loadBar.style.background =
+        "linear-gradient(90deg, #5da7ff, #7fc5ff)";
+    } else {
+      loadBar.style.background =
+        "linear-gradient(90deg, #22dca4, #5da7ff)";
+    }
+  }
+
+  if (loadValue) {
+    loadValue.textContent =
+      `${normalizedUtilization}%`;
+  }
+
+  if (loadStatus) {
+    let status = "LOW";
+
+    if (normalizedUtilization >= 100) {
+      status = "FULL";
+      loadStatus.style.color = "#ff8b91";
+      loadStatus.style.borderColor =
+        "rgba(240, 90, 98, 0.55)";
+    } else if (normalizedUtilization >= 75) {
+      status = "HIGH";
+      loadStatus.style.color = "#ffc23c";
+      loadStatus.style.borderColor =
+        "rgba(255, 179, 0, 0.55)";
+    } else if (normalizedUtilization >= 40) {
+      status = "CONTROLLED";
+      loadStatus.style.color = "#86bbff";
+      loadStatus.style.borderColor =
+        "rgba(93, 167, 255, 0.55)";
+    } else {
+      loadStatus.style.color = "#35e4a1";
+      loadStatus.style.borderColor =
+        "rgba(49, 224, 150, 0.42)";
+    }
+
+    loadStatus.textContent = status;
+  }
+
+  if (!stationsContainer) return;
+
+  stationsContainer.innerHTML = "";
+
+  if (normalizedCapacity === 0) {
+    const empty = document.createElement("div");
+
+    empty.className = "factory-slots-empty";
+    empty.textContent =
+      "No production capacity published for this month.";
+
+    stationsContainer.appendChild(empty);
+    return;
+  }
+
+  for (
+    let stationIndex = 1;
+    stationIndex <= normalizedCapacity;
+    stationIndex += 1
+  ) {
+    const isReserved =
+      stationIndex <= normalizedReserved;
+
+    const station =
+      document.createElement("div");
+
+    station.className =
+      "factory-slot-station " +
+      (isReserved ? "is-reserved" : "is-open");
+
+    const stationNumber =
+      document.createElement("span");
+
+    stationNumber.className =
+      "factory-slot-station-number";
+
+    stationNumber.textContent =
+      String(stationIndex).padStart(2, "0");
+
+    const stationStatus =
+      document.createElement("span");
+
+    stationStatus.className =
+      "factory-slot-station-status";
+
+    stationStatus.textContent =
+      isReserved ? "RESERVED" : "OPEN";
+
+    station.appendChild(stationNumber);
+    station.appendChild(stationStatus);
+    stationsContainer.appendChild(station);
+  }
+}
+
 async function ACS_loadFactorySlotsAvailability() {
   const state = ACS_factorySlotsState;
 
@@ -1259,6 +1404,37 @@ async function ACS_loadFactorySlotsAvailability() {
   if (utilizationEl) utilizationEl.textContent = "—";
   if (nextWindowEl) nextWindowEl.textContent = "—";
 
+  const stationsContainer =
+  document.getElementById("factorySlotsStations");
+
+const loadBar =
+  document.getElementById("factorySlotsLoadBar");
+
+const loadValue =
+  document.getElementById("factorySlotsLoadValue");
+
+const loadStatus =
+  document.getElementById("factorySlotsLoadStatus");
+
+if (stationsContainer) {
+  stationsContainer.innerHTML =
+    '<div class="factory-slots-loading">' +
+    'Loading production line...' +
+    '</div>';
+}
+
+if (loadBar) {
+  loadBar.style.width = "0%";
+}
+
+if (loadValue) {
+  loadValue.textContent = "—%";
+}
+
+if (loadStatus) {
+  loadStatus.textContent = "LOADING";
+}
+   
   const url =
     `${ACS_FACTORY_SLOTS_AVAILABILITY_ENDPOINT}` +
     `?model_key=${encodeURIComponent(state.model_key)}` +
@@ -1371,6 +1547,12 @@ async function ACS_loadFactorySlotsAvailability() {
     if (utilizationEl) utilizationEl.textContent = `${utilization}%`;
     if (nextWindowEl) nextWindowEl.textContent = nextWindow;
 
+    ACS_renderFactoryProductionLine(
+    capacity,
+    reserved,
+    utilization
+    );  
+     
     console.log("🟩 ACS Factory Slots Availability:", data);
 
   } catch (error) {
