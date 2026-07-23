@@ -2490,6 +2490,47 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================
+   ACS OCC — SEAT CONFIGURATION WIDTH CORRECTION
+   Overrides legacy .modal-content limits.
+   ============================================================ */
+
+#seatConfigurationModal > .cabin-config-modal-content {
+  width: min(1120px, calc(100vw - 40px)) !important;
+  max-width: 1120px !important;
+  min-width: 0 !important;
+  max-height: calc(100dvh - 40px) !important;
+  margin: auto !important;
+}
+
+#seatConfigurationModal .cabin-config-workspace {
+  grid-template-columns:
+    minmax(420px, 1.25fr)
+    minmax(360px, 0.75fr);
+}
+
+#seatConfigurationModal .cabin-config-layout-panel,
+#seatConfigurationModal .cabin-config-control-panel {
+  min-width: 0;
+}
+
+#seatConfigurationModal .cabin-config-map {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 850px) {
+  #seatConfigurationModal > .cabin-config-modal-content {
+    width: calc(100vw - 20px) !important;
+    max-height: calc(100dvh - 20px) !important;
+  }
+
+  #seatConfigurationModal .cabin-config-workspace {
+    grid-template-columns: 1fr;
+  }
+}
        
 </style>
      
