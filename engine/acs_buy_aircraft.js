@@ -1153,78 +1153,203 @@ function ACS_renderCabinControls() {
     .join("");
 }
 
-function ACS_renderDoveCabinMap() {
-  const map =
-    document.getElementById("cabinConfigMap");
+/* ============================================================
+   ACS OCC — GLOBAL CABIN SEAT RENDERER
+   ------------------------------------------------------------
+   Supports geometries such as 2+2 and 3+3.
+   F is rendered first, followed by C and Y.
+   ============================================================ */
 
-  if (!map) return;
+function ACS_parseCabinGeometry(geometry) {
+  const match =
+    String(geometry || "").match(/^(\d+)\+(\d+)$/);
 
-  map.innerHTML = `
-    <div class="cabin-fixed-row">
-      <span class="cabin-seat"></span>
-      <span class="cabin-seat"></span>
+  if (!match) {
+    return {
+      left: 3,
+      right: 3
+    };
+  }
 
-      <span class="cabin-fixed-aisle"></span>
+  return {
+    left: Number(match[1]),
+    right: Number(match[2])
+  };
+}
 
-      <span class="cabin-seat"></span>
-      <span class="cabin-seat"></span>
+function ACS_getAircraftCabinGeometry(
+  aircraftConfig
+) {
+  return ACS_parseCabinGeometry(
+    aircraftConfig.layout?.economyGeometry ||
+    aircraftConfig.layout?.geometry ||
+    "3+3"
+  );
+}
 
-      <small>Row 1</small>
-    </div>
+function ACS_renderCabinSeat(
+  cabinClass,
+  occupied
+) {
+  if (!occupied) {
+    return `
+      <span
+        class="cabin-visual-seat
+               cabin-visual-seat-empty"
+      ></span>
+    `;
+  }
 
-    <div class="cabin-fixed-row">
-      <span class="cabin-seat"></span>
-      <span class="cabin-seat"></span>
-
-      <span class="cabin-fixed-aisle"></span>
-
-      <span class="cabin-seat"></span>
-      <span class="cabin-seat"></span>
-
-      <small>Row 2</small>
-    </div>
+  return `
+    <span
+      class="cabin-visual-seat
+             cabin-visual-seat-${cabinClass}"
+      title="${ACS_getCabinClassName(cabinClass)}"
+    ></span>
   `;
 }
 
-function ACS_renderDC8CabinMap() {
-  const map =
-    document.getElementById("cabinConfigMap");
+function ACS_renderCabinClassRows(
+  cabinClass,
+  seatCount,
+  geometry
+) {
+  if (seatCount <= 0) return "";
 
-  if (!map || !ACS_cabinDraft) return;
+  const seatsPerRow =
+    geometry.left + geometry.right;
 
-  const totalSeats = Math.max(
-    1,
-    ACS_cabinDraft.Y.seats +
-    ACS_cabinDraft.C.seats +
-    ACS_cabinDraft.F.seats
+  const rowCount =
+    Math.ceil(seatCount / seatsPerRow);
+
+  const productCode =
+    ACS_cabinDraft[cabinClass].product;
+
+  const product =
+    window.ACS_CABIN.products[productCode];
+
+  const rowGap = Math.round(
+    4 +
+    Math.max(
+      0,
+      Number(product?.spaceFactor || 1) - 1
+    ) * 5
   );
 
-  map.innerHTML = ["F", "C", "Y"]
-    .map(cabinClass => {
-      const seats =
-        ACS_cabinDraft[cabinClass].seats;
+  let remainingSeats = seatCount;
+  let rowsHtml = "";
 
-      if (seats === 0) return "";
-
-      const width = Math.max(
-        5,
-        (seats / totalSeats) * 100
+  for (
+    let rowIndex = 0;
+    rowIndex < rowCount;
+    rowIndex += 1
+  ) {
+    const occupiedInRow =
+      Math.min(
+        remainingSeats,
+        seatsPerRow
       );
 
-      return `
-        <div class="cabin-zone-row">
-          <span>${cabinClass}</span>
+    let rowHtml = "";
 
-          <div
-            class="cabin-zone cabin-zone-${cabinClass}"
-            style="width:${width}%"
-          ></div>
+    for (
+      let position = 0;
+      position < seatsPerRow;
+      position += 1
+    ) {
+      if (position === geometry.left) {
+        rowHtml += `
+          <span class="cabin-visual-aisle"></span>
+        `;
+      }
 
-          <strong>${seats}</strong>
-        </div>
-      `;
-    })
+      rowHtml += ACS_renderCabinSeat(
+        cabinClass,
+        position < occupiedInRow
+      );
+    }
+
+    rowsHtml += `
+      <div
+        class="cabin-visual-row"
+        style="margin-bottom:${rowGap}px"
+      >
+        ${rowHtml}
+      </div>
+    `;
+
+    remainingSeats -= occupiedInRow;
+  }
+
+  return `
+    <section
+      class="cabin-visual-class
+             cabin-visual-class-${cabinClass}"
+    >
+      <div class="cabin-visual-class-label">
+        <span>
+          ${cabinClass}
+        </span>
+
+        <strong>
+          ${seatCount} seats
+        </strong>
+      </div>
+
+      ${rowsHtml}
+    </section>
+  `;
+}
+
+function ACS_renderGlobalCabinMap() {
+  const map =
+    document.getElementById(
+      "cabinConfigMap"
+    );
+
+  const aircraftConfig =
+    ACS_getSelectedCabinAircraftConfig();
+
+  if (
+    !map ||
+    !aircraftConfig ||
+    !ACS_cabinDraft
+  ) {
+    return;
+  }
+
+  const geometry =
+    ACS_getAircraftCabinGeometry(
+      aircraftConfig
+    );
+
+  const classesHtml = ["F", "C", "Y"]
+    .map(cabinClass =>
+      ACS_renderCabinClassRows(
+        cabinClass,
+        ACS_cabinDraft[cabinClass].seats,
+        geometry
+      )
+    )
     .join("");
+
+  map.innerHTML = `
+    <div class="cabin-visual-airframe">
+
+      <div class="cabin-visual-nose">
+        NOSE
+      </div>
+
+      <div class="cabin-visual-deck">
+        ${classesHtml}
+      </div>
+
+      <div class="cabin-visual-tail">
+        TAIL
+      </div>
+
+    </div>
+  `;
 }
 
 function ACS_refreshCabinConfigurationModal() {
@@ -1237,11 +1362,7 @@ function ACS_refreshCabinConfigurationModal() {
 
   ACS_renderCabinControls();
 
-  if (aircraftConfig.model === "DH.104 Dove") {
-    ACS_renderDoveCabinMap();
-  } else {
-    ACS_renderDC8CabinMap();
-  }
+  ACS_renderGlobalCabinMap();
 
   const validation =
     window.ACS_CABIN.validateConfiguration(
@@ -1267,6 +1388,117 @@ function ACS_refreshCabinConfigurationModal() {
   if (applyButton) {
     applyButton.disabled = !validation.valid;
   }
+}
+
+/* ============================================================
+   ACS OCC — AUTOMATIC ECONOMY BALANCING
+   ------------------------------------------------------------
+   Y is reduced only when required to fit C/F.
+   Reducing C/F does not automatically increase Y.
+   ============================================================ */
+
+function ACS_getCabinSpaceUsed() {
+  return ["Y", "C", "F"].reduce(
+    (total, cabinClass) => {
+      const selection =
+        ACS_cabinDraft[cabinClass];
+
+      const product =
+        window.ACS_CABIN.products[
+          selection.product
+        ];
+
+      if (
+        !product ||
+        selection.seats <= 0
+      ) {
+        return total;
+      }
+
+      return (
+        total +
+        selection.seats *
+        Number(product.spaceFactor || 1)
+      );
+    },
+    0
+  );
+}
+
+function ACS_fitEconomyToCabin(
+  previousDraft
+) {
+  const aircraftConfig =
+    ACS_getSelectedCabinAircraftConfig();
+
+  if (!aircraftConfig || !ACS_cabinDraft) {
+    return false;
+  }
+
+  const economyProduct =
+    window.ACS_CABIN.products[
+      ACS_cabinDraft.Y.product
+    ];
+
+  if (!economyProduct) {
+    ACS_cabinDraft = previousDraft;
+    return false;
+  }
+
+  const premiumSpaceUsed =
+    ["C", "F"].reduce(
+      (total, cabinClass) => {
+        const selection =
+          ACS_cabinDraft[cabinClass];
+
+        const product =
+          window.ACS_CABIN.products[
+            selection.product
+          ];
+
+        if (
+          !product ||
+          selection.seats <= 0
+        ) {
+          return total;
+        }
+
+        return (
+          total +
+          selection.seats *
+          Number(product.spaceFactor || 1)
+        );
+      },
+      0
+    );
+
+  const availableEconomySpace =
+    aircraftConfig.referenceCapacity -
+    premiumSpaceUsed;
+
+  if (availableEconomySpace < 0) {
+    ACS_cabinDraft = previousDraft;
+    return false;
+  }
+
+  const maximumEconomySeats =
+    Math.floor(
+      availableEconomySpace /
+      Number(economyProduct.spaceFactor || 1)
+    );
+
+  if (
+    ACS_cabinDraft.Y.seats >
+    maximumEconomySeats
+  ) {
+    ACS_cabinDraft.Y.seats =
+      maximumEconomySeats;
+  }
+
+  return (
+    ACS_getCabinSpaceUsed() <=
+    aircraftConfig.referenceCapacity
+  );
 }
 
 function openSeatConfigurationModal() {
