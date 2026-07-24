@@ -2740,10 +2740,12 @@ document.addEventListener("DOMContentLoaded", () => {
       () => {
         if (!selectedAircraft) return;
 
-        ACS_cabinDraft =
+       ACS_cabinDraft =
           window.ACS_CABIN.getFactoryDefault(
             selectedAircraft
           );
+
+        ACS_ensureCabinSeatLayout();
 
         ACS_refreshCabinConfigurationModal();
       }
