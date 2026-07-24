@@ -2593,6 +2593,116 @@
   justify-content: space-between;
   align-items: center;
 }
+
+/* ============================================================
+   ACS OCC — GLOBAL VERTICAL CABIN SEAT MAP
+   F Gold · C Green · Y Blue
+   ============================================================ */
+
+#seatConfigurationModal .cabin-config-map {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 320px;
+  max-height: 560px;
+  padding: 16px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-radius: 8px;
+}
+
+#seatConfigurationModal .cabin-visual-airframe {
+  width: fit-content;
+  min-width: 210px;
+  padding: 12px 22px 16px;
+  border: 1px solid #315970;
+  border-radius: 90px 90px 24px 24px;
+  background: #06121d;
+}
+
+#seatConfigurationModal .cabin-visual-nose,
+#seatConfigurationModal .cabin-visual-tail {
+  color: #75d5ff;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+#seatConfigurationModal .cabin-visual-nose {
+  margin-bottom: 14px;
+}
+
+#seatConfigurationModal .cabin-visual-tail {
+  margin-top: 14px;
+}
+
+#seatConfigurationModal .cabin-visual-class {
+  padding: 8px 10px;
+  border-top: 1px solid #18384b;
+}
+
+#seatConfigurationModal
+.cabin-visual-class:first-child {
+  border-top: 0;
+}
+
+#seatConfigurationModal
+.cabin-visual-class-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 7px;
+  color: #bcd5e4;
+  font-size: 10px;
+}
+
+#seatConfigurationModal .cabin-visual-row {
+  display: grid;
+  grid-template-columns:
+    repeat(3, 15px)
+    14px
+    repeat(3, 15px);
+  gap: 4px;
+  justify-content: center;
+}
+
+#seatConfigurationModal .cabin-visual-seat {
+  display: block;
+  width: 15px;
+  height: 15px;
+  border: 1px solid currentColor;
+  border-radius: 4px 4px 2px 2px;
+}
+
+#seatConfigurationModal
+.cabin-visual-seat-F {
+  color: #ffd65a;
+  background: #b68b08;
+}
+
+#seatConfigurationModal
+.cabin-visual-seat-C {
+  color: #72e08b;
+  background: #238343;
+}
+
+#seatConfigurationModal
+.cabin-visual-seat-Y {
+  color: #63cfff;
+  background: #197cae;
+}
+
+#seatConfigurationModal
+.cabin-visual-seat-empty {
+  visibility: hidden;
+}
+
+#seatConfigurationModal
+.cabin-visual-aisle {
+  display: block;
+  width: 14px;
+}
        
 </style>
      
