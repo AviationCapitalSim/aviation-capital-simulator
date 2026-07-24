@@ -2795,6 +2795,50 @@ document.addEventListener("DOMContentLoaded", () => {
     controls.addEventListener(
       "click",
       event => {
+
+             const layoutButton =
+          event.target.closest(
+            "[data-cabin-layout]"
+          );
+
+        if (
+          layoutButton &&
+          ACS_cabinDraft &&
+          selectedAircraft
+        ) {
+          const requestedLayout =
+            String(
+              layoutButton.dataset.cabinLayout ||
+              ""
+            )
+              .split("-")
+              .map(Number);
+
+          const allowedLayouts =
+            ACS_getAllowedCabinLayouts(
+              selectedAircraft
+            );
+
+          const isAllowed =
+            allowedLayouts.some(layout =>
+              ACS_areCabinLayoutsEqual(
+                layout,
+                requestedLayout
+              )
+            );
+
+          if (!isAllowed) {
+            return;
+          }
+
+          ACS_cabinDraft.seatLayout = [
+            ...requestedLayout
+          ];
+
+          ACS_refreshCabinConfigurationModal();
+          return;
+        }
+
         const button =
           event.target.closest(
             "[data-cabin-step]"
