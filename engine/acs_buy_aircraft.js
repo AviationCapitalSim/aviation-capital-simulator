@@ -2632,8 +2632,9 @@ document.addEventListener("DOMContentLoaded", () => {
             ACS_cabinDraft
           )
         );
-
-        closeSeatConfigurationModal();
+         
+         updateModalSummary();
+         closeSeatConfigurationModal();
       }
     );
   }
