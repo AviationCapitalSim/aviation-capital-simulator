@@ -1473,7 +1473,10 @@ function ACS_getCabinSpaceUsed() {
    ============================================================ */
 
 function ACS_getCabinComfortGuide() {
-  if (!ACS_cabinDraft) {
+  if (
+    !ACS_cabinDraft ||
+    !selectedAircraft
+  ) {
     return null;
   }
 
@@ -1494,15 +1497,61 @@ function ACS_getCabinComfortGuide() {
   }
 
   /*
-    Average physical space selected per passenger.
-    Internal value: never shown to the player.
+    Detect whether the current configuration
+    exactly matches the aircraft Factory Default.
+  */
+
+  const factoryDefault =
+    window.ACS_CABIN.getFactoryDefault(
+      selectedAircraft
+    );
+
+  const isFactoryDefault =
+    factoryDefault &&
+    ["Y", "C", "F"].every(
+      cabinClass => {
+        const current =
+          ACS_cabinDraft[cabinClass];
+
+        const factory =
+          factoryDefault[cabinClass];
+
+        return (
+          current.product ===
+            factory.product &&
+          Number(current.seats) ===
+            Number(factory.seats)
+        );
+      }
+    );
+
+  /*
+    Factory Default is always neutral ACS blue.
+    It is not evaluated as a player decision.
+  */
+
+  if (isFactoryDefault) {
+    return {
+      label:
+        "FACTORY DEFAULT CABIN CONFIGURATION",
+      className:
+        "is-factory-default"
+    };
+  }
+
+  /*
+    Provisional comfort guidance for Custom
+    Configuration only.
+
+    The internal average is never shown
+    directly to the player.
   */
 
   const averageSeatSpace =
     ACS_getCabinSpaceUsed() /
     passengerSeats;
 
-  if (averageSeatSpace >= 2.5) {
+  if (averageSeatSpace >= 1.8) {
     return {
       label:
         "FULL-COMFORT CABIN CONFIGURATION",
@@ -1511,7 +1560,16 @@ function ACS_getCabinComfortGuide() {
     };
   }
 
-  if (averageSeatSpace >= 1.5) {
+  if (averageSeatSpace >= 1.4) {
+    return {
+      label:
+        "COMFORT CABIN CONFIGURATION",
+      className:
+        "is-comfort"
+    };
+  }
+
+  if (averageSeatSpace >= 1.25) {
     return {
       label:
         "STANDARD CABIN CONFIGURATION",
@@ -1520,7 +1578,7 @@ function ACS_getCabinComfortGuide() {
     };
   }
 
-  if (averageSeatSpace >= 1.15) {
+  if (averageSeatSpace >= 1.1) {
     return {
       label:
         "ESSENTIAL CABIN CONFIGURATION",
