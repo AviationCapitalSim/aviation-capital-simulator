@@ -1172,6 +1172,22 @@ function ACS_getCabinProductOptions(
     .join("");
 }
 
+function ACS_areCabinLayoutsEqual(
+  firstLayout,
+  secondLayout
+) {
+  return (
+    Array.isArray(firstLayout) &&
+    Array.isArray(secondLayout) &&
+    firstLayout.length ===
+      secondLayout.length &&
+    firstLayout.every(
+      (seatCount, index) =>
+        seatCount === secondLayout[index]
+    )
+  );
+}
+
 function ACS_renderCabinLayoutSelector(
   aircraftConfig
 ) {
