@@ -2377,6 +2377,81 @@
   background: #164967;
 }
 
+/* ============================================================
+   ACS OCC — CABIN SEAT LAYOUT SELECTOR
+   ============================================================ */
+
+#seatConfigurationModal .cabin-layout-selector {
+  padding: 12px;
+  border: 1px solid #294a60;
+  border-radius: 5px;
+  background: #081b2a;
+}
+
+#seatConfigurationModal
+.cabin-layout-selector-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  color: #eaf7ff;
+  font-weight: 800;
+}
+
+#seatConfigurationModal
+.cabin-layout-selector-heading small {
+  color: #75d5ff;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+#seatConfigurationModal .cabin-layout-options {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(110px, 1fr));
+  gap: 8px;
+}
+
+#seatConfigurationModal .cabin-layout-option {
+  display: grid;
+  gap: 4px;
+  min-height: 58px;
+  padding: 8px 10px;
+  border: 1px solid #39708e;
+  border-radius: 5px;
+  background: #0a2538;
+  color: #bdeaff;
+  cursor: pointer;
+}
+
+#seatConfigurationModal
+.cabin-layout-option:hover {
+  border-color: #63cfff;
+  background: #10364c;
+}
+
+#seatConfigurationModal
+.cabin-layout-option.is-selected {
+  border-color: #63cfff;
+  background: #164967;
+  box-shadow:
+    inset 0 0 0 1px rgba(99, 207, 255, 0.35);
+}
+
+#seatConfigurationModal
+.cabin-layout-option-preview {
+  color: #63cfff;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+}
+
+#seatConfigurationModal
+.cabin-layout-option:disabled {
+  cursor: default;
+  opacity: 0.75;
+}
+       
 #seatConfigurationModal .cabin-config-controls {
   display: grid;
   gap: 12px;
@@ -2659,10 +2734,6 @@
 
 #seatConfigurationModal .cabin-visual-row {
   display: grid;
-  grid-template-columns:
-    repeat(3, 15px)
-    14px
-    repeat(3, 15px);
   gap: 4px;
   justify-content: center;
 }
