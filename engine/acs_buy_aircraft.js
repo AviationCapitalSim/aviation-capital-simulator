@@ -1393,8 +1393,10 @@ function ACS_refreshCabinConfigurationModal() {
 /* ============================================================
    ACS OCC — AUTOMATIC ECONOMY BALANCING
    ------------------------------------------------------------
-   Y is reduced only when required to fit C/F.
-   Reducing C/F does not automatically increase Y.
+   Rules:
+   - Any Y/C/F product change recalculates available Economy.
+   - Any C/F seat-count change recalculates Economy.
+   - Manual Y seat-count changes remain player-controlled.
    ============================================================ */
 
 function ACS_getCabinSpaceUsed() {
@@ -1426,12 +1428,16 @@ function ACS_getCabinSpaceUsed() {
 }
 
 function ACS_fitEconomyToCabin(
-  previousDraft
+  previousDraft,
+  refillEconomy = false
 ) {
   const aircraftConfig =
     ACS_getSelectedCabinAircraftConfig();
 
-  if (!aircraftConfig || !ACS_cabinDraft) {
+  if (
+    !aircraftConfig ||
+    !ACS_cabinDraft
+  ) {
     return false;
   }
 
@@ -1476,29 +1482,55 @@ function ACS_fitEconomyToCabin(
     aircraftConfig.referenceCapacity -
     premiumSpaceUsed;
 
+  /*
+    C and F alone cannot exceed the aircraft.
+    Restore the previous valid configuration.
+  */
+
   if (availableEconomySpace < 0) {
     ACS_cabinDraft = previousDraft;
     return false;
   }
 
-  const maximumEconomySeats =
-    Math.floor(
-      availableEconomySpace /
-      Number(economyProduct.spaceFactor || 1)
+  const economySpaceFactor =
+    Number(
+      economyProduct.spaceFactor || 1
     );
 
+  const maximumEconomySeats =
+    Math.max(
+      0,
+      Math.floor(
+        availableEconomySpace /
+        economySpaceFactor
+      )
+    );
+
+  /*
+    Refill Y after product changes or C/F changes.
+
+    When refillEconomy is false, preserve the
+    player's manual Y count unless it is too high.
+  */
+
   if (
+    refillEconomy ||
     ACS_cabinDraft.Y.seats >
-    maximumEconomySeats
+      maximumEconomySeats
   ) {
     ACS_cabinDraft.Y.seats =
       maximumEconomySeats;
   }
 
-  return (
-    ACS_getCabinSpaceUsed() <=
+  if (
+    ACS_getCabinSpaceUsed() >
     aircraftConfig.referenceCapacity
-  );
+  ) {
+    ACS_cabinDraft = previousDraft;
+    return false;
+  }
+
+  return true;
 }
 
 function openSeatConfigurationModal() {
@@ -2400,7 +2432,12 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
-  if (controls) {
+    if (controls) {
+
+    /* ==========================================================
+       PLUS / MINUS BUTTONS
+       ========================================================== */
+
     controls.addEventListener(
       "click",
       event => {
@@ -2409,7 +2446,10 @@ document.addEventListener("DOMContentLoaded", () => {
             "[data-cabin-step]"
           );
 
-        if (!button || !ACS_cabinDraft) {
+        if (
+          !button ||
+          !ACS_cabinDraft
+        ) {
           return;
         }
 
@@ -2417,53 +2457,84 @@ document.addEventListener("DOMContentLoaded", () => {
           button.dataset.cabinStep;
 
         const delta =
-          Number(button.dataset.cabinDelta);
-
-               const previousDraft =
-          ACS_cloneCabinConfiguration(
-            ACS_cabinDraft
+          Number(
+            button.dataset.cabinDelta
           );
-
-        ACS_cabinDraft[cabinClass].seats =
-          Math.max(
-            0,
-            ACS_cabinDraft[cabinClass].seats +
-            delta
-          );
-
-        if (
-          !ACS_fitEconomyToCabin(
-            previousDraft
-          )
-        ) {
-          ACS_cabinDraft = previousDraft;
-        }
-
-        ACS_refreshCabinConfigurationModal();
-         
-      }
-    );
-
-    controls.addEventListener(
-      "change",
-      event => {
-        if (!ACS_cabinDraft) return;
-
-        const productClass =
-          event.target.dataset.cabinProduct;
-
-        const seatsClass =
-          event.target.dataset.cabinSeats;
 
         const previousDraft =
           ACS_cloneCabinConfiguration(
             ACS_cabinDraft
           );
-         
+
+        ACS_cabinDraft[
+          cabinClass
+        ].seats = Math.max(
+          0,
+          ACS_cabinDraft[
+            cabinClass
+          ].seats + delta
+        );
+
+        /*
+          Changing C/F quantities automatically
+          fills the newly available cabin with Y.
+
+          Manual Y +/- remains player-controlled.
+        */
+
+        const shouldRefillEconomy =
+          cabinClass !== "Y";
+
+        if (
+          !ACS_fitEconomyToCabin(
+            previousDraft,
+            shouldRefillEconomy
+          )
+        ) {
+          ACS_cabinDraft =
+            previousDraft;
+        }
+
+        ACS_refreshCabinConfigurationModal();
+      }
+    );
+
+    /* ==========================================================
+       PRODUCT AND NUMBER INPUT CHANGES
+       ========================================================== */
+
+    controls.addEventListener(
+      "change",
+      event => {
+        if (!ACS_cabinDraft) {
+          return;
+        }
+
+        const productClass =
+          event.target.dataset
+            .cabinProduct;
+
+        const seatsClass =
+          event.target.dataset
+            .cabinSeats;
+
+        if (
+          !productClass &&
+          !seatsClass
+        ) {
+          return;
+        }
+
+        const previousDraft =
+          ACS_cloneCabinConfiguration(
+            ACS_cabinDraft
+          );
+
         if (productClass) {
           ACS_cabinDraft[
             productClass
-          ].product = event.target.value;
+          ].product =
+            event.target.value;
         }
 
         if (seatsClass) {
@@ -2472,24 +2543,45 @@ document.addEventListener("DOMContentLoaded", () => {
           ].seats = Math.max(
             0,
             Math.trunc(
-              Number(event.target.value) || 0
+              Number(
+                event.target.value
+              ) || 0
             )
           );
         }
 
-                if (
+        /*
+          Refill Economy when:
+
+          - Any Y/C/F product changes.
+          - A C/F passenger count changes.
+
+          Do not refill when the player manually
+          changes only the Y passenger count.
+        */
+
+        const shouldRefillEconomy =
+          Boolean(productClass) ||
+          (
+            Boolean(seatsClass) &&
+            seatsClass !== "Y"
+          );
+
+        if (
           !ACS_fitEconomyToCabin(
-            previousDraft
+            previousDraft,
+            shouldRefillEconomy
           )
         ) {
-          ACS_cabinDraft = previousDraft;
+          ACS_cabinDraft =
+            previousDraft;
         }
 
         ACS_refreshCabinConfigurationModal();
       }
     );
   }
-
+   
   if (modal) {
     modal.addEventListener(
       "click",
