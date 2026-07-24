@@ -2783,8 +2783,6 @@ document.addEventListener("DOMContentLoaded", () => {
             selectedAircraft
           );
 
-        ACS_ensureCabinSeatLayout();
-
         ACS_refreshCabinConfigurationModal();
       }
     );
