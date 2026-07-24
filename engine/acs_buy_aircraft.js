@@ -1376,13 +1376,49 @@ function ACS_refreshCabinConfigurationModal() {
   const applyButton =
     document.getElementById("cabinConfigApply");
 
-  if (status) {
-    status.textContent = validation.message;
+    if (status) {
+    status.className =
+      "cabin-config-status";
 
-    status.classList.toggle(
-      "is-invalid",
-      !validation.valid
-    );
+    if (!validation.valid) {
+      status.textContent =
+        validation.message;
+
+      status.classList.add(
+        "is-invalid"
+      );
+    } else {
+      const comfortGuide =
+        ACS_getCabinComfortGuide();
+
+      status.innerHTML = `
+        <span
+          class="cabin-config-status-main"
+        >
+          ${validation.message}
+        </span>
+
+        ${
+          comfortGuide
+            ? `
+              <span
+                class="
+                  cabin-config-status-guide
+                "
+              >
+                ${comfortGuide.label}
+              </span>
+            `
+            : ""
+        }
+      `;
+
+      if (comfortGuide) {
+        status.classList.add(
+          comfortGuide.className
+        );
+      }
+    }
   }
 
   if (applyButton) {
@@ -1425,6 +1461,80 @@ function ACS_getCabinSpaceUsed() {
     },
     0
   );
+}
+
+/* ============================================================
+   ACS OCC — PROVISIONAL CABIN COMFORT GUIDE
+   ------------------------------------------------------------
+   Visual guidance only.
+
+   It does not affect demand, Finance, range, weight
+   or the aircraft order.
+   ============================================================ */
+
+function ACS_getCabinComfortGuide() {
+  if (!ACS_cabinDraft) {
+    return null;
+  }
+
+  const passengerSeats =
+    ["Y", "C", "F"].reduce(
+      (total, cabinClass) =>
+        total +
+        Number(
+          ACS_cabinDraft[
+            cabinClass
+          ].seats || 0
+        ),
+      0
+    );
+
+  if (passengerSeats <= 0) {
+    return null;
+  }
+
+  /*
+    Average physical space selected per passenger.
+    Internal value: never shown to the player.
+  */
+
+  const averageSeatSpace =
+    ACS_getCabinSpaceUsed() /
+    passengerSeats;
+
+  if (averageSeatSpace >= 2.5) {
+    return {
+      label:
+        "FULL-COMFORT CABIN CONFIGURATION",
+      className:
+        "is-full-comfort"
+    };
+  }
+
+  if (averageSeatSpace >= 1.5) {
+    return {
+      label:
+        "STANDARD CABIN CONFIGURATION",
+      className:
+        "is-standard"
+    };
+  }
+
+  if (averageSeatSpace >= 1.15) {
+    return {
+      label:
+        "ESSENTIAL CABIN CONFIGURATION",
+      className:
+        "is-essential"
+    };
+  }
+
+  return {
+    label:
+      "HIGH-DENSITY CABIN CONFIGURATION",
+    className:
+      "is-high-density"
+  };
 }
 
 function ACS_fitEconomyToCabin(
