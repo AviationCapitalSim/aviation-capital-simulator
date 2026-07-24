@@ -2703,6 +2703,92 @@
   display: block;
   width: 14px;
 }
+
+/* ============================================================
+   ACS OCC — CABIN STATUS AESTHETICS
+   Scoped exclusively to Seat Configuration.
+   ============================================================ */
+
+/*
+  The vertical airframe already contains NOSE at the top
+  and TAIL at the bottom.
+*/
+
+#seatConfigurationModal .cabin-config-direction {
+  display: none;
+}
+
+/* Aircraft title */
+
+#seatConfigurationModal #cabinConfigTitle {
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+  letter-spacing: 0.04em;
+}
+
+/* Passenger configuration status */
+
+#seatConfigurationModal .cabin-config-status {
+  display: grid;
+  gap: 5px;
+  text-align: center;
+}
+
+#seatConfigurationModal
+.cabin-config-status-main {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+#seatConfigurationModal
+.cabin-config-status-guide {
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+/* Green */
+
+#seatConfigurationModal
+.cabin-config-status.is-full-comfort {
+  border-color: #43d77d;
+  background: rgba(24, 105, 59, 0.34);
+  color: #9affbd;
+}
+
+/* Orange */
+
+#seatConfigurationModal
+.cabin-config-status.is-standard {
+  border-color: #ef8f32;
+  background: rgba(130, 67, 15, 0.34);
+  color: #ffc47e;
+}
+
+/* Yellow */
+
+#seatConfigurationModal
+.cabin-config-status.is-essential {
+  border-color: #e4c64e;
+  background: rgba(116, 95, 12, 0.34);
+  color: #ffe887;
+}
+
+/* Red */
+
+#seatConfigurationModal
+.cabin-config-status.is-high-density {
+  border-color: #d9565e;
+  background: rgba(125, 31, 38, 0.38);
+  color: #ffadb2;
+}
        
 </style>
      
