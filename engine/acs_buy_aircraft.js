@@ -1303,26 +1303,45 @@ function ACS_renderCabinControls() {
    ============================================================ */
 
 function ACS_parseCabinGeometry(geometry) {
-  const match =
-    String(geometry || "").match(/^(\d+)\+(\d+)$/);
-
-  if (!match) {
-    return {
-      left: 3,
-      right: 3
-    };
+  if (
+    Array.isArray(geometry) &&
+    (
+      ACS_areCabinLayoutsEqual(
+        geometry,
+        [2, 2]
+      ) ||
+      ACS_areCabinLayoutsEqual(
+        geometry,
+        [3, 3]
+      ) ||
+      ACS_areCabinLayoutsEqual(
+        geometry,
+        [3, 4, 3]
+      )
+    )
+  ) {
+    return [...geometry];
   }
 
-  return {
-    left: Number(match[1]),
-    right: Number(match[2])
-  };
+  const legacyMatch =
+    String(geometry || "")
+      .match(/^(\d+)\+(\d+)$/);
+
+  if (legacyMatch) {
+    return [
+      Number(legacyMatch[1]),
+      Number(legacyMatch[2])
+    ];
+  }
+
+  return [3, 3];
 }
 
 function ACS_getAircraftCabinGeometry(
   aircraftConfig
 ) {
   return ACS_parseCabinGeometry(
+    ACS_cabinDraft?.seatLayout ||
     aircraftConfig.layout?.economyGeometry ||
     aircraftConfig.layout?.geometry ||
     "3+3"
@@ -1358,8 +1377,19 @@ function ACS_renderCabinClassRows(
 ) {
   if (seatCount <= 0) return "";
 
-  const seatsPerRow =
-    geometry.left + geometry.right;
+    const seatsPerRow =
+    geometry.reduce(
+      (total, groupSize) =>
+        total + groupSize,
+      0
+    );
+
+  const rowGridColumns =
+    geometry
+      .map(groupSize =>
+        `repeat(${groupSize}, 15px)`
+      )
+      .join(" 14px ");
 
   const rowCount =
     Math.ceil(seatCount / seatsPerRow);
@@ -1392,29 +1422,39 @@ function ACS_renderCabinClassRows(
         seatsPerRow
       );
 
-    let rowHtml = "";
+        let rowHtml = "";
+    let seatPosition = 0;
 
-    for (
-      let position = 0;
-      position < seatsPerRow;
-      position += 1
-    ) {
-      if (position === geometry.left) {
-        rowHtml += `
-          <span class="cabin-visual-aisle"></span>
-        `;
+    geometry.forEach(
+      (groupSize, groupIndex) => {
+        if (groupIndex > 0) {
+          rowHtml += `
+            <span class="cabin-visual-aisle"></span>
+          `;
+        }
+
+        for (
+          let groupSeat = 0;
+          groupSeat < groupSize;
+          groupSeat += 1
+        ) {
+          rowHtml += ACS_renderCabinSeat(
+            cabinClass,
+            seatPosition < occupiedInRow
+          );
+
+          seatPosition += 1;
+        }
       }
-
-      rowHtml += ACS_renderCabinSeat(
-        cabinClass,
-        position < occupiedInRow
-      );
-    }
-
+    );
+     
     rowsHtml += `
       <div
         class="cabin-visual-row"
-        style="margin-bottom:${rowGap}px"
+        style="
+          grid-template-columns:${rowGridColumns};
+          margin-bottom:${rowGap}px;
+        "
       >
         ${rowHtml}
       </div>
