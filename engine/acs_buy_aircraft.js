@@ -1014,6 +1014,71 @@ function closeBuyModal() {
 let ACS_cabinDraft = null;
 const ACS_cabinPreviewByAircraft = new Map();
 
+/* ============================================================
+   ACS OCC — ALLOWED SEAT LAYOUTS BY AIRCRAFT CATEGORY
+   ------------------------------------------------------------
+   Visual cabin-layout policy only.
+   Does not modify capacity, pricing or factory-order payload.
+   ============================================================ */
+
+const ACS_CABIN_LAYOUTS_BY_CATEGORY = Object.freeze({
+  SMALL: Object.freeze([
+    Object.freeze([2, 2])
+  ]),
+
+  MEDIUM: Object.freeze([
+    Object.freeze([2, 2])
+  ]),
+
+  LARGE: Object.freeze([
+    Object.freeze([2, 2]),
+    Object.freeze([3, 3])
+  ]),
+
+  EXTRA_LARGE: Object.freeze([
+    Object.freeze([3, 3]),
+    Object.freeze([3, 4, 3])
+  ])
+});
+
+function ACS_normalizeCabinAircraftCategory(
+  aircraft
+) {
+  const rawCategory = String(
+    aircraft?.aircraft_category ??
+    aircraft?.production_category ??
+    aircraft?.category ??
+    ""
+  )
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]+/g, "_");
+
+  if (
+    rawCategory === "XL" ||
+    rawCategory === "EXTRALARGE"
+  ) {
+    return "EXTRA_LARGE";
+  }
+
+  return rawCategory;
+}
+
+function ACS_getAllowedCabinLayouts(
+  aircraft
+) {
+  const category =
+    ACS_normalizeCabinAircraftCategory(
+      aircraft
+    );
+
+  return (
+    ACS_CABIN_LAYOUTS_BY_CATEGORY[
+      category
+    ] || []
+  );
+}
+
 function ACS_cloneCabinConfiguration(configuration) {
   return JSON.parse(JSON.stringify(configuration));
 }
@@ -1065,6 +1130,76 @@ function ACS_getCabinProductOptions(
       `;
     })
     .join("");
+}
+
+function ACS_renderCabinLayoutSelector(
+  aircraftConfig
+) {
+  const category =
+    ACS_normalizeCabinAircraftCategory(
+      selectedAircraft
+    );
+
+  const allowedLayouts =
+    ACS_getAllowedCabinLayouts(
+      selectedAircraft
+    );
+
+  if (!allowedLayouts.length) {
+    return "";
+  }
+
+  const readOnly =
+    aircraftConfig.mode === "READ_ONLY";
+
+  const optionsHtml =
+    allowedLayouts
+      .map(layout => {
+        const layoutValue =
+          layout.join("-");
+
+        const layoutLabel =
+          layout.join("–");
+
+        const selected =
+          ACS_areCabinLayoutsEqual(
+            layout,
+            ACS_cabinDraft.seatLayout
+          );
+
+        return `
+          <button
+            type="button"
+            class="cabin-layout-option
+                   ${selected ? "is-selected" : ""}"
+            data-cabin-layout="${layoutValue}"
+            aria-pressed="${selected}"
+            ${readOnly ? "disabled" : ""}
+          >
+            <span class="cabin-layout-option-preview">
+              ${layoutLabel}
+            </span>
+
+            <strong>
+              ${layoutLabel}
+            </strong>
+          </button>
+        `;
+      })
+      .join("");
+
+  return `
+    <section class="cabin-layout-selector">
+      <div class="cabin-layout-selector-heading">
+        <span>SEAT LAYOUT</span>
+        <small>${category.replaceAll("_", " ")}</small>
+      </div>
+
+      <div class="cabin-layout-options">
+        ${optionsHtml}
+      </div>
+    </section>
+  `;
 }
 
 function ACS_renderCabinControls() {
@@ -1151,6 +1286,13 @@ function ACS_renderCabinControls() {
       `;
     })
     .join("");
+   
+  container.insertAdjacentHTML(
+    "afterbegin",
+    ACS_renderCabinLayoutSelector(
+      aircraftConfig
+    )
+  ); 
 }
 
 /* ============================================================
@@ -1702,6 +1844,7 @@ function ACS_fitEconomyToCabin(
 }
 
 function openSeatConfigurationModal() {
+   
   const aircraftConfig =
     ACS_getSelectedCabinAircraftConfig();
 
@@ -1727,6 +1870,8 @@ function openSeatConfigurationModal() {
     )
   );
 
+  ACS_ensureCabinSeatLayout();
+   
   document.getElementById(
     "cabinConfigTitle"
   ).textContent =
