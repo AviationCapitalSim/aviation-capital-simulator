@@ -2393,7 +2393,40 @@ function updateModalSummary() {
   );
 
   const price = Number(selectedAircraft.price_acs_usd || 0);
-  const total = price * qty;
+    const total = price * qty;
+
+  const cabinKey =
+    window.ACS_CABIN.makeAircraftKey(
+      selectedAircraft
+    );
+
+  const cabinConfiguration =
+    ACS_cabinPreviewByAircraft.get(cabinKey) ||
+    window.ACS_CABIN.getFactoryDefault(
+      selectedAircraft
+    );
+
+  const cabinConfigurationText =
+    cabinConfiguration
+      ? ["Y", "C", "F"]
+          .filter(
+            cabinClass =>
+              Number(
+                cabinConfiguration[
+                  cabinClass
+                ]?.seats || 0
+              ) > 0
+          )
+          .map(
+            cabinClass =>
+              `${
+                cabinConfiguration[
+                  cabinClass
+                ].seats
+              } ${cabinClass}`
+          )
+          .join(" · ")
+      : "";
 
   let summary = "";
 
@@ -2420,9 +2453,14 @@ function updateModalSummary() {
     const initial = Math.round(total * (pct / 100));
     const final = Math.max(total - initial, 0);
 
-    summary += `
+        summary += `
       Initial Payment: <b>${ACS_formatUSD(initial)}</b><br>
       Delivery Payment: <b>${ACS_formatUSD(final)}</b>
+      ${
+        cabinConfigurationText
+          ? `<br>Cabin Configuration: <b>${cabinConfigurationText}</b>`
+          : ""
+      }
     `;
 
     document.getElementById("leaseOptions").style.display = "none";
