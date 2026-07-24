@@ -1044,9 +1044,40 @@ const ACS_CABIN_LAYOUTS_BY_CATEGORY = Object.freeze({
 function ACS_normalizeCabinAircraftCategory(
   aircraft
 ) {
-  const rawCategory = String(
+  const productionCategory = String(
+    aircraft?.production_category || ""
+  )
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]+/g, "_");
+
+  if (
+    productionCategory === "NARROWBODY"
+  ) {
+    return "LARGE";
+  }
+
+  if (
+    productionCategory === "WIDEBODY"
+  ) {
+    return "EXTRA_LARGE";
+  }
+
+  if (
+    productionCategory.includes("REGIONAL")
+  ) {
+    return "MEDIUM";
+  }
+
+  if (
+    productionCategory.includes("COMMUTER") ||
+    productionCategory.includes("SMALL")
+  ) {
+    return "SMALL";
+  }
+
+  const aircraftCategory = String(
     aircraft?.aircraft_category ??
-    aircraft?.production_category ??
     aircraft?.category ??
     ""
   )
@@ -1055,13 +1086,22 @@ function ACS_normalizeCabinAircraftCategory(
     .replace(/[\s-]+/g, "_");
 
   if (
-    rawCategory === "XL" ||
-    rawCategory === "EXTRALARGE"
+    aircraftCategory === "EXTRA_LARGE" ||
+    aircraftCategory === "EXTRALARGE" ||
+    aircraftCategory === "XL"
   ) {
     return "EXTRA_LARGE";
   }
 
-  return rawCategory;
+  if (
+    aircraftCategory === "SMALL" ||
+    aircraftCategory === "MEDIUM" ||
+    aircraftCategory === "LARGE"
+  ) {
+    return aircraftCategory;
+  }
+
+  return "";
 }
 
 function ACS_getAllowedCabinLayouts(
@@ -1145,8 +1185,22 @@ function ACS_renderCabinLayoutSelector(
       selectedAircraft
     );
 
-  if (!allowedLayouts.length) {
+    if (!allowedLayouts.length) {
     return "";
+  }
+
+  const currentLayoutIsAllowed =
+    allowedLayouts.some(layout =>
+      ACS_areCabinLayoutsEqual(
+        layout,
+        ACS_cabinDraft.seatLayout
+      )
+    );
+
+  if (!currentLayoutIsAllowed) {
+    ACS_cabinDraft.seatLayout = [
+      ...allowedLayouts[0]
+    ];
   }
 
   const readOnly =
