@@ -366,14 +366,14 @@
       return {
         valid: false,
         installedSeats: 0,
-        message: "Install at least one passenger seat."
+        message: "Configure at least one passenger seat."
       };
     }
 
     return {
       valid: true,
       installedSeats,
-      message: `${installedSeats} passenger seats installed.`
+      message: `${installedSeats} passenger seats configured.`
     };
   }
 
