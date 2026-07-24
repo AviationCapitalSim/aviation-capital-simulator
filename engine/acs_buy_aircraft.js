@@ -1909,8 +1909,6 @@ function openSeatConfigurationModal() {
       selectedAircraft
     )
   );
-
-  ACS_ensureCabinSeatLayout();
    
   document.getElementById(
     "cabinConfigTitle"
