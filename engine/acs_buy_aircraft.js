@@ -2419,6 +2419,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const delta =
           Number(button.dataset.cabinDelta);
 
+               const previousDraft =
+          ACS_cloneCabinConfiguration(
+            ACS_cabinDraft
+          );
+
         ACS_cabinDraft[cabinClass].seats =
           Math.max(
             0,
@@ -2426,7 +2431,16 @@ document.addEventListener("DOMContentLoaded", () => {
             delta
           );
 
+        if (
+          !ACS_fitEconomyToCabin(
+            previousDraft
+          )
+        ) {
+          ACS_cabinDraft = previousDraft;
+        }
+
         ACS_refreshCabinConfigurationModal();
+         
       }
     );
 
@@ -2441,6 +2455,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const seatsClass =
           event.target.dataset.cabinSeats;
 
+        const previousDraft =
+          ACS_cloneCabinConfiguration(
+            ACS_cabinDraft
+          );
+         
         if (productClass) {
           ACS_cabinDraft[
             productClass
@@ -2456,6 +2475,14 @@ document.addEventListener("DOMContentLoaded", () => {
               Number(event.target.value) || 0
             )
           );
+        }
+
+                if (
+          !ACS_fitEconomyToCabin(
+            previousDraft
+          )
+        ) {
+          ACS_cabinDraft = previousDraft;
         }
 
         ACS_refreshCabinConfigurationModal();
