@@ -173,8 +173,109 @@
     return `${manufacturer}|${model}`;
   }
 
-  function getAircraftConfig(aircraft) {
-    return ACS_CABIN_CONFIG[makeAircraftKey(aircraft)] || null;
+    function getAircraftConfig(aircraft) {
+    if (!aircraft) return null;
+
+    const aircraftKey =
+      makeAircraftKey(aircraft);
+
+    /*
+      Preserve any explicitly configured aircraft.
+    */
+
+    const configuredAircraft =
+      ACS_CABIN_CONFIG[aircraftKey];
+
+    if (configuredAircraft) {
+      return configuredAircraft;
+    }
+
+    /*
+      Global ACS OCC passenger-cabin capacity.
+      Buy New already receives seats from PostgreSQL.
+    */
+
+    const referenceCapacity = Number(
+      aircraft.seats ??
+      aircraft.passenger_capacity ??
+      aircraft.capacity ??
+      0
+    );
+
+    /*
+      Cargo aircraft with seats: 0 do not receive
+      passenger Seat Configuration.
+    */
+
+    if (
+      !Number.isInteger(referenceCapacity) ||
+      referenceCapacity <= 0
+    ) {
+      return null;
+    }
+
+    const [
+      manufacturer = "Unknown",
+      model = "Unknown Model"
+    ] = aircraftKey.split("|");
+
+    /*
+      Global ACS OCC configuration.
+      Generated dynamically for every passenger aircraft.
+    */
+
+    return Object.freeze({
+      manufacturer,
+      model,
+      referenceCapacity,
+
+      layout: Object.freeze({
+        economyGeometry: "3+3"
+      }),
+
+      mode: "EDITABLE",
+      customConfigurationAllowed: true,
+
+      allowedProducts: Object.freeze({
+        Y: Object.freeze([
+          "Y_SMART",
+          "Y_CLASSIC",
+          "Y_COMFORT",
+          "Y_PLUS"
+        ]),
+
+        C: Object.freeze([
+          "C_SMART",
+          "C_EXECUTIVE",
+          "C_PREMIER",
+          "C_SUPERIOR"
+        ]),
+
+        F: Object.freeze([
+          "F_SILVER",
+          "F_GOLD",
+          "F_PLATINUM",
+          "F_DIAMOND"
+        ])
+      }),
+
+      factoryDefault: Object.freeze({
+        Y: Object.freeze({
+          product: "Y_SMART",
+          seats: referenceCapacity
+        }),
+
+        C: Object.freeze({
+          product: "C_SMART",
+          seats: 0
+        }),
+
+        F: Object.freeze({
+          product: "F_SILVER",
+          seats: 0
+        })
+      })
+    });
   }
 
   function cloneConfiguration(configuration) {
