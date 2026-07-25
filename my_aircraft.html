@@ -3396,6 +3396,439 @@ html body .order-book-table tbody tr:hover {
     object-position: center 54%;
   }
 }
+
+/* ============================================================
+   MY AIRCRAFT — CABIN CONFIGURATION
+   Desktop / Tablet / Mobile
+   ============================================================ */
+
+#myAircraftCabinModal.mac-cabin-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 10030;
+
+  padding: 18px;
+  box-sizing: border-box;
+
+  align-items: center;
+  justify-content: center;
+
+  overflow-y: auto;
+  background: rgba(0, 5, 15, 0.86);
+  backdrop-filter: blur(10px);
+}
+
+#myAircraftCabinModal .mac-cabin-modal {
+  position: relative;
+  width: min(1080px, calc(100vw - 36px));
+  max-height: calc(100dvh - 36px);
+
+  overflow-x: hidden;
+  overflow-y: auto;
+  box-sizing: border-box;
+
+  color: #eaf7ff;
+  background: #071b2b;
+  border: 1px solid rgba(73, 190, 244, 0.55);
+  border-radius: 10px;
+
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.65),
+    0 0 30px rgba(38, 158, 218, 0.12);
+}
+
+#myAircraftCabinModal .mac-cabin-close-x {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  z-index: 2;
+
+  width: 42px;
+  height: 42px;
+
+  color: #ffffff;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+
+  font-size: 34px;
+  line-height: 1;
+}
+
+#myAircraftCabinModal .mac-cabin-header {
+  padding: 24px 70px 20px;
+  text-align: center;
+  border-bottom: 1px solid rgba(75, 182, 230, 0.32);
+}
+
+#myAircraftCabinModal .mac-cabin-kicker,
+#myAircraftCabinModal h3,
+#myAircraftCabinModal h4,
+#myAircraftCabinModal .mac-cabin-class-title,
+#myAircraftCabinModal .mac-layout-title {
+  font-family: "Orbitron", sans-serif;
+  text-transform: uppercase;
+}
+
+#myAircraftCabinModal .mac-cabin-kicker {
+  color: #63cfff;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 3px;
+}
+
+#myAircraftCabinModal h3 {
+  margin: 8px 0 2px;
+  color: #f2f8ff;
+  font-size: clamp(22px, 3vw, 34px);
+}
+
+#myAircraftCabinModal .mac-cabin-header p {
+  margin: 0;
+  color: #9fb3c5;
+  font-size: 16px;
+}
+
+#myAircraftCabinModal .mac-cabin-workspace {
+  display: grid;
+  grid-template-columns: minmax(360px, 1.1fr) minmax(360px, 0.9fr);
+  gap: 18px;
+  padding: 20px;
+}
+
+#myAircraftCabinModal .mac-cabin-layout-panel,
+#myAircraftCabinModal .mac-cabin-control-panel {
+  min-width: 0;
+  padding: 18px;
+  box-sizing: border-box;
+
+  background: rgba(2, 15, 28, 0.44);
+  border: 1px solid rgba(73, 190, 244, 0.35);
+  border-radius: 8px;
+}
+
+#myAircraftCabinModal h4 {
+  margin: 0 0 15px;
+  color: #63cfff;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+#myAircraftCabinModal .mac-cabin-direction {
+  display: flex;
+  justify-content: space-between;
+
+  margin-bottom: 10px;
+  color: #63cfff;
+
+  font-family: "Orbitron", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+#myAircraftCabinModal .mac-cabin-map {
+  min-height: 430px;
+  max-height: 55vh;
+  padding: 18px;
+  box-sizing: border-box;
+
+  overflow-y: auto;
+
+  background: #03111e;
+  border: 1px solid rgba(73, 190, 244, 0.38);
+  border-radius: 8px;
+}
+
+#myAircraftCabinModal .mac-airframe {
+  width: fit-content;
+  min-width: 230px;
+  margin: 0 auto;
+  padding: 24px 25px;
+
+  border: 1px solid rgba(99, 207, 255, 0.42);
+  border-radius: 90px 90px 35px 35px;
+}
+
+#myAircraftCabinModal .mac-seat-section {
+  margin-bottom: 18px;
+}
+
+#myAircraftCabinModal .mac-seat-section:last-child {
+  margin-bottom: 0;
+}
+
+#myAircraftCabinModal .mac-seat-section-label {
+  margin-bottom: 7px;
+
+  color: #9fdfff;
+  font-family: "Orbitron", sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+#myAircraftCabinModal .mac-seat-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-bottom: 5px;
+}
+
+#myAircraftCabinModal .mac-seat {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 17px;
+
+  border: 1px solid #60ccff;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+#myAircraftCabinModal .mac-seat-Y {
+  background: #1687bc;
+}
+
+#myAircraftCabinModal .mac-seat-C {
+  background: #c49723;
+  border-color: #ffd26b;
+}
+
+#myAircraftCabinModal .mac-seat-F {
+  background: #a76ada;
+  border-color: #e2b7ff;
+}
+
+#myAircraftCabinModal .mac-seat-empty {
+  visibility: hidden;
+}
+
+#myAircraftCabinModal .mac-aisle {
+  display: block;
+  width: 20px;
+  flex: 0 0 20px;
+}
+
+#myAircraftCabinModal .mac-layout-selector,
+#myAircraftCabinModal .mac-cabin-class {
+  margin-bottom: 14px;
+  padding: 14px;
+
+  background: rgba(14, 42, 61, 0.72);
+  border: 1px solid rgba(73, 190, 244, 0.35);
+  border-radius: 7px;
+}
+
+#myAircraftCabinModal .mac-layout-heading,
+#myAircraftCabinModal .mac-cabin-class-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  margin-bottom: 10px;
+}
+
+#myAircraftCabinModal .mac-layout-title,
+#myAircraftCabinModal .mac-cabin-class-title {
+  color: #f4f8ff;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+#myAircraftCabinModal .mac-layout-category,
+#myAircraftCabinModal .mac-seat-total {
+  color: #7fd8ff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+#myAircraftCabinModal .mac-layout-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+#myAircraftCabinModal .mac-layout-option {
+  min-height: 48px;
+
+  color: #7fd8ff;
+  background: #0b2639;
+  border: 1px solid rgba(92, 194, 238, 0.55);
+  border-radius: 6px;
+  cursor: pointer;
+
+  font-family: "Orbitron", sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+#myAircraftCabinModal .mac-layout-option.is-selected {
+  color: #ffffff;
+  background: #205978;
+  border-color: #67d7ff;
+
+  box-shadow:
+    0 0 12px rgba(89, 211, 255, 0.65),
+    inset 0 0 0 1px rgba(202, 241, 255, 0.65);
+}
+
+#myAircraftCabinModal .mac-cabin-class select,
+#myAircraftCabinModal .mac-seat-input {
+  width: 100%;
+  min-height: 38px;
+  box-sizing: border-box;
+
+  color: #edf8ff;
+  background: #061827;
+  border: 1px solid rgba(92, 194, 238, 0.55);
+  border-radius: 5px;
+}
+
+#myAircraftCabinModal .mac-cabin-class select {
+  padding: 7px 10px;
+}
+
+#myAircraftCabinModal .mac-seat-stepper {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+#myAircraftCabinModal .mac-seat-stepper button {
+  min-height: 42px;
+
+  color: #ffffff;
+  background: #123f59;
+  border: 1px solid #397da0;
+  cursor: pointer;
+
+  font-size: 22px;
+  font-weight: 800;
+}
+
+#myAircraftCabinModal .mac-seat-input {
+  text-align: center;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+#myAircraftCabinModal .mac-cabin-status {
+  padding: 14px;
+
+  color: #bfeaff;
+  background: #123f59;
+  border: 1px solid #57c9ff;
+
+  text-align: center;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+#myAircraftCabinModal .mac-cabin-status.is-invalid {
+  color: #ffd4d4;
+  background: rgba(105, 22, 31, 0.72);
+  border-color: #ff6674;
+}
+
+#myAircraftCabinModal .mac-cabin-note {
+  margin: 10px 0 0;
+  color: #91a9bb;
+  text-align: center;
+  font-size: 12px;
+}
+
+#myAircraftCabinModal .mac-cabin-footer {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+
+  padding: 0 20px 20px;
+}
+
+#myAircraftCabinModal .mac-cabin-footer button {
+  min-width: 170px;
+  min-height: 44px;
+  padding: 8px 18px;
+
+  color: #dcefff;
+  background: #10243e;
+  border: 1px solid #416489;
+  border-radius: 6px;
+  cursor: pointer;
+
+  font-family: "Orbitron", sans-serif;
+  font-weight: 800;
+}
+
+#myAircraftCabinModal .mac-cabin-footer .mac-cabin-primary {
+  color: #04111d;
+  background: #63cfff;
+  border-color: #63cfff;
+}
+
+/* Tablet */
+
+@media (max-width: 900px) {
+  #myAircraftCabinModal.mac-cabin-overlay {
+    align-items: flex-start;
+    padding: 12px;
+  }
+
+  #myAircraftCabinModal .mac-cabin-modal {
+    width: calc(100vw - 24px);
+    max-height: calc(100dvh - 24px);
+  }
+
+  #myAircraftCabinModal .mac-cabin-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  #myAircraftCabinModal .mac-cabin-map {
+    min-height: 340px;
+    max-height: 46vh;
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+  #myAircraftCabinModal.mac-cabin-overlay {
+    padding: 6px;
+  }
+
+  #myAircraftCabinModal .mac-cabin-modal {
+    width: calc(100vw - 12px);
+    max-height: calc(100dvh - 12px);
+  }
+
+  #myAircraftCabinModal .mac-cabin-header {
+    padding: 20px 52px 16px;
+  }
+
+  #myAircraftCabinModal .mac-cabin-workspace {
+    gap: 10px;
+    padding: 10px;
+  }
+
+  #myAircraftCabinModal .mac-cabin-layout-panel,
+  #myAircraftCabinModal .mac-cabin-control-panel {
+    padding: 11px;
+  }
+
+  #myAircraftCabinModal .mac-cabin-footer {
+    display: grid;
+    grid-template-columns: 1fr;
+    padding: 0 10px 12px;
+  }
+
+  #myAircraftCabinModal .mac-cabin-footer button {
+    width: 100%;
+    min-width: 0;
+  }
+}
     
 </style>
   
@@ -4043,6 +4476,102 @@ html body .order-book-table tbody tr:hover {
   </div>
 </div>
 
+<!-- ============================================================
+     MY AIRCRAFT — CABIN CONFIGURATION
+     ============================================================ -->
+
+<div
+  id="myAircraftCabinModal"
+  class="modal mac-cabin-overlay"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="macCabinTitle"
+  aria-hidden="true"
+>
+  <div class="mac-cabin-modal">
+
+    <button
+      id="macCabinCloseX"
+      class="mac-cabin-close-x"
+      type="button"
+      aria-label="Close cabin configuration"
+    >
+      ×
+    </button>
+
+    <header class="mac-cabin-header">
+      <div class="mac-cabin-kicker">
+        CABIN CONFIGURATION
+      </div>
+
+      <h3 id="macCabinTitle">
+        Aircraft
+      </h3>
+
+      <p id="macCabinSubtitle">
+        Custom passenger cabin configuration
+      </p>
+    </header>
+
+    <div class="mac-cabin-workspace">
+
+      <section class="mac-cabin-layout-panel">
+        <h4>CABIN LAYOUT</h4>
+
+        <div class="mac-cabin-direction">
+          <span>NOSE</span>
+          <span>TAIL</span>
+        </div>
+
+        <div
+          id="macCabinMap"
+          class="mac-cabin-map"
+        ></div>
+      </section>
+
+      <section class="mac-cabin-control-panel">
+        <h4>PASSENGER SEATS</h4>
+
+        <div
+          id="macCabinControls"
+          class="mac-cabin-controls"
+        ></div>
+
+        <div
+          id="macCabinStatus"
+          class="mac-cabin-status"
+        >
+          —
+        </div>
+
+        <p class="mac-cabin-note">
+          Cabin preview for this aircraft.
+        </p>
+      </section>
+
+    </div>
+
+    <footer class="mac-cabin-footer">
+      <button id="macCabinFactoryDefault" type="button">
+        FACTORY DEFAULT
+      </button>
+
+      <button
+        id="macCabinApply"
+        class="mac-cabin-primary"
+        type="button"
+      >
+        APPLY PREVIEW
+      </button>
+
+      <button id="macCabinClose" type="button">
+        CLOSE
+      </button>
+    </footer>
+
+  </div>
+</div>
+  
 <!-- ============================================================
      ✈️ SERVICE C & D CONTROL — ACS × AIRBUS OCC
      ------------------------------------------------------------
