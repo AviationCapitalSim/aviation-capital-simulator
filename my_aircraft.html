@@ -3829,6 +3829,61 @@ html body .order-book-table tbody tr:hover {
     min-width: 0;
   }
 }
+
+/* ============================================================
+   MY AIRCRAFT CABIN — BUY NEW VISUAL ALIGNMENT
+   ============================================================ */
+
+/* Aircraft title: ACS gold */
+#myAircraftCabinModal #macCabinTitle {
+  color: #ffb300;
+  text-transform: none;
+  text-shadow:
+    0 0 8px rgba(255, 179, 0, 0.55),
+    0 0 18px rgba(255, 179, 0, 0.22);
+}
+
+/* NOSE and TAIL belong inside the aircraft */
+#myAircraftCabinModal .mac-airframe-position {
+  color: #63cfff;
+  text-align: center;
+
+  font-family: "Orbitron", sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+#myAircraftCabinModal .mac-airframe-position-nose {
+  margin-bottom: 14px;
+}
+
+#myAircraftCabinModal .mac-airframe-position-tail {
+  margin-top: 14px;
+}
+
+/* Remove the browser's second seat selector */
+#myAircraftCabinModal .mac-seat-input {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+#myAircraftCabinModal
+.mac-seat-input::-webkit-inner-spin-button,
+#myAircraftCabinModal
+.mac-seat-input::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/* Disabled plus/minus state */
+#myAircraftCabinModal
+.mac-seat-stepper button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  box-shadow: none;
+}
     
 </style>
   
