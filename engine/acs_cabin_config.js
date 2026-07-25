@@ -1,23 +1,17 @@
 /* ============================================================
-   ACS OCC — CABIN CONFIGURATION PROTOTYPE v0.1
+   CABIN CONFIGURATION — GLOBAL PASSENGER AIRCRAFT ENGINE
    ------------------------------------------------------------
    Scope:
-   - Buy New visual prototype only.
-   - de Havilland DH.104 Dove and Douglas DC-8-50 only.
+   - Global passenger-aircraft cabin capacity.
+   - PostgreSQL catalog seats remain the capacity authority.
+   - Default narrow-cabin geometry is 2+2.
+   - Seat-layout availability is controlled by Buy New category policy.
    - No database persistence.
-   - No aircraft-order payload mutation.
-   - No Finance, range, weight, demand or maintenance effects.
+   - No aircraft-order, Finance, range, weight or maintenance mutation.
    ============================================================ */
 
 (() => {
   "use strict";
-
-  /* ============================================================
-     INTERNAL SPACE CALIBRATION
-     ------------------------------------------------------------
-     These factors are provisional prototype values.
-     They must never be presented to the player as cabin units.
-     ============================================================ */
 
   const ACS_CABIN_PRODUCTS = Object.freeze({
     Y_SMART: Object.freeze({
@@ -94,6 +88,27 @@
     })
   });
 
+  const ACS_GLOBAL_ALLOWED_PRODUCTS = Object.freeze({
+    Y: Object.freeze([
+      "Y_SMART",
+      "Y_CLASSIC",
+      "Y_COMFORT",
+      "Y_PLUS"
+    ]),
+    C: Object.freeze([
+      "C_SMART",
+      "C_EXECUTIVE",
+      "C_PREMIER",
+      "C_SUPERIOR"
+    ]),
+    F: Object.freeze([
+      "F_SILVER",
+      "F_GOLD",
+      "F_PLATINUM",
+      "F_DIAMOND"
+    ])
+  });
+
   const ACS_CABIN_CONFIG = Object.freeze({
     "de Havilland|DH.104 Dove": Object.freeze({
       manufacturer: "de Havilland",
@@ -124,30 +139,11 @@
       referenceCapacity: 146,
       layout: Object.freeze({
         orientation: "NOSE_LEFT",
-        economyGeometry: "3+3"
+        economyGeometry: "2+2"
       }),
       mode: "EDITABLE",
       customConfigurationAllowed: true,
-      allowedProducts: Object.freeze({
-        Y: Object.freeze([
-          "Y_SMART",
-          "Y_CLASSIC",
-          "Y_COMFORT",
-          "Y_PLUS"
-        ]),
-        C: Object.freeze([
-          "C_SMART",
-          "C_EXECUTIVE",
-          "C_PREMIER",
-          "C_SUPERIOR"
-        ]),
-        F: Object.freeze([
-          "F_SILVER",
-          "F_GOLD",
-          "F_PLATINUM",
-          "F_DIAMOND"
-        ])
-      }),
+      allowedProducts: ACS_GLOBAL_ALLOWED_PRODUCTS,
       factoryDefault: Object.freeze({
         Y: Object.freeze({ product: "Y_SMART", seats: 146 }),
         C: Object.freeze({ product: "C_SMART", seats: 0 }),
@@ -160,122 +156,99 @@
     if (!aircraft) return "";
 
     const manufacturer = String(
-      aircraft.manufacturer || aircraft.oem || aircraft.make || ""
+      aircraft.manufacturer ||
+      aircraft.catalog_manufacturer ||
+      aircraft.oem ||
+      aircraft.make ||
+      ""
     ).trim();
 
     const model = String(
       aircraft.model ||
+      aircraft.catalog_model ||
       aircraft.aircraft_model ||
       aircraft.aircraft_name ||
+      aircraft.catalog_aircraft_name ||
       ""
     ).trim();
 
     return `${manufacturer}|${model}`;
   }
 
-    function getAircraftConfig(aircraft) {
-    if (!aircraft) return null;
-
-    const aircraftKey =
-      makeAircraftKey(aircraft);
-
-    /*
-      Preserve any explicitly configured aircraft.
-    */
-
-    const configuredAircraft =
-      ACS_CABIN_CONFIG[aircraftKey];
-
-    if (configuredAircraft) {
-      return configuredAircraft;
-    }
-
-    /*
-      Global ACS OCC passenger-cabin capacity.
-      Buy New already receives seats from PostgreSQL.
-    */
-
+  function getReferenceCapacity(aircraft) {
     const referenceCapacity = Number(
-      aircraft.seats ??
-      aircraft.passenger_capacity ??
-      aircraft.capacity ??
+      aircraft?.seats ??
+      aircraft?.passenger_capacity ??
+      aircraft?.capacity ??
+      aircraft?.catalog_seats ??
       0
     );
-
-    /*
-      Cargo aircraft with seats: 0 do not receive
-      passenger Seat Configuration.
-    */
 
     if (
       !Number.isInteger(referenceCapacity) ||
       referenceCapacity <= 0
     ) {
-      return null;
+      return 0;
     }
+
+    return referenceCapacity;
+  }
+
+  function makeGlobalAircraftConfig(aircraft) {
+    const aircraftKey = makeAircraftKey(aircraft);
+    const referenceCapacity = getReferenceCapacity(aircraft);
+
+    if (referenceCapacity <= 0) return null;
 
     const [
       manufacturer = "Unknown",
       model = "Unknown Model"
     ] = aircraftKey.split("|");
 
-    /*
-      Global ACS OCC configuration.
-      Generated dynamically for every passenger aircraft.
-    */
-
     return Object.freeze({
       manufacturer,
       model,
       referenceCapacity,
 
+      /*
+        Safe global default.
+        Buy New may replace it only with a layout explicitly allowed
+        for the normalized aircraft category.
+      */
       layout: Object.freeze({
-        economyGeometry: "3+3"
+        economyGeometry: "2+2"
       }),
 
       mode: "EDITABLE",
       customConfigurationAllowed: true,
-
-      allowedProducts: Object.freeze({
-        Y: Object.freeze([
-          "Y_SMART",
-          "Y_CLASSIC",
-          "Y_COMFORT",
-          "Y_PLUS"
-        ]),
-
-        C: Object.freeze([
-          "C_SMART",
-          "C_EXECUTIVE",
-          "C_PREMIER",
-          "C_SUPERIOR"
-        ]),
-
-        F: Object.freeze([
-          "F_SILVER",
-          "F_GOLD",
-          "F_PLATINUM",
-          "F_DIAMOND"
-        ])
-      }),
+      allowedProducts: ACS_GLOBAL_ALLOWED_PRODUCTS,
 
       factoryDefault: Object.freeze({
         Y: Object.freeze({
           product: "Y_SMART",
           seats: referenceCapacity
         }),
-
         C: Object.freeze({
           product: "C_SMART",
           seats: 0
         }),
-
         F: Object.freeze({
           product: "F_SILVER",
           seats: 0
         })
       })
     });
+  }
+
+  function getAircraftConfig(aircraft) {
+    if (!aircraft) return null;
+
+    const configuredAircraft =
+      ACS_CABIN_CONFIG[makeAircraftKey(aircraft)];
+
+    if (configuredAircraft) return configuredAircraft;
+
+    return makeGlobalAircraftConfig(aircraft);
   }
 
   function cloneConfiguration(configuration) {
@@ -289,12 +262,15 @@
   function getFactoryDefault(aircraft) {
     const aircraftConfig = getAircraftConfig(aircraft);
     if (!aircraftConfig) return null;
+
     return cloneConfiguration(aircraftConfig.factoryDefault);
   }
 
   function normalizeSeatCount(value) {
     const number = Number(value);
+
     if (!Number.isInteger(number) || number < 0) return null;
+
     return number;
   }
 
@@ -336,7 +312,7 @@
 
       const productCode = String(selection.product || "").trim();
       const product = ACS_CABIN_PRODUCTS[productCode];
-      const allowed = aircraftConfig.allowedProducts[cabinClass];
+      const allowed = aircraftConfig.allowedProducts[cabinClass] || [];
 
       if (
         !product ||
@@ -378,7 +354,7 @@
   }
 
   window.ACS_CABIN = Object.freeze({
-    version: "ACS_CABIN_PROTOTYPE_V0_1",
+    version: "ACS_CABIN_GLOBAL_V1_0",
     products: ACS_CABIN_PRODUCTS,
     aircraft: ACS_CABIN_CONFIG,
     makeAircraftKey,
