@@ -1246,10 +1246,7 @@ function ACS_renderCabinLayoutSelector(
             aria-pressed="${selected}"
             ${readOnly ? "disabled" : ""}
           >
-            <span class="cabin-layout-option-preview">
-              ${layoutLabel}
-            </span>
-
+                      >
             <strong>
               ${layoutLabel}
             </strong>
