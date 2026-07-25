@@ -1,5 +1,5 @@
 /* ============================================================
-   CABIN CONFIGURATION — GLOBAL PASSENGER AIRCRAFT ENGINE
+   CABIN CONFIGURATION —  GLOBAL PASSENGER AIRCRAFT ENGINE
    ------------------------------------------------------------
    Scope:
    - Global passenger-aircraft cabin capacity.
