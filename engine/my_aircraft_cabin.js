@@ -220,60 +220,129 @@
     `;
   }
 
-  function renderClassControl(cabinClass, title) {
-    const selection = draft[cabinClass];
+  function getMaximumSeatsForClass(cabinClass) {
+  const capacity = aircraftCapacity(activeAircraft);
+  const currentProduct = getProduct(
+    cabinClass,
+    draft[cabinClass].product
+  );
 
-    return `
-      <section class="mac-cabin-class">
-        <div class="mac-cabin-class-heading">
-          <span class="mac-cabin-class-title">${title}</span>
-          <span class="mac-seat-total">
-            ${safeInteger(selection.seats)} seats
-          </span>
-        </div>
+  const currentFactor = Number(currentProduct?.[2] || 1);
 
-        <select data-mac-product="${cabinClass}">
-          ${PRODUCTS[cabinClass].map(product => `
-            <option
-              value="${product[0]}"
-              ${selection.product === product[0] ? "selected" : ""}
-            >
-              ${product[1]}
-            </option>
-          `).join("")}
-        </select>
+  let spaceUsedByOtherClasses = 0;
 
-        <div class="mac-seat-stepper">
-          <button
-            type="button"
-            data-mac-step="${cabinClass}"
-            data-mac-delta="-1"
-          >
-            −
-          </button>
+  for (const otherClass of ["Y", "C", "F"]) {
+    if (otherClass === cabinClass) continue;
 
-          <input
-            class="mac-seat-input"
-            type="number"
-            min="0"
-            step="1"
-            value="${safeInteger(selection.seats)}"
-            data-mac-seats="${cabinClass}"
-          >
+    const selection = draft[otherClass];
+    const product = getProduct(
+      otherClass,
+      selection.product
+    );
 
-          <button
-            type="button"
-            data-mac-step="${cabinClass}"
-            data-mac-delta="1"
-          >
-            +
-          </button>
-        </div>
-      </section>
-    `;
+    const factor = Number(product?.[2] || 1);
+
+    spaceUsedByOtherClasses +=
+      safeInteger(selection.seats) * factor;
   }
 
+  const availableSpace = Math.max(
+    0,
+    capacity - spaceUsedByOtherClasses
+  );
+
+  return Math.max(
+    0,
+    Math.floor(availableSpace / currentFactor)
+  );
+}
+
+function clampClassSeats(cabinClass, requestedSeats) {
+  const maximumSeats =
+    getMaximumSeatsForClass(cabinClass);
+
+  return Math.min(
+    maximumSeats,
+    Math.max(0, safeInteger(requestedSeats))
+  );
+}
+
+function normalizeDraftCapacity() {
+  for (const cabinClass of ["F", "C", "Y"]) {
+    draft[cabinClass].seats =
+      clampClassSeats(
+        cabinClass,
+        draft[cabinClass].seats
+      );
+  }
+}
+   
+  function renderClassControl(cabinClass, title) {
+  const selection = draft[cabinClass];
+  const currentSeats = safeInteger(selection.seats);
+  const maximumSeats =
+    getMaximumSeatsForClass(cabinClass);
+
+  return `
+    <section class="mac-cabin-class">
+      <div class="mac-cabin-class-heading">
+        <span class="mac-cabin-class-title">${title}</span>
+
+        <span class="mac-seat-total">
+          ${currentSeats} seats
+        </span>
+      </div>
+
+      <select data-mac-product="${cabinClass}">
+        ${PRODUCTS[cabinClass].map(product => `
+          <option
+            value="${product[0]}"
+            ${selection.product === product[0] ? "selected" : ""}
+          >
+            ${product[1]}
+          </option>
+        `).join("")}
+      </select>
+
+      <div class="mac-seat-stepper">
+        <button
+          type="button"
+          data-mac-step="${cabinClass}"
+          data-mac-delta="-1"
+          ${currentSeats <= 0 ? "disabled" : ""}
+        >
+          −
+        </button>
+
+        <input
+          class="mac-seat-input"
+          type="number"
+          min="0"
+          max="${maximumSeats}"
+          step="1"
+          value="${currentSeats}"
+          data-mac-seats="${cabinClass}"
+        >
+
+        <button
+          type="button"
+          data-mac-step="${cabinClass}"
+          data-mac-delta="1"
+          ${
+            currentSeats >= maximumSeats
+              ? "disabled"
+              : ""
+          }
+        >
+          +
+        </button>
+      </div>
+    </section>
+  `;
+}
+
   function renderControls() {
+     
     const container = byId("macCabinControls");
     if (!container) return;
 
@@ -414,6 +483,8 @@
       makeFactoryDefault(aircraft)
     );
 
+    normalizeDraftCapacity();
+     
     const title = byId("macCabinTitle");
     const subtitle = byId("macCabinSubtitle");
     const modal = byId("myAircraftCabinModal");
@@ -481,11 +552,12 @@
         stepButton.dataset.macDelta
       );
 
-      draft[cabinClass].seats = Math.max(
-        0,
-        safeInteger(draft[cabinClass].seats) +
-          delta
-      );
+      draft[cabinClass].seats =
+      clampClassSeats(
+      cabinClass,
+      safeInteger(draft[cabinClass].seats) +
+      delta
+  );
 
       render();
     }
@@ -496,22 +568,31 @@
       event.target.dataset.macProduct;
 
     if (productClass) {
-      draft[productClass].product =
-        event.target.value;
+  draft[productClass].product =
+    event.target.value;
 
-      render();
-      return;
-    }
+  draft[productClass].seats =
+    clampClassSeats(
+      productClass,
+      draft[productClass].seats
+    );
+
+  render();
+  return;
+}
 
     const seatsClass =
       event.target.dataset.macSeats;
 
     if (seatsClass) {
-      draft[seatsClass].seats =
-        safeInteger(event.target.value);
+  draft[seatsClass].seats =
+    clampClassSeats(
+      seatsClass,
+      event.target.value
+    );
 
-      render();
-    }
+  render();
+}
   });
 
   document.addEventListener("DOMContentLoaded", () => {
