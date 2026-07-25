@@ -3053,6 +3053,172 @@ html body .order-book-table tbody tr:hover {
     font-size: 0.75rem;
   }
 }
+
+/* ============================================================
+   ACS OCC · AIRBUS OCC
+   AIRCRAFT AUTHORITY PANEL — PROFESSIONAL REDESIGN
+   ============================================================ */
+
+#aircraftModal .acp-panel {
+  width: min(1320px, calc(100vw - 36px));
+  max-width: 1320px;
+  max-height: calc(100vh - 36px);
+  padding: 22px;
+  overflow-y: auto;
+  background:
+    radial-gradient(
+      circle at top,
+      #12254a 0%,
+      #091326 58%,
+      #050814 100%
+    );
+}
+
+#aircraftModal .acp-command-header {
+  display: grid;
+  grid-template-columns:
+    minmax(280px, 0.8fr)
+    minmax(420px, 1.2fr);
+  gap: 22px;
+  align-items: center;
+  padding-bottom: 18px;
+  border-bottom:
+    1px solid rgba(255, 179, 0, 0.28);
+}
+
+#aircraftModal .acp-command-kicker,
+#aircraftModal .acp-main-title,
+#aircraftModal .acp-command-aircraft strong,
+#aircraftModal .acp-section-title {
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+}
+
+#aircraftModal .acp-command-kicker {
+  color: #63cfff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+#aircraftModal .acp-main-title {
+  margin: 8px 0;
+  color: #ffb300;
+  text-align: left;
+  font-size: clamp(24px, 3vw, 38px);
+  text-shadow:
+    0 0 10px rgba(255, 179, 0, 0.28);
+}
+
+#aircraftModal .acp-command-aircraft {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+#aircraftModal .acp-command-aircraft strong {
+  color: #ffffff;
+  font-size: 18px;
+}
+
+#aircraftModal .acp-command-aircraft span {
+  padding: 5px 10px;
+  border: 1px solid #39708e;
+  border-radius: 999px;
+  color: #75d5ff;
+  background: rgba(18, 59, 84, 0.45);
+  font-weight: 800;
+}
+
+#aircraftModal .acp-main-image {
+  width: 100%;
+  max-width: none;
+  height: 260px;
+  margin: 0;
+  object-fit: cover;
+  border: 1px solid rgba(99, 207, 255, 0.30);
+  border-radius: 14px;
+}
+
+#aircraftModal .acp-dashboard-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+#aircraftModal .acp-section {
+  margin: 0;
+  min-width: 0;
+}
+
+#aircraftModal .acp-section-title {
+  color: #ffb300;
+}
+
+#aircraftModal .acp-status-board {
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+}
+
+#aircraftModal .acp-tech-grid {
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+}
+
+#aircraftModal .acp-cabin-section {
+  display: flex;
+  flex-direction: column;
+}
+
+#aircraftModal .acp-cabin-note {
+  margin: 0 0 14px;
+  color: #9fb3c8;
+  line-height: 1.5;
+}
+
+#aircraftModal .acp-cabin-btn {
+  margin-top: auto;
+  border-color: #39708e;
+  color: #75d5ff;
+}
+
+#aircraftModal
+.acp-cabin-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+#aircraftModal .acp-action-center {
+  margin-top: 16px;
+}
+
+@media (max-width: 980px) {
+  #aircraftModal .acp-command-header,
+  #aircraftModal .acp-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #aircraftModal .acp-main-image {
+    height: 220px;
+  }
+}
+
+@media (max-width: 680px) {
+  #aircraftModal .acp-grid-2,
+  #aircraftModal .acp-status-board,
+  #aircraftModal .acp-tech-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #aircraftModal .acp-action-center {
+    grid-template-columns: 1fr;
+  }
+}
     
 </style>
   
@@ -3336,106 +3502,371 @@ html body .order-book-table tbody tr:hover {
   </table>
 </div>
 
-<!-- ============================================================
-     ✈️ AIRCRAFT AUTHORITY PANEL — Technical & Operational Control
-     Airbus OCC + ACS visual language / Backend-read only
-     ============================================================ -->
-
 <div class="modal-bg" id="aircraftModal">
   <div class="modal-content acp-panel">
 
-    <!-- HEADER -->
-    <div class="acp-clean-header">
+    <!-- =======================================================
+         HEADER
+         ======================================================= -->
 
-      <h3 id="acpTitle" class="acp-main-title">
-        Aircraft Authority Panel
-      </h3>
+    <header class="acp-command-header">
 
-      <img id="acpImage" src="" alt="Aircraft" class="acp-main-image" />
+      <div class="acp-command-heading">
+        <div class="acp-command-kicker">
+          ACS OCC · AIRBUS OCC
+        </div>
 
-    </div>
+        <h3 id="acpTitle" class="acp-main-title">
+          Aircraft Authority Panel
+        </h3>
 
-    <!-- BODY -->
-    
+        <div class="acp-command-aircraft">
+          <strong id="acpHeroAircraft">—</strong>
+
+          <span id="acpHeroRegistration">
+            —
+          </span>
+        </div>
+      </div>
+
+      <img
+        id="acpImage"
+        src=""
+        alt="Aircraft"
+        class="acp-main-image"
+      />
+
+    </header>
+
+    <!-- =======================================================
+         BODY
+         ======================================================= -->
+
     <div class="modal-body acp-body">
 
-      <!-- AIRCRAFT IDENTITY -->
-      
-      <div class="acp-section">
-        <div class="acp-section-title">Aircraft Identity</div>
+      <div class="acp-dashboard-grid">
 
-        <div class="acp-grid acp-grid-2">
+        <!-- AIRCRAFT IDENTITY -->
 
-          <div class="acp-line">
-            <span>Registration</span>
-            <strong id="acpRegistration">—</strong>
+        <section class="acp-section">
+          <div class="acp-section-title">
+            Aircraft Identity
           </div>
 
-          <div class="acp-line">
-            <span>Aircraft</span>
-            <strong id="acpAircraftName">—</strong>
+          <div class="acp-grid acp-grid-2">
+
+            <div class="acp-line">
+              <span>Registration</span>
+              <strong id="acpRegistration">—</strong>
+            </div>
+
+            <div class="acp-line">
+              <span>Aircraft</span>
+              <strong id="acpAircraftName">—</strong>
+            </div>
+
+            <div class="acp-line">
+              <span>Manufacturer</span>
+              <strong id="acpManufacturer">—</strong>
+            </div>
+
+            <div class="acp-line">
+              <span>Model Key</span>
+              <strong id="acpModelKey">—</strong>
+            </div>
+
+            <div class="acp-line">
+              <span>Serial Number</span>
+              <strong id="acpSerialNumber">—</strong>
+            </div>
+
+            <div class="acp-line">
+              <span>Line Number</span>
+              <strong id="acpLineNumber">—</strong>
+            </div>
+
+            <div class="acp-line">
+              <span>Year Built</span>
+              <strong id="acpYearBuilt">—</strong>
+            </div>
+
+            <div class="acp-line">
+              <span>Delivery Date</span>
+              <strong id="acpDeliveryDate">—</strong>
+            </div>
+
+            <div class="acp-line">
+              <span>Entry Into Service</span>
+              <strong id="acpEntryIntoService">—</strong>
+            </div>
+
+            <div class="acp-line">
+              <span>Source</span>
+              <strong id="acpSource">—</strong>
+            </div>
+
+            <div class="acp-line">
+              <span>Ownership</span>
+              <strong id="acpOwnership">—</strong>
+            </div>
+
+            <div class="acp-line">
+              <span>Base</span>
+              <strong id="acpBase">—</strong>
+            </div>
+
+            <div class="acp-line">
+              <span>Current Airport</span>
+              <strong id="acpCurrentAirport">—</strong>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- OPERATIONAL STATUS -->
+
+        <section class="acp-section">
+          <div class="acp-section-title">
+            Operational Status
           </div>
 
-          <div class="acp-line">
-            <span>Manufacturer</span>
-            <strong id="acpManufacturer">—</strong>
+          <div class="acp-status-board">
+
+            <div>
+              <span>Fleet Status</span>
+              <strong id="acpFleetStatus">—</strong>
+            </div>
+
+            <div>
+              <span>Operational</span>
+              <strong id="acpOperationalStatus">—</strong>
+            </div>
+
+            <div>
+              <span>Maintenance</span>
+              <strong id="acpMaintenanceStatus">—</strong>
+            </div>
+
+            <div>
+              <span>Condition</span>
+              <strong id="acpCondition">—</strong>
+            </div>
+
+            <div>
+              <span>Age</span>
+              <strong id="acpAircraftAge">—</strong>
+            </div>
+
+            <div>
+              <span>Total Hours</span>
+              <strong id="acpTotalHours">—</strong>
+            </div>
+
+            <div>
+              <span>Total Cycles</span>
+              <strong id="acpTotalCycles">—</strong>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- TECHNICAL SPECIFICATIONS -->
+
+        <section class="acp-section">
+          <div class="acp-section-title">
+            Technical Specifications
           </div>
 
-          <div class="acp-line">
-            <span>Base</span>
-            <strong id="acpBase">—</strong>
+          <div class="acp-tech-grid">
+
+            <div class="acp-tech-card">
+              <span>Category</span>
+              <strong id="acpCategory">—</strong>
+            </div>
+
+            <div class="acp-tech-card">
+              <span>Seats</span>
+              <strong id="acpSeats">—</strong>
+            </div>
+
+            <div class="acp-tech-card">
+              <span>Range</span>
+              <strong id="acpRange">—</strong>
+            </div>
+
+            <div class="acp-tech-card">
+              <span>Cruise Speed</span>
+              <strong id="acpSpeed">—</strong>
+            </div>
+
+            <div class="acp-tech-card">
+              <span>Required Runway</span>
+              <strong id="acpRequiredRunway">—</strong>
+            </div>
+
+            <div class="acp-tech-card">
+              <span>Engines</span>
+              <strong id="acpEngines">—</strong>
+            </div>
+
+            <div class="acp-tech-card">
+              <span>MTOW</span>
+              <strong id="acpMtow">—</strong>
+            </div>
+
+            <div class="acp-tech-card">
+              <span>Fuel Burn</span>
+              <strong id="acpFuelBurn">—</strong>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- AIRCRAFT VALUE -->
+
+        <section class="acp-section">
+          <div class="acp-section-title">
+            Aircraft Value
           </div>
 
-        </div>
-      </div>
+          <div class="acp-grid acp-grid-2">
 
-      <!-- LINE MAINTENANCE MIRROR -->
-      
-      <div class="acp-section">
-        <div class="acp-section-title">Line Maintenance</div>
+            <div class="acp-line">
+              <span>Purchase Price</span>
+              <strong id="acpPurchasePrice">—</strong>
+            </div>
 
-        <div class="acp-grid acp-grid-2">
+            <div class="acp-line">
+              <span>Current Value</span>
+              <strong id="acpCurrentValue">—</strong>
+            </div>
 
-          <div class="acp-line">
-            <span>A-Check</span>
-            <strong id="acpACheckWindow">—</strong>
+            <div class="acp-line">
+              <span>Factory Reference</span>
+              <strong id="acpFactoryPrice">—</strong>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- AIRBUS OCC MAINTENANCE -->
+
+        <section class="acp-section">
+          <div class="acp-section-title">
+            Airbus OCC · Maintenance Authority
           </div>
 
-          <div class="acp-line">
-            <span>B-Check</span>
-            <strong id="acpBCheckWindow">—</strong>
+          <div class="acp-grid acp-grid-2">
+
+            <div class="acp-line">
+              <span>A-Check</span>
+              <strong id="acpACheckWindow">—</strong>
+            </div>
+
+            <div class="acp-line">
+              <span>B-Check</span>
+              <strong id="acpBCheckWindow">—</strong>
+            </div>
+
+            <div class="acp-line">
+              <span>Next C</span>
+              <strong id="acpCCheckWindow">—</strong>
+            </div>
+
+            <div class="acp-line">
+              <span>Next D</span>
+              <strong id="acpDCheckWindow">—</strong>
+            </div>
+
+            <div class="acp-line">
+              <span>Control Status</span>
+              <strong id="acpMaintenanceControl">—</strong>
+            </div>
+
+            <div class="acp-line">
+              <span>Control Reason</span>
+              <strong id="acpMaintenanceReason">—</strong>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ACS OCC CABIN -->
+
+        <section class="acp-section acp-cabin-section">
+          <div class="acp-section-title">
+            ACS OCC · Cabin Installed
           </div>
 
-        </div>
+          <p class="acp-cabin-note">
+            Installed cabin configuration will be read from the
+            aircraft cabin snapshot.
+          </p>
+
+          <button
+            id="acpCabinConfiguration"
+            class="acp-action-btn acp-cabin-btn"
+            type="button"
+            disabled
+            title="Cabin snapshot connection pending"
+          >
+            Cabin Configuration
+          </button>
+        </section>
+
       </div>
 
     </div>
-    
-<!-- ACTION CENTER -->
-    
-<div class="acp-action-center">
 
-  <button id="acpServiceCD" class="acp-action-btn acp-action-primary" type="button">
-    Service C & D
-  </button>
+    <!-- =======================================================
+         EXISTING ACTION CENTER — IDS PRESERVED
+         ======================================================= -->
 
-  <button id="acpInsurance" class="acp-action-btn" type="button">
-    Insurance
-  </button>
+    <div class="acp-action-center">
 
-  <button id="acpStorage" class="acp-action-btn" type="button">
-    Storage
-  </button>
+      <button
+        id="acpServiceCD"
+        class="acp-action-btn acp-action-primary"
+        type="button"
+      >
+        Service C & D
+      </button>
 
-  <button id="acpScrap" class="acp-action-btn acp-action-danger" type="button">
-    Scrap Aircraft
-  </button>
+      <button
+        id="acpInsurance"
+        class="acp-action-btn"
+        type="button"
+      >
+        Insurance
+      </button>
 
-<div class="acp-close-row">
-  <button class="acp-close-btn" type="button" onclick="closeModal()">
-    Close
-  </button>
-</div>
+      <button
+        id="acpStorage"
+        class="acp-action-btn"
+        type="button"
+      >
+        Storage
+      </button>
+
+      <button
+        id="acpScrap"
+        class="acp-action-btn acp-action-danger"
+        type="button"
+      >
+        Scrap Aircraft
+      </button>
+
+      <div class="acp-close-row">
+        <button
+          class="acp-close-btn"
+          type="button"
+          onclick="closeModal()"
+        >
+          Close
+        </button>
+      </div>
+
+    </div>
 
   </div>
 </div>
