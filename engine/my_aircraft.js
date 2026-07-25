@@ -1585,16 +1585,23 @@ setText(
   function bindAircraftAuthorityActions(aircraft) {
      
     const btnServiceCD = $("acpServiceCD");
+    const btnCabinConfiguration = $("acpCabinConfiguration");
     const btnInsurance = $("acpInsurance");
     const btnStorage = $("acpStorage");
     const btnScrap = $("acpScrap");
 
     if (btnServiceCD) {
-  btnServiceCD.onclick = () => {
+    btnServiceCD.onclick = () => {
     openServiceCDControlModal(aircraft);
-  };
-}
-     
+     };
+   }
+
+     if (btnCabinConfiguration) {
+     btnCabinConfiguration.onclick = () => {
+     window.ACS_MY_AIRCRAFT_CABIN?.open(aircraft);
+     };
+   }
+ 
     if (btnInsurance) {
       btnInsurance.onclick = () => {
         console.log("🟦 Insurance Control pending:", aircraft);
