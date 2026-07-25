@@ -2917,6 +2917,89 @@
   color: #d8ffe7;
   box-shadow: 0 0 16px rgba(55, 207, 121, 0.24);
 }
+
+/* ============================================================
+   ACS OCC — FINAL TITLE AND LAYOUT BUTTON STYLING
+   Scoped only to #seatConfigurationModal
+   ============================================================ */
+
+/* All ACS OCC titles — subtitles and form text remain unchanged */
+
+#seatConfigurationModal .cabin-config-kicker,
+#seatConfigurationModal #cabinConfigTitle,
+#seatConfigurationModal
+  .cabin-config-layout-panel > h4,
+#seatConfigurationModal
+  .cabin-config-control-panel > h4,
+#seatConfigurationModal
+  .cabin-layout-selector-heading > span,
+#seatConfigurationModal
+  .cabin-class-heading > span:first-child {
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+}
+
+/* Aircraft title — ACS gold */
+
+#seatConfigurationModal #cabinConfigTitle {
+  color: #ffb300;
+  text-shadow:
+    0 0 8px rgba(255, 179, 0, 0.30);
+}
+
+/* Economy, Business and First titles */
+
+#seatConfigurationModal
+  .cabin-class-heading > span:first-child {
+  letter-spacing: 0.04em;
+}
+
+/* Layout buttons — one centered label */
+
+#seatConfigurationModal .cabin-layout-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#seatConfigurationModal
+  .cabin-layout-option > strong {
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+  font-size: 16px;
+  letter-spacing: 0.08em;
+}
+
+/* Selected layout — brighter ACS OCC state */
+
+#seatConfigurationModal
+  .cabin-layout-option.is-selected {
+  border-color: #7de0ff;
+  background:
+    linear-gradient(
+      180deg,
+      #23698e,
+      #164967
+    );
+  color: #ffffff;
+  box-shadow:
+    0 0 10px rgba(99, 207, 255, 0.75),
+    0 0 22px rgba(99, 207, 255, 0.35),
+    inset 0 0 0 1px rgba(189, 234, 255, 0.65);
+}
+
+#seatConfigurationModal
+  .cabin-layout-option.is-selected > strong {
+  color: #ffffff;
+  text-shadow:
+    0 0 7px rgba(125, 224, 255, 0.95);
+}
        
 </style>
      
