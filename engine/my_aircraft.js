@@ -1307,10 +1307,234 @@ function resolveLineMaintenanceDateDisplay(
    img.alt = aircraftName;
    }
 
-    setText("acpRegistration", getRegistrationDisplay(aircraft));
-    setText("acpAircraftName", aircraftName);
-    setText("acpManufacturer", safeText(aircraft.catalog_manufacturer || aircraft.manufacturer));
-    setText("acpBase", safeText(aircraft.base_icao));
+        /* ========================================================
+       AIRCRAFT AUTHORITY PANEL — COMPLETE READ-ONLY SNAPSHOT
+       ======================================================== */
+
+    setText(
+      "acpHeroAircraft",
+      aircraftName
+    );
+
+    setText(
+      "acpHeroRegistration",
+      getRegistrationDisplay(aircraft)
+    );
+
+    /* Aircraft Identity */
+
+    setText(
+      "acpRegistration",
+      getRegistrationDisplay(aircraft)
+    );
+
+    setText(
+      "acpAircraftName",
+      aircraftName
+    );
+
+    setText(
+      "acpManufacturer",
+      safeText(
+        aircraft.catalog_manufacturer ||
+        aircraft.manufacturer
+      )
+    );
+
+    setText(
+      "acpModelKey",
+      safeText(aircraft.model_key)
+    );
+
+    setText(
+      "acpSerialNumber",
+      safeText(aircraft.serial_number)
+    );
+
+    setText(
+      "acpLineNumber",
+      safeText(aircraft.line_number)
+    );
+
+    setText(
+      "acpYearBuilt",
+      safeText(aircraft.year_built)
+    );
+
+    setText(
+      "acpDeliveryDate",
+      formatDate(aircraft.delivery_date)
+    );
+
+    setText(
+      "acpEntryIntoService",
+      formatDate(
+        aircraft.entry_into_service_date
+      )
+    );
+
+    setText(
+      "acpSource",
+      source
+    );
+
+    setText(
+      "acpOwnership",
+      ownership
+    );
+
+    /* Location */
+
+    setText(
+      "acpBase",
+      safeText(aircraft.base_icao)
+    );
+
+    setText(
+      "acpCurrentAirport",
+      safeText(aircraft.current_airport)
+    );
+
+    /* Operational Status */
+
+    setText(
+      "acpFleetStatus",
+      statusInfo.label
+    );
+
+    setText(
+      "acpOperationalStatus",
+      normalizeDisplay(
+        aircraft.operational_status
+      )
+    );
+
+    setText(
+      "acpMaintenanceStatus",
+      normalizeDisplay(
+        aircraft.maintenance_status
+      )
+    );
+
+    setText(
+      "acpCondition",
+      `${condition}%`
+    );
+
+    setText(
+      "acpAircraftAge",
+      formatAge(aircraft)
+    );
+
+    setText(
+      "acpTotalHours",
+      formatNumber(aircraft.total_hours)
+    );
+
+    setText(
+      "acpTotalCycles",
+      formatNumber(aircraft.total_cycles)
+    );
+
+    /* Technical Specifications */
+
+    setText(
+      "acpCategory",
+      normalizeDisplay(
+        aircraft.aircraft_category
+      )
+    );
+
+    setText(
+      "acpSeats",
+      formatNumber(aircraft.seats)
+    );
+
+    setText(
+      "acpRange",
+      `${formatNumber(aircraft.range_nm)} NM`
+    );
+
+    setText(
+      "acpSpeed",
+      `${formatNumber(aircraft.speed_kts)} KT`
+    );
+
+    setText(
+      "acpRequiredRunway",
+      `${formatNumber(
+        aircraft.required_runway_m
+      )} M`
+    );
+
+    setText(
+      "acpEngines",
+      safeText(aircraft.engines)
+    );
+
+    setText(
+      "acpMtow",
+      `${formatNumber(aircraft.mtow_kg)} KG`
+    );
+
+    setText(
+      "acpFuelBurn",
+      `${formatNumber(
+        aircraft.fuel_burn_kgph
+      )} KG/H`
+    );
+
+    /* Aircraft Value */
+
+    setText(
+      "acpPurchasePrice",
+      formatMoney(
+        aircraft.purchase_price,
+        aircraft.currency || "USD"
+      )
+    );
+
+    setText(
+      "acpCurrentValue",
+      formatMoney(
+        aircraft.current_value,
+        aircraft.currency || "USD"
+      )
+    );
+
+    setText(
+      "acpFactoryPrice",
+      formatMoney(
+        aircraft.price_acs_usd,
+        "USD"
+      )
+    );
+
+    /* Airbus OCC Maintenance */
+
+    setText(
+      "acpCCheckWindow",
+      resolveNextCDisplay(aircraft)
+    );
+
+    setText(
+      "acpDCheckWindow",
+      resolveNextDDisplay(aircraft)
+    );
+
+    setText(
+      "acpMaintenanceControl",
+      normalizeDisplay(
+        aircraft.maintenance_control_status
+      )
+    );
+
+    setText(
+      "acpMaintenanceReason",
+      normalizeDisplay(
+        aircraft.maintenance_control_reason
+      )
+    );
 
     /*
       A/B line maintenance is controlled by Schedule Table.
