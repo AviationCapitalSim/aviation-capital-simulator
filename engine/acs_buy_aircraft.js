@@ -1044,28 +1044,94 @@ const ACS_CABIN_LAYOUTS_BY_CATEGORY = Object.freeze({
 function ACS_normalizeCabinAircraftCategory(
   aircraft
 ) {
-  const productionCategory = String(
-    aircraft?.production_category || ""
+  const explicitCategory = String(
+    aircraft?.cabin_size_category ??
+    aircraft?.aircraft_size ??
+    aircraft?.size_category ??
+    aircraft?.aircraft_category ??
+    aircraft?.category ??
+    ""
   )
     .trim()
     .toUpperCase()
-    .replace(/[\s-]+/g, "_");
+    .replace(/[^A-Z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
 
   if (
-    productionCategory === "NARROWBODY"
-  ) {
-    return "LARGE";
-  }
-
-  if (
-    productionCategory === "WIDEBODY"
+    explicitCategory === "EXTRA_LARGE" ||
+    explicitCategory === "EXTRALARGE" ||
+    explicitCategory === "XL"
   ) {
     return "EXTRA_LARGE";
   }
 
   if (
-    productionCategory.includes("REGIONAL")
+    explicitCategory === "SMALL" ||
+    explicitCategory === "MEDIUM" ||
+    explicitCategory === "LARGE"
   ) {
+    return explicitCategory;
+  }
+
+  /*
+    Global fallback for catalog aircraft whose category fields
+    contain operational labels such as COMMERCIAL.
+
+    Passenger capacity determines the cabin-size group.
+  */
+
+  const capacity = Number(
+    aircraft?.seats ??
+    aircraft?.passenger_capacity ??
+    aircraft?.capacity ??
+    aircraft?.catalog_seats ??
+    0
+  );
+
+  if (Number.isFinite(capacity) && capacity > 0) {
+    if (capacity >= 250) {
+      return "EXTRA_LARGE";
+    }
+
+    if (capacity >= 100) {
+      return "LARGE";
+    }
+
+    if (capacity >= 40) {
+      return "MEDIUM";
+    }
+
+    return "SMALL";
+  }
+
+  /*
+    Production category is used only when neither an explicit
+    cabin-size category nor passenger capacity is available.
+  */
+
+  const productionCategory = String(
+    aircraft?.production_category || ""
+  )
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  if (
+    productionCategory === "WIDEBODY" ||
+    productionCategory === "WIDE_BODY"
+  ) {
+    return "EXTRA_LARGE";
+  }
+
+  if (
+    productionCategory === "NARROWBODY" ||
+    productionCategory === "NARROW_BODY"
+  ) {
+    return "LARGE";
+  }
+
+  if (productionCategory.includes("REGIONAL")) {
     return "MEDIUM";
   }
 
@@ -1074,31 +1140,6 @@ function ACS_normalizeCabinAircraftCategory(
     productionCategory.includes("SMALL")
   ) {
     return "SMALL";
-  }
-
-  const aircraftCategory = String(
-    aircraft?.aircraft_category ??
-    aircraft?.category ??
-    ""
-  )
-    .trim()
-    .toUpperCase()
-    .replace(/[\s-]+/g, "_");
-
-  if (
-    aircraftCategory === "EXTRA_LARGE" ||
-    aircraftCategory === "EXTRALARGE" ||
-    aircraftCategory === "XL"
-  ) {
-    return "EXTRA_LARGE";
-  }
-
-  if (
-    aircraftCategory === "SMALL" ||
-    aircraftCategory === "MEDIUM" ||
-    aircraftCategory === "LARGE"
-  ) {
-    return aircraftCategory;
   }
 
   return "";
@@ -1401,7 +1442,7 @@ function ACS_parseCabinGeometry(geometry) {
     ];
   }
 
-  return [3, 3];
+  return [2, 2];
 }
 
 function ACS_getAircraftCabinGeometry(
@@ -1411,7 +1452,7 @@ function ACS_getAircraftCabinGeometry(
     ACS_cabinDraft?.seatLayout ||
     aircraftConfig.layout?.economyGeometry ||
     aircraftConfig.layout?.geometry ||
-    "3+3"
+    "2+2"
   );
 }
 
