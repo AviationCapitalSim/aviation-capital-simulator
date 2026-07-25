@@ -1,5 +1,5 @@
 /* ============================================================
-   MY AIRCRAFT —  CABIN CONFIGURATION
+   MY AIRCRAFT — CABIN CONFIGURATION
    Global aircraft cabin controller
    ------------------------------------------------------------
    Scope:
@@ -84,6 +84,45 @@
         display: none;
       }
 
+      #myAircraftCabinModal .mac-cabin-workspace {
+        align-items: stretch;
+      }
+
+      #myAircraftCabinModal .mac-cabin-layout-panel,
+      #myAircraftCabinModal .mac-cabin-control-panel {
+        min-height: 0;
+      }
+
+      #myAircraftCabinModal .mac-cabin-map {
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        min-height: 0;
+        height: 100%;
+        max-height: 58vh;
+        padding: 22px 18px;
+        overflow: auto;
+      }
+
+      #myAircraftCabinModal .mac-airframe {
+        width: min(100%, 280px);
+        min-width: 0;
+        margin: 0 auto;
+        padding: 18px 20px;
+        box-sizing: border-box;
+        border-radius: 120px 120px 36px 36px;
+      }
+
+      #myAircraftCabinModal .mac-airframe-layout-6 {
+        width: min(100%, 330px);
+        padding-inline: 24px;
+      }
+
+      #myAircraftCabinModal .mac-airframe-layout-10 {
+        width: min(100%, 440px);
+        padding-inline: 26px;
+      }
+
       #myAircraftCabinModal .mac-airframe-position {
         color: #63cfff;
         text-align: center;
@@ -117,6 +156,49 @@
         opacity: 0.35;
         cursor: not-allowed;
         box-shadow: none;
+      }
+
+      #myAircraftCabinModal .mac-cabin-footer {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        width: calc(50% - 29px);
+        margin: 0 20px 0 auto;
+        padding: 16px 0 20px;
+        box-sizing: border-box;
+        border-top: 0;
+      }
+
+      #myAircraftCabinModal .mac-cabin-footer button {
+        width: 100%;
+        min-width: 0;
+      }
+
+      @media (max-width: 900px) {
+        #myAircraftCabinModal .mac-cabin-map {
+          height: auto;
+          max-height: 50vh;
+        }
+
+        #myAircraftCabinModal .mac-cabin-footer {
+          width: auto;
+          margin: 0 12px;
+          padding-bottom: 14px;
+        }
+      }
+
+      @media (max-width: 600px) {
+        #myAircraftCabinModal .mac-cabin-footer {
+          grid-template-columns: 1fr;
+          gap: 8px;
+          margin: 0 10px;
+        }
+
+        #myAircraftCabinModal .mac-airframe,
+        #myAircraftCabinModal .mac-airframe-layout-6,
+        #myAircraftCabinModal .mac-airframe-layout-10 {
+          width: min(100%, 280px);
+          padding-inline: 14px;
+        }
       }
     `;
 
@@ -585,8 +667,15 @@
     const map = byId("macCabinMap");
     if (!map) return;
 
+    const seatsPerRow = draft.seatLayout.reduce(
+      (total, groupSize) => total + groupSize,
+      0
+    );
+
     map.innerHTML = `
-      <div class="mac-airframe">
+      <div
+        class="mac-airframe mac-airframe-layout-${seatsPerRow}"
+      >
         <div class="mac-airframe-position mac-airframe-position-nose">
           NOSE
         </div>
