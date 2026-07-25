@@ -1,5 +1,5 @@
 /* ============================================================
-   MY AIRCRAFT — CABIN CONFIGURATION
+   MY AIRCRAFT —  CABIN CONFIGURATION
    Global aircraft cabin controller
    ------------------------------------------------------------
    Scope:
