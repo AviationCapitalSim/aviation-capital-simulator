@@ -1997,6 +1997,14 @@ async function HR_hireOne(depId) {
       return;
     }
 
+     if (typeof ACS_setCompanySettings === "function") {
+      ACS_setCompanySettings({
+        ...ACS_getCompanySettings(),
+        autoHire: false,
+        loadedFromBackend: true
+      });
+    }
+       
     console.log(
       "%c🌐 HR HIRE SERVER UPDATE OK",
       "color:#00ffcc;font-weight:700",
@@ -2069,11 +2077,6 @@ async function ACS_HR_syncFromServer() {
       return false;
     }
 
-    const year =
-      (typeof ACS_getYear === "function")
-        ? ACS_getYear()
-        : 1940;
-
     const hr = {};
 
     data.departments.forEach(dep => {
@@ -2085,10 +2088,13 @@ async function ACS_HR_syncFromServer() {
         return;
       }
 
-      const salary =
-        Number(dep.salary || 0) > 0
-          ? Number(dep.salary)
-          : ACS_HR_getBaseSalary(year, meta.base);
+      const salary = Number(dep.salary);
+
+      if (!Number.isFinite(salary) || salary <= 0) {
+        throw new Error(
+          `INVALID_BACKEND_HR_SALARY:${dep.dept_id}`
+        );
+      }
 
       const staff = Number(dep.staff || 0);
 
@@ -2106,7 +2112,10 @@ async function ACS_HR_syncFromServer() {
         payroll: Math.round(staff * salary),
 
         years: Number(dep.years || 0),
-        bonus: Number(dep.bonus || 0)
+        bonus: Number(dep.bonus || 0),
+
+        salaryPercent: Number(dep.salary_percent || 100),
+        salaryDecade: Number(dep.salary_decade || 1940)
       };
 
     });
@@ -2471,27 +2480,11 @@ window.confirmFireMiniModal = async function() {
 
   if (!proceed) return;
 
-  const salary = Number(dep.salary || 0);
-  const newStaff = Math.max(0, currentStaff - qty);
-
-  let moraleDrop = 5;
-  if (qty >= 3) moraleDrop = 10;
-  if (qty >= 6) moraleDrop = 20;
-
-  const newMorale = Math.max(
-    40,
-    Number(dep.morale || 100) - moraleDrop
-  );
-
-  const payload = {
-    airline_id: Number(airlineId),
+    const payload = {
     dept_id: depId,
-    staff: newStaff,
-    morale: newMorale,
-    salary: salary,
-    payroll: Math.round(newStaff * salary)
+    delta: -qty
   };
-
+     
   try {
 
     const res = await fetch(`${API_BASE}/v1/hr/staff`, {
@@ -2510,6 +2503,14 @@ window.confirmFireMiniModal = async function() {
       return;
     }
 
+     if (typeof ACS_setCompanySettings === "function") {
+      ACS_setCompanySettings({
+        ...ACS_getCompanySettings(),
+        autoHire: false,
+        loadedFromBackend: true
+      });
+    }
+       
     console.log("🌐 HR FIRE SERVER UPDATE OK", dep.name, payload);
 
     if (typeof ACS_HR_syncFromServer === "function") {
