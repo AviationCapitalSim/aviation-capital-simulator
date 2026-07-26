@@ -1024,14 +1024,21 @@ if (typeof registerTimeListener === "function") {
 
 let __HR_salaryInitialized = false;
 
-if (typeof registerTimeListener === "function") {
-  registerTimeListener((time) => {
-     
+function ACS_HR_trySalaryEngineBootstrap() {
   if (__HR_salaryInitialized) return;
-  if (!(time instanceof Date)) return;
+
+  const time = window.ACS_TIME_CURRENT;
+  const settings = ACS_getCompanySettings();
+  const HR = typeof ACS_HR_load === "function"
+    ? ACS_HR_load()
+    : null;
+
+  if (!(time instanceof Date) || isNaN(time)) return;
+  if (settings.loadedFromBackend !== true) return;
+  if (!HR || Object.keys(HR).length === 0) return;
 
   console.log(
-    "%c💰 HR SALARY ENGINE START (TIME READY)",
+    "%c💰 HR SALARY ENGINE START (AUTHORITIES READY)",
     "color:#00ffcc;font-weight:700",
     "Year:", time.getUTCFullYear()
   );
@@ -1041,9 +1048,23 @@ if (typeof registerTimeListener === "function") {
   }
 
   __HR_salaryInitialized = true;
+}
 
+if (typeof registerTimeListener === "function") {
+  registerTimeListener(() => {
+    ACS_HR_trySalaryEngineBootstrap();
   });
 }
+
+window.addEventListener(
+  "ACS_COMPANY_SETTINGS_UPDATED",
+  ACS_HR_trySalaryEngineBootstrap
+);
+
+window.addEventListener(
+  "ACS_HR_UPDATED",
+  ACS_HR_trySalaryEngineBootstrap
+);
 
 /* ============================================================
    🟦 A3.1.1 — HISTORICAL SALARY MATRIX (ACS OFFICIAL)
@@ -1493,88 +1514,35 @@ function ACS_HR_emitSalaryAlerts() {
    • Usa SOLO año del juego (Time Authority)
    ============================================================ */
 
-function ACS_HR_applyAutoSalaryNormalization() {
-
-  // ============================================================
-  // 🔒 PROTECCIÓN GLOBAL — RESPETAR AUTO SALARY OFF
-  // ============================================================
+async function ACS_HR_applyAutoSalaryNormalization() {
   const autoSalaryEnabled = ACS_HR_isAutoSalaryEnabled();
+
   if (!autoSalaryEnabled) {
     console.log("%c🔒 AUTO SALARY NORMALIZATION BLOCKED (GLOBAL OFF)","color:#ff5555;font-weight:800");
-    return;
+    return false;
   }
 
-  const HR = ACS_HR_load();
-  if (!HR) return;
-
-  // ============================================================
-  // 🕒 AÑO DEL JUEGO (CANON) — sin año del sistema
-  // ============================================================
-  const currentYear = (typeof ACS_HR_getGameYear === "function")
-    ? ACS_HR_getGameYear()
-    : (window.ACS_TIME_CURRENT instanceof Date ? window.ACS_TIME_CURRENT.getUTCFullYear() : undefined);
-
-  if (!currentYear || typeof currentYear !== "number") {
-    console.log("%c⏳ AUTO SALARY WAITING — Game Year not ready (skip)","color:#ffcf66;font-weight:800");
-    return;
-  }
-
-  console.log("%c💰 AUTO SALARY NORMALIZATION (REBUILD FROM HISTORICAL BASE)","color:#7CFFB2;font-weight:700","Year:",currentYear);
-
-  Object.keys(HR).forEach(id => {
-
-    const dep = HR[id];
-    if (!dep) return;
-
-    // ============================================================
-    // 🔒 SKIP MANUAL OVERRIDE
-    // ============================================================
-    if (dep.salaryOverride === true || dep.salaryPolicy === "MANUAL") return;
-
-    let targetSalary = 0;
-  
-    // ✈️ PILOTS — RESOLUCIÓN POR TAMAÑO (CANON)
-     
-     if (dep.base && dep.base.startsWith("pilot_") && typeof ACS_HR_getPilotSalarySized === "function") {
-
-     const size = dep.base.replace("pilot_", "");
-     targetSalary = Math.round(
-     ACS_HR_getPilotSalarySized(currentYear, size)
-     );
-
-     } else {
-
-      // ============================================================
-      // 👔 Todos los demás: por BASE canónica del departamento
-      // ============================================================
-      const base = dep.base || dep.role || id;
-
-      if (typeof ACS_HR_getBaseSalary === "function") {
-        targetSalary = Math.round(ACS_HR_getBaseSalary(currentYear, base));
-      }
+  const res = await fetch(
+    `${ACS_OPS_API_BASE}/v1/hr/automation/apply`,
+    {
+      method: "POST",
+      credentials: "include"
     }
+  );
 
-    if (!targetSalary || !isFinite(targetSalary)) return;
+  const data = await res.json();
 
-    dep.salary = targetSalary;
+  if (!res.ok || !data?.ok) {
+    console.warn("❌ AUTO SALARY BACKEND REJECTED", data);
+    return false;
+  }
 
-    const staff = Number(dep.staff || 0);
-    dep.payroll = Math.round(staff * targetSalary);
+  if (typeof ACS_HR_syncFromServer === "function") {
+    await ACS_HR_syncFromServer();
+  }
 
-    dep.lastSalaryReviewYear = currentYear;
-    dep.salaryStatus = "ok";
-  });
-
-  ACS_HR_save(HR);
-
-  if (typeof ACS_HR_syncSalaryToView === "function") {
-  ACS_HR_syncSalaryToView();
-}
-   
-  if (typeof loadDepartments === "function") loadDepartments();
-  if (typeof HR_updateKPI === "function") HR_updateKPI();
-
-  console.log("%c✅ AUTO SALARY REBUILD COMPLETED","color:#00ffcc;font-weight:800");
+  console.log("%c✅ AUTO SALARY BACKEND APPLY COMPLETED","color:#00ffcc;font-weight:800");
+  return true;
 }
 
 /* ============================================================
@@ -1859,12 +1827,17 @@ function ACS_HR_getMarketSalary(depId) {
 
   const dep = HR[depId];
 
-  if (typeof dep.marketSalary === "number" && dep.marketSalary > 0) {
-    return Math.round(dep.marketSalary);
+  const currentSalary = Number(dep.salary || 0);
+  const salaryPercent = Number(dep.salaryPercent || 100);
+
+  if (currentSalary > 0 && salaryPercent > 0) {
+    return Math.max(
+      1,
+      Math.round(currentSalary / (salaryPercent / 100))
+    );
   }
 
-  const currentSalary = (typeof dep.salary === "number") ? dep.salary : 0;
-  return Math.max(0, Math.round(currentSalary * 2.6));
+  return Math.max(0, Math.round(currentSalary));
 }
 
 function openSalaryInline(depId) {
@@ -2079,52 +2052,12 @@ async function applySalaryPolicy() {
   const newPayroll = Math.round(staff * newSalary);
 
   try {
-
     /* ============================================================
-       1) DISABLE AUTO SALARY IN BACKEND COMPANY SETTINGS
-       ============================================================ */
-
-    const settingsRes = await fetch(
-      `${ACS_OPS_API_BASE}/v1/company/settings`,
-      {
-        method: "PATCH",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          auto_salary: false,
-          manual_salary_override: true
-        })
-      }
-    );
-
-    const settingsData = await settingsRes.json();
-
-    if (!settingsRes.ok || !settingsData?.ok) {
-      console.warn("❌ COMPANY SETTINGS PATCH FAILED", settingsData);
-      return;
-    }
-
-    ACS_setCompanySettings({
-      autoHire: settingsData.settings.auto_hire === true,
-      autoSalary: settingsData.settings.auto_salary === true,
-      manualSalaryOverride: settingsData.settings.manual_salary_override === true,
-      loadedFromBackend: true
-    });
-
-    console.log(
-      "%c🔒 AUTO SALARY DISABLED IN BACKEND — MANUAL OVERRIDE ACTIVE",
-      "color:#ff5555;font-weight:800",
-      dep.name
-    );
-
-    /* ============================================================
-       2) PERSIST HR SALARY CHANGE TO BACKEND
+       PERSIST SALARY AND MANUAL MODE IN ONE BACKEND TRANSACTION
        ============================================================ */
 
     const hrRes = await fetch(
-      `${ACS_OPS_API_BASE}/v1/hr/staff`,
+      `${ACS_OPS_API_BASE}/v1/hr/salary`,
       {
         method: "PATCH",
         credentials: "include",
@@ -2132,12 +2065,8 @@ async function applySalaryPolicy() {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          airline_id: Number(airlineId),
           dept_id: depId,
-          staff: staff,
-          morale: newMorale,
-          salary: newSalary,
-          payroll: newPayroll
+          salary: newSalary
         })
       }
     );
@@ -2149,35 +2078,12 @@ async function applySalaryPolicy() {
       return;
     }
 
-    /* ============================================================
-       3) UPDATE RUNTIME HR STATE AFTER BACKEND SUCCESS
-       ============================================================ */
-
-    dep.salary = newSalary;
-    dep.baseSalary = newSalary;
-    dep.marketReference = Math.round(newSalary * 2.6);
-    dep.payroll = newPayroll;
-    dep.morale = newMorale;
-
-    dep.salaryPolicy = "MANUAL";
-    dep.salaryOverride = true;
-
-    const currentYear =
-      (window.ACS_TIME_CURRENT instanceof Date)
-        ? window.ACS_TIME_CURRENT.getUTCFullYear()
-        : (
-            typeof ACS_HR_getGameYear === "function"
-              ? ACS_HR_getGameYear()
-              : null
-          );
-
-    if (typeof currentYear === "number") {
-      dep.lastSalaryReviewYear = currentYear;
-    }
-
-    dep.salaryStatus = "manual";
-
-    ACS_HR_save(HR);
+    ACS_setCompanySettings({
+      ...ACS_getCompanySettings(),
+      autoSalary: false,
+      manualSalaryOverride: true,
+      loadedFromBackend: true
+    });
 
     if (typeof ACS_HR_syncFromServer === "function") {
       await ACS_HR_syncFromServer();
@@ -2193,7 +2099,7 @@ async function applySalaryPolicy() {
       "| %:", percent,
       "| Old:", currentSalary,
       "| New:", newSalary,
-      "| Payroll:", newPayroll
+      "| Payroll:", Math.round(staff * newSalary)
     );
 
     closeSalaryModal();
@@ -2217,8 +2123,7 @@ async function applySalaryPolicy() {
    • NO toca moral
    ============================================================ */
 
-function ACS_HR_applyAutoHire_Instant() {
-
+async function ACS_HR_applyAutoHire_Instant() {
   const settings = ACS_getCompanySettings();
 
   if (settings.loadedFromBackend !== true) {
@@ -2226,7 +2131,7 @@ function ACS_HR_applyAutoHire_Instant() {
       "%c🔒 AUTO HIRE BLOCKED — Settings not loaded from backend yet",
       "color:#ffcf66;font-weight:800"
     );
-    return;
+    return false;
   }
 
   if (settings.autoHire !== true) {
@@ -2234,70 +2139,29 @@ function ACS_HR_applyAutoHire_Instant() {
       "%c🔒 AUTO HIRE OFF — Backend company setting",
       "color:#ff5555;font-weight:800"
     );
-    return;
+    return false;
   }
 
-  const HR = ACS_HR_load();
-  if (!HR) return;
-
-  let totalHired = 0;
-
-  Object.keys(HR).forEach(id => {
-
-    const dep = HR[id];
-    if (!dep) return;
-
-    if (typeof dep.required !== "number") return;
-    if (typeof dep.staff !== "number") return;
-
-    const staff = Number(dep.staff || 0);
-    const required = Number(dep.required || 0);
-
-    const deficit = Math.max(0, required - staff);
-    if (deficit === 0) return;
-
-    dep.staff = staff + deficit;
-    dep.payroll = Number(dep.staff || 0) * Number(dep.salary || 0);
-
-    totalHired += deficit;
-
-    console.log(
-      "%c👥 AUTO HIRE INSTANT",
-      "color:#00ff88;font-weight:700",
-      dep.name,
-      "Hired:", deficit,
-      "New staff:", dep.staff,
-      "Required:", required
-    );
-
-  });
-
-  if (totalHired > 0) {
-
-    ACS_HR_save(HR);
-
-    if (typeof ACS_HR_recalculateAll === "function") {
-      ACS_HR_recalculateAll();
+  const res = await fetch(
+    `${ACS_OPS_API_BASE}/v1/hr/automation/apply`,
+    {
+      method: "POST",
+      credentials: "include"
     }
+  );
 
-    if (typeof loadDepartments === "function") loadDepartments();
-    if (typeof HR_updateKPI === "function") HR_updateKPI();
+  const data = await res.json();
 
-    console.log(
-      "%c🧭 AUTO HIRE INSTANT SUMMARY",
-      "color:#00ffcc;font-weight:700",
-      "Total hired:", totalHired
-    );
-
-  } else {
-
-    console.log(
-      "%c🟢 AUTO HIRE CHECK — No deficits to hire",
-      "color:#7CFFB2;font-weight:700"
-    );
-
+  if (!res.ok || !data?.ok) {
+    console.warn("❌ AUTO HIRE BACKEND REJECTED", data);
+    return false;
   }
 
+  if (typeof ACS_HR_syncFromServer === "function") {
+    await ACS_HR_syncFromServer();
+  }
+
+  return true;
 }
 
 /* ============================================================
@@ -2388,4 +2252,3 @@ function ACS_HR_calculateManagementRequired() {
     "High req:", highRequired
   );
 }
-
