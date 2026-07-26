@@ -1957,3 +1957,12 @@ html body :is(
   box-shadow: none !important;
   border-color: var(--acs-ui-border-blue) !important;
 }
+
+/* ============================================================
+   HIDE OBSOLETE CLOCK DURING INITIAL LOAD
+   The current cockpit clock remains untouched.
+   ============================================================ */
+
+#acs-clock:not(.acs-cockpit-clock) {
+  visibility: hidden !important;
+}
