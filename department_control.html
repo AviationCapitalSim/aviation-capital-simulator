@@ -1972,16 +1972,10 @@ async function HR_hireOne(depId) {
     }
 
     const currentStaff = Number(dep.staff || 0);
-    const salary = Number(dep.salary || 0);
-    const newStaff = currentStaff + 1;
 
     const payload = {
-      airline_id: Number(airlineId),
       dept_id: depId,
-      staff: newStaff,
-      morale: Number(dep.morale || 100),
-      salary: salary,
-      payroll: Math.round(newStaff * salary)
+      delta: 1
     };
 
     const res = await fetch(
@@ -2007,7 +2001,7 @@ async function HR_hireOne(depId) {
       "%c🌐 HR HIRE SERVER UPDATE OK",
       "color:#00ffcc;font-weight:700",
       dep.name,
-      "New staff:", newStaff
+     "New staff:", Number(data.department?.staff ?? currentStaff + 1)
     );
 
     await ACS_HR_syncFromServer();
@@ -2023,10 +2017,12 @@ async function HR_hireOne(depId) {
 
 }
      
-function handleLogout() {
-  alert("👋 Session closed. See you soon, Boss!");
+/* ========== LOGOUT ========== */ 
+  
+function handleLogout(){
+  alert("👋 Session closed. Your fleet awaits your command!");
   window.location.href = "login.html";
-}
+} 
      
 /* ============================================================
    🟦 HR BACKEND SYNC — ACS API CANONICAL
