@@ -1051,7 +1051,10 @@ async function ACS_HR_waitForSessionAndLoad(){
 }
 
 // 🚀 ejecutar
-ACS_HR_waitForSessionAndLoad();
+
+if (!document.getElementById("departmentRows")) {
+  ACS_HR_waitForSessionAndLoad();
+}
 
 /* ============================================================
    HR ENGINE END SAFETY
