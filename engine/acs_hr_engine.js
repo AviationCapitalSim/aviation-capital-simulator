@@ -152,55 +152,12 @@ return Math.round(base*(MULT[size]||1));
    ============================================================ */
 
 function ACS_HR_applyHistoricalSalaries(){
-
-  const HR = ACS_HR_load();
-  if(!HR) return;
-
-  const year =
-    (typeof ACS_getYear === "function")
-      ? ACS_getYear()
-      : 1940;
-
-  Object.keys(HR).forEach(id => {
-
-    const dep = HR[id];
-    if(!dep) return;
-
-    let salary = 0;
-
-    // ============================================================
-    // PILOTS POR TAMAÑO
-    // ============================================================
-
-    if(id.startsWith("pilots_")){
-
-      let size="medium";
-
-      if(id==="pilots_small") size="small";
-      if(id==="pilots_medium") size="medium";
-      if(id==="pilots_large") size="large";
-      if(id==="pilots_vlarge") size="vlarge";
-
-      salary = ACS_HR_getPilotSalarySized(year,size);
-
-    }
-    else{
-
-      salary = ACS_HR_getBaseSalary(year,dep.role || dep.base);
-
-    }
-
-    dep.salary = salary;
-    dep.payroll = dep.staff * salary;
-
-  });
-
-  window.ACS_HR_SERVER_STATE = HR;
-
   console.log(
-    "%c💰 HR HISTORICAL SALARIES APPLIED",
+    "%c💰 HR HISTORICAL SALARIES — BACKEND AUTHORITY",
     "color:#00ffcc;font-weight:700"
   );
+
+  return ACS_HR_load();
 }
 
 /* ============================================================
@@ -216,41 +173,16 @@ function ACS_HR_load() {
 }
 
 function ACS_HR_save(data) {
-
   const HR = data || {};
-  const year = (typeof ACS_getYear === "function") ? ACS_getYear() : 1940;
 
   Object.keys(HR).forEach(id => {
-
     const dep = HR[id];
     if (!dep) return;
 
-    let salary = 0;
+    const staff = Math.max(0, Number(dep.staff || 0));
+    const salary = Math.max(0, Number(dep.salary || 0));
 
-    // PILOTS
-    if (id.startsWith("pilots_")) {
-
-      let size = "medium";
-
-      if (id === "pilots_small")  size = "small";
-      if (id === "pilots_medium") size = "medium";
-      if (id === "pilots_large")  size = "large";
-      if (id === "pilots_vlarge") size = "vlarge";
-
-      salary = ACS_HR_getPilotSalarySized(year, size);
-
-    }
-    else {
-
-      salary = ACS_HR_getBaseSalary(year, dep.base);
-
-    }
-
-    if(!dep.salary || dep.salary === 0){
-  dep.salary = salary;
-}
-    dep.payroll = dep.staff * salary;
-
+    dep.payroll = Math.round(staff * salary);
   });
 
   window.ACS_HR_SERVER_STATE = HR;
@@ -323,24 +255,32 @@ function ACS_HR_getTotalPayroll() {
    • Department Control debe persistir en backend
    ============================================================ */
 
-function ACS_HR_hire(deptID, amount) {
+async function ACS_HR_hire(deptID, amount) {
+  const qty = Math.max(0, Math.trunc(Number(amount || 0)));
+  if (qty <= 0) return false;
 
-  const hr = ACS_HR_load();
-  const d = hr[deptID];
+  const res = await fetch(
+    "https://api.aviationcapitalsim.com/v1/hr/staff",
+    {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        dept_id: deptID,
+        delta: qty
+      })
+    }
+  );
 
-  if (!d) return;
+  const data = await res.json();
 
-  const qty = Math.max(0, Number(amount || 0));
-  if (qty <= 0) return;
+  if (!res.ok || !data?.ok) {
+    console.warn("HR HIRE BACKEND REJECTED", data);
+    return false;
+  }
 
-  d.staff = Number(d.staff || 0) + qty;
-  d.payroll = Number(d.staff || 0) * Number(d.salary || 0);
-
-  ACS_HR_save(hr);
-  ACS_HR_disableAutoHire();
-
-  window.dispatchEvent(new Event("ACS_HR_UPDATED"));
-
+  await ACS_HR_loadFromServer();
+  return true;
 }
 
 /* ============================================================
@@ -351,26 +291,32 @@ function ACS_HR_hire(deptID, amount) {
    • Department Control debe persistir en backend
    ============================================================ */
 
-function ACS_HR_fire(deptID, amount) {
+async function ACS_HR_fire(deptID, amount) {
+  const qty = Math.max(0, Math.trunc(Number(amount || 0)));
+  if (qty <= 0) return false;
 
-  const hr = ACS_HR_load();
-  const d = hr[deptID];
+  const res = await fetch(
+    "https://api.aviationcapitalsim.com/v1/hr/staff",
+    {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        dept_id: deptID,
+        delta: -qty
+      })
+    }
+  );
 
-  if (!d) return;
+  const data = await res.json();
 
-  const qty = Math.max(0, Number(amount || 0));
-  if (qty <= 0) return;
+  if (!res.ok || !data?.ok) {
+    console.warn("HR FIRE BACKEND REJECTED", data);
+    return false;
+  }
 
-  const removed = Math.min(qty, Number(d.staff || 0));
-
-  d.staff = Number(d.staff || 0) - removed;
-  d.payroll = Number(d.staff || 0) * Number(d.salary || 0);
-
-  ACS_HR_save(hr);
-  ACS_HR_disableAutoHire();
-
-  window.dispatchEvent(new Event("ACS_HR_UPDATED"));
-
+  await ACS_HR_loadFromServer();
+  return true;
 }
 
 /* ============================================================
@@ -381,14 +327,10 @@ function ACS_HR_fire(deptID, amount) {
    • NO toca Finance
    ============================================================ */
 
-function ACS_HR_adjustSalary(deptID, percentage) {
-
+async function ACS_HR_adjustSalary(deptID, percentage) {
   const hr = ACS_HR_load();
   const d = hr[deptID];
-
-  if (!d) return;
-
-  ACS_HR_disableAutoSalary();
+  if (!d) return false;
 
   const year =
     (typeof ACS_getYear === "function")
@@ -416,13 +358,30 @@ function ACS_HR_adjustSalary(deptID, percentage) {
 
   const pct = Number(percentage || 0);
 
-  d.salary = Math.max(0, Math.round(baseSalary * (pct / 100)));
-  d.payroll = Number(d.staff || 0) * Number(d.salary || 0);
+  const salary = Math.max(1, Math.round(baseSalary * (pct / 100)));
 
-  ACS_HR_save(hr);
+  const res = await fetch(
+    "https://api.aviationcapitalsim.com/v1/hr/salary",
+    {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        dept_id: deptID,
+        salary
+      })
+    }
+  );
 
-  window.dispatchEvent(new Event("ACS_HR_UPDATED"));
+  const data = await res.json();
 
+  if (!res.ok || !data?.ok) {
+    console.warn("HR SALARY BACKEND REJECTED", data);
+    return false;
+  }
+
+  await ACS_HR_loadFromServer();
+  return true;
 }
 
 /* ============================================================
@@ -741,45 +700,24 @@ function ACS_HR_triggerIndustryAlert() {
    🟨 D1 — AUTO-ADJUST SALARY (Aplicar estándar 5Y)
    ============================================================ */
 
-function ACS_HR_autoAdjust5Y() {
+async function ACS_HR_autoAdjust5Y() {
+  const res = await fetch(
+    "https://api.aviationcapitalsim.com/v1/hr/automation/apply",
+    {
+      method: "POST",
+      credentials: "include"
+    }
+  );
 
-  const HR = ACS_HR_load();
-  const year = window.ACS_getYear ? ACS_getYear() : 1940;
+  const data = await res.json();
 
-  Object.keys(HR).forEach(id => {
+  if (!res.ok || !data?.ok) {
+    console.warn("HR AUTO SALARY BACKEND REJECTED", data);
+    return false;
+  }
 
-      const dep = HR[id];
-      let newSalary = dep.salary;
-
-      // PILOTOS según tamaño
-      if (id.startsWith("pilots_")) {
-
-         let size="medium";
-         if(id==="pilots_small")  size="small";
-         if(id==="pilots_medium") size="medium";
-         if(id==="pilots_large")  size="large";
-         if(id==="pilots_vlarge") size="vlarge";
-
-         const base5Y = ACS_HR_getPilotBase5Y(year);
-         const baseSalary = ACS_HR_getPilotSalarySized(year, size);
-         newSalary = baseSalary;
-
-      } else {
-         // Otros departamentos según motor histórico normal
-         const role = dep.base || "admin";
-         newSalary = ACS_HR_getBaseSalary(year, role);
-      }
-
-      dep.salary = newSalary;
-      dep.payroll = dep.staff * newSalary;
-
-      // Boost moral al actualizar correctamente
-      dep.morale = Math.min(100, dep.morale + 10);
-  });
-
-  ACS_HR_save(HR);
-
-  if (typeof HR_renderTable === "function") HR_renderTable();
+  await ACS_HR_loadFromServer();
+  return true;
 }
 
 
@@ -869,55 +807,24 @@ window.addEventListener("ACS_FLIGHT_ASSIGNED", e => {
    • Se ejecuta bajo demanda o por ciclo
    ============================================================ */
 
-function ACS_HR_runAutoHire() {
-
- if (!ACS_HR_isAutoHireEnabled()) {
-    
-    console.log("🟡 AUTO HIRE OFF — skipped");
-    return;
-  }
-
-  const HR = ACS_HR_load();
-  let hiredTotal = 0;
-
-  Object.entries(HR).forEach(([dept, obj]) => {
-
-    if (!obj || typeof obj.required !== "number") return;
-
-    const staff    = obj.staff || 0;
-    const required = obj.required || 0;
-    const deficit  = Math.max(0, required - staff);
-
-    if (deficit > 0) {
-      obj.staff += deficit;
-      hiredTotal += deficit;
-
-      console.log(
-        `%c🧑‍✈️ AUTO HIRE — ${dept}: +${deficit} hired`,
-        "color:#00ff88;font-weight:700"
-      );
+async function ACS_HR_runAutoHire() {
+  const res = await fetch(
+    "https://api.aviationcapitalsim.com/v1/hr/automation/apply",
+    {
+      method: "POST",
+      credentials: "include"
     }
-  });
+  );
 
-  ACS_HR_save(HR);
+  const data = await res.json();
 
-  if (hiredTotal > 0) {
-    console.log(
-      `%c✅ AUTO HIRE COMPLETED — TOTAL HIRED: ${hiredTotal}`,
-      "color:#00ff80;font-weight:800"
-    );
-  } else {
-    console.log("%c🟢 AUTO HIRE — No deficit found", "color:#00ff80");
+  if (!res.ok || !data?.ok) {
+    console.warn("HR AUTO HIRE BACKEND REJECTED", data);
+    return false;
   }
 
-  // Refrescar HR UI si existe
-  if (typeof loadDepartments === "function") {
-    loadDepartments();
-  }
-
-  if (typeof HR_updateKPI === "function") {
-    HR_updateKPI();
-  }
+  await ACS_HR_loadFromServer();
+  return true;
 }
 
 /* ============================================================
@@ -1032,30 +939,30 @@ function ACS_HR_syncSalaryToView() {
    ============================================================ */
 
 async function ACS_HR_loadFromServer(){
-
   try {
+    const airlineId =
+      window.ACS_SERVER_SESSION?.airline_id ||
+      window.ACS_activeUser?.airline_id;
 
-  const airlineId =
-  window.ACS_SERVER_SESSION?.airline_id ||
-  window.ACS_activeUser?.airline_id;
+    if (!airlineId) return false;
 
-const res = await fetch(
-  `https://api.aviationcapitalsim.com/v1/hr/departments/${airlineId}`,
-  {
-    credentials: "include"
-  }
-);
+    const res = await fetch(
+      `https://api.aviationcapitalsim.com/v1/hr/departments/${airlineId}`,
+      {
+        credentials: "include"
+      }
+    );
 
     if (!res.ok) {
       console.warn("HR SERVER LOAD HTTP ERROR", res.status);
-      return;
+      return false;
     }
 
     const data = await res.json();
 
     if (!data?.ok || !Array.isArray(data.departments)) {
       console.warn("HR SERVER LOAD INVALID DATA", data);
-      return;
+      return false;
     }
 
     const HR = {};
@@ -1077,7 +984,9 @@ const res = await fetch(
         payroll: Number(dep.payroll || 0),
 
         bonus: Number(dep.bonus || 0),
-        years: Number(dep.years || 0)
+        years: Number(dep.years || 0),
+        salaryPercent: Number(dep.salary_percent || 100),
+        salaryDecade: Number(dep.salary_decade || 1940)
       };
 
     });
@@ -1093,12 +1002,15 @@ const res = await fetch(
     // 🔔 Disparar sincronización global
     window.dispatchEvent(new Event("ACS_HR_UPDATED"));
 
+    return true;
+
   } catch(err){
 
     console.warn("HR SERVER LOAD FAILED", err);
 
-  }
+    return false;
 
+  }
 }
 
 
@@ -1116,78 +1028,16 @@ console.info("🛑 HR LOCAL AUTO-BOOTSTRAP DISABLED — WAITING FOR SERVER STATE
    ============================================================ */
 
 async function ACS_HR_waitForSessionAndLoad(){
-
   let attempts = 0;
 
   while (attempts < 20) {
-
     const airlineId =
       window.ACS_SERVER_SESSION?.airline_id ||
       window.ACS_activeUser?.airline_id;
 
     if (airlineId) {
-
       console.log("HR LOAD → airlineId:", airlineId);
-
-      try {
-
-        const res = await fetch(
-          `https://api.aviationcapitalsim.com/v1/hr/departments/${airlineId}`,
-          {
-            credentials: "include"
-          }
-        );
-
-        if (!res.ok) {
-          console.warn("HR SERVER LOAD HTTP ERROR", res.status);
-          return;
-        }
-
-        const data = await res.json();
-
-        if (!data?.ok || !Array.isArray(data.departments)) {
-          console.warn("HR SERVER LOAD INVALID DATA", data);
-          return;
-        }
-
-        const HR = {};
-
-        data.departments.forEach(dep => {
-
-          if (!dep?.dept_id) return;
-
-          HR[dep.dept_id] = {
-            id: dep.dept_id,
-            name: dep.dept_name,
-            base: dep.base_role,
-            staff: Number(dep.staff || 0),
-            required: Number(dep.required || 0),
-            morale: Number(dep.morale || 100),
-            salary: Number(dep.salary || 0),
-            payroll: Number(dep.payroll || 0),
-            bonus: Number(dep.bonus || 0),
-            years: Number(dep.years || 0)
-          };
-
-        });
-
-        window.ACS_HR_SERVER_STATE = HR;
-
-        console.log(
-          "%c🟢 HR LOADED FROM RAILWAY",
-          "color:#00ffcc;font-weight:800",
-          HR
-        );
-
-        window.dispatchEvent(new Event("ACS_HR_UPDATED"));
-
-        return;
-
-      } catch(err){
-        console.warn("HR SERVER LOAD FAILED", err);
-        return;
-      }
-
+      return ACS_HR_loadFromServer();
     }
 
     // ⏳ esperar 300ms y reintentar
@@ -1202,17 +1052,6 @@ async function ACS_HR_waitForSessionAndLoad(){
 
 // 🚀 ejecutar
 ACS_HR_waitForSessionAndLoad();
-
-/* ============================================================
-   🟧 AUTO HIRE EXECUTION ON HR INIT
-   ------------------------------------------------------------
-   • Garantiza personal mínimo al iniciar compañía
-   • Solo corre si AutoHire está activado
-   ============================================================ */
-
-if (typeof ACS_HR_runAutoHire === "function") {
-  ACS_HR_runAutoHire();
-}
 
 /* ============================================================
    HR ENGINE END SAFETY
