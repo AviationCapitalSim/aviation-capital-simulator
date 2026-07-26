@@ -1215,11 +1215,17 @@ async function saveCompany(){
 
   const current = ACS_getCompanySettings();
 
+const nextAutoSalary =
+  autoSalaryEl?.checked === true;
+
 const nextSettings = {
   ...current,
   autoHire: autoHireEl?.checked === true,
-  autoSalary: autoSalaryEl?.checked === true,
-  manualSalaryOverride: false,
+  autoSalary: nextAutoSalary,
+  manualSalaryOverride:
+    nextAutoSalary
+      ? false
+      : current.manualSalaryOverride === true,
   loadedFromBackend: true
 };
 
@@ -1235,42 +1241,42 @@ const nextSettings = {
 
   const saved = ACS_getCompanySettings();
 
-  if (saved.autoHire) {
+  try {
+    const automationRes = await fetch(
+      `${ACS_API_BASE}/v1/hr/automation/apply`,
+      {
+        method: "POST",
+        credentials: "include"
+      }
+    );
 
-    if (typeof window.ACS_HR_runAutoHire === "function") {
+    const automationData = await automationRes.json();
 
-      console.log(
-        "%c🧑‍✈️ AUTO HIRE ENABLED — RUNNING NOW",
-        "color:#00ff80;font-weight:800"
+    if (!automationRes.ok || !automationData?.ok) {
+      throw new Error(
+        automationData?.error ||
+        `HR_AUTOMATION_HTTP_${automationRes.status}`
       );
-
-      window.ACS_HR_runAutoHire();
-
-    } else {
-
-      console.warn("⚠️ AUTO HIRE ENABLED BUT ENGINE NOT FOUND ON SETTINGS PAGE");
-
     }
 
-  }
+    console.log(
+      "%c⚙ HR AUTOMATION APPLIED BY BACKEND",
+      "color:#00ff88;font-weight:700",
+      saved
+    );
 
-  if (saved.autoSalary) {
+  } catch (err) {
+    console.warn(
+      "⚠ COMPANY SETTINGS SAVED, HR AUTOMATION APPLY FAILED:",
+      err
+    );
 
-    if (typeof window.ACS_HR_applyAutoSalaryNormalization === "function") {
+    openSaveModal(
+      "Company Settings",
+      "Settings were saved, but HR automation could not be applied immediately."
+    );
 
-      console.log(
-        "%c⚙️ AUTO SALARY ENABLED — NORMALIZING NOW",
-        "color:#00ff88;font-weight:700"
-      );
-
-      window.ACS_HR_applyAutoSalaryNormalization();
-
-    } else {
-
-      console.warn("⚠️ AUTO SALARY ENABLED BUT ENGINE NOT FOUND ON SETTINGS PAGE");
-
-    }
-
+    return;
   }
 
   openSaveModal(
@@ -1288,38 +1294,33 @@ const nextSettings = {
    ============================================================ */
 
 function syncAutoSalarySetting() {
-
   const cb = document.getElementById("autoSalary");
   if (!cb) return;
 
   const current = ACS_getCompanySettings();
+  const enablingAutoSalary = cb.checked === true;
 
   ACS_setCompanySettings({
     ...current,
-    autoSalary: cb.checked === true
+    autoSalary: enablingAutoSalary
   });
 
   console.log(
     "%c⚙ AUTO SALARY SETTING CHANGED",
     "color:#ffb300;font-weight:700",
-    cb.checked ? "ON" : "OFF"
+    enablingAutoSalary ? "ON" : "OFF"
   );
 
-  if (current.manualSalaryOverride === true) {
-
+  if (
+    enablingAutoSalary &&
+    current.manualSalaryOverride === true
+  ) {
     alert(
       "⚠️ Manual Salary Adjustment Detected\n\n" +
-      "Auto Salary was disabled to protect your manual changes.\n\n" +
-      "You can re-enable Auto Salary at any time from Settings."
+      "Enabling Auto Salary will return the company to automatic historical salary adjustments.\n\n" +
+      "Press Save to confirm this change."
     );
-
-    ACS_setCompanySettings({
-      ...ACS_getCompanySettings(),
-      manualSalaryOverride: false
-    });
-
   }
-
 }
 
 /* ============================================================
@@ -1350,8 +1351,36 @@ const nextSettings = {
 
   ACS_renderCompanySettings();
 
-  if (typeof window.ACS_HR_applyAutoSalaryNormalization === "function") {
-    window.ACS_HR_applyAutoSalaryNormalization();
+    try {
+    const automationRes = await fetch(
+      `${ACS_API_BASE}/v1/hr/automation/apply`,
+      {
+        method: "POST",
+        credentials: "include"
+      }
+    );
+
+    const automationData = await automationRes.json();
+
+    if (!automationRes.ok || !automationData?.ok) {
+      throw new Error(
+        automationData?.error ||
+        `HR_AUTOMATION_HTTP_${automationRes.status}`
+      );
+    }
+
+  } catch (err) {
+    console.warn(
+      "⚠ DEFAULT SETTINGS SAVED, HR AUTOMATION APPLY FAILED:",
+      err
+    );
+
+    openSaveModal(
+      "Company Settings",
+      "Defaults were saved, but HR automation could not be applied immediately."
+    );
+
+    return;
   }
 
   openSaveModal(
