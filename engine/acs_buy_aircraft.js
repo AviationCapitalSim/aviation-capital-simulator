@@ -617,9 +617,8 @@ const ACS_IMAGE_MODEL_ALIASES = {
 };
 
 function getAircraftImage(ac) {
-  if (!ac || !ac.model || !ac.manufacturer) {
-    return "img/placeholder_aircraft.jpg";
-  }
+  return window.ACS_getAircraftImage(ac);
+}
 
   const manufacturer = String(ac.manufacturer || "").trim();
 
