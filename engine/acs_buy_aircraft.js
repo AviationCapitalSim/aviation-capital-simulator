@@ -712,8 +712,7 @@ async function renderCards(filterManufacturer = "All") {
     const priceLine = Number(ac.price_acs_usd || 0).toLocaleString("en-US");
 
    card.innerHTML = `
-   <img src="${img}" alt="${displayName}"
-   onerror="ACS_handleImageFallback(this)" />
+   <img alt="${displayName}" />
 
       <h3>${displayName}</h3>
       <div class="spec-line">Year: ${ac.year}</div>
@@ -743,6 +742,12 @@ async function renderCards(filterManufacturer = "All") {
 
     card.dataset.idx = idx;
     grid.appendChild(card);
+     
+      window.ACS_setAircraftImage(
+      card.querySelector("img"),
+      ac
+     );     
+     
   });
 }
 
