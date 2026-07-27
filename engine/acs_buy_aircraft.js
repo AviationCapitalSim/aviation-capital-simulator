@@ -617,8 +617,9 @@ const ACS_IMAGE_MODEL_ALIASES = {
 };
 
 function getAircraftImage(ac) {
-  return window.ACS_getAircraftImage(ac);
-}
+  if (!ac || !ac.model || !ac.manufacturer) {
+    return "img/placeholder_aircraft.jpg";
+  }
 
   const manufacturer = String(ac.manufacturer || "").trim();
 
@@ -712,7 +713,8 @@ async function renderCards(filterManufacturer = "All") {
     const priceLine = Number(ac.price_acs_usd || 0).toLocaleString("en-US");
 
    card.innerHTML = `
-   <img alt="${displayName}" />
+   <img src="${img}" alt="${displayName}"
+   onerror="ACS_handleImageFallback(this)" />
 
       <h3>${displayName}</h3>
       <div class="spec-line">Year: ${ac.year}</div>
@@ -742,12 +744,6 @@ async function renderCards(filterManufacturer = "All") {
 
     card.dataset.idx = idx;
     grid.appendChild(card);
-     
-      window.ACS_setAircraftImage(
-      card.querySelector("img"),
-      ac
-     );     
-     
   });
 }
 
