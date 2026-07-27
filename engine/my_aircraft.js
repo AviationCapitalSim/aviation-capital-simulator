@@ -2069,16 +2069,17 @@ function renderPendingDeliveryModal() {
   const image = $("pendingAircraftImage");
 
   if (image) {
-    image.dataset.fallback = "0";
-    image.alt =
-      safeText(order.aircraft_name, "Pending aircraft");
+  const imageAircraft = normalizeMyAircraftImageObject({
+    manufacturer: order.manufacturer,
+    aircraft_name: order.aircraft_name,
+    model_key: order.model_key
+  });
 
-    image.onerror = function () {
-      ACS_handleImageFallback(this);
-    };
+  window.ACS_setAircraftImage(image, imageAircraft);
 
-    image.src = getPendingOrderImage(order);
-  }
+  image.alt =
+    safeText(order.aircraft_name, "Pending aircraft");
+}
 
   const previousButton = $("pendingPreviousButton");
   const nextButton = $("pendingNextButton");
