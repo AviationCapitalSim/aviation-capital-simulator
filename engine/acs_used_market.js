@@ -357,15 +357,26 @@ function renderUsedMarket(filter = "all") {
 
       <p>Year: ${ac.year}</p>
       <p>Seats: ${ac.seats}</p>
-      <p>Range: ${ac.range_nm} nm</p>
-      <p>Hours: ${ac.hours.toLocaleString()}</p>
-      <p>Cycles: ${ac.cycles.toLocaleString()}</p>
-      <p>Condition: ${ac.condition}</p>
+      <p>Range: ${Number(ac.range_nm || 0).toLocaleString("en-US")} nm</p>
+      <p>Hours: ${Number(ac.hours || 0).toLocaleString("en-US")}</p>
+      <p>Condition: ${ac.condition || "—"}</p>
       <p><b>Price: ${ACS_formatUSD(ac.price_acs_usd)}</b></p>
 
-      <button class="ac-buy" onclick="buyUsed('${ac.id}')">BUY</button>
-      <button class="ac-lease" onclick="leaseUsed('${ac.id}')">LEASE</button>
-      <button class="ac-info" onclick="openInfo('${ac.id}')">INFO</button>
+      <button
+        class="ac-options"
+        type="button"
+        onclick="openUsedOptions('${ac.id}')"
+      >
+        BUY / LEASE
+      </button>
+
+      <button
+        class="ac-info"
+        type="button"
+        onclick="openInfo('${ac.id}')"
+      >
+        AIRCRAFT INFO
+      </button>
     `;
     grid.appendChild(card);
 
@@ -376,6 +387,184 @@ function renderUsedMarket(filter = "all") {
      
   });
 }
+
+/* ============================================================
+   5A) USED MARKET — ACQUISITION OPTIONS
+   ------------------------------------------------------------
+   • Single production entry point from each aircraft card
+   • BUY USED opens the existing purchase modal
+   • LEASE USED opens the existing lease modal
+   • No localStorage, Finance or Fleet mutation
+   ============================================================ */
+
+let ACS_selectedUsedOptionID = null;
+
+function ACS_getUsedOptionsModal() {
+  let modal = document.getElementById("usedOptionsModal");
+  if (modal) return modal;
+
+  modal = document.createElement("div");
+  modal.id = "usedOptionsModal";
+  modal.className = "acs-modal";
+  modal.setAttribute("role", "dialog");
+  modal.setAttribute("aria-modal", "true");
+  modal.setAttribute("aria-hidden", "true");
+  modal.setAttribute("aria-labelledby", "usedOptionsTitle");
+  modal.style.display = "none";
+
+  modal.innerHTML = `
+    <div class="acs-modal-content" style="max-width:560px;">
+      <button
+        id="closeUsedOptionsBtn"
+        class="acs-close"
+        type="button"
+        aria-label="Close acquisition options"
+      >
+        &times;
+      </button>
+
+      <div style="padding-right:2.2rem; margin-bottom:1.25rem;">
+        <div style="
+          margin-bottom:0.45rem;
+          color:#91cfff;
+          font-size:0.72rem;
+          font-weight:700;
+          letter-spacing:0.16em;
+        ">
+          USED AIRCRAFT MARKET
+        </div>
+
+        <h2
+          id="usedOptionsTitle"
+          style="margin:0; color:#ffb300; font-size:1.35rem;"
+        >
+          ACQUISITION OPTIONS
+        </h2>
+
+        <h3
+          id="usedOptionsAircraftName"
+          style="margin:0.75rem 0 0.3rem; color:#fff; font-size:1.05rem;"
+        >
+          Used Aircraft
+        </h3>
+
+        <p
+          id="usedOptionsAircraftSummary"
+          style="margin:0; color:#aebbd3; font-size:0.88rem;"
+        ></p>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <button
+          id="usedOptionsBuyBtn"
+          class="acs-btn-primary"
+          type="button"
+          style="min-height:82px;"
+        >
+          BUY USED
+        </button>
+
+        <button
+          id="usedOptionsLeaseBtn"
+          class="acs-btn-secondary"
+          type="button"
+          style="min-height:82px;"
+        >
+          LEASE USED
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  modal
+    .querySelector("#closeUsedOptionsBtn")
+    .addEventListener("click", closeUsedOptions);
+
+  modal
+    .querySelector("#usedOptionsBuyBtn")
+    .addEventListener("click", selectUsedPurchase);
+
+  modal
+    .querySelector("#usedOptionsLeaseBtn")
+    .addEventListener("click", selectUsedLease);
+
+  modal.addEventListener("click", event => {
+    if (event.target === modal) {
+      closeUsedOptions();
+    }
+  });
+
+  return modal;
+}
+
+function openUsedOptions(id) {
+  const aircraft = generateUsedMarket().find(
+    item => String(item.id) === String(id)
+  );
+
+  if (!aircraft) {
+    console.error("Used Market aircraft not found:", id);
+    return;
+  }
+
+  const modal = ACS_getUsedOptionsModal();
+
+  ACS_selectedUsedOptionID = aircraft.id;
+
+  modal.querySelector("#usedOptionsAircraftName").textContent =
+    `${aircraft.manufacturer} ${aircraft.model}`;
+
+  modal.querySelector("#usedOptionsAircraftSummary").textContent =
+    `${aircraft.year} · ` +
+    `${Number(aircraft.hours || 0).toLocaleString("en-US")} hours · ` +
+    `${aircraft.condition || "—"} condition`;
+
+  modal.style.display = "flex";
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+
+  modal.querySelector("#usedOptionsBuyBtn").focus();
+}
+
+function closeUsedOptions() {
+  const modal = document.getElementById("usedOptionsModal");
+  if (!modal) return;
+
+  modal.style.display = "none";
+  modal.setAttribute("aria-hidden", "true");
+  ACS_selectedUsedOptionID = null;
+  document.body.style.overflow = "";
+}
+
+function selectUsedPurchase() {
+  if (ACS_selectedUsedOptionID === null) return;
+
+  const aircraftID = ACS_selectedUsedOptionID;
+  closeUsedOptions();
+  window.openBuyModal(aircraftID);
+}
+
+function selectUsedLease() {
+  if (ACS_selectedUsedOptionID === null) return;
+
+  const aircraftID = ACS_selectedUsedOptionID;
+  closeUsedOptions();
+  window.openLeaseModal(aircraftID);
+}
+
+document.addEventListener("keydown", event => {
+  const modal = document.getElementById("usedOptionsModal");
+
+  if (
+    event.key === "Escape" &&
+    modal &&
+    modal.style.display === "flex"
+  ) {
+    closeUsedOptions();
+  }
+});
 
 /* ============================================================
    === AUTO-REGISTRATION FOR USED MARKET — v1.0 (MODEL A) ======
@@ -621,6 +810,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 window.buyUsed = buyUsed;
 window.leaseUsed = leaseUsed;
 window.openInfo = openInfo;
+window.openUsedOptions = openUsedOptions;
+window.closeUsedOptions = closeUsedOptions;
 
 // =====================================================
 // 🔥 UNIVERSAL — Generar matrícula real por país base
