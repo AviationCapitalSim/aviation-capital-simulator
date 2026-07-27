@@ -2492,151 +2492,674 @@ function ACS_infoMetricHTML(label, value) {
   `;
 }
 
-function openInfo(id) {
-  selectedUsedID = id;
+/* ============================================================
+   USED MARKET — AIRCRAFT INFORMATION PANEL
+   Railway authority · Read only
+   ============================================================ */
 
-  const ac = getUsedById(id);
+function ACS_setUsedInfoText(id, value) {
+  const element = document.getElementById(id);
 
-  if (!ac) {
-    console.warn("⚠️ INFO modal aircraft not found:", id);
+  if (!element) return;
+
+  const normalized =
+    value === null || value === undefined
+      ? ""
+      : String(value).trim();
+
+  element.textContent =
+    normalized || "—";
+}
+
+function ACS_getUsedInfoText(...values) {
+  for (const value of values) {
+    if (
+      value !== null &&
+      value !== undefined &&
+      String(value).trim() !== ""
+    ) {
+      return String(value).trim();
+    }
+  }
+
+  return "—";
+}
+
+function ACS_formatUsedInfoNumber(
+  value,
+  suffix = ""
+) {
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+    return "—";
+  }
+
+  const number = Number(value);
+
+  if (!Number.isFinite(number)) {
+    return "—";
+  }
+
+  return (
+    number.toLocaleString(
+      "en-US",
+      {
+        maximumFractionDigits: 1
+      }
+    ) +
+    suffix
+  );
+}
+
+function ACS_formatUsedInfoStatus(value) {
+  const text = ACS_getUsedInfoText(value);
+
+  if (text === "—") return text;
+
+  return text
+    .replace(/_/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toUpperCase();
+}
+
+function ACS_formatUsedInfoDate(value) {
+  if (!value) return "—";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "—";
+  }
+
+  const day =
+    String(date.getUTCDate()).padStart(2, "0");
+
+  const months = [
+    "JAN",
+    "FEB",
+    "MAR",
+    "APR",
+    "MAY",
+    "JUN",
+    "JUL",
+    "AUG",
+    "SEP",
+    "OCT",
+    "NOV",
+    "DEC"
+  ];
+
+  return (
+    `${day} ` +
+    `${months[date.getUTCMonth()]} ` +
+    `${date.getUTCFullYear()}`
+  );
+}
+
+function ACS_getUsedInfoAge(ac) {
+  const yearBuilt = Number(
+    ac?.year_built ||
+    ac?.year ||
+    0
+  );
+
+  if (!Number.isFinite(yearBuilt) || yearBuilt <= 0) {
+    return "—";
+  }
+
+  const simulatedDate =
+    ACS_getUsedMarketSimDate();
+
+  const simulatedYear =
+    simulatedDate.getUTCFullYear();
+
+  return String(
+    Math.max(0, simulatedYear - yearBuilt)
+  );
+}
+
+function ACS_getUsedInfoCondition(ac) {
+  const raw =
+    ac?.condition_pct ??
+    ac?.conditionPct ??
+    ac?.condition;
+
+  if (
+    raw === null ||
+    raw === undefined ||
+    raw === ""
+  ) {
+    return "—";
+  }
+
+  const number = Number(
+    String(raw)
+      .replace("%", "")
+      .trim()
+  );
+
+  if (!Number.isFinite(number)) {
+    return "—";
+  }
+
+  return `${Math.round(number)}%`;
+}
+
+function ACS_getUsedInfoFactoryReference(ac) {
+  const candidates = [
+    ac?.factory_reference_price,
+    ac?.factory_price_acs_usd,
+    ac?.catalog_price_acs_usd,
+    ac?.new_aircraft_price,
+    ac?.oem_price_acs_usd
+  ];
+
+  for (const value of candidates) {
+    const number = Number(value);
+
+    if (
+      Number.isFinite(number) &&
+      number > 0
+    ) {
+      return ACS_formatUSD(number);
+    }
+  }
+
+  return "—";
+}
+
+function ACS_setUsedInfoStatusClass(
+  id,
+  value
+) {
+  const element =
+    document.getElementById(id);
+
+  if (!element) return;
+
+  const status =
+    String(value || "")
+      .toUpperCase();
+
+  element.classList.remove(
+    "used-acp-status-ok",
+    "used-acp-status-warn",
+    "used-acp-status-danger"
+  );
+
+  if (
+    status.includes("OVERDUE") ||
+    status.includes("REQUIRED") ||
+    status.includes("BLOCKED") ||
+    status.includes("GROUND")
+  ) {
+    element.classList.add(
+      "used-acp-status-danger"
+    );
+
     return;
   }
 
-  const nameEl = document.getElementById("modalName");
-  const detailsEl = document.getElementById("modalDetails");
-  const modalEl = document.getElementById("infoModal");
+  if (
+    status.includes("DUE") ||
+    status.includes("WARNING") ||
+    status.includes("HOLD")
+  ) {
+    element.classList.add(
+      "used-acp-status-warn"
+    );
 
-  if (!nameEl || !detailsEl || !modalEl) return;
+    return;
+  }
+
+  if (
+    status.includes("CLEAR") ||
+    status.includes("ACTIVE") ||
+    status.includes("AVAILABLE") ||
+    status.includes("SERVICEABLE")
+  ) {
+    element.classList.add(
+      "used-acp-status-ok"
+    );
+  }
+}
+
+function openInfo(id) {
+  selectedUsedID = id;
+
+  const aircraft =
+    getUsedById(id);
+
+  if (!aircraft) {
+    console.warn(
+      "Used Market aircraft not found:",
+      id
+    );
+
+    return;
+  }
+
+  const modal =
+    document.getElementById("infoModal");
+
+  const image =
+    document.getElementById("usedInfoImage");
+
+  if (!modal || !image) return;
 
   const aircraftName =
-    ac.aircraft_name ||
-    `${ac.manufacturer || ""} ${ac.model || ""}`.trim() ||
-    "Used Aircraft";
+    ACS_getUsedInfoText(
+      aircraft.aircraft_name,
+      `${aircraft.manufacturer || ""} ` +
+      `${aircraft.model || ""}`
+    );
 
-  const lastOwner = ACS_resolveUsedLastOwner(ac);
+  const heroReference =
+    ACS_getUsedInfoText(
+      aircraft.previous_registration,
+      aircraft.serial_number,
+      "USED MARKET"
+    );
 
-  const rawConditionPct = ACS_getUsedInfoConditionPct(ac);
-const cCheckPct = ACS_getUsedCCheckRemainingPct(ac);
-const dCheckPct = ACS_getUsedDCheckRemainingPct(ac);
+  const manufacturer =
+    ACS_getUsedInfoText(
+      aircraft.manufacturer,
+      aircraft.catalog_manufacturer
+    );
 
-/*
-  ACS OCC visual rule:
-  The displayed aircraft condition cannot be higher than
-  its C/D maintenance readiness.
-*/
-const conditionPct = ACS_clampPct(
-  Math.min(rawConditionPct, cCheckPct, dCheckPct)
-);
+  const previousOperator =
+    ACS_getUsedInfoText(
+      aircraft.previous_operator_name,
+      aircraft.previous_operator,
+      aircraft.last_owner_name,
+      aircraft.seller_name
+    );
 
-const status = ACS_getUsedInfoStatus(
-  conditionPct,
-  cCheckPct,
-  dCheckPct
-);
+  const remarketingAgent =
+    ACS_getUsedInfoText(
+      aircraft.remarketing_agent,
+      aircraft.broker_name,
+      aircraft.seller_name
+    );
 
-  const hours = Number(
-    ac.hours ||
-    ac.total_hours ||
-    ac.totalHours ||
-    0
+  const listingStatus =
+    ACS_formatUsedInfoStatus(
+      aircraft.listing_status
+    );
+
+  const maintenanceStatus =
+    ACS_formatUsedInfoStatus(
+      aircraft.maintenance_status
+    );
+
+  const cCheckStatus =
+    ACS_formatUsedInfoStatus(
+      aircraft.c_check_status
+    );
+
+  const dCheckStatus =
+    ACS_formatUsedInfoStatus(
+      aircraft.d_check_status
+    );
+
+  const maintenanceControl =
+    ACS_formatUsedInfoStatus(
+      aircraft.maintenance_control_status
+    );
+
+  const maintenanceReason =
+    ACS_formatUsedInfoStatus(
+      aircraft.maintenance_control_reason
+    );
+
+  const marketGate =
+    ACS_formatUsedInfoStatus(
+      aircraft.market_gate ||
+      aircraft.purchase_gate ||
+      aircraft.used_market_gate
+    );
+
+  const askingPrice = Number(
+    aircraft.market_price ??
+    aircraft.price_acs_usd
   );
 
-  const cycles = Number(
-    ac.cycles ||
-    ac.total_cycles ||
-    ac.totalCycles ||
-    0
+  ACS_setUsedInfoText(
+    "usedInfoHeroAircraft",
+    aircraftName
   );
 
-  const price = Number(
-    ac.price_acs_usd ||
-    ac.market_price ||
-    0
+  ACS_setUsedInfoText(
+    "usedInfoHeroReference",
+    heroReference
   );
 
-  const imageSrc = ACS_getUsedAircraftModalImage(ac);
+  /* Aircraft Identity */
 
-  const fallbackSrc =
-    typeof getAircraftImage === "function"
-      ? getAircraftImage(ac)
-      : "img/placeholder_aircraft.png";
+  ACS_setUsedInfoText(
+    "usedInfoAircraftName",
+    aircraftName
+  );
 
-  nameEl.textContent = "USED AIRCRAFT INFO";
+  ACS_setUsedInfoText(
+    "usedInfoManufacturer",
+    manufacturer
+  );
 
-  detailsEl.innerHTML = `
-    <div class="used-info-grid">
+  ACS_setUsedInfoText(
+    "usedInfoModelKey",
+    aircraft.model_key
+  );
 
-      <div class="used-info-image-wrap">
-        <img
-        class="used-info-aircraft-img"
-        alt="${aircraftName}"
-       />
-      </div>
+  ACS_setUsedInfoText(
+    "usedInfoSerialNumber",
+    aircraft.serial_number
+  );
 
-      <div class="used-info-panel">
-        <div class="used-info-section-title">ASSET</div>
+  ACS_setUsedInfoText(
+    "usedInfoPreviousRegistration",
+    aircraft.previous_registration
+  );
 
-        <div class="used-info-line">
-          <span>Aircraft</span>
-          <b>${aircraftName}</b>
-        </div>
+  ACS_setUsedInfoText(
+    "usedInfoYearBuilt",
+    aircraft.year_built ||
+    aircraft.year
+  );
 
-        <div class="used-info-line">
-          <span>Last Owner</span>
-          <b>${lastOwner}</b>
-        </div>
+  ACS_setUsedInfoText(
+    "usedInfoPreviousOperator",
+    previousOperator
+  );
 
-        <div class="used-info-line">
-          <span>Year</span>
-          <b>${ac.year || ac.year_built || "—"}</b>
-        </div>
+  ACS_setUsedInfoText(
+    "usedInfoRemarketingAgent",
+    remarketingAgent
+  );
 
-        <div class="used-info-line">
-          <span>Price</span>
-          <b>${ACS_formatUSD(price)}</b>
-        </div>
-      </div>
+  ACS_setUsedInfoText(
+    "usedInfoSource",
+    aircraft.source
+  );
 
-      <div class="used-info-panel">
-        <div class="used-info-section-title">OPERATIONAL DATA</div>
+  ACS_setUsedInfoText(
+    "usedInfoIdentityListingStatus",
+    listingStatus
+  );
 
-        <div class="used-info-line">
-          <span>Hours</span>
-          <b>${hours.toLocaleString("en-US")}</b>
-        </div>
+  /* Market Status */
 
-        <div class="used-info-line">
-          <span>Cycles</span>
-          <b>${cycles.toLocaleString("en-US")}</b>
-        </div>
-      </div>
+  ACS_setUsedInfoText(
+    "usedInfoListingStatus",
+    listingStatus
+  );
 
-      <div class="used-info-panel">
-        <div class="used-info-section-title">TECHNICAL STATUS</div>
+  ACS_setUsedInfoText(
+    "usedInfoMaintenanceStatus",
+    maintenanceStatus
+  );
 
-        <div class="used-info-line">
-          <span>Status</span>
-          <b class="${status.className}">${status.label}</b>
-        </div>
-      </div>
+  ACS_setUsedInfoText(
+    "usedInfoCondition",
+    ACS_getUsedInfoCondition(aircraft)
+  );
 
-      <div class="used-info-metrics">
-        ${ACS_infoMetricHTML("AIRCRAFT CONDITION", conditionPct)}
-        ${ACS_infoMetricHTML("C-CHECK REMAINING", cCheckPct)}
-        ${ACS_infoMetricHTML("D-CHECK REMAINING", dCheckPct)}
-      </div>
+  ACS_setUsedInfoText(
+    "usedInfoAge",
+    ACS_getUsedInfoAge(aircraft)
+  );
 
-    </div>
-  `;
+  ACS_setUsedInfoText(
+    "usedInfoTotalHours",
+    ACS_formatUsedInfoNumber(
+      aircraft.total_hours ??
+      aircraft.hours
+    )
+  );
+
+  ACS_setUsedInfoText(
+    "usedInfoTotalCycles",
+    ACS_formatUsedInfoNumber(
+      aircraft.total_cycles ??
+      aircraft.cycles
+    )
+  );
+
+  /* Technical Specifications */
+
+  ACS_setUsedInfoText(
+    "usedInfoCategory",
+    ACS_formatUsedInfoStatus(
+      aircraft.aircraft_category ||
+      aircraft.category
+    )
+  );
+
+  ACS_setUsedInfoText(
+    "usedInfoSeats",
+    ACS_formatUsedInfoNumber(
+      aircraft.seats
+    )
+  );
+
+  ACS_setUsedInfoText(
+    "usedInfoRange",
+    ACS_formatUsedInfoNumber(
+      aircraft.range_nm,
+      " NM"
+    )
+  );
+
+  ACS_setUsedInfoText(
+    "usedInfoSpeed",
+    ACS_formatUsedInfoNumber(
+      aircraft.speed_kts,
+      " KT"
+    )
+  );
+
+  ACS_setUsedInfoText(
+    "usedInfoRequiredRunway",
+    ACS_formatUsedInfoNumber(
+      aircraft.required_runway_m,
+      " M"
+    )
+  );
+
+  ACS_setUsedInfoText(
+    "usedInfoEngines",
+    aircraft.engines
+  );
+
+  ACS_setUsedInfoText(
+    "usedInfoMtow",
+    ACS_formatUsedInfoNumber(
+      aircraft.mtow_kg,
+      " KG"
+    )
+  );
+
+  ACS_setUsedInfoText(
+    "usedInfoFuelBurn",
+    ACS_formatUsedInfoNumber(
+      aircraft.fuel_burn_kgph,
+      " KG/H"
+    )
+  );
+
+  /* Aircraft Value */
+
+  ACS_setUsedInfoText(
+    "usedInfoAskingPrice",
+    Number.isFinite(askingPrice)
+      ? ACS_formatUSD(askingPrice)
+      : "—"
+  );
+
+  ACS_setUsedInfoText(
+    "usedInfoFactoryReference",
+    ACS_getUsedInfoFactoryReference(
+      aircraft
+    )
+  );
+
+  ACS_setUsedInfoText(
+    "usedInfoCurrency",
+    aircraft.currency || "USD"
+  );
+
+  ACS_setUsedInfoText(
+    "usedInfoMarketGate",
+    marketGate
+  );
+
+  /* Maintenance Snapshot */
+
+  ACS_setUsedInfoText(
+    "usedInfoMaintenanceSnapshot",
+    maintenanceStatus
+  );
+
+  ACS_setUsedInfoText(
+    "usedInfoCCheckStatus",
+    cCheckStatus
+  );
+
+  ACS_setUsedInfoText(
+    "usedInfoCCheckDate",
+    ACS_formatUsedInfoDate(
+      aircraft.c_check_due_date
+    )
+  );
+
+  ACS_setUsedInfoText(
+    "usedInfoCCheckHours",
+    ACS_formatUsedInfoNumber(
+      aircraft.c_check_due_hours
+    )
+  );
+
+  ACS_setUsedInfoText(
+    "usedInfoCCheckCycles",
+    ACS_formatUsedInfoNumber(
+      aircraft.c_check_due_cycles
+    )
+  );
+
+  ACS_setUsedInfoText(
+    "usedInfoDCheckStatus",
+    dCheckStatus
+  );
+
+  ACS_setUsedInfoText(
+    "usedInfoDCheckDate",
+    ACS_formatUsedInfoDate(
+      aircraft.d_check_due_date
+    )
+  );
+
+  ACS_setUsedInfoText(
+    "usedInfoMaintenanceControl",
+    maintenanceControl
+  );
+
+  ACS_setUsedInfoText(
+    "usedInfoMaintenanceReason",
+    maintenanceReason
+  );
+
+  /* Status colors */
+
+  ACS_setUsedInfoStatusClass(
+    "usedInfoListingStatus",
+    listingStatus
+  );
+
+  ACS_setUsedInfoStatusClass(
+    "usedInfoMaintenanceStatus",
+    maintenanceStatus
+  );
+
+  ACS_setUsedInfoStatusClass(
+    "usedInfoMaintenanceSnapshot",
+    maintenanceStatus
+  );
+
+  ACS_setUsedInfoStatusClass(
+    "usedInfoCCheckStatus",
+    cCheckStatus
+  );
+
+  ACS_setUsedInfoStatusClass(
+    "usedInfoDCheckStatus",
+    dCheckStatus
+  );
+
+  ACS_setUsedInfoStatusClass(
+    "usedInfoMaintenanceControl",
+    maintenanceControl
+  );
+
+  ACS_setUsedInfoStatusClass(
+    "usedInfoMarketGate",
+    marketGate
+  );
+
+  /* Existing ACS aircraft image authority */
 
   window.ACS_setAircraftImage(
-  detailsEl.querySelector(".used-info-aircraft-img"),
-  ac
-);
-     
-  modalEl.style.display = "flex";
+    image,
+    aircraft
+  );
+
+  image.alt = aircraftName;
+
+  modal.style.display = "flex";
+  modal.setAttribute(
+    "aria-hidden",
+    "false"
+  );
+
+  document.body.style.overflow =
+    "hidden";
 }
-     
+
+/* ============================================================
+   USED INFO MODAL — ACCESSIBLE CLOSE CONTROL
+   ============================================================ */
+
+(function bindUsedInfoModalClose() {
+  const modal =
+    document.getElementById("infoModal");
+
+  if (!modal) return;
+
+  modal.addEventListener(
+    "click",
+    event => {
+      if (event.target === modal) {
+        closeInfoModal();
+      }
+    }
+  );
+
+  document.addEventListener(
+    "keydown",
+    event => {
+      if (
+        event.key === "Escape" &&
+        modal.style.display === "flex"
+      ) {
+        closeInfoModal();
+      }
+    }
+  );
+})();
+         
 /* ============================================================
    Helper — Render BUY Used Modal Body
    ============================================================ */
