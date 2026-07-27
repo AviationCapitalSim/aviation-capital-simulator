@@ -617,45 +617,7 @@ const ACS_IMAGE_MODEL_ALIASES = {
 };
 
 function getAircraftImage(ac) {
-  if (!ac || !ac.model || !ac.manufacturer) {
-    return "img/placeholder_aircraft.jpg";
-  }
-
-  const manufacturer = String(ac.manufacturer || "").trim();
-
-  let manuFolder = manufacturer;
-
-  if (manufacturer.toLowerCase() === "de havilland") {
-    manuFolder = "de_havilland";
-  }
-
-  const cleanModel = ACS_cleanImageModelName(ac);
-  const baseSlug = ACS_slugAircraftName(cleanModel);
-  const manufacturerSlug = ACS_slugAircraftName(manufacturer);
-
-  const aliasSlug =
-    ACS_IMAGE_MODEL_ALIASES[baseSlug] ||
-    ACS_IMAGE_MODEL_ALIASES[`${manufacturerSlug}_${baseSlug}`] ||
-    baseSlug;
-
-  const candidates = [];
-
-  /* JPG first — ACS aircraft library priority */
-  candidates.push(`img/${manuFolder}/${aliasSlug}.jpg`);
-  candidates.push(`img/${manuFolder}/${aliasSlug}.png`);
-
-  /* fallback variants */
-  candidates.push(`img/${manuFolder}/${baseSlug}.jpg`);
-  candidates.push(`img/${manuFolder}/${baseSlug}.png`);
-
-  candidates.push(`img/${manuFolder}/${manufacturerSlug}_${baseSlug}.jpg`);
-  candidates.push(`img/${manuFolder}/${manufacturerSlug}_${baseSlug}.png`);
-
-  /* root fallback */
-  candidates.push(`img/${aliasSlug}.jpg`);
-  candidates.push(`img/${aliasSlug}.png`);
-
-  return candidates[0];
+  return window.ACS_getAircraftImage(ac);
 }
 
 /* ============================================================
@@ -703,7 +665,7 @@ async function renderCards(filterManufacturer = "All") {
     const card = document.createElement("div");
     card.className = "card";
 
-    const img = getAircraftImage(ac);
+    
     const displayName = ACS_getAircraftDisplayName(ac);
 
     const engineLine =
@@ -713,8 +675,7 @@ async function renderCards(filterManufacturer = "All") {
     const priceLine = Number(ac.price_acs_usd || 0).toLocaleString("en-US");
 
    card.innerHTML = `
-   <img src="${img}" alt="${displayName}"
-   onerror="ACS_handleImageFallback(this)" />
+   <img alt="${displayName}" />
 
       <h3>${displayName}</h3>
       <div class="spec-line">Year: ${ac.year}</div>
@@ -744,44 +705,17 @@ async function renderCards(filterManufacturer = "All") {
 
     card.dataset.idx = idx;
     grid.appendChild(card);
+
+      window.ACS_setAircraftImage(
+      card.querySelector("img"),
+      ac
+      );
+     
   });
 }
 
-/* ============================================================
-   🖼️ ACS IMAGE FALLBACK SYSTEM — FACTORY CATALOG SAFE
-   ------------------------------------------------------------
-   Purpose:
-   - Try JPG / PNG variants
-   - Avoid infinite 404 loops
-   - Use JPG placeholder first
-   ============================================================ */
-
 function ACS_handleImageFallback(img) {
-
-  if (!img) return;
-
-  const currentSrc = img.getAttribute("src") || "";
-
-  if (!img.dataset.fallbackStep) {
-    img.dataset.fallbackStep = "0";
-  }
-
-  let step = Number(img.dataset.fallbackStep);
-  step += 1;
-  img.dataset.fallbackStep = String(step);
-
-  if (step === 1 && currentSrc.endsWith(".jpg")) {
-    img.src = currentSrc.replace(".jpg", ".png");
-    return;
-  }
-
-  if (step === 2 && currentSrc.endsWith(".png")) {
-    img.src = currentSrc.replace(".png", ".jpg");
-    return;
-  }
-
-  img.onerror = null;
-  img.src = "img/placeholder_aircraft.jpg";
+  window.ACS_handleAircraftImageFallback(img);
 }
 
 /* ============================================================
@@ -824,8 +758,7 @@ function openAircraftInfoModal(ac) {
   const displayModel = ACS_getAircraftDisplayModel(ac);
   const manufacturer = ACS_resolveAircraftManufacturer(ac);
 
-  image.dataset.fallbackStep = "0";
-  image.src = getAircraftImage(ac);
+  window.ACS_setAircraftImage(image, ac);
   image.alt = displayName;
 
   ACS_setAircraftInfoText(
@@ -954,7 +887,7 @@ function openBuyModal(ac) {
     document.getElementById("modalUnitPrice");
 
   if (modalImage) {
-    modalImage.src = selectedAircraftImage;
+    window.ACS_setAircraftImage(modalImage, ac);
     modalImage.alt = ACS_getAircraftDisplayName(ac);
   }
 
