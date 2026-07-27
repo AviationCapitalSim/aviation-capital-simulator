@@ -876,7 +876,7 @@ const ACS_AIRCRAFT_DB = [
 
   // 1960s
   {
-    manufacturer: "McDonnell Douglas",
+    manufacturer: "Douglas",
     model: "DC-9-10",
     year: 1965,
     seats: 90,
