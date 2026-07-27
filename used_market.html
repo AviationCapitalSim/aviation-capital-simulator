@@ -216,57 +216,92 @@ body {
 .used-panel { display: none !important; }
 
 .used-card {
-  background: #0f1b3d !important;
-  border-radius: 12px !important;
+  background: var(
+    --acs-ui-surface,
+    rgba(255, 255, 255, 0.015)
+  ) !important;
+
+  background-color: var(
+    --acs-ui-surface,
+    rgba(255, 255, 255, 0.015)
+  ) !important;
+
+  background-image: none !important;
+  box-shadow: none !important;
+
+  border: 1px solid var(
+    --acs-ui-border-blue,
+    rgba(91, 158, 255, 0.26)
+  ) !important;
+
+  border-radius: 18px !important;
   padding: 1rem !important;
-  box-shadow: 0 0 12px rgba(0,0,0,.4) !important;
-  border: 1px solid #ffb30055 !important;
+
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+
   display: flex !important;
   flex-direction: column !important;
+  overflow: hidden;
+
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease;
 }
 
-.used-card img {
-  width: 100% !important;
-  height: 150px !important;
-  object-fit: cover !important;
-  border-radius: 10px !important;
-  background: #102040 !important;
-}
+.used-card:hover {
+  background: var(
+    --acs-ui-surface-hover,
+    rgba(255, 255, 255, 0.028)
+  ) !important;
 
-.used-card h3 {
-  margin: 0.8rem 0 0.4rem;
-  font-size: 1.1rem;
-  color: #FFB300;
-}
+  border-color: var(
+    --acs-ui-border-gold,
+    rgba(255, 179, 0, 0.24)
+  ) !important;
 
-.used-card p {
-  font-size: 0.85rem;
-  color: #ccc;
-  margin: 0.2rem 0;
+  transform: translateY(-3px);
 }
-
-.ac-buy,
-.ac-lease,
+     
+.ac-options,
 .ac-info {
-  margin-top: 0.5rem;
   width: 100%;
-  border: none;
+  margin-top: 0.5rem;
   padding: 0.65rem 1rem;
+
   border-radius: 10px;
   cursor: pointer;
+
   font-weight: 600;
-  transition: 0.25s;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
 }
 
-.ac-buy { background: #00c851; color: white; }
-.ac-buy:hover { background: #00e060; }
+.ac-options {
+  color: #d9efff;
+  background: rgba(27, 106, 190, 0.34);
+  border: 1px solid rgba(91, 158, 255, 0.62);
+}
 
-.ac-lease { background: #008cff; color: white; }
-.ac-lease:hover { background: #4dabff; }
+.ac-options:hover {
+  background: rgba(52, 140, 255, 0.24);
+  border-color: rgba(122, 185, 255, 0.8);
+}
 
-.ac-info { background: #ffb300; color: #000; }
-.ac-info:hover { background: #ffcf4d; }
+.ac-info {
+  color: #081530;
+  background: #ffb300;
+  border: 1px solid #ffb300;
+}
 
+.ac-info:hover {
+  background: #ffcf4d;
+  border-color: #ffcf4d;
+}
+     
 .acs-footer {
   text-align: center;
   padding: 20px;
@@ -278,6 +313,7 @@ body {
 /* ============================================================
    === FIX MODAL POSITION (legacy, ahora sin uso directo) ======
    ============================================================ */
+     
 .modal-bg {
   position: fixed !important;
 }
