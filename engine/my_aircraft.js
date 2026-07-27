@@ -1249,13 +1249,8 @@ function resolveLineMaintenanceDateDisplay(
     if (img) {
     const imageAircraft = normalizeMyAircraftImageObject(aircraft);
 
-    img.dataset.fallback = "0";
-    img.onerror = function() {
-    ACS_handleImageFallback(this);
-   };
-
-   img.src = getAircraftImage(imageAircraft);
-   img.alt = aircraftName;
+    window.ACS_setAircraftImage(img, imageAircraft);
+    img.alt = aircraftName;
    }
 
         /* ========================================================
