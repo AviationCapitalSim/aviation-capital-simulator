@@ -1437,54 +1437,8 @@ function ACS_formatUsedMarketDate(date) {
   return `${day} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
 
-/* ============================================================
-   Helper — Used Aircraft Image Resolver
-   ------------------------------------------------------------
-   Priority:
-   1. Backend image_filename from aircraft_catalog
-   2. Existing Used Market card resolver as fallback
-   3. Placeholder
-   ============================================================ */
-
 function ACS_getUsedAircraftModalImage(ac) {
-  if (!ac) return "img/placeholder_aircraft.png";
-
-  const backendFile = String(
-    ac.image_filename ||
-    ac.image_file_name ||
-    ac.imageFileName ||
-    ""
-  ).trim();
-
-  if (backendFile) {
-    if (
-      backendFile.startsWith("http://") ||
-      backendFile.startsWith("https://") ||
-      backendFile.startsWith("img/")
-    ) {
-      return backendFile;
-    }
-
-    if (backendFile.includes("/")) {
-      return backendFile;
-    }
-
-    const manufacturer = String(ac.manufacturer || "").trim();
-
-    let folder = manufacturer.replace(/\s+/g, " ");
-
-    if (manufacturer.toLowerCase() === "de havilland") {
-      folder = "de_havilland";
-    }
-
-    return `img/${folder}/${backendFile}`;
-  }
-
-  if (typeof getAircraftImage === "function") {
-    return getAircraftImage(ac);
-  }
-
-  return "img/placeholder_aircraft.png";
+  return window.ACS_getAircraftImage(ac);
 }
 
 /* ============================================================
@@ -1495,25 +1449,9 @@ function ACS_getUsedAircraftModalImage(ac) {
    ============================================================ */
 
 function ACS_handleUsedModalImageFallback(img) {
-  if (!img) return;
-
-  const fallbackSrc = img.dataset.fallbackSrc || "";
-
-  if (fallbackSrc && img.dataset.usedFallbackTried !== "1") {
-    img.dataset.usedFallbackTried = "1";
-    img.src = fallbackSrc;
-    return;
-  }
-
-  if (typeof ACS_handleImageFallback === "function") {
-    ACS_handleImageFallback(img);
-    return;
-  }
-
-  img.onerror = null;
-  img.src = "img/placeholder_aircraft.png";
-}     
-
+  window.ACS_handleAircraftImageFallback(img);
+}
+     
 /* ============================================================
    Helper — Market Gate Display
    ------------------------------------------------------------
