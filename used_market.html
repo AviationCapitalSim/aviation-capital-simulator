@@ -1960,6 +1960,11 @@ const status = ACS_getUsedInfoStatus(
     </div>
   `;
 
+  window.ACS_setAircraftImage(
+  detailsEl.querySelector(".used-info-aircraft-img"),
+  ac
+);
+     
   modalEl.style.display = "flex";
 }
      
@@ -1968,6 +1973,7 @@ const status = ACS_getUsedInfoStatus(
    ============================================================ */
 
 function ACS_renderBuyUsedModalBody(ac, capital) {
+     
   const detailsEl = document.getElementById("buyDetails");
   const confirmBtn = document.getElementById("confirmBuyBtn");
 
@@ -2114,6 +2120,11 @@ ${maintenanceOptionHTML}
     </div>
   `;
 
+  window.ACS_setAircraftImage(
+  detailsEl.querySelector(".used-occ-aircraft-img"),
+  ac
+  );
+     
   const maintenanceCheckbox =
     document.getElementById("usedPreDeliveryMaintenance");
 
@@ -2287,6 +2298,7 @@ function ACS_calculateUsedLeaseOffer(ac, termMonths) {
 }
 
 function ACS_renderLeaseUsedModalBody(ac, capital, selectedTermMonths = 12) {
+     
   const detailsEl = document.getElementById("leaseDetails");
   const confirmBtn = document.getElementById("confirmLeaseBtn");
 
@@ -2352,12 +2364,9 @@ function ACS_renderLeaseUsedModalBody(ac, capital, selectedTermMonths = 12) {
     <div class="used-occ-modal-grid">
 
       <div class="used-occ-image-wrap">
-        <img
+        <<img
           class="used-occ-aircraft-img"
-          src="${imageSrc}"
-          data-fallback-src="${fallbackSrc}"
-          onerror="ACS_handleUsedModalImageFallback(this)"
-          alt="${aircraftName}"
+           alt="${aircraftName}"
         />
       </div>
 
@@ -2472,6 +2481,11 @@ function ACS_renderLeaseUsedModalBody(ac, capital, selectedTermMonths = 12) {
     </div>
   `;
 
+   window.ACS_setAircraftImage(
+  detailsEl.querySelector(".used-occ-aircraft-img"),
+  ac
+);
+     
   const termSelect = document.getElementById("usedLeaseTermSelect");
 
   if (termSelect) {
