@@ -515,182 +515,377 @@ body {
 }
 
 /* ============================================================
-   🟦 USED AIRCRAFT INFO MODAL — ACS / AIRBUS OCC DOSSIER v1.0
+   USED MARKET — AIRCRAFT INFORMATION PANEL
+   My Aircraft Authority Panel · Read only
    ============================================================ */
 
-#infoModal .acs-modal-content {
-  max-width: 760px !important;
-  width: 92% !important;
-  background: radial-gradient(circle at top, #12254a 0%, #091326 60%, #050814 100%);
-  border: 1px solid rgba(255,179,0,0.45);
-  box-shadow: 0 0 26px rgba(0,0,0,0.75);
+#infoModal.acs-modal {
+  padding: 14px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+
+  background: rgba(0, 0, 0, 0.72);
+
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
 }
 
-#modalName {
-  letter-spacing: 0.6px;
-  font-size: 1.15rem;
-}
+#infoModal .used-acp-panel {
+  box-sizing: border-box;
 
-.used-info-grid {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 0.9rem;
+  width: min(1080px, calc(100vw - 28px));
+  max-width: 1080px;
+  max-height: calc(100vh - 28px);
+
+  padding: 16px 18px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
   text-align: left;
-}
 
-.used-info-image-wrap {
-  height: 255px;
-  max-height: 255px;
+  background:
+    radial-gradient(
+      circle at top,
+      #12254a 0%,
+      #091326 58%,
+      #050814 100%
+    );
+
+  border: 1px solid rgba(255, 179, 0, 0.45);
   border-radius: 12px;
-  overflow: hidden;
-  background: #081530;
-  border: 1px solid rgba(255,179,0,0.28);
-  box-shadow: inset 0 0 18px rgba(0,0,0,0.45);
+
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.62),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
 }
 
-.used-info-aircraft-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center center;
-  display: block;
+#infoModal .used-acp-command-header {
+  display: grid;
+
+  grid-template-columns:
+    minmax(260px, 0.8fr)
+    minmax(380px, 1.2fr);
+
+  gap: 16px;
+  align-items: center;
+
+  padding-bottom: 12px;
+
+  border-bottom:
+    1px solid rgba(255, 179, 0, 0.28);
 }
 
-.used-info-panel {
-  padding: 0.75rem 0.85rem;
-  border-radius: 11px;
-  background: rgba(8,21,48,0.72);
-  border: 1px solid rgba(255,179,0,0.22);
+#infoModal .used-acp-main-title,
+#infoModal .used-acp-command-aircraft strong,
+#infoModal .used-acp-section-title {
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
 }
 
-.used-info-section-title {
-  font-size: 0.72rem;
-  letter-spacing: 0.12rem;
+#infoModal .used-acp-main-title {
+  margin: 0 0 7px;
+
   color: #ffb300;
-  margin-bottom: 0.55rem;
+
+  font-size: clamp(22px, 2.2vw, 30px);
+  line-height: 1.15;
+
+  text-align: left;
+  text-transform: uppercase;
+
+  text-shadow:
+    0 0 10px rgba(255, 179, 0, 0.28);
+}
+
+#infoModal .used-acp-command-aircraft {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+#infoModal .used-acp-command-aircraft strong {
+  color: #ffffff;
+  font-size: 15px;
+}
+
+#infoModal .used-acp-command-aircraft span {
+  padding: 4px 9px;
+
+  color: #75d5ff;
+  background: rgba(18, 59, 84, 0.45);
+
+  border: 1px solid #39708e;
+  border-radius: 999px;
+
+  font-size: 12px;
   font-weight: 800;
 }
 
-.used-info-line {
+#infoModal .used-acp-main-image {
+  display: block;
+
+  width: 100%;
+  height: 230px;
+  min-height: 230px;
+  max-height: 230px;
+
+  padding: 0;
+  box-sizing: border-box;
+
+  object-fit: cover;
+  object-position: center 54%;
+
+  background: #061126;
+
+  border:
+    1px solid rgba(99, 207, 255, 0.30);
+
+  border-radius: 10px;
+}
+
+#infoModal .used-acp-body {
+  margin-top: 12px;
+}
+
+#infoModal .used-acp-dashboard-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 10px;
+}
+
+#infoModal .used-acp-section {
+  min-width: 0;
+
+  margin: 0;
+  padding: 10px 12px;
+
+  background: rgba(5, 12, 28, 0.70);
+
+  border:
+    1px solid rgba(255, 255, 255, 0.07);
+
+  border-radius: 9px;
+}
+
+#infoModal .used-acp-section-title {
+  margin-bottom: 8px;
+
+  color: #ffb300;
+
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+
+  text-transform: uppercase;
+}
+
+#infoModal .used-acp-grid {
+  display: grid;
+  gap: 5px 12px;
+}
+
+#infoModal .used-acp-grid-2 {
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+}
+
+#infoModal .used-acp-line {
   display: flex;
   justify-content: space-between;
-  gap: 0.8rem;
-  padding: 0.28rem 0;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  font-size: 0.86rem;
+
+  gap: 1rem;
+  padding-bottom: 4px;
+
+  border-bottom:
+    1px solid rgba(255, 255, 255, 0.06);
 }
 
-.used-info-line span {
-  color: #aebce8;
+#infoModal .used-acp-line span {
+  color: #9fb3c8;
+  font-size: 12px;
 }
 
-.used-info-line b {
-  color: #f4f7ff;
+#infoModal .used-acp-line strong {
+  color: #f5f7fa;
+
+  font-size: 12px;
   text-align: right;
-  font-weight: 700;
+
+  overflow-wrap: anywhere;
 }
 
-.used-info-metrics {
-  grid-column: 1 / -1;
+#infoModal .used-acp-status-board,
+#infoModal .used-acp-tech-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 7px;
 }
 
-.used-info-metric {
-  padding: 0.85rem;
-  border-radius: 12px;
-  background: rgba(8,21,48,0.78);
-  border: 1px solid rgba(255,179,0,0.22);
+#infoModal .used-acp-status-board div,
+#infoModal .used-acp-tech-card {
+  min-width: 0;
+
+  padding: 8px 5px;
+
+  text-align: center;
+  word-break: break-word;
+
+  background: rgba(255, 255, 255, 0.035);
+
+  border:
+    1px solid rgba(255, 255, 255, 0.07);
+
+  border-radius: 7px;
 }
 
-.used-info-metric-label {
-  color: #aebce8;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.08rem;
-  margin-bottom: 0.35rem;
+#infoModal .used-acp-status-board span,
+#infoModal .used-acp-tech-card span {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: #8faad6;
+
+  font-size: 9px;
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
 }
 
-.used-info-metric-value {
-  color: #f4f7ff;
-  font-size: 1.55rem;
-  font-weight: 900;
-  line-height: 1;
+#infoModal .used-acp-status-board strong,
+#infoModal .used-acp-tech-card strong {
+  color: #ffffff;
+  font-size: 12px;
 }
 
-.used-info-bar {
-  margin-top: 0.65rem;
-  height: 7px;
-  width: 100%;
-  border-radius: 999px;
-  overflow: hidden;
-  background: rgba(255,255,255,0.10);
+#infoModal .used-acp-status-ok {
+  color: #6ee7a8 !important;
 }
 
-.used-info-bar-fill {
-  height: 100%;
-  border-radius: 999px;
-  transition: width 0.25s ease;
+#infoModal .used-acp-status-warn {
+  color: #ffcf5a !important;
 }
 
-.used-info-bar-green {
-  background: #00ff80;
-  box-shadow: 0 0 8px rgba(0,255,128,0.28);
+#infoModal .used-acp-status-danger {
+  color: #ff6262 !important;
 }
 
-.used-info-bar-mustard {
-  background: #ffb300;
-  box-shadow: 0 0 8px rgba(255,179,0,0.28);
-}
-
-.used-info-bar-orange {
-  background: #ff7a00;
-  box-shadow: 0 0 8px rgba(255,122,0,0.28);
-}
-
-.used-info-bar-red {
-  background: #ff3b3b;
-  box-shadow: 0 0 8px rgba(255,59,59,0.30);
-}
-     
-.used-info-status-ok {
-  color: #00ff80 !important;
-  text-shadow: 0 0 8px rgba(0,255,128,0.35);
-}
-
-.used-info-status-warn {
-  color: #ffb300 !important;
-  text-shadow: 0 0 8px rgba(255,179,0,0.35);
-}
-
-.used-info-status-danger {
-  color: #ff4d4d !important;
-  text-shadow: 0 0 8px rgba(255,77,77,0.35);
-}
-
-.used-info-status-panel {
+#infoModal .used-acp-maintenance-section {
   grid-column: 1 / -1;
 }
 
-@media (max-width: 780px) {
-  #infoModal .acs-modal-content {
-    width: 94% !important;
-    max-height: 88vh;
-    overflow-y: auto;
-    padding: 1.1rem;
-  }
+#infoModal .used-acp-close-row {
+  display: flex;
+  justify-content: center;
 
-  .used-info-grid {
+  margin-top: 11px;
+  padding-top: 11px;
+
+  border-top:
+    1px solid rgba(255, 255, 255, 0.08);
+}
+
+#infoModal .used-acp-close-btn {
+  appearance: none;
+  -webkit-appearance: none;
+
+  min-width: 145px;
+  min-height: 36px;
+
+  padding: 0.45rem 1.2rem;
+
+  color: #ffe7a0;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 179, 0, 0.16),
+      rgba(70, 48, 10, 0.24)
+    );
+
+  border:
+    1px solid rgba(255, 179, 0, 0.62);
+
+  border-radius: 999px;
+
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+
+  text-transform: uppercase;
+  cursor: pointer;
+
+  transition:
+    transform 0.16s ease,
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+#infoModal .used-acp-close-btn:hover {
+  transform: translateY(-1px);
+
+  color: #fff2c5;
+
+  border-color:
+    rgba(255, 195, 55, 0.92);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 179, 0, 0.24),
+      rgba(86, 59, 12, 0.32)
+    );
+
+  box-shadow:
+    0 0 14px rgba(255, 179, 0, 0.20);
+}
+
+#infoModal .used-acp-close-btn:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 900px) {
+  #infoModal .used-acp-command-header,
+  #infoModal .used-acp-dashboard-grid {
     grid-template-columns: 1fr;
   }
 
-  .used-info-image-wrap {
-    height: 185px;
-    max-height: 185px;
+  #infoModal .used-acp-main-image {
+    height: 180px;
+    min-height: 180px;
+    max-height: 180px;
+  }
+}
+
+@media (max-width: 680px) {
+  #infoModal.acs-modal {
+    padding: 8px;
   }
 
-  .used-info-metrics {
+  #infoModal .used-acp-panel {
+    width: calc(100vw - 16px);
+    max-height: calc(100vh - 16px);
+
+    padding: 13px;
+  }
+
+  #infoModal .used-acp-grid-2,
+  #infoModal .used-acp-status-board,
+  #infoModal .used-acp-tech-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -1312,24 +1507,342 @@ body {
 <!-- ============================================================
      === MODAL 1: INFO — ACS / AIRBUS OCC DOSSIER ===============
      ============================================================ -->
-<div id="infoModal" class="acs-modal" style="display:none;">
-  <div class="acs-modal-content">
-    <span class="acs-close" onclick="closeInfoModal()">&times;</span>
+<!-- ============================================================
+     USED MARKET — AIRCRAFT INFORMATION PANEL
+     Read-only Railway authority
+     ============================================================ -->
 
-    <h2 id="modalName"
-        style="color:#FFB300; margin-bottom:10px; text-align:center;">
-      USED AIRCRAFT INFO
-    </h2>
+<div
+  id="infoModal"
+  class="acs-modal"
+  role="dialog"
+  aria-modal="true"
+  aria-hidden="true"
+  aria-labelledby="usedInfoTitle"
+  style="display:none;"
+>
+  <div class="acs-modal-content used-acp-panel">
 
-    <div id="modalDetails"
-         style="font-size:16px; line-height:1.4; margin-bottom:25px;">
+    <!-- HEADER -->
+
+    <header class="used-acp-command-header">
+
+      <div class="used-acp-command-heading">
+
+        <h2
+          id="usedInfoTitle"
+          class="used-acp-main-title"
+        >
+          Used Aircraft Information
+        </h2>
+
+        <div class="used-acp-command-aircraft">
+
+          <strong id="usedInfoHeroAircraft">
+            —
+          </strong>
+
+          <span id="usedInfoHeroReference">
+            —
+          </span>
+
+        </div>
+
+      </div>
+
+      <img
+        id="usedInfoImage"
+        class="used-acp-main-image"
+        src=""
+        alt="Used aircraft"
+      />
+
+    </header>
+
+    <!-- BODY -->
+
+    <div class="used-acp-body">
+
+      <div class="used-acp-dashboard-grid">
+
+        <!-- AIRCRAFT IDENTITY -->
+
+        <section class="used-acp-section">
+
+          <div class="used-acp-section-title">
+            Aircraft Identity
+          </div>
+
+          <div class="used-acp-grid used-acp-grid-2">
+
+            <div class="used-acp-line">
+              <span>Aircraft</span>
+              <strong id="usedInfoAircraftName">—</strong>
+            </div>
+
+            <div class="used-acp-line">
+              <span>Manufacturer</span>
+              <strong id="usedInfoManufacturer">—</strong>
+            </div>
+
+            <div class="used-acp-line">
+              <span>Model Key</span>
+              <strong id="usedInfoModelKey">—</strong>
+            </div>
+
+            <div class="used-acp-line">
+              <span>Serial Number</span>
+              <strong id="usedInfoSerialNumber">—</strong>
+            </div>
+
+            <div class="used-acp-line">
+              <span>Previous Registration</span>
+              <strong id="usedInfoPreviousRegistration">—</strong>
+            </div>
+
+            <div class="used-acp-line">
+              <span>Year Built</span>
+              <strong id="usedInfoYearBuilt">—</strong>
+            </div>
+
+            <div class="used-acp-line">
+              <span>Previous Operator</span>
+              <strong id="usedInfoPreviousOperator">—</strong>
+            </div>
+
+            <div class="used-acp-line">
+              <span>Remarketing Agent</span>
+              <strong id="usedInfoRemarketingAgent">—</strong>
+            </div>
+
+            <div class="used-acp-line">
+              <span>Source</span>
+              <strong id="usedInfoSource">—</strong>
+            </div>
+
+            <div class="used-acp-line">
+              <span>Listing Status</span>
+              <strong id="usedInfoIdentityListingStatus">—</strong>
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- MARKET STATUS -->
+
+        <section class="used-acp-section">
+
+          <div class="used-acp-section-title">
+            Market Status
+          </div>
+
+          <div class="used-acp-status-board">
+
+            <div>
+              <span>Listing</span>
+              <strong id="usedInfoListingStatus">—</strong>
+            </div>
+
+            <div>
+              <span>Maintenance</span>
+              <strong id="usedInfoMaintenanceStatus">—</strong>
+            </div>
+
+            <div>
+              <span>Condition</span>
+              <strong id="usedInfoCondition">—</strong>
+            </div>
+
+            <div>
+              <span>Aircraft Age</span>
+              <strong id="usedInfoAge">—</strong>
+            </div>
+
+            <div>
+              <span>Total Hours</span>
+              <strong id="usedInfoTotalHours">—</strong>
+            </div>
+
+            <div>
+              <span>Total Cycles</span>
+              <strong id="usedInfoTotalCycles">—</strong>
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- TECHNICAL SPECIFICATIONS -->
+
+        <section class="used-acp-section">
+
+          <div class="used-acp-section-title">
+            Technical Specifications
+          </div>
+
+          <div class="used-acp-tech-grid">
+
+            <div class="used-acp-tech-card">
+              <span>Category</span>
+              <strong id="usedInfoCategory">—</strong>
+            </div>
+
+            <div class="used-acp-tech-card">
+              <span>Seats</span>
+              <strong id="usedInfoSeats">—</strong>
+            </div>
+
+            <div class="used-acp-tech-card">
+              <span>Range</span>
+              <strong id="usedInfoRange">—</strong>
+            </div>
+
+            <div class="used-acp-tech-card">
+              <span>Cruise Speed</span>
+              <strong id="usedInfoSpeed">—</strong>
+            </div>
+
+            <div class="used-acp-tech-card">
+              <span>Required Runway</span>
+              <strong id="usedInfoRequiredRunway">—</strong>
+            </div>
+
+            <div class="used-acp-tech-card">
+              <span>Engines</span>
+              <strong id="usedInfoEngines">—</strong>
+            </div>
+
+            <div class="used-acp-tech-card">
+              <span>MTOW</span>
+              <strong id="usedInfoMtow">—</strong>
+            </div>
+
+            <div class="used-acp-tech-card">
+              <span>Fuel Burn</span>
+              <strong id="usedInfoFuelBurn">—</strong>
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- AIRCRAFT VALUE -->
+
+        <section class="used-acp-section">
+
+          <div class="used-acp-section-title">
+            Aircraft Value
+          </div>
+
+          <div class="used-acp-grid used-acp-grid-2">
+
+            <div class="used-acp-line">
+              <span>Asking Price</span>
+              <strong id="usedInfoAskingPrice">—</strong>
+            </div>
+
+            <div class="used-acp-line">
+              <span>Factory Reference</span>
+              <strong id="usedInfoFactoryReference">—</strong>
+            </div>
+
+            <div class="used-acp-line">
+              <span>Currency</span>
+              <strong id="usedInfoCurrency">—</strong>
+            </div>
+
+            <div class="used-acp-line">
+              <span>Market Gate</span>
+              <strong id="usedInfoMarketGate">—</strong>
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- MAINTENANCE SNAPSHOT -->
+
+        <section
+          class="
+            used-acp-section
+            used-acp-maintenance-section
+          "
+        >
+
+          <div class="used-acp-section-title">
+            Maintenance Snapshot
+          </div>
+
+          <div class="used-acp-grid used-acp-grid-2">
+
+            <div class="used-acp-line">
+              <span>Maintenance Status</span>
+              <strong id="usedInfoMaintenanceSnapshot">—</strong>
+            </div>
+
+            <div class="used-acp-line">
+              <span>C-Check Status</span>
+              <strong id="usedInfoCCheckStatus">—</strong>
+            </div>
+
+            <div class="used-acp-line">
+              <span>C-Check Due Date</span>
+              <strong id="usedInfoCCheckDate">—</strong>
+            </div>
+
+            <div class="used-acp-line">
+              <span>C-Check Due Hours</span>
+              <strong id="usedInfoCCheckHours">—</strong>
+            </div>
+
+            <div class="used-acp-line">
+              <span>C-Check Due Cycles</span>
+              <strong id="usedInfoCCheckCycles">—</strong>
+            </div>
+
+            <div class="used-acp-line">
+              <span>D-Check Status</span>
+              <strong id="usedInfoDCheckStatus">—</strong>
+            </div>
+
+            <div class="used-acp-line">
+              <span>D-Check Due Date</span>
+              <strong id="usedInfoDCheckDate">—</strong>
+            </div>
+
+            <div class="used-acp-line">
+              <span>Control Status</span>
+              <strong id="usedInfoMaintenanceControl">—</strong>
+            </div>
+
+            <div class="used-acp-line">
+              <span>Control Reason</span>
+              <strong id="usedInfoMaintenanceReason">—</strong>
+            </div>
+
+          </div>
+
+        </section>
+
+      </div>
+
     </div>
 
-    <button class="acs-btn-secondary"
-            onclick="closeInfoModal()"
-            style="display:block; margin:auto;">
-      Close
-    </button>
+    <!-- ONLY VISIBLE ACTION -->
+
+    <div class="used-acp-close-row">
+
+      <button
+        class="used-acp-close-btn"
+        type="button"
+        onclick="closeInfoModal()"
+      >
+        Close
+      </button>
+
+    </div>
+
   </div>
 </div>
 
@@ -1456,8 +1969,15 @@ function handleLogout(){
 }
 
 function closeInfoModal() {
-  const m = document.getElementById("infoModal");
-  if (m) m.style.display = "none";
+  const modal =
+    document.getElementById("infoModal");
+
+  if (!modal) return;
+
+  modal.style.display = "none";
+  modal.setAttribute("aria-hidden", "true");
+
+  document.body.style.overflow = "";
 }
 
 /* ============================================================
