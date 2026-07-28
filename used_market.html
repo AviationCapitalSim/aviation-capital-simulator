@@ -791,9 +791,13 @@ body {
   grid-column: 1 / -1;
 }
 
-#infoModal .used-acp-close-row {
-  display: flex;
-  justify-content: center;
+#infoModal .used-acp-action-row {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 8px;
 
   margin-top: 8px;
   padding-top: 8px;
@@ -802,66 +806,127 @@ body {
     1px solid rgba(255, 255, 255, 0.08);
 }
 
-#infoModal .used-acp-close-btn {
+#infoModal .used-acp-action-btn {
   appearance: none;
   -webkit-appearance: none;
 
-  min-width: 125px;
-  min-height: 32px;
+  min-width: 0;
+  min-height: 34px;
 
-  padding: 0.38rem 1rem;
+  padding: 0.42rem 0.8rem;
 
-  color: #ffe7a0;
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+
+  text-transform: uppercase;
 
   background:
     linear-gradient(
       180deg,
-      rgba(255, 179, 0, 0.16),
-      rgba(70, 48, 10, 0.24)
+      rgba(18, 37, 74, 0.54),
+      rgba(5, 13, 30, 0.68)
     );
 
-  border:
-    1px solid rgba(255, 179, 0, 0.62);
+  border-radius: 8px;
 
-  border-radius: 999px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.11em;
-
-  text-transform: uppercase;
   cursor: pointer;
 
   transition:
     transform 0.16s ease,
+    color 0.18s ease,
     border-color 0.18s ease,
     background 0.18s ease,
     box-shadow 0.18s ease;
 }
 
-#infoModal .used-acp-close-btn:hover {
+#infoModal .used-acp-action-buy {
+  color: #6ee7a8;
+
+  border:
+    1px solid rgba(110, 231, 168, 0.62);
+
+  box-shadow:
+    inset 0 0 14px
+    rgba(110, 231, 168, 0.035);
+}
+
+#infoModal .used-acp-action-lease {
+  color: #75d5ff;
+
+  border:
+    1px solid rgba(117, 213, 255, 0.62);
+
+  box-shadow:
+    inset 0 0 14px
+    rgba(117, 213, 255, 0.035);
+}
+
+#infoModal .used-acp-action-close {
+  color: #ffe7a0;
+
+  border:
+    1px solid rgba(255, 179, 0, 0.62);
+
+  box-shadow:
+    inset 0 0 14px
+    rgba(255, 179, 0, 0.035);
+}
+
+#infoModal .used-acp-action-btn:hover {
   transform: translateY(-1px);
 
+  background:
+    linear-gradient(
+      180deg,
+      rgba(24, 51, 96, 0.72),
+      rgba(7, 18, 40, 0.82)
+    );
+}
+
+#infoModal .used-acp-action-buy:hover {
+  color: #a7f3cf;
+
+  border-color:
+    rgba(110, 231, 168, 0.92);
+
+  box-shadow:
+    0 0 14px rgba(110, 231, 168, 0.16);
+}
+
+#infoModal .used-acp-action-lease:hover {
+  color: #b6eaff;
+
+  border-color:
+    rgba(117, 213, 255, 0.92);
+
+  box-shadow:
+    0 0 14px rgba(117, 213, 255, 0.16);
+}
+
+#infoModal .used-acp-action-close:hover {
   color: #fff2c5;
 
   border-color:
     rgba(255, 195, 55, 0.92);
 
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 179, 0, 0.24),
-      rgba(86, 59, 12, 0.32)
-    );
-
   box-shadow:
-    0 0 14px rgba(255, 179, 0, 0.20);
+    0 0 14px rgba(255, 179, 0, 0.16);
 }
 
-#infoModal .used-acp-close-btn:active {
+#infoModal .used-acp-action-btn:active {
   transform: translateY(0);
 }
-
+     
 @media (max-width: 900px) {
   #infoModal .used-acp-command-header,
   #infoModal .used-acp-dashboard-grid {
@@ -2000,16 +2065,42 @@ function handleLogout(){
   window.location.href = "login.html";
 }
 
-function closeInfoModal() {
-  const modal =
-    document.getElementById("infoModal");
+/* ============================================================
+   USED INFO — ACQUISITION ACTIONS
+   ============================================================ */
 
-  if (!modal) return;
+function ACS_openUsedBuyFromInfo() {
+  const aircraftID = selectedUsedID;
 
-  modal.style.display = "none";
-  modal.setAttribute("aria-hidden", "true");
+  if (
+    aircraftID === null ||
+    aircraftID === undefined
+  ) {
+    return;
+  }
 
-  document.body.style.overflow = "";
+  closeInfoModal();
+
+  window.openBuyModal(
+    aircraftID
+  );
+}
+
+function ACS_openUsedLeaseFromInfo() {
+  const aircraftID = selectedUsedID;
+
+  if (
+    aircraftID === null ||
+    aircraftID === undefined
+  ) {
+    return;
+  }
+
+  closeInfoModal();
+
+  window.openLeaseModal(
+    aircraftID
+  );
 }
 
 /* ============================================================
