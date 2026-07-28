@@ -1900,6 +1900,8 @@ body {
 
     <!-- INFO MODAL ACTIONS -->
 
+      <!-- INFO MODAL ACTIONS -->
+
     <div class="used-acp-action-row">
 
       <button
@@ -1909,7 +1911,6 @@ body {
           used-acp-action-buy
         "
         type="button"
-        onclick="ACS_openUsedBuyFromInfo()"
       >
         BUY
       </button>
@@ -1921,18 +1922,17 @@ body {
           used-acp-action-lease
         "
         type="button"
-        onclick="ACS_openUsedLeaseFromInfo()"
       >
         LEASE
       </button>
 
       <button
+        id="usedInfoCloseBtn"
         class="
           used-acp-action-btn
           used-acp-action-close
         "
         type="button"
-        onclick="closeInfoModal()"
       >
         CLOSE
       </button>
