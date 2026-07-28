@@ -3346,11 +3346,73 @@ const dCheckStatus =
    USED INFO MODAL — ACCESSIBLE CLOSE CONTROL
    ============================================================ */
 
-(function bindUsedInfoModalClose() {
+(function bindUsedInfoModalControls() {
   const modal =
     document.getElementById("infoModal");
 
+  const buyButton =
+    document.getElementById(
+      "usedInfoBuyBtn"
+    );
+
+  const leaseButton =
+    document.getElementById(
+      "usedInfoLeaseBtn"
+    );
+
+  const closeButton =
+    document.getElementById(
+      "usedInfoCloseBtn"
+    );
+
   if (!modal) return;
+
+  if (buyButton) {
+    buyButton.addEventListener(
+      "click",
+      () => {
+        const aircraftID =
+          selectedUsedID;
+
+        if (
+          aircraftID === null ||
+          aircraftID === undefined
+        ) {
+          return;
+        }
+
+        closeInfoModal();
+        openBuyModal(aircraftID);
+      }
+    );
+  }
+
+  if (leaseButton) {
+    leaseButton.addEventListener(
+      "click",
+      () => {
+        const aircraftID =
+          selectedUsedID;
+
+        if (
+          aircraftID === null ||
+          aircraftID === undefined
+        ) {
+          return;
+        }
+
+        closeInfoModal();
+        openLeaseModal(aircraftID);
+      }
+    );
+  }
+
+  if (closeButton) {
+    closeButton.addEventListener(
+      "click",
+      closeInfoModal
+    );
+  }
 
   modal.addEventListener(
     "click",
