@@ -2066,44 +2066,6 @@ function handleLogout(){
 }
 
 /* ============================================================
-   USED INFO — ACQUISITION ACTIONS
-   ============================================================ */
-
-function ACS_openUsedBuyFromInfo() {
-  const aircraftID = selectedUsedID;
-
-  if (
-    aircraftID === null ||
-    aircraftID === undefined
-  ) {
-    return;
-  }
-
-  closeInfoModal();
-
-  window.openBuyModal(
-    aircraftID
-  );
-}
-
-function ACS_openUsedLeaseFromInfo() {
-  const aircraftID = selectedUsedID;
-
-  if (
-    aircraftID === null ||
-    aircraftID === undefined
-  ) {
-    return;
-  }
-
-  closeInfoModal();
-
-  window.openLeaseModal(
-    aircraftID
-  );
-}
-
-/* ============================================================
    === USED MARKET MODALS — QATAR LUXURY PREMIUM (FIXED) =======
    ============================================================ */
 
