@@ -114,6 +114,192 @@ const ACS_USED_MARKET_ENDPOINT =
   "https://api.aviationcapitalsim.com/v1/aircraft/used-market";
 
 /* ============================================================
+   🟦 ACS USED MARKET — RAILWAY AIRCRAFT CATALOG BRIDGE
+   ------------------------------------------------------------
+   Purpose:
+   - Read complete technical specifications from Railway.
+   - Match Used Market listings by model_key.
+   - Keep Used Market and aircraft catalog read-only.
+   - Do not modify backend routes or stable backend files.
+   ============================================================ */
+
+const ACS_USED_AIRCRAFT_CATALOG_ENDPOINT =
+  "https://api.aviationcapitalsim.com/v1/aircraft/catalog";
+
+let ACS_USED_AIRCRAFT_CATALOG_CACHE = null;
+
+function ACS_normalizeUsedCatalogModelKey(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase();
+}
+
+function ACS_getUsedCatalogNumber(...values) {
+  for (const value of values) {
+    if (
+      value === null ||
+      value === undefined ||
+      value === ""
+    ) {
+      continue;
+    }
+
+    const number = Number(value);
+
+    if (Number.isFinite(number)) {
+      return number;
+    }
+  }
+
+  return null;
+}
+
+function ACS_normalizeUsedCatalogAircraft(row) {
+  const rawData =
+    row?.raw_data &&
+    typeof row.raw_data === "object"
+      ? row.raw_data
+      : {};
+
+  return {
+    ...row,
+
+    required_runway_m:
+      ACS_getUsedCatalogNumber(
+        row.required_runway_m,
+        rawData.required_runway_m
+      ),
+
+    mtow_kg:
+      ACS_getUsedCatalogNumber(
+        row.mtow_kg,
+        rawData.mtow_kg
+      ),
+
+    fuel_burn_kgph:
+      ACS_getUsedCatalogNumber(
+        row.fuel_burn_kgph,
+        rawData.fuel_burn_kgph
+      ),
+
+    factory_reference_price:
+      ACS_getUsedCatalogNumber(
+        row.factory_reference_price,
+        row.price_acs_usd,
+        rawData.price_acs_usd
+      )
+  };
+}
+
+async function ACS_loadUsedAircraftCatalogFromRailway() {
+  if (
+    Array.isArray(
+      ACS_USED_AIRCRAFT_CATALOG_CACHE
+    )
+  ) {
+    return ACS_USED_AIRCRAFT_CATALOG_CACHE;
+  }
+
+  try {
+    const response = await fetch(
+      ACS_USED_AIRCRAFT_CATALOG_ENDPOINT,
+      {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Accept": "application/json"
+        }
+      }
+    );
+
+    const data =
+      await response
+        .json()
+        .catch(() => null);
+
+    if (
+      !response.ok ||
+      !data ||
+      data.ok !== true
+    ) {
+      throw new Error(
+        data?.error ||
+        `AIRCRAFT_CATALOG_HTTP_${response.status}`
+      );
+    }
+
+    const rows =
+      Array.isArray(data.catalog)
+        ? data.catalog
+        : [];
+
+    ACS_USED_AIRCRAFT_CATALOG_CACHE =
+      rows.map(
+        ACS_normalizeUsedCatalogAircraft
+      );
+
+    return ACS_USED_AIRCRAFT_CATALOG_CACHE;
+
+  } catch (error) {
+    console.error(
+      "❌ ACS Used Market catalog load failed:",
+      error
+    );
+
+    return [];
+  }
+}
+
+function ACS_mergeUsedListingWithCatalog(
+  listing,
+  catalogByModelKey
+) {
+  const modelKey =
+    ACS_normalizeUsedCatalogModelKey(
+      listing?.model_key
+    );
+
+  const catalogAircraft =
+    catalogByModelKey.get(modelKey);
+
+  if (!catalogAircraft) {
+    return listing;
+  }
+
+  return {
+    ...catalogAircraft,
+    ...listing,
+
+    required_runway_m:
+      ACS_getUsedCatalogNumber(
+        listing.required_runway_m,
+        catalogAircraft.required_runway_m
+      ),
+
+    mtow_kg:
+      ACS_getUsedCatalogNumber(
+        listing.mtow_kg,
+        catalogAircraft.mtow_kg
+      ),
+
+    fuel_burn_kgph:
+      ACS_getUsedCatalogNumber(
+        listing.fuel_burn_kgph,
+        catalogAircraft.fuel_burn_kgph
+      ),
+
+    factory_reference_price:
+      ACS_getUsedCatalogNumber(
+        listing.factory_reference_price,
+        listing.factory_price_acs_usd,
+        listing.catalog_price_acs_usd,
+        catalogAircraft.factory_reference_price
+      )
+  };
+}
+
+
+/* ============================================================
    🕒 ACS USED MARKET SIM QUERY — FRONTEND TIME AUTHORITY v1.0
    ------------------------------------------------------------
    Purpose:
