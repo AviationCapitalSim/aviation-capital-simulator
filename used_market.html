@@ -640,7 +640,7 @@ body {
   box-sizing: border-box;
 
   object-fit: cover;
-  object-position: center 54%;
+  object-position: center center;
 
   background: #061126;
 
@@ -2691,6 +2691,26 @@ function ACS_setUsedInfoStatusClass(
     "used-acp-status-danger"
   );
 
+  /*
+    Positive states must be evaluated before "DUE"
+    and "REQUIRED", because "NOT DUE" contains "DUE".
+  */
+
+  if (
+    status.includes("NOT DUE") ||
+    status.includes("NOT REQUIRED") ||
+    status.includes("CLEAR") ||
+    status.includes("ACTIVE") ||
+    status.includes("AVAILABLE") ||
+    status.includes("SERVICEABLE")
+  ) {
+    element.classList.add(
+      "used-acp-status-ok"
+    );
+
+    return;
+  }
+
   if (
     status.includes("OVERDUE") ||
     status.includes("REQUIRED") ||
@@ -2712,22 +2732,9 @@ function ACS_setUsedInfoStatusClass(
     element.classList.add(
       "used-acp-status-warn"
     );
-
-    return;
-  }
-
-  if (
-    status.includes("CLEAR") ||
-    status.includes("ACTIVE") ||
-    status.includes("AVAILABLE") ||
-    status.includes("SERVICEABLE")
-  ) {
-    element.classList.add(
-      "used-acp-status-ok"
-    );
   }
 }
-
+     
 function ACS_resolveUsedInfoMaintenance(aircraft) {
   const simDate =
     ACS_getUsedMarketSimDate();
