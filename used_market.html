@@ -865,9 +865,9 @@ body {
   }
 
   #infoModal .used-acp-main-image {
-    height: 180px;
-    min-height: 180px;
-    max-height: 180px;
+    height: 175px;
+    min-height: 175px;
+    max-height: 175px;
   }
 }
 
@@ -877,10 +877,10 @@ body {
   }
 
   #infoModal .used-acp-panel {
-    width: calc(100vw - 16px);
-    max-height: calc(100vh - 16px);
-
-    padding: 13px;
+    width: min(960px, calc(100vw - 40px));
+    max-width: 960px;
+    max-height: calc(100vh - 40px);
+    padding: 14px 16px;
   }
 
   #infoModal .used-acp-grid-2,
@@ -2728,6 +2728,129 @@ function ACS_setUsedInfoStatusClass(
   }
 }
 
+function ACS_resolveUsedInfoMaintenance(aircraft) {
+  const simDate =
+    ACS_getUsedMarketSimDate();
+
+  const currentHours = Number(
+    aircraft.total_hours ??
+    aircraft.hours ??
+    0
+  );
+
+  const currentCycles = Number(
+    aircraft.total_cycles ??
+    aircraft.cycles ??
+    0
+  );
+
+  const cDueHours = Number(
+    aircraft.c_check_due_hours ?? 0
+  );
+
+  const cDueCycles = Number(
+    aircraft.c_check_due_cycles ?? 0
+  );
+
+  const cRawStatus =
+    ACS_formatUsedInfoStatus(
+      aircraft.c_check_status
+    );
+
+  const dRawStatus =
+    ACS_formatUsedInfoStatus(
+      aircraft.d_check_status
+    );
+
+  const maintenanceRawStatus =
+    ACS_formatUsedInfoStatus(
+      aircraft.maintenance_status
+    );
+
+  const cExplicitOverdue =
+    cRawStatus.includes("OVERDUE") ||
+    aircraft.c_check_overdue === true;
+
+  const cHoursOverdue =
+    cDueHours > 0 &&
+    currentHours >= cDueHours;
+
+  const cCyclesOverdue =
+    cDueCycles > 0 &&
+    currentCycles >= cDueCycles;
+
+  const cOverdue =
+    cExplicitOverdue ||
+    cHoursOverdue ||
+    cCyclesOverdue;
+
+  const dDueDate =
+    aircraft.d_check_due_date
+      ? new Date(aircraft.d_check_due_date)
+      : null;
+
+  const validDDate =
+    dDueDate instanceof Date &&
+    !Number.isNaN(dDueDate.getTime());
+
+  const dExplicitOverdue =
+    dRawStatus.includes("OVERDUE") ||
+    aircraft.d_check_overdue === true;
+
+  const dDateOverdue =
+    validDDate &&
+    dDueDate.getTime() <= simDate.getTime();
+
+  const dOverdue =
+    dExplicitOverdue ||
+    dDateOverdue;
+
+  let cStatus = cRawStatus;
+
+  if (cOverdue) {
+    cStatus = "C-CHECK OVERDUE";
+  } else if (
+    cStatus === "—" &&
+    (cDueHours > 0 || cDueCycles > 0)
+  ) {
+    cStatus = "NOT DUE";
+  }
+
+  let dStatus = dRawStatus;
+
+  if (dOverdue) {
+    dStatus = "D-CHECK OVERDUE";
+  } else if (
+    dStatus === "—" &&
+    validDDate
+  ) {
+    dStatus = "NOT DUE";
+  }
+
+  let maintenanceStatus =
+    maintenanceRawStatus;
+
+  /*
+    D-Check has the highest authority.
+    C-Check has priority over the generic
+    maintenance_status returned by the listing.
+  */
+
+  if (dOverdue) {
+    maintenanceStatus =
+      "D-CHECK OVERDUE";
+  } else if (cOverdue) {
+    maintenanceStatus =
+      "C-CHECK OVERDUE";
+  }
+
+  return {
+    maintenanceStatus,
+    cStatus,
+    dStatus
+  };
+}
+     
 function openInfo(id) {
   selectedUsedID = id;
 
@@ -2791,20 +2914,19 @@ function openInfo(id) {
       aircraft.listing_status
     );
 
-  const maintenanceStatus =
-    ACS_formatUsedInfoStatus(
-      aircraft.maintenance_status
-    );
+  const maintenanceSnapshot =
+  ACS_resolveUsedInfoMaintenance(
+    aircraft
+  );
 
-  const cCheckStatus =
-    ACS_formatUsedInfoStatus(
-      aircraft.c_check_status
-    );
+const maintenanceStatus =
+  maintenanceSnapshot.maintenanceStatus;
 
-  const dCheckStatus =
-    ACS_formatUsedInfoStatus(
-      aircraft.d_check_status
-    );
+const cCheckStatus =
+  maintenanceSnapshot.cStatus;
+
+const dCheckStatus =
+  maintenanceSnapshot.dStatus;
 
   const maintenanceControl =
     ACS_formatUsedInfoStatus(
