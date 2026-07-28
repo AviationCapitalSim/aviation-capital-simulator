@@ -2066,6 +2066,26 @@ function handleLogout(){
 }
 
 /* ============================================================
+   USED INFO MODAL — CLOSE
+   ============================================================ */
+
+function closeInfoModal() {
+  const modal =
+    document.getElementById("infoModal");
+
+  if (!modal) return;
+
+  modal.style.display = "none";
+
+  modal.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+
+  document.body.style.overflow = "";
+}
+     
+/* ============================================================
    === USED MARKET MODALS — QATAR LUXURY PREMIUM (FIXED) =======
    ============================================================ */
 
