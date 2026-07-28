@@ -1,1 +1,0 @@
-Bréguet placeholder
