@@ -1986,7 +1986,7 @@ body {
 
     <div style="display:flex; gap:10px; justify-content:center; margin-top:10px; flex-wrap:wrap;">
       <button id="confirmLeaseBtn" class="acs-btn-primary" disabled>
-        Backend Lease Endpoint Pending
+        Confirm Lease
       </button>
 
       <button class="acs-btn-secondary" onclick="closeLeaseModal()">
@@ -4015,9 +4015,15 @@ function ACS_renderLeaseUsedModalBody(ac, capital, selectedTermMonths = 12) {
     });
   }
 
-  confirmBtn.disabled = true;
-  confirmBtn.textContent = "Confirm Lease";
-  confirmBtn.title = "Lease Desk authorization pending.";
+  confirmBtn.disabled = !enoughCapital || !gate.clear;
+confirmBtn.textContent = "Confirm Lease";
+
+if (!enoughCapital) {
+  confirmBtn.title = "Insufficient capital for the security deposit.";
+} else if (!gate.clear) {
+  confirmBtn.title = "Used Market Gate is not clear.";
+} else {
+  confirmBtn.title = "Confirm this aircraft lease.";
 }
 
 /* ============================================================
@@ -4314,14 +4320,83 @@ async function ACS_confirmUsedPurchase() {
 
   const leaseBtn = document.getElementById("confirmLeaseBtn");
 
-  if (leaseBtn) {
-    leaseBtn.addEventListener("click", () => {
-      console.warn(
-        "⛔ LEASE USED confirm blocked — backend lease endpoint pending.",
-        { selectedUsedID }
+if (leaseBtn) {
+  leaseBtn.addEventListener("click", async () => {
+    if (!selectedUsedID) {
+      alert("No aircraft selected.");
+      return;
+    }
+
+    const termSelect =
+      document.getElementById("usedLeaseTermSelect");
+
+    const termMonths =
+      Number(termSelect?.value || 12);
+
+    leaseBtn.disabled = true;
+    leaseBtn.textContent = "Processing...";
+
+    try {
+      const simPayload =
+        ACS_getUsedBuySimPayload();
+
+      const response = await fetch(
+        `https://api.aviationcapitalsim.com/v1/aircraft/used-market/${encodeURIComponent(selectedUsedID)}/lease`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify({
+            ...simPayload,
+            term_months: termMonths
+          })
+        }
       );
-    });
-  }
+
+      const data =
+        await response.json().catch(() => null);
+
+      if (
+        !response.ok ||
+        !data ||
+        data.ok !== true
+      ) {
+        throw new Error(
+          data?.message ||
+          data?.error ||
+          `HTTP_${response.status}`
+        );
+      }
+
+      leaseBtn.textContent = "Lease Confirmed";
+
+      alert(
+        "Lease confirmed successfully. The aircraft has been transferred to your fleet."
+      );
+
+      closeLeaseModal();
+
+      await ACS_loadUsedMarketFromBackend();
+      renderUsedMarket("all");
+
+    } catch (error) {
+      console.error(
+        "Used aircraft lease failed:",
+        error
+      );
+
+      alert(
+        `Lease could not be completed: ${error.message}`
+      );
+
+      leaseBtn.disabled = false;
+      leaseBtn.textContent = "Confirm Lease";
+    }
+  });
+}
 })();
 
 /* ---------------- WIRE CARD BUTTONS -------------------------- */
