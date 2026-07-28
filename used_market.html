@@ -1833,16 +1833,43 @@ body {
 
     </div>
 
-    <!-- ONLY VISIBLE ACTION -->
+    <!-- INFO MODAL ACTIONS -->
 
-    <div class="used-acp-close-row">
+    <div class="used-acp-action-row">
 
       <button
-        class="used-acp-close-btn"
+        id="usedInfoBuyBtn"
+        class="
+          used-acp-action-btn
+          used-acp-action-buy
+        "
+        type="button"
+        onclick="ACS_openUsedBuyFromInfo()"
+      >
+        BUY
+      </button>
+
+      <button
+        id="usedInfoLeaseBtn"
+        class="
+          used-acp-action-btn
+          used-acp-action-lease
+        "
+        type="button"
+        onclick="ACS_openUsedLeaseFromInfo()"
+      >
+        LEASE
+      </button>
+
+      <button
+        class="
+          used-acp-action-btn
+          used-acp-action-close
+        "
         type="button"
         onclick="closeInfoModal()"
       >
-        Close
+        CLOSE
       </button>
 
     </div>
@@ -1853,6 +1880,7 @@ body {
 <!-- ============================================================
      === MODAL 2: BUY — Qatar Luxury Premium ====================
      ============================================================ -->
+     
 <div id="buyUsedModal" class="acs-modal" style="display:none;">
   <div class="acs-modal-content" style="max-width:420px;">
     <span class="acs-close" onclick="closeBuyModal()">&times;</span>
