@@ -3644,30 +3644,63 @@ ${maintenanceOptionHTML}
 async function openBuyModal(id) {
   selectedUsedID = id;
 
-  const ac = getUsedById(id);
+  const ac =
+    getUsedById(id);
+
   if (!ac) return;
 
-  const titleEl = document.getElementById("buyTitle");
-  const detailsEl = document.getElementById("buyDetails");
-  const modalEl = document.getElementById("buyUsedModal");
-  const confirmBtn = document.getElementById("confirmBuyBtn");
+  const titleEl =
+    document.getElementById(
+      "buyTitle"
+    );
 
-  if (!titleEl || !detailsEl || !modalEl || !confirmBtn) return;
+  const detailsEl =
+    document.getElementById(
+      "buyDetails"
+    );
 
-  titleEl.textContent = `USED AIRCRAFT ACQUISITION`;
+  const modalEl =
+    document.getElementById(
+      "buyUsedModal"
+    );
+
+  const confirmBtn =
+    document.getElementById(
+      "confirmBuyBtn"
+    );
+
+  if (
+    !titleEl ||
+    !detailsEl ||
+    !modalEl ||
+    !confirmBtn
+  ) {
+    return;
+  }
+
+  titleEl.textContent =
+    "USED AIRCRAFT ACQUISITION";
+
   confirmBtn.disabled = true;
 
-  detailsEl.innerHTML = `
-    <div class="used-occ-loading">
-      Loading acquisition data...
-    </div>
-  `;
+  /*
+    Keep modal hidden until Railway data
+    and the complete acquisition body are ready.
+  */
+
+  modalEl.style.display = "none";
+  detailsEl.innerHTML = "";
+
+  const capital =
+    await ACS_getBackendCompanyCapital();
+
+  ACS_renderBuyUsedModalBody(
+    ac,
+    capital
+  );
 
   modalEl.style.display = "flex";
-
-  const capital = await ACS_getBackendCompanyCapital();
-
-  ACS_renderBuyUsedModalBody(ac, capital);
+  document.body.style.overflow = "hidden";
 }
 
 /* ============================================================
@@ -3994,35 +4027,71 @@ function ACS_renderLeaseUsedModalBody(ac, capital, selectedTermMonths = 12) {
 async function openLeaseModal(id) {
   selectedUsedID = id;
 
-  const ac = getUsedById(id);
+  const ac =
+    getUsedById(id);
+
   if (!ac) return;
 
-  const titleEl = document.getElementById("leaseTitle");
-  const detailsEl = document.getElementById("leaseDetails");
-  const modalEl = document.getElementById("leaseUsedModal");
-  const confirmBtn = document.getElementById("confirmLeaseBtn");
+  const titleEl =
+    document.getElementById(
+      "leaseTitle"
+    );
 
-  if (!titleEl || !detailsEl || !modalEl || !confirmBtn) return;
+  const detailsEl =
+    document.getElementById(
+      "leaseDetails"
+    );
 
-  titleEl.textContent = "USED AIRCRAFT LEASE OFFER";
+  const modalEl =
+    document.getElementById(
+      "leaseUsedModal"
+    );
+
+  const confirmBtn =
+    document.getElementById(
+      "confirmLeaseBtn"
+    );
+
+  if (
+    !titleEl ||
+    !detailsEl ||
+    !modalEl ||
+    !confirmBtn
+  ) {
+    return;
+  }
+
+  titleEl.textContent =
+    "USED AIRCRAFT LEASE OFFER";
 
   confirmBtn.disabled = true;
-  confirmBtn.textContent = "Confirm Lease";
-  confirmBtn.title = "Lease Desk authorization pending.";
+  confirmBtn.textContent =
+    "Confirm Lease";
 
-  detailsEl.innerHTML = `
-    <div class="used-occ-loading">
-      Loading lease offer data...
-    </div>
-  `;
+  confirmBtn.title =
+    "Lease Desk authorization pending.";
+
+  /*
+    Keep modal hidden until Railway data
+    and the complete lease body are ready.
+  */
+
+  modalEl.style.display = "none";
+  detailsEl.innerHTML = "";
+
+  const capital =
+    await ACS_getBackendCompanyCapital();
+
+  ACS_renderLeaseUsedModalBody(
+    ac,
+    capital,
+    12
+  );
 
   modalEl.style.display = "flex";
-
-  const capital = await ACS_getBackendCompanyCapital();
-
-  ACS_renderLeaseUsedModalBody(ac, capital, 12);
+  document.body.style.overflow = "hidden";
 }
-
+     
 /* ============================================================
    LEASE MODAL — CLOSE
    ============================================================ */
