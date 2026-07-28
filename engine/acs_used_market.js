@@ -470,14 +470,39 @@ async function ACS_loadUsedMarketFromBackend() {
       throw new Error(data?.error || `USED_MARKET_HTTP_${response.status}`);
     }
 
-    const rows = Array.isArray(data.used_market)
-      ? data.used_market
-      : [];
+        const rows =
+      Array.isArray(data.used_market)
+        ? data.used_market
+        : [];
+
+    const catalogRows =
+      await ACS_loadUsedAircraftCatalogFromRailway();
+
+    const catalogByModelKey =
+      new Map(
+        catalogRows
+          .filter(aircraft => aircraft?.model_key)
+          .map(aircraft => [
+            ACS_normalizeUsedCatalogModelKey(
+              aircraft.model_key
+            ),
+            aircraft
+          ])
+      );
 
     ACS_USED_MARKET_BACKEND_LIST =
-      rows.map(ACS_normalizeUsedMarketRow);
+      rows.map(row => {
+        const enrichedRow =
+          ACS_mergeUsedListingWithCatalog(
+            row,
+            catalogByModelKey
+          );
 
-    ACS_USED_MARKET_BACKEND_LOADED = true;
+        return ACS_normalizeUsedMarketRow(
+          enrichedRow
+        );
+      });
+     
     ACS_USED_MARKET_BACKEND_LOADING = false;
 
     console.log("✅ ACS Used Market loaded from backend:", {
