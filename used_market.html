@@ -448,6 +448,19 @@ body {
   z-index: 99999;
 }
 
+/*
+   USED MARKET MODAL STACK
+   Aircraft Info remains visible underneath Buy / Lease.
+*/
+#infoModal {
+  z-index: 99999;
+}
+
+#buyUsedModal,
+#leaseUsedModal {
+  z-index: 100000;
+}
+
 .acs-modal-content {
   background: #0d1833;
   border: 1px solid #ffb30088;
@@ -2082,7 +2095,7 @@ function closeInfoModal() {
     "true"
   );
 
-  document.body.style.overflow = "";
+  ACS_syncUsedModalScrollLock();
 }
      
 /* ============================================================
@@ -2090,6 +2103,55 @@ function closeInfoModal() {
    ============================================================ */
 
 let selectedUsedID = null;
+
+function ACS_isUsedModalOpen(modalID) {
+  const modal = document.getElementById(modalID);
+
+  return Boolean(
+    modal &&
+    window.getComputedStyle(modal).display !== "none"
+  );
+}
+
+function ACS_syncUsedModalScrollLock() {
+  const hasOpenModal = [
+    "infoModal",
+    "buyUsedModal",
+    "leaseUsedModal"
+  ].some(ACS_isUsedModalOpen);
+
+  document.body.style.overflow = hasOpenModal
+    ? "hidden"
+    : "";
+}
+
+function ACS_restoreUsedInfoModal() {
+  const infoModal = document.getElementById("infoModal");
+
+  if (ACS_isUsedModalOpen("infoModal") && infoModal) {
+    infoModal.setAttribute("aria-hidden", "false");
+  }
+
+  ACS_syncUsedModalScrollLock();
+}
+
+function ACS_closeAllUsedMarketModals() {
+  [
+    "buyUsedModal",
+    "leaseUsedModal",
+    "infoModal"
+  ].forEach(modalID => {
+    const modal = document.getElementById(modalID);
+
+    if (!modal) return;
+
+    modal.style.display = "none";
+    modal.setAttribute("aria-hidden", "true");
+  });
+
+  selectedUsedID = null;
+  ACS_syncUsedModalScrollLock();
+}
 
 /* ============================================================
    Helper — Obtener aeronave usada por ID
@@ -3401,7 +3463,6 @@ const dCheckStatus =
           return;
         }
 
-        closeInfoModal();
         openBuyModal(aircraftID);
       }
     );
@@ -3421,7 +3482,6 @@ const dCheckStatus =
           return;
         }
 
-        closeInfoModal();
         openLeaseModal(aircraftID);
       }
     );
@@ -3446,10 +3506,19 @@ const dCheckStatus =
   document.addEventListener(
     "keydown",
     event => {
-      if (
-        event.key === "Escape" &&
-        modal.style.display === "flex"
-      ) {
+      if (event.key !== "Escape") return;
+
+      if (ACS_isUsedModalOpen("leaseUsedModal")) {
+        closeLeaseModal();
+        return;
+      }
+
+      if (ACS_isUsedModalOpen("buyUsedModal")) {
+        closeBuyModal();
+        return;
+      }
+
+      if (ACS_isUsedModalOpen("infoModal")) {
         closeInfoModal();
       }
     }
@@ -3699,8 +3768,15 @@ async function openBuyModal(id) {
     capital
   );
 
+  const infoModal = document.getElementById("infoModal");
+
+  if (infoModal) {
+    infoModal.setAttribute("aria-hidden", "true");
+  }
+
   modalEl.style.display = "flex";
-  document.body.style.overflow = "hidden";
+  modalEl.setAttribute("aria-hidden", "false");
+  ACS_syncUsedModalScrollLock();
 }
 
 /* ============================================================
@@ -3709,7 +3785,13 @@ async function openBuyModal(id) {
 
 function closeBuyModal() {
   const m = document.getElementById("buyUsedModal");
-  if (m) m.style.display = "none";
+
+  if (m) {
+    m.style.display = "none";
+    m.setAttribute("aria-hidden", "true");
+  }
+
+  ACS_restoreUsedInfoModal();
 }
 
 /* ============================================================
@@ -4095,8 +4177,15 @@ async function openLeaseModal(id) {
     12
   );
 
+  const infoModal = document.getElementById("infoModal");
+
+  if (infoModal) {
+    infoModal.setAttribute("aria-hidden", "true");
+  }
+
   modalEl.style.display = "flex";
-  document.body.style.overflow = "hidden";
+  modalEl.setAttribute("aria-hidden", "false");
+  ACS_syncUsedModalScrollLock();
 }
      
 /* ============================================================
@@ -4105,7 +4194,13 @@ async function openLeaseModal(id) {
 
 function closeLeaseModal() {
   const m = document.getElementById("leaseUsedModal");
-  if (m) m.style.display = "none";
+
+  if (m) {
+    m.style.display = "none";
+    m.setAttribute("aria-hidden", "true");
+  }
+
+  ACS_restoreUsedInfoModal();
 }
 
 /* ============================================================
@@ -4292,14 +4387,9 @@ async function ACS_confirmUsedPurchase() {
     }
 
     ACS_renderUsedBuySuccess(data);
-
-    if (typeof ACS_loadUsedMarketFromBackend === "function") {
-      await ACS_loadUsedMarketFromBackend();
-    }
-
-    if (typeof renderUsedMarket === "function") {
-      renderUsedMarket("all");
-    }
+    ACS_closeAllUsedMarketModals();
+    window.location.href = "my_aircraft.html";
+    return;
 
   } catch (error) {
     console.error("❌ Used aircraft purchase failed:", error);
@@ -4378,10 +4468,9 @@ if (leaseBtn) {
         "Lease confirmed successfully. The aircraft has been transferred to your fleet."
       );
 
-      closeLeaseModal();
-
-      await ACS_loadUsedMarketFromBackend();
-      renderUsedMarket("all");
+      ACS_closeAllUsedMarketModals();
+      window.location.href = "my_aircraft.html";
+      return;
 
     } catch (error) {
       console.error(
