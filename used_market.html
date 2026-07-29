@@ -3401,7 +3401,6 @@ const dCheckStatus =
           return;
         }
 
-        closeInfoModal();
         openBuyModal(aircraftID);
       }
     );
@@ -3421,7 +3420,6 @@ const dCheckStatus =
           return;
         }
 
-        closeInfoModal();
         openLeaseModal(aircraftID);
       }
     );
@@ -3446,10 +3444,35 @@ const dCheckStatus =
   document.addEventListener(
     "keydown",
     event => {
+      if (event.key !== "Escape") return;
+
+      const leaseModal =
+        document.getElementById(
+          "leaseUsedModal"
+        );
+
+      const buyModal =
+        document.getElementById(
+          "buyUsedModal"
+        );
+
       if (
-        event.key === "Escape" &&
-        modal.style.display === "flex"
+        leaseModal &&
+        leaseModal.style.display === "flex"
       ) {
+        closeLeaseModal();
+        return;
+      }
+
+      if (
+        buyModal &&
+        buyModal.style.display === "flex"
+      ) {
+        closeBuyModal();
+        return;
+      }
+
+      if (modal.style.display === "flex") {
         closeInfoModal();
       }
     }
@@ -3708,8 +3731,25 @@ async function openBuyModal(id) {
    ============================================================ */
 
 function closeBuyModal() {
-  const m = document.getElementById("buyUsedModal");
-  if (m) m.style.display = "none";
+  const modal =
+    document.getElementById(
+      "buyUsedModal"
+    );
+
+  const infoModal =
+    document.getElementById(
+      "infoModal"
+    );
+
+  if (modal) {
+    modal.style.display = "none";
+  }
+
+  document.body.style.overflow =
+    infoModal &&
+    infoModal.style.display === "flex"
+      ? "hidden"
+      : "";
 }
 
 /* ============================================================
@@ -4104,8 +4144,25 @@ async function openLeaseModal(id) {
    ============================================================ */
 
 function closeLeaseModal() {
-  const m = document.getElementById("leaseUsedModal");
-  if (m) m.style.display = "none";
+  const modal =
+    document.getElementById(
+      "leaseUsedModal"
+    );
+
+  const infoModal =
+    document.getElementById(
+      "infoModal"
+    );
+
+  if (modal) {
+    modal.style.display = "none";
+  }
+
+  document.body.style.overflow =
+    infoModal &&
+    infoModal.style.display === "flex"
+      ? "hidden"
+      : "";
 }
 
 /* ============================================================
@@ -4200,6 +4257,7 @@ function ACS_renderUsedBuyError(errorData) {
 }
 
 function ACS_renderUsedBuySuccess(data) {
+     
   const detailsEl = document.getElementById("buyDetails");
   const confirmBtn = document.getElementById("confirmBuyBtn");
 
