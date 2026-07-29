@@ -550,14 +550,16 @@ footer {
 
   <section class="routes-panels dashboard-grid">
 
-  <!-- === PANEL 1 — CREATE ROUTE (Con la función del antiguo World Airports DB) === -->
-  <div class="panel" onclick="openRoutesDB()">
-    <h3>🧭 Create Route</h3>
-    <p>Create new routes by selecting origin and destination airports with full database access.</p>
-    <button class="acs-btn">Open</button>
+  <!-- === PANEL 1 — DISTANCE CALCULATOR (Desactivada) === -->
+    
+  <div class="panel" style="opacity:0.35; cursor:not-allowed;">
+    <h3>📡 Distance Calculator</h3>
+    <p>Coming soon. Calculate nautical miles between airports for planning.</p>
+    <button class="acs-btn" style="background:#444; cursor:not-allowed;">Coming Soon</button>
   </div>
-
+    
   <!-- === PANEL 2 — MY ROUTES === -->
+    
  <div class="panel" onclick="window.location.href='my_route.html'">
   <h3>📊 My Routes</h3>
   <p>View your active routes, aircraft assignment, distances, and weekly utilization.</p>
@@ -565,19 +567,21 @@ footer {
  </div>
 
   <!-- === PANEL 3 — SCHEDULE & TIME === -->
+    
   <div class="panel" onclick="window.location.href='schedule_table.html'">
     <h3>🕓 Schedule & Time Table</h3>
     <p>Plan weekly flights, assign aircraft, and manage maintenance slots.</p>
     <button class="acs-btn">Open</button>
   </div>
 
-  <!-- === PANEL 4 — DISTANCE CALCULATOR (Desactivada) === -->
-  <div class="panel" style="opacity:0.35; cursor:not-allowed;">
-    <h3>📡 Distance Calculator</h3>
-    <p>Coming soon. Calculate nautical miles between airports for planning.</p>
-    <button class="acs-btn" style="background:#444; cursor:not-allowed;">Coming Soon</button>
+  <!-- === PANEL 4 — CREATE ROUTE (Con la función del antiguo World Airports DB) === -->
+    
+  <div class="panel" onclick="openRoutesDB()">
+    <h3>🧭 Create Route</h3>
+    <p>Create new routes by selecting origin and destination airports with full database access.</p>
+    <button class="acs-btn">Open</button>
   </div>
-
+    
 </section>
 
 </main>
