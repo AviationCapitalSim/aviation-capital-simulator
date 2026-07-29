@@ -1916,6 +1916,10 @@
           }
 
           state.routes = data.routes;
+          state.airlineName = textValue(
+          data.airline?.airline_name,
+          "Airline"
+          );
           renderSummary(data.summary || {});
           applyFilters();
         } catch (error) {
