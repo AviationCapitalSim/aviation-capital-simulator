@@ -1124,14 +1124,32 @@ function ACS_ST_getMyLiveTraffic(snapshot) {
    Source: public.skytrack_ops_impacts
 ============================================================ */
 
-window.ACS_SKYTRACK_OPS_IMPACTS = window.ACS_SKYTRACK_OPS_IMPACTS || new Map();
+window.ACS_SKYTRACK_OPS_IMPACTS =
+window.ACS_SKYTRACK_OPS_IMPACTS || new Map();
+
 window.ACS_SKYTRACK_OPS_IMPACTS_LOADED = false;
 window.ACS_SKYTRACK_OPS_IMPACTS_LOADING = false;
+window.ACS_SKYTRACK_OPS_IMPACTS_LAST_CHECK = 0;
+
+const ACS_SKYTRACK_OPS_IMPACTS_REFRESH_MS = 5000;
 
 async function ACS_ST_loadOpsImpacts() {
    
-  if (window.ACS_SKYTRACK_OPS_IMPACTS_LOADED) return;
   if (window.ACS_SKYTRACK_OPS_IMPACTS_LOADING) return;
+
+const now = Date.now();
+const lastCheck = Number(
+  window.ACS_SKYTRACK_OPS_IMPACTS_LAST_CHECK || 0
+);
+
+if (
+  now - lastCheck <
+  ACS_SKYTRACK_OPS_IMPACTS_REFRESH_MS
+) {
+  return;
+}
+
+window.ACS_SKYTRACK_OPS_IMPACTS_LAST_CHECK = now;
 
   const airlineId =
     window.ACS_SkyTrack?.airlineId ||
@@ -1168,6 +1186,16 @@ async function ACS_ST_loadOpsImpacts() {
     );
 
     window.ACS_SKYTRACK_OPS_IMPACTS_LOADED = true;
+
+    console.log(
+    "🧑‍✈️ SkyTrack HR checked",
+   {
+    impacts:
+      window.ACS_SKYTRACK_OPS_IMPACTS.size,
+    checkedAt:
+      new Date().toISOString()
+    }
+  );
 
     console.log(
       "%c🟢 SkyTrack OPS impacts loaded",
