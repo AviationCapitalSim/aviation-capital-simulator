@@ -1619,7 +1619,11 @@
         }
 
         addCabinItem(grid, "Weekly Total", formatInteger(demand?.weekly_total));
-        addCabinItem(grid, "Average Daily", numberValue(demand?.average_daily).toFixed(2));
+        addCabinItem(
+        grid,
+        "Market",
+        demand?.market_scope === "DOMESTIC" ? "DOM" : demand?.market_scope ? "INTL" : "—"
+        );
         addCabinItem(grid, "Market", demand?.market_scope);
 
         panel.append(title, grid);
