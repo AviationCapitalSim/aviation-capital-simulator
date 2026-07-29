@@ -4351,13 +4351,10 @@ async function ACS_confirmUsedPurchase() {
 
     ACS_renderUsedBuySuccess(data);
 
-    if (typeof ACS_loadUsedMarketFromBackend === "function") {
-      await ACS_loadUsedMarketFromBackend();
-    }
+    window.location.href =
+      "my_aircraft.html";
 
-    if (typeof renderUsedMarket === "function") {
-      renderUsedMarket("all");
-    }
+    return;
 
   } catch (error) {
     console.error("❌ Used aircraft purchase failed:", error);
@@ -4436,10 +4433,10 @@ if (leaseBtn) {
         "Lease confirmed successfully. The aircraft has been transferred to your fleet."
       );
 
-      closeLeaseModal();
+     window.location.href =
+        "my_aircraft.html";
 
-      await ACS_loadUsedMarketFromBackend();
-      renderUsedMarket("all");
+      return;
 
     } catch (error) {
       console.error(
