@@ -293,13 +293,35 @@
       text-transform: uppercase;
     }
 
-    .route-summary-value {
-      color: #ffffff;
-      font-family: "Orbitron", sans-serif;
-      font-size: 1.25rem;
-      font-weight: 700;
-      font-variant-numeric: tabular-nums;
-    }
+    #routeSummaryLoadFactor[data-level="excellent"] {
+  color: #50c878;
+  text-shadow: 0 0 8px rgba(80, 200, 120, 0.52);
+}
+
+#routeSummaryLoadFactor[data-level="healthy"] {
+  color: #2f8f5b;
+  text-shadow: 0 0 6px rgba(47, 143, 91, 0.34);
+}
+
+#routeSummaryLoadFactor[data-level="watch"] {
+  color: #ffb300;
+  text-shadow: 0 0 8px rgba(255, 179, 0, 0.48);
+}
+
+#routeSummaryLoadFactor[data-level="low"] {
+  color: #b87900;
+  text-shadow: 0 0 6px rgba(184, 121, 0, 0.32);
+}
+
+#routeSummaryLoadFactor[data-level="critical"] {
+  color: #ff7a00;
+  text-shadow: 0 0 8px rgba(255, 122, 0, 0.5);
+}
+
+#routeSummaryLoadFactor[data-level="severe"] {
+  color: #ff4d4d;
+  text-shadow: 0 0 9px rgba(255, 77, 77, 0.56);
+}
 
     .route-controls {
       display: grid;
@@ -1397,11 +1419,41 @@ marketNextPage: document.getElementById("routeMarketNextPage")
       }
 
       function renderSummary(summary) {
-        elements.summaryActive.textContent = formatInteger(summary?.active_routes);
-        elements.summaryFlights.textContent = formatInteger(summary?.last_7_days?.flights);
-        elements.summaryPassengers.textContent = formatInteger(summary?.last_7_days?.passengers);
-        elements.summaryLoadFactor.textContent = formatPercent(summary?.last_7_days?.load_factor);
-      }
+  const loadFactor =
+    numberValue(summary?.last_7_days?.load_factor);
+
+  const loadFactorPercent =
+    loadFactor * 100;
+
+  let loadFactorLevel = "severe";
+
+  if (loadFactorPercent >= 80) {
+    loadFactorLevel = "excellent";
+  } else if (loadFactorPercent >= 70) {
+    loadFactorLevel = "healthy";
+  } else if (loadFactorPercent >= 50) {
+    loadFactorLevel = "watch";
+  } else if (loadFactorPercent >= 40) {
+    loadFactorLevel = "low";
+  } else if (loadFactorPercent >= 20) {
+    loadFactorLevel = "critical";
+  }
+
+  elements.summaryActive.textContent =
+    formatInteger(summary?.active_routes);
+
+  elements.summaryFlights.textContent =
+    formatInteger(summary?.last_7_days?.flights);
+
+  elements.summaryPassengers.textContent =
+    formatInteger(summary?.last_7_days?.passengers);
+
+  elements.summaryLoadFactor.textContent =
+    formatPercent(loadFactor);
+
+  elements.summaryLoadFactor.dataset.level =
+    loadFactorLevel;
+}
 
       function showTableMessage(title, message, kind = "neutral") {
         elements.tableMessage.replaceChildren();
