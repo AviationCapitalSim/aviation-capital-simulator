@@ -1231,9 +1231,26 @@
         </section>
 
         <section class="route-modal-section route-modal-section-full">
-          <h3 class="route-modal-section-title">Competition · Last 7 ACS Days</h3>
-          <div id="routeCompetitionContent"></div>
-        </section>
+  <h3 id="routeCompetitionTitle" class="route-modal-section-title">
+    Airport Market · Last 7 ACS Days
+  </h3>
+
+  <div id="routeCompetitionContent"></div>
+
+  <div id="routeMarketPagination" class="route-pagination" hidden>
+    <span id="routeMarketPageStatus">—</span>
+
+    <div class="route-page-actions">
+      <button id="routeMarketPreviousPage" class="route-page-btn" type="button">
+        Previous
+      </button>
+
+      <button id="routeMarketNextPage" class="route-page-btn" type="button">
+        Next
+      </button>
+    </div>
+  </div>
+</section>
       </div>
 
       <footer class="route-modal-footer">
@@ -1262,15 +1279,21 @@
       const API_URL = "https://api.aviationcapitalsim.com/v1/routes/my-routes-occ";
 
       const state = {
-        routes: [],
-        filteredRoutes: [],
-        page: 1,
-        rowsPerPage: 50,
-        selectedRoute: null,
-        lastModalTrigger: null,
-        airlineName: "Airline",
-        loading: false
-       };
+  routes: [],
+  filteredRoutes: [],
+  page: 1,
+  rowsPerPage: 50,
+  selectedRoute: null,
+  lastModalTrigger: null,
+  airlineName: "Airline",
+
+  marketPage: 1,
+  marketTotalPages: 0,
+  marketRequestToken: 0,
+  marketLoading: false,
+
+  loading: false
+};
 
       const elements = {
         summaryActive: document.getElementById("routeSummaryActive"),
@@ -1298,7 +1321,13 @@
         aircraftFacts: document.getElementById("routeAircraftFacts"),
         demandGrid: document.getElementById("routeDemandGrid"),
         performanceBody: document.getElementById("routePerformanceBody"),
-        competitionContent: document.getElementById("routeCompetitionContent")
+
+competitionTitle: document.getElementById("routeCompetitionTitle"),
+competitionContent: document.getElementById("routeCompetitionContent"),
+marketPagination: document.getElementById("routeMarketPagination"),
+marketPageStatus: document.getElementById("routeMarketPageStatus"),
+marketPreviousPage: document.getElementById("routeMarketPreviousPage"),
+marketNextPage: document.getElementById("routeMarketNextPage")
       };
 
       function numberValue(value) {
@@ -1668,151 +1697,311 @@
         appendPerformanceRow("Return", "Previous 7 days", route.performance?.return?.previous_7_days);
       }
 
-      function competitorLabel(competitor) {
-        const airline = competitor?.airline || {};
-        return airline.airline_name || airline.icao || airline.iata || "Airline";
+      function marketOperatorLabel(operator) {
+  const airline = operator?.airline || {};
+
+  return (
+    airline.airline_name ||
+    airline.icao ||
+    airline.iata ||
+    "Airline"
+  );
+}
+
+function renderAirportMarketMessage(title, message) {
+  elements.competitionContent.replaceChildren();
+
+  const status = document.createElement("div");
+  status.className = "route-modal-empty";
+  status.textContent = `${title} — ${message}`;
+
+  elements.competitionContent.append(status);
+  elements.marketPagination.hidden = true;
+}
+
+function renderAirportMarket(operators, airportIcao) {
+  elements.competitionContent.replaceChildren();
+
+  if (operators.length === 0) {
+    renderAirportMarketMessage(
+      "No Airport Operations",
+      `No active passenger routes were found at ${airportIcao}.`
+    );
+    return;
+  }
+
+  const chartPanel = document.createElement("section");
+  chartPanel.className = "route-direction-panel";
+
+  const chartTitle = document.createElement("h4");
+  chartTitle.className = "route-direction-title";
+  chartTitle.textContent =
+    `${airportIcao} · Operators by Passengers`;
+
+  const chart = document.createElement("div");
+  chart.className = "route-competition-chart";
+
+  const chartOperators = operators.slice(0, 12);
+
+  const maximumPassengers = Math.max(
+    1,
+    ...chartOperators.map(operator =>
+      integerValue(operator?.last_7_days?.passengers)
+    )
+  );
+
+  chartOperators.forEach(operator => {
+    const passengers = integerValue(
+      operator?.last_7_days?.passengers
+    );
+
+    const chartRow = document.createElement("div");
+    chartRow.className = "route-competition-row";
+
+    const name = document.createElement("div");
+    name.className = "route-competition-name";
+    name.textContent = marketOperatorLabel(operator);
+
+    const track = document.createElement("div");
+    track.className = "route-competition-track";
+
+    const fill = document.createElement("div");
+    fill.className = operator?.is_own_airline
+      ? "route-competition-fill route-competition-fill-own"
+      : "route-competition-fill";
+
+    fill.style.width =
+      `${Math.max(
+        2,
+        (passengers / maximumPassengers) * 100
+      )}%`;
+
+    track.append(fill);
+
+    const value = document.createElement("div");
+    value.className = "route-competition-value";
+    value.textContent =
+      `${formatInteger(passengers)} pax`;
+
+    chartRow.append(name, track, value);
+    chart.append(chartRow);
+  });
+
+  chartPanel.append(chartTitle, chart);
+
+  const scroll = document.createElement("div");
+  scroll.className = "route-table-scroll";
+
+  const table = document.createElement("table");
+  table.className = "route-competition-table";
+
+  const head = document.createElement("thead");
+  const headRow = document.createElement("tr");
+
+  [
+    "Airline",
+    "Route",
+    "Aircraft",
+    "Frequency",
+    "Flights",
+    "Passengers",
+    "LF"
+  ].forEach(label => {
+    const header = document.createElement("th");
+    header.scope = "col";
+    header.textContent = label;
+    headRow.append(header);
+  });
+
+  head.append(headRow);
+
+  const body = document.createElement("tbody");
+
+  operators.forEach(operator => {
+    const row = document.createElement("tr");
+
+    const routeLabel =
+      `${textValue(operator?.route?.origin)} ⇄ ` +
+      `${textValue(operator?.route?.destination)}`;
+
+    const aircraft =
+      operator?.aircraft?.registration ||
+      operator?.aircraft?.aircraft_name ||
+      operator?.aircraft?.model_key ||
+      "—";
+
+    [
+      marketOperatorLabel(operator),
+      routeLabel,
+      aircraft,
+      formatInteger(
+        operator?.route?.frequency_per_week
+      ),
+      formatInteger(
+        operator?.last_7_days?.flights
+      ),
+      formatInteger(
+        operator?.last_7_days?.passengers
+      ),
+      formatPercent(
+        operator?.last_7_days?.load_factor
+      )
+    ].forEach(value => {
+      const cell = document.createElement("td");
+      cell.textContent = value;
+      row.append(cell);
+    });
+
+    body.append(row);
+  });
+
+  table.append(head, body);
+  scroll.append(table);
+
+  elements.competitionContent.append(
+    chartPanel,
+    scroll
+  );
+}
+
+async function loadAirportMarket(page = 1) {
+  const route = state.selectedRoute;
+
+  if (!route || state.marketLoading) return;
+
+  const routePlanId =
+    integerValue(route.route_plan_id);
+
+  const requestToken =
+    ++state.marketRequestToken;
+
+  state.marketLoading = true;
+
+  elements.marketPreviousPage.disabled = true;
+  elements.marketNextPage.disabled = true;
+
+  elements.competitionTitle.textContent =
+    `${textValue(route.destination)} Airport Market · ` +
+    `Last 7 ACS Days`;
+
+  renderAirportMarketMessage(
+    "Loading Airport Market",
+    `Reading active routes at ${textValue(route.destination)}.`
+  );
+
+  try {
+    const response = await fetch(
+      `${API_URL}/${routePlanId}` +
+      `/airport-market?page=${page}&limit=50`,
+      {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          Accept: "application/json"
+        },
+        cache: "no-store"
       }
+    );
 
-      function createCompetitionChart(route, competitors, directionKey, directionLabel) {
-        const ownPassengers = integerValue(
-          route?.performance?.[directionKey]?.last_7_days?.passengers
-        );
-        const directionalCompetitors = competitors.filter(competitor => {
-          const origin = textValue(competitor?.direction?.origin, "").toUpperCase();
-          const destination = textValue(competitor?.direction?.destination, "").toUpperCase();
+    let data = null;
 
-          if (directionKey === "outbound") {
-            return origin === textValue(route.origin, "").toUpperCase()
-              && destination === textValue(route.destination, "").toUpperCase();
-          }
+    try {
+      data = await response.json();
+    } catch {
+      data = null;
+    }
 
-          return origin === textValue(route.destination, "").toUpperCase()
-            && destination === textValue(route.origin, "").toUpperCase();
-        });
+    if (
+      requestToken !== state.marketRequestToken ||
+      state.selectedRoute !== route
+    ) {
+      return;
+    }
 
-        const series = [
-          {
-            label: state.airlineName,
-            passengers: ownPassengers,
-            own: true
-          },
-          ...directionalCompetitors.slice(0, 11).map(competitor => ({
-            label: competitorLabel(competitor),
-            passengers: integerValue(competitor?.last_7_days?.passengers),
-            own: false
-          }))
-        ];
+    if (
+      response.status === 401 ||
+      response.status === 403
+    ) {
+      throw new Error("SESSION_REQUIRED");
+    }
 
-        const maximumPassengers = Math.max(1, ...series.map(item => item.passengers));
-        const wrapper = document.createElement("section");
-        wrapper.className = "route-direction-panel";
+    if (
+      !response.ok ||
+      !data?.ok ||
+      !Array.isArray(data.operators)
+    ) {
+      throw new Error(
+        "AIRPORT_MARKET_QUERY_FAILED"
+      );
+    }
 
-        const title = document.createElement("h4");
-        title.className = "route-direction-title";
-        title.textContent = directionLabel;
+    state.marketPage =
+      integerValue(data.pagination?.page) || 1;
 
-        const chart = document.createElement("div");
-        chart.className = "route-competition-chart";
+    state.marketTotalPages =
+      integerValue(
+        data.pagination?.total_pages
+      );
 
-        series.forEach(item => {
-          const chartRow = document.createElement("div");
-          chartRow.className = "route-competition-row";
+    renderAirportMarket(
+      data.operators,
+      textValue(
+        data.airport_icao,
+        route.destination
+      )
+    );
 
-          const name = document.createElement("div");
-          name.className = "route-competition-name";
-          name.textContent = item.label;
+    elements.marketPagination.hidden =
+      state.marketTotalPages <= 1;
 
-          const track = document.createElement("div");
-          track.className = "route-competition-track";
+    elements.marketPageStatus.textContent =
+      `Page ${state.marketPage} of ` +
+      `${Math.max(1, state.marketTotalPages)} · ` +
+      `${formatInteger(data.pagination?.total)} routes`;
 
-          const fill = document.createElement("div");
-          fill.className = item.own
-            ? "route-competition-fill route-competition-fill-own"
-            : "route-competition-fill";
-          fill.style.width = `${Math.max(2, (item.passengers / maximumPassengers) * 100)}%`;
-          track.append(fill);
+    elements.marketPreviousPage.disabled =
+      !data.pagination?.has_previous;
 
-          const value = document.createElement("div");
-          value.className = "route-competition-value";
-          value.textContent = `${formatInteger(item.passengers)} pax`;
+    elements.marketNextPage.disabled =
+      !data.pagination?.has_next;
 
-          chartRow.append(name, track, value);
-          chart.append(chartRow);
-        });
+    console.log("ACS AIRPORT MARKET LOADED", {
+      airport: data.airport_icao,
+      page: state.marketPage,
+      routes: integerValue(
+        data.pagination?.total
+      )
+    });
+  } catch (error) {
+    if (
+      requestToken !== state.marketRequestToken ||
+      state.selectedRoute !== route
+    ) {
+      return;
+    }
 
-        wrapper.append(title, chart);
-        return wrapper;
-      }
+    const message =
+      error?.message === "SESSION_REQUIRED"
+        ? "Please sign in again to read this airport market."
+        : "The airport market could not be loaded.";
 
-      function renderCompetition(route) {
-        elements.competitionContent.replaceChildren();
-        const competitors = Array.isArray(route.competitors) ? route.competitors : [];
+    renderAirportMarketMessage(
+      "Airport Market Unavailable",
+      message
+    );
 
-        if (competitors.length === 0) {
-          const empty = document.createElement("div");
-          empty.className = "route-modal-empty";
-          empty.textContent = "No competitor operations were recorded for this market during the selected period.";
-          elements.competitionContent.append(empty);
-          return;
-        }
-
-        const charts = document.createElement("div");
-        charts.className = "route-direction-grid";
-        charts.append(
-          createCompetitionChart(
-            route,
-            competitors,
-            "outbound",
-            `${textValue(route.origin)} → ${textValue(route.destination)}`
-          ),
-          createCompetitionChart(
-            route,
-            competitors,
-            "return",
-            `${textValue(route.destination)} → ${textValue(route.origin)}`
-          )
-        );
-
-        const scroll = document.createElement("div");
-        scroll.className = "route-table-scroll";
-
-        const table = document.createElement("table");
-        table.className = "route-competition-table";
-
-        const head = document.createElement("thead");
-        const headRow = document.createElement("tr");
-        ["Airline", "Direction", "Aircraft", "Flights", "Passengers", "LF"].forEach(label => {
-          const header = document.createElement("th");
-          header.scope = "col";
-          header.textContent = label;
-          headRow.append(header);
-        });
-        head.append(headRow);
-
-        const body = document.createElement("tbody");
-        competitors.forEach(competitor => {
-          const row = document.createElement("tr");
-          const direction = `${textValue(competitor?.direction?.origin)} → ${textValue(competitor?.direction?.destination)}`;
-          const aircraft = competitor?.aircraft?.registration || competitor?.aircraft?.model_key || "—";
-          [
-            competitorLabel(competitor),
-            direction,
-            aircraft,
-            formatInteger(competitor?.last_7_days?.flights),
-            formatInteger(competitor?.last_7_days?.passengers),
-            formatPercent(competitor?.last_7_days?.load_factor)
-          ].forEach(value => {
-            const cell = document.createElement("td");
-            cell.textContent = value;
-            row.append(cell);
-          });
-          body.append(row);
-        });
-
-        table.append(head, body);
-        scroll.append(table);
-        elements.competitionContent.append(charts, scroll);
-      }
+    console.error(
+      "ACS_AIRPORT_MARKET_LOAD_FAILED",
+      error
+    );
+  } finally {
+    if (
+      requestToken === state.marketRequestToken
+    ) {
+      state.marketLoading = false;
+    }
+  }
+}
 
       function modalFocusableElements() {
         return Array.from(
@@ -1833,15 +2022,20 @@
         elements.modalSubtitle.textContent = `${textValue(route.aircraft?.aircraft_name)} · ${textValue(route.aircraft?.registration)} · ${textValue(route.flight_numbers?.outbound)} / ${textValue(route.flight_numbers?.return)}`;
 
         renderOverview(route);
-        renderAircraft(route);
-        renderDemand(route);
-        renderPerformance(route);
-        renderCompetition(route);
+renderAircraft(route);
+renderDemand(route);
+renderPerformance(route);
 
-        elements.modalOverlay.classList.add("is-open");
-        elements.modalOverlay.setAttribute("aria-hidden", "false");
-        document.body.classList.add("route-modal-open");
-        elements.modalCloseX.focus();
+state.marketPage = 1;
+state.marketTotalPages = 0;
+state.marketLoading = false;
+
+elements.modalOverlay.classList.add("is-open");
+elements.modalOverlay.setAttribute("aria-hidden", "false");
+document.body.classList.add("route-modal-open");
+elements.modalCloseX.focus();
+
+loadAirportMarket(1);
       }
 
       function closeRouteModal() {
@@ -1850,6 +2044,9 @@
         elements.modalOverlay.classList.remove("is-open");
         elements.modalOverlay.setAttribute("aria-hidden", "true");
         document.body.classList.remove("route-modal-open");
+
+        state.marketRequestToken += 1;
+        state.marketLoading = false;
         state.selectedRoute = null;
 
         if (state.lastModalTrigger && document.contains(state.lastModalTrigger)) {
@@ -1972,6 +2169,38 @@
         openRouteModal(trigger.dataset.routeId, trigger);
       });
 
+      elements.marketPreviousPage.addEventListener(
+  "click",
+  () => {
+    if (
+      state.marketLoading ||
+      state.marketPage <= 1
+    ) {
+      return;
+    }
+
+    loadAirportMarket(
+      state.marketPage - 1
+    );
+  }
+);
+
+elements.marketNextPage.addEventListener(
+  "click",
+  () => {
+    if (
+      state.marketLoading ||
+      state.marketPage >= state.marketTotalPages
+    ) {
+      return;
+    }
+
+    loadAirportMarket(
+      state.marketPage + 1
+    );
+  }
+);
+       
       elements.modalCloseX.addEventListener("click", closeRouteModal);
       elements.modalCloseButton.addEventListener("click", closeRouteModal);
       elements.modalOverlay.addEventListener("click", event => {
