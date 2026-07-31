@@ -980,6 +980,36 @@
   width: min(980px, calc(100vw - 32px));
 }
 
+.ticket-control-modal .route-modal-header {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+}
+
+.ticket-control-modal .route-modal-header > div {
+  width: 100%;
+  padding: 0 64px;
+}
+
+.ticket-control-modal .route-modal-kicker,
+.ticket-control-modal .route-modal-title,
+.ticket-control-modal .route-modal-subtitle {
+  width: 100%;
+  text-align: center;
+}
+
+.ticket-control-modal .route-modal-close {
+  position: absolute;
+  top: 50%;
+  right: 1.5rem;
+  transform: translateY(-50%);
+}
+
+.ticket-control-modal .route-modal-close:hover {
+  transform: translateY(-50%);
+}
+
 .ticket-control-body {
   display: grid;
   gap: 1rem;
@@ -1005,10 +1035,9 @@
 .ticket-fare-grid {
   display: grid;
   grid-template-columns:
-    minmax(150px, 1fr)
-    130px
-    minmax(210px, 1fr)
-    minmax(210px, 1fr);
+    minmax(170px, 0.8fr)
+    minmax(260px, 1.25fr)
+    minmax(240px, 1fr);
   border: 1px solid var(--route-blue-border);
   border-radius: 10px;
   overflow: hidden;
@@ -1021,11 +1050,11 @@
   border-bottom: 1px solid var(--route-blue-border);
 }
 
-.ticket-fare-grid > div:nth-child(4n) {
+.ticket-fare-grid > div:nth-child(3n) {
   border-right: 0;
 }
 
-.ticket-fare-grid > div:nth-last-child(-n + 4) {
+.ticket-fare-grid > div:nth-last-child(-n + 3) {
   border-bottom: 0;
 }
 
@@ -1048,7 +1077,36 @@
 }
 
 .ticket-class-name {
-  color: var(--route-gold);
+  position: relative;
+  padding-left: 1.2rem;
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.86rem;
+  letter-spacing: 0.04em;
+}
+
+.ticket-class-name::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0.42rem;
+  width: 4px;
+  height: 56%;
+  border-radius: 4px;
+  transform: translateY(-50%);
+  background: currentColor;
+  box-shadow: 0 0 7px currentColor;
+}
+
+.ticket-class-y {
+  color: #70c8ff;
+}
+
+.ticket-class-c {
+  color: #b89cff;
+}
+
+.ticket-class-f {
+  color: #ffcf68;
 }
 
 .ticket-adjust-control {
@@ -1516,70 +1574,128 @@
         aria-live="polite"
       ></div>
 
-      <div class="ticket-fare-grid">
-        <div class="ticket-grid-heading">Class</div>
-        <div class="ticket-grid-heading">Current</div>
-        <div class="ticket-grid-heading">New Adjustment</div>
-        <div class="ticket-grid-heading">New Network Fare Range</div>
+  <div class="ticket-fare-grid">
+  <div class="ticket-grid-heading">Class</div>
+  <div class="ticket-grid-heading">New Adjustment</div>
+  <div class="ticket-grid-heading">New Network Fare Range</div>
 
-        <div class="ticket-class-name">Y · Economy</div>
-        <div id="ticketCurrentY" class="ticket-current-value">0%</div>
-        <div class="ticket-adjust-control" data-ticket-class="Y">
-          <button
-            class="ticket-step-btn"
-            type="button"
-            data-ticket-step="-1"
-          >−</button>
+  <div class="ticket-class-name ticket-class-y">
+    Y · Economy
+  </div>
 
-          <strong id="ticketNewY" class="ticket-adjust-value">0%</strong>
+  <div
+    class="ticket-adjust-control"
+    data-ticket-class="Y"
+  >
+    <button
+      class="ticket-step-btn"
+      type="button"
+      data-ticket-step="-1"
+    >
+      −
+    </button>
 
-          <button
-            class="ticket-step-btn"
-            type="button"
-            data-ticket-step="1"
-          >+</button>
-        </div>
-        <div id="ticketRangeY" class="ticket-fare-range">—</div>
+    <strong
+      id="ticketNewY"
+      class="ticket-adjust-value"
+    >
+      0%
+    </strong>
 
-        <div class="ticket-class-name">C · Business</div>
-        <div id="ticketCurrentC" class="ticket-current-value">0%</div>
-        <div class="ticket-adjust-control" data-ticket-class="C">
-          <button
-            class="ticket-step-btn"
-            type="button"
-            data-ticket-step="-1"
-          >−</button>
+    <button
+      class="ticket-step-btn"
+      type="button"
+      data-ticket-step="1"
+    >
+      +
+    </button>
+  </div>
 
-          <strong id="ticketNewC" class="ticket-adjust-value">0%</strong>
+  <div
+    id="ticketRangeY"
+    class="ticket-fare-range"
+  >
+    —
+  </div>
 
-          <button
-            class="ticket-step-btn"
-            type="button"
-            data-ticket-step="1"
-          >+</button>
-        </div>
-        <div id="ticketRangeC" class="ticket-fare-range">—</div>
+  <div class="ticket-class-name ticket-class-c">
+    C · Business
+  </div>
 
-        <div class="ticket-class-name">F · First</div>
-        <div id="ticketCurrentF" class="ticket-current-value">0%</div>
-        <div class="ticket-adjust-control" data-ticket-class="F">
-          <button
-            class="ticket-step-btn"
-            type="button"
-            data-ticket-step="-1"
-          >−</button>
+  <div
+    class="ticket-adjust-control"
+    data-ticket-class="C"
+  >
+    <button
+      class="ticket-step-btn"
+      type="button"
+      data-ticket-step="-1"
+    >
+      −
+    </button>
 
-          <strong id="ticketNewF" class="ticket-adjust-value">0%</strong>
+    <strong
+      id="ticketNewC"
+      class="ticket-adjust-value"
+    >
+      0%
+    </strong>
 
-          <button
-            class="ticket-step-btn"
-            type="button"
-            data-ticket-step="1"
-          >+</button>
-        </div>
-        <div id="ticketRangeF" class="ticket-fare-range">—</div>
-      </div>
-    </div>
+    <button
+      class="ticket-step-btn"
+      type="button"
+      data-ticket-step="1"
+    >
+      +
+    </button>
+  </div>
+
+  <div
+    id="ticketRangeC"
+    class="ticket-fare-range"
+  >
+    —
+  </div>
+
+  <div class="ticket-class-name ticket-class-f">
+    F · First
+  </div>
+
+  <div
+    class="ticket-adjust-control"
+    data-ticket-class="F"
+  >
+    <button
+      class="ticket-step-btn"
+      type="button"
+      data-ticket-step="-1"
+    >
+      −
+    </button>
+
+    <strong
+      id="ticketNewF"
+      class="ticket-adjust-value"
+    >
+      0%
+    </strong>
+
+    <button
+      class="ticket-step-btn"
+      type="button"
+      data-ticket-step="1"
+    >
+      +
+    </button>
+  </div>
+
+  <div
+    id="ticketRangeF"
+    class="ticket-fare-range"
+  >
+    —
+  </div>
+</div>
 
     <footer class="route-modal-footer">
       <div class="ticket-control-footer-actions">
@@ -1672,9 +1788,9 @@
         </section>
 
         <section class="route-modal-section route-modal-section-full">
-  <h3 id="routeCompetitionTitle" class="route-modal-section-title">
-    Airport Market · Last 7 ACS Days
-  </h3>
+        <h3 id="routeCompetitionTitle" class="route-modal-section-title">
+        Airport Market · Last 7 ACS Days
+        </h3>
 
   <div id="routeCompetitionContent"></div>
 
@@ -1795,12 +1911,6 @@ ticketCancel: document.getElementById("ticketControlCancel"),
 ticketReset: document.getElementById("ticketControlReset"),
 ticketSave: document.getElementById("ticketControlSave"),
 ticketStatus: document.getElementById("ticketControlStatus"),
-
-ticketCurrent: {
-  Y: document.getElementById("ticketCurrentY"),
-  C: document.getElementById("ticketCurrentC"),
-  F: document.getElementById("ticketCurrentF")
-},
 
 ticketNew: {
   Y: document.getElementById("ticketNewY"),
