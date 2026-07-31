@@ -1112,8 +1112,8 @@
       }
 
       .route-controls {
-        grid-template-columns: minmax(220px, 1fr) 160px 130px auto;
-      }
+       grid-template-columns: minmax(190px, 1fr) 165px 95px auto auto;
+     }
     }
 
     @media (max-width: 900px) {
@@ -1327,26 +1327,48 @@
     </section>
 
     <section class="route-controls" aria-label="Route table controls">
-      <div class="route-field">
-        <label for="routeSearch">Search</label>
-        <input id="routeSearch" type="search" placeholder="ICAO, flight, registration or aircraft model" autocomplete="off" />
-      </div>
+  <div class="route-field">
+    <label for="routeSearch">Search</label>
+    <input
+      id="routeSearch"
+      type="search"
+      placeholder="ICAO, flight, registration or aircraft model"
+      autocomplete="off"
+    />
+  </div>
 
-      <div class="route-field">
-        <label for="routeStateFilter">Route State</label>
-        <select id="routeStateFilter">
-          <option value="ALL">All states</option>
-          <option value="ACTIVE">Active</option>
-        </select>
-      </div>
+  <div class="route-field">
+    <label for="routeAircraftFilter">Aircraft Type</label>
+    <select id="routeAircraftFilter">
+      <option value="ALL">All aircraft</option>
+    </select>
+  </div>
 
-      <div class="route-field">
-        <label for="routeRowsPerPage">Rows</label>
-        <select id="routeRowsPerPage">
-          <option value="25">25</option>
-          <option value="50" selected>50</option>
-          <option value="100">100</option>
-        </select>
+  <div class="route-field">
+    <label for="routeRowsPerPage">Rows</label>
+    <select id="routeRowsPerPage">
+      <option value="25">25</option>
+      <option value="50" selected>50</option>
+      <option value="100">100</option>
+    </select>
+  </div>
+
+  <button
+    id="routeTicketControlButton"
+    class="route-ticket-btn"
+    type="button"
+  >
+    Ticket Control
+  </button>
+
+  <button
+    id="routeRefreshButton"
+    class="route-refresh-btn"
+    type="button"
+  >
+    Refresh
+  </button>
+</section>
       </div>
 
       <button id="routeRefreshButton" class="route-refresh-btn" type="button">Refresh</button>
@@ -1389,6 +1411,145 @@
     </section>
   </main>
 
+  <div
+  id="ticketControlOverlay"
+  class="route-modal-overlay"
+  aria-hidden="true"
+>
+  <section
+    id="ticketControlModal"
+    class="route-modal ticket-control-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="ticketControlTitle"
+    aria-describedby="ticketControlSubtitle"
+  >
+    <header class="route-modal-header">
+      <div>
+        <div class="route-modal-kicker">Fare Control</div>
+
+        <h2 id="ticketControlTitle" class="route-modal-title">
+          Airline Ticket Price Adjustments
+        </h2>
+
+        <p id="ticketControlSubtitle" class="route-modal-subtitle">
+          Applies to future flights not yet started.
+        </p>
+      </div>
+
+      <button
+        id="ticketControlCloseX"
+        class="route-modal-close"
+        type="button"
+        aria-label="Close ticket control"
+      >
+        ×
+      </button>
+    </header>
+
+    <div class="ticket-control-body">
+      <div
+        id="ticketControlStatus"
+        class="ticket-control-status"
+        role="status"
+        aria-live="polite"
+      ></div>
+
+      <div class="ticket-fare-grid">
+        <div class="ticket-grid-heading">Class</div>
+        <div class="ticket-grid-heading">Current</div>
+        <div class="ticket-grid-heading">New Adjustment</div>
+        <div class="ticket-grid-heading">New Network Fare Range</div>
+
+        <div class="ticket-class-name">Y · Economy</div>
+        <div id="ticketCurrentY" class="ticket-current-value">0%</div>
+        <div class="ticket-adjust-control" data-ticket-class="Y">
+          <button
+            class="ticket-step-btn"
+            type="button"
+            data-ticket-step="-1"
+          >−</button>
+
+          <strong id="ticketNewY" class="ticket-adjust-value">0%</strong>
+
+          <button
+            class="ticket-step-btn"
+            type="button"
+            data-ticket-step="1"
+          >+</button>
+        </div>
+        <div id="ticketRangeY" class="ticket-fare-range">—</div>
+
+        <div class="ticket-class-name">C · Business</div>
+        <div id="ticketCurrentC" class="ticket-current-value">0%</div>
+        <div class="ticket-adjust-control" data-ticket-class="C">
+          <button
+            class="ticket-step-btn"
+            type="button"
+            data-ticket-step="-1"
+          >−</button>
+
+          <strong id="ticketNewC" class="ticket-adjust-value">0%</strong>
+
+          <button
+            class="ticket-step-btn"
+            type="button"
+            data-ticket-step="1"
+          >+</button>
+        </div>
+        <div id="ticketRangeC" class="ticket-fare-range">—</div>
+
+        <div class="ticket-class-name">F · First</div>
+        <div id="ticketCurrentF" class="ticket-current-value">0%</div>
+        <div class="ticket-adjust-control" data-ticket-class="F">
+          <button
+            class="ticket-step-btn"
+            type="button"
+            data-ticket-step="-1"
+          >−</button>
+
+          <strong id="ticketNewF" class="ticket-adjust-value">0%</strong>
+
+          <button
+            class="ticket-step-btn"
+            type="button"
+            data-ticket-step="1"
+          >+</button>
+        </div>
+        <div id="ticketRangeF" class="ticket-fare-range">—</div>
+      </div>
+    </div>
+
+    <footer class="route-modal-footer">
+      <div class="ticket-control-footer-actions">
+        <button
+          id="ticketControlReset"
+          class="ticket-reset-btn"
+          type="button"
+        >
+          Reset
+        </button>
+
+        <button
+          id="ticketControlCancel"
+          class="route-modal-close-btn"
+          type="button"
+        >
+          Cancel
+        </button>
+
+        <button
+          id="ticketControlSave"
+          class="ticket-save-btn"
+          type="button"
+        >
+          Save Global Fares
+        </button>
+      </div>
+    </footer>
+  </section>
+</div>
+   
   <div
     id="routeDetailOverlay"
     class="route-modal-overlay"
@@ -1511,7 +1672,24 @@
   marketRequestToken: 0,
   marketLoading: false,
 
-  loading: false
+  loading: false,
+
+ticketLoading: false,
+ticketSaving: false,
+ticketTrigger: null,
+ticketRows: new Map(),
+
+ticketOriginal: {
+  Y: 0,
+  C: 0,
+  F: 0
+},
+
+ticketPending: {
+  Y: 0,
+  C: 0,
+  F: 0
+}
 };
 
       const elements = {
@@ -1520,8 +1698,9 @@
         summaryPassengers: document.getElementById("routeSummaryPassengers"),
         summaryLoadFactor: document.getElementById("routeSummaryLoadFactor"),
         search: document.getElementById("routeSearch"),
-        stateFilter: document.getElementById("routeStateFilter"),
+        aircraftFilter: document.getElementById("routeAircraftFilter"),
         rowsPerPage: document.getElementById("routeRowsPerPage"),
+        ticketButton: document.getElementById("routeTicketControlButton"),
         refreshButton: document.getElementById("routeRefreshButton"),
         tableMessage: document.getElementById("routeTableMessage"),
         tableScroll: document.getElementById("routeTableScroll"),
@@ -1546,7 +1725,33 @@ competitionContent: document.getElementById("routeCompetitionContent"),
 marketPagination: document.getElementById("routeMarketPagination"),
 marketPageStatus: document.getElementById("routeMarketPageStatus"),
 marketPreviousPage: document.getElementById("routeMarketPreviousPage"),
-marketNextPage: document.getElementById("routeMarketNextPage")
+marketNextPage: document.getElementById("routeMarketNextPage"),
+
+ticketOverlay: document.getElementById("ticketControlOverlay"),
+ticketModal: document.getElementById("ticketControlModal"),
+ticketCloseX: document.getElementById("ticketControlCloseX"),
+ticketCancel: document.getElementById("ticketControlCancel"),
+ticketReset: document.getElementById("ticketControlReset"),
+ticketSave: document.getElementById("ticketControlSave"),
+ticketStatus: document.getElementById("ticketControlStatus"),
+
+ticketCurrent: {
+  Y: document.getElementById("ticketCurrentY"),
+  C: document.getElementById("ticketCurrentC"),
+  F: document.getElementById("ticketCurrentF")
+},
+
+ticketNew: {
+  Y: document.getElementById("ticketNewY"),
+  C: document.getElementById("ticketNewC"),
+  F: document.getElementById("ticketNewF")
+},
+
+ticketRange: {
+  Y: document.getElementById("ticketRangeY"),
+  C: document.getElementById("ticketRangeC"),
+  F: document.getElementById("ticketRangeF")
+}
       };
 
       function numberValue(value) {
@@ -1582,6 +1787,56 @@ marketNextPage: document.getElementById("routeMarketNextPage")
         }).format(numberValue(value));
       }
 
+      function formatFareMoney(value) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(numberValue(value));
+}
+
+function populateAircraftFilter() {
+  const selected = elements.aircraftFilter.value || "ALL";
+  const aircraft = new Map();
+
+  for (const route of state.routes) {
+    const key = textValue(
+      route.aircraft?.model_key ||
+      route.aircraft?.aircraft_name,
+      ""
+    );
+
+    const label = textValue(
+      route.aircraft?.aircraft_name ||
+      route.aircraft?.model,
+      key
+    );
+
+    if (key) {
+      aircraft.set(key, label);
+    }
+  }
+
+  const options = [
+    new Option("All aircraft", "ALL")
+  ];
+
+  for (
+    const [key, label] of [...aircraft.entries()]
+      .sort((a, b) => a[1].localeCompare(b[1]))
+  ) {
+    options.push(new Option(label, key));
+  }
+
+  elements.aircraftFilter.replaceChildren(...options);
+
+  elements.aircraftFilter.value =
+    aircraft.has(selected)
+      ? selected
+      : "ALL";
+}
+         
       function formatMinutes(value) {
         const minutes = integerValue(value);
         if (minutes <= 0) return "—";
@@ -1779,36 +2034,59 @@ marketNextPage: document.getElementById("routeMarketNextPage")
         elements.nextPage.disabled = state.page >= totalPages;
       }
 
-      function applyFilters() {
-        const query = elements.search.value.trim().toLowerCase();
-        const selectedState = elements.stateFilter.value;
+     function applyFilters() {
+  const query =
+    elements.search.value
+      .trim()
+      .toLowerCase();
 
-        state.filteredRoutes = state.routes.filter(route => {
-          const routeState = textValue(route.route_state, "").toUpperCase();
-          const searchable = [
-            route.origin,
-            route.destination,
-            route.flight_numbers?.outbound,
-            route.flight_numbers?.return,
-            route.aircraft?.registration,
-            route.aircraft?.aircraft_name,
-            route.aircraft?.manufacturer,
-            route.aircraft?.model,
-            route.aircraft?.model_key
-          ]
-            .filter(value => value !== null && value !== undefined)
-            .join(" ")
-            .toLowerCase();
+  const selectedAircraft =
+    elements.aircraftFilter.value;
 
-          const matchesSearch = !query || searchable.includes(query);
-          const matchesState = selectedState === "ALL" || routeState === selectedState;
-          return matchesSearch && matchesState;
-        });
+  state.filteredRoutes =
+    state.routes.filter(route => {
+      const aircraftKey = textValue(
+        route.aircraft?.model_key ||
+        route.aircraft?.aircraft_name,
+        ""
+      );
 
-        state.page = 1;
-        renderTable();
-      }
+      const searchable = [
+        route.origin,
+        route.destination,
+        route.flight_numbers?.outbound,
+        route.flight_numbers?.return,
+        route.aircraft?.registration,
+        route.aircraft?.aircraft_name,
+        route.aircraft?.manufacturer,
+        route.aircraft?.model,
+        route.aircraft?.model_key
+      ]
+        .filter(value =>
+          value !== null &&
+          value !== undefined
+        )
+        .join(" ")
+        .toLowerCase();
 
+      const matchesSearch =
+        !query ||
+        searchable.includes(query);
+
+      const matchesAircraft =
+        selectedAircraft === "ALL" ||
+        aircraftKey === selectedAircraft;
+
+      return (
+        matchesSearch &&
+        matchesAircraft
+      );
+    });
+
+  state.page = 1;
+  renderTable();
+}
+         
       function addFact(container, label, value) {
         const fact = document.createElement("div");
         fact.className = "route-fact";
