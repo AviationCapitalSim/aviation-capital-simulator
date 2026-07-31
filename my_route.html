@@ -323,16 +323,33 @@
   text-shadow: 0 0 9px rgba(255, 77, 77, 0.56);
 }
 
-    .route-controls {
+ .route-controls {
   display: grid;
-  grid-template-columns: minmax(220px, 0.9fr) 190px 105px auto auto;
-  gap: 0.85rem;
+  grid-template-columns:
+    minmax(260px, 1fr)
+    minmax(170px, 220px)
+    100px
+    138px
+    108px;
+  gap: 0.75rem;
   align-items: end;
   margin-bottom: 1rem;
   padding: 1rem;
   border: 1px solid var(--route-blue-border);
   border-radius: 10px;
   background: transparent;
+}
+
+.route-controls > button {
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0.5rem 0.65rem;
+}
+
+.route-ticket-btn {
+  font-size: 0.68rem;
+  letter-spacing: 0.045em;
 }
 
     .route-field {
@@ -364,7 +381,7 @@
       color: #8397b2;
     }
 
-    ..route-refresh-btn,
+.route-refresh-btn,
 .route-ticket-btn,
 .route-view-btn,
 .route-page-btn,
@@ -374,10 +391,10 @@
 .ticket-step-btn,
 .ticket-reset-btn,
 .ticket-save-btn {
-      appearance: none;
-      border: 0;
-      cursor: pointer;
-    }
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+}
 
     .route-refresh-btn,
 .route-ticket-btn,
@@ -1367,12 +1384,11 @@
     type="button"
   >
     Refresh
-  </button>
-</section>
-      </div>
+       
+    </button>
+     </section>
 
-      <button id="routeRefreshButton" class="route-refresh-btn" type="button">Refresh</button>
-    </section>
+    <section class="route-table-shell" aria-labelledby="routeTableTitle">
 
     <section class="route-table-shell" aria-labelledby="routeTableTitle">
       <h2 id="routeTableTitle" hidden>Route assignments</h2>
