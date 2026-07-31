@@ -2012,7 +2012,7 @@ function populateAircraftFilter() {
             state.routes.length === 0 ? "No Active Routes" : "No Matching Routes",
             state.routes.length === 0
               ? "No route assignments are currently available."
-              : "No routes match the current search and state filters."
+              : "No routes match the current filters."
           );
           return;
         }
@@ -2607,7 +2607,297 @@ loadAirportMarket(1);
         }
       }
 
+      function setTicketStatus(message = "", status = "") {
+  elements.ticketStatus.textContent = message;
+  elements.ticketStatus.dataset.state = status;
+}
+
+function renderTicketControl() {
+  for (const serviceClass of ["Y", "C", "F"]) {
+    const row =
+      state.ticketRows.get(serviceClass) || {};
+
+    const original =
+      numberValue(
+        state.ticketOriginal[serviceClass]
+      );
+
+    const pending =
+      numberValue(
+        state.ticketPending[serviceClass]
+      );
+
+    const referenceMin =
+      numberValue(
+        row.reference_min_fare_usd
+      );
+
+    const referenceMax =
+      numberValue(
+        row.reference_max_fare_usd
+      );
+
+    const adjustedMin =
+      referenceMin *
+      (1 + pending / 100);
+
+    const adjustedMax =
+      referenceMax *
+      (1 + pending / 100);
+
+    elements.ticketCurrent[
+      serviceClass
+    ].textContent = `${original}%`;
+
+    elements.ticketNew[
+      serviceClass
+    ].textContent = `${pending}%`;
+
+    elements.ticketRange[
+      serviceClass
+    ].textContent =
+      referenceMin > 0 &&
+      referenceMax > 0
+        ? `${formatFareMoney(adjustedMin)} – ${formatFareMoney(adjustedMax)}`
+        : "—";
+  }
+}
+
+async function loadTicketControl() {
+  if (state.ticketLoading) return;
+
+  state.ticketLoading = true;
+  elements.ticketSave.disabled = true;
+
+  setTicketStatus(
+    "Loading ticket fares..."
+  );
+
+  try {
+    const response = await fetch(
+      `${API_URL}/fares/global`,
+      {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          Accept: "application/json"
+        },
+        cache: "no-store"
+      }
+    );
+
+    const data = await response.json();
+
+    if (
+      !response.ok ||
+      !data?.ok ||
+      !Array.isArray(data.fares)
+    ) {
+      throw new Error(
+        data?.error ||
+        "TICKET_CONTROL_QUERY_FAILED"
+      );
+    }
+
+    state.ticketRows = new Map(
+      data.fares.map(row => [
+        String(row.service_class),
+        row
+      ])
+    );
+
+    for (
+      const serviceClass of ["Y", "C", "F"]
+    ) {
+      const value = Math.trunc(
+        numberValue(
+          state.ticketRows
+            .get(serviceClass)
+            ?.current_adjustment_percent
+        )
+      );
+
+      state.ticketOriginal[
+        serviceClass
+      ] = value;
+
+      state.ticketPending[
+        serviceClass
+      ] = value;
+    }
+
+    renderTicketControl();
+
+    setTicketStatus(
+      "Fare authority synchronized.",
+      "success"
+    );
+  } catch (error) {
+    setTicketStatus(
+      "Ticket fares could not be loaded.",
+      "error"
+    );
+
+    console.error(
+      "TICKET_CONTROL_LOAD_FAILED",
+      error
+    );
+  } finally {
+    state.ticketLoading = false;
+    elements.ticketSave.disabled = false;
+  }
+}
+
+function openTicketControl() {
+  state.ticketTrigger =
+    document.activeElement;
+
+  elements.ticketOverlay
+    .classList.add("is-open");
+
+  elements.ticketOverlay
+    .setAttribute(
+      "aria-hidden",
+      "false"
+    );
+
+  document.body
+    .classList.add("route-modal-open");
+
+  elements.ticketCloseX.focus();
+
+  loadTicketControl();
+}
+
+function closeTicketControl() {
+  if (
+    !elements.ticketOverlay
+      .classList.contains("is-open")
+  ) {
+    return;
+  }
+
+  elements.ticketOverlay
+    .classList.remove("is-open");
+
+  elements.ticketOverlay
+    .setAttribute(
+      "aria-hidden",
+      "true"
+    );
+
+  document.body
+    .classList.remove("route-modal-open");
+
+  setTicketStatus();
+
+  if (
+    state.ticketTrigger &&
+    document.contains(
+      state.ticketTrigger
+    )
+  ) {
+    state.ticketTrigger.focus();
+  }
+}
+
+function changeTicketAdjustment(
+  serviceClass,
+  step
+) {
+  const current =
+    numberValue(
+      state.ticketPending[
+        serviceClass
+      ]
+    );
+
+  state.ticketPending[
+    serviceClass
+  ] = Math.max(
+    -20,
+    Math.min(
+      20,
+      current + step
+    )
+  );
+
+  renderTicketControl();
+}
+
+async function saveTicketControl() {
+  if (
+    state.ticketSaving ||
+    state.ticketLoading
+  ) {
+    return;
+  }
+
+  state.ticketSaving = true;
+  elements.ticketSave.disabled = true;
+
+  setTicketStatus(
+    "Saving ticket fares..."
+  );
+
+  try {
+    const response = await fetch(
+      `${API_URL}/fares/global`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          adjustments:
+            state.ticketPending
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (
+      !response.ok ||
+      !data?.ok
+    ) {
+      throw new Error(
+        data?.error ||
+        "TICKET_CONTROL_SAVE_FAILED"
+      );
+    }
+
+    await loadTicketControl();
+
+    setTicketStatus(
+      "Global ticket fares saved.",
+      "success"
+    );
+
+    console.log(
+      "TICKET CONTROL SAVED",
+      data
+    );
+  } catch (error) {
+    setTicketStatus(
+      "Ticket fares could not be saved.",
+      "error"
+    );
+
+    console.error(
+      "TICKET_CONTROL_SAVE_FAILED",
+      error
+    );
+  } finally {
+    state.ticketSaving = false;
+    elements.ticketSave.disabled = false;
+  }
+}
+         
       async function loadRoutes() {
+           
         if (state.loading) return;
         state.loading = true;
         elements.refreshButton.disabled = true;
@@ -2640,6 +2930,8 @@ loadAirportMarket(1);
           }
 
           state.routes = data.routes;
+          populateAircraftFilter();
+
           state.airlineName = textValue(
           data.airline?.airline_name,
           "Airline"
@@ -2666,7 +2958,7 @@ loadAirportMarket(1);
       }
 
       elements.search.addEventListener("input", applyFilters);
-      elements.stateFilter.addEventListener("change", applyFilters);
+      elements.aircraftFilter.addEventListener("change", applyFilters);
       elements.rowsPerPage.addEventListener("change", () => {
         state.rowsPerPage = integerValue(elements.rowsPerPage.value) || 50;
         state.page = 1;
@@ -2674,7 +2966,78 @@ loadAirportMarket(1);
       });
 
       elements.refreshButton.addEventListener("click", loadRoutes);
+      
+      elements.ticketButton.addEventListener(
+  "click",
+  openTicketControl
+);
 
+elements.ticketCloseX.addEventListener(
+  "click",
+  closeTicketControl
+);
+
+elements.ticketCancel.addEventListener(
+  "click",
+  closeTicketControl
+);
+
+elements.ticketReset.addEventListener(
+  "click",
+  () => {
+    state.ticketPending = {
+      Y: 0,
+      C: 0,
+      F: 0
+    };
+
+    renderTicketControl();
+  }
+);
+
+elements.ticketSave.addEventListener(
+  "click",
+  saveTicketControl
+);
+
+elements.ticketModal.addEventListener(
+  "click",
+  event => {
+    const control =
+      event.target.closest(
+        "[data-ticket-step]"
+      );
+
+    if (!control) return;
+
+    const row =
+      control.closest(
+        "[data-ticket-class]"
+      );
+
+    if (!row) return;
+
+    changeTicketAdjustment(
+      row.dataset.ticketClass,
+      Number(
+        control.dataset.ticketStep
+      )
+    );
+  }
+);
+
+elements.ticketOverlay.addEventListener(
+  "click",
+  event => {
+    if (
+      event.target ===
+      elements.ticketOverlay
+    ) {
+      closeTicketControl();
+    }
+  }
+);
+       
       elements.previousPage.addEventListener("click", () => {
         if (state.page <= 1) return;
         state.page -= 1;
@@ -2735,6 +3098,21 @@ elements.marketNextPage.addEventListener(
           closeRouteModal();
         }
       });
+
+      document.addEventListener(
+  "keydown",
+  event => {
+    if (
+      event.key === "Escape" &&
+      elements.ticketOverlay
+        .classList.contains("is-open")
+    ) {
+      event.preventDefault();
+      closeTicketControl();
+    }
+  }
+);
+         
       document.addEventListener("keydown", handleModalKeydown);
 
       loadRoutes();
