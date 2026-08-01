@@ -2743,7 +2743,35 @@ ticketRange: {
   Y: document.getElementById("ticketRangeY"),
   C: document.getElementById("ticketRangeC"),
   F: document.getElementById("ticketRangeF")
-}
+},
+
+routeFareOpen: document.getElementById(
+  "routeTicketPriceOpen"
+),
+routeFareOverlay: document.getElementById(
+  "routeFareModalOverlay"
+),
+routeFareModal: document.querySelector(
+  "#routeFareModalOverlay .route-fare-modal"
+),
+routeFareTitle: document.getElementById(
+  "routeFareModalTitle"
+),
+routeFareSubtitle: document.getElementById(
+  "routeFareModalSubtitle"
+),
+routeFareOutboundRoute: document.getElementById(
+  "routeFareOutboundRoute"
+),
+routeFareReturnRoute: document.getElementById(
+  "routeFareReturnRoute"
+),
+routeFareCloseX: document.getElementById(
+  "routeFareCloseX"
+),
+routeFareCancel: document.getElementById(
+  "routeFareCancel"
+)
       };
 
       function numberValue(value) {
@@ -2780,6 +2808,7 @@ ticketRange: {
       }
 
       function formatFareMoney(value) {
+           
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
@@ -2789,6 +2818,7 @@ ticketRange: {
 }
 
 function populateAircraftFilter() {
+     
   const selected = elements.aircraftFilter.value || "ALL";
   const aircraft = new Map();
 
@@ -2830,6 +2860,7 @@ function populateAircraftFilter() {
 }
          
       function formatMinutes(value) {
+           
         const minutes = integerValue(value);
         if (minutes <= 0) return "—";
         const hours = Math.floor(minutes / 60);
@@ -3878,6 +3909,62 @@ async function saveTicketControl() {
     elements.ticketSave.disabled = false;
   }
 }
+
+function openRouteFareModal() {
+  const route = state.selectedRoute;
+
+  if (!route) return;
+
+  const origin = textValue(route.origin);
+  const destination = textValue(route.destination);
+
+  state.routeFareTrigger = document.activeElement;
+
+  elements.routeFareTitle.textContent =
+    `${origin} ⇄ ${destination} · Ticket Price`;
+
+  elements.routeFareSubtitle.textContent =
+    "Applies to future flights not started.";
+
+  elements.routeFareOutboundRoute.textContent =
+    `${origin} → ${destination}`;
+
+  elements.routeFareReturnRoute.textContent =
+    `${destination} → ${origin}`;
+
+  elements.routeFareOverlay.classList.add("is-open");
+
+  elements.routeFareOverlay.setAttribute(
+    "aria-hidden",
+    "false"
+  );
+
+  document.body.classList.add("route-modal-open");
+
+  elements.routeFareCloseX.focus();
+}
+
+function closeRouteFareModal() {
+  if (
+    !elements.routeFareOverlay.classList.contains("is-open")
+  ) {
+    return;
+  }
+
+  elements.routeFareOverlay.classList.remove("is-open");
+
+  elements.routeFareOverlay.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+
+  if (
+    state.routeFareTrigger &&
+    document.contains(state.routeFareTrigger)
+  ) {
+    state.routeFareTrigger.focus();
+  }
+}
          
       async function loadRoutes() {
            
@@ -4020,7 +4107,45 @@ elements.ticketOverlay.addEventListener(
     }
   }
 );
-       
+
+elements.routeFareOpen.addEventListener(
+  "click",
+  openRouteFareModal
+);
+
+elements.routeFareCloseX.addEventListener(
+  "click",
+  closeRouteFareModal
+);
+
+elements.routeFareCancel.addEventListener(
+  "click",
+  closeRouteFareModal
+);
+
+elements.routeFareOverlay.addEventListener(
+  "click",
+  event => {
+    if (event.target === elements.routeFareOverlay) {
+      closeRouteFareModal();
+    }
+  }
+);
+
+document.addEventListener(
+  "keydown",
+  event => {
+    if (
+      event.key === "Escape" &&
+      elements.routeFareOverlay.classList.contains("is-open")
+    ) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      closeRouteFareModal();
+    }
+  }
+);
+         
       elements.previousPage.addEventListener("click", () => {
         if (state.page <= 1) return;
         state.page -= 1;
