@@ -3964,6 +3964,7 @@ async function saveTicketControl() {
 }
 
 const routeFareData = new Map();
+const routeFareBase = new Map();
 const routeFarePending = new Map();
 
 let routeFareLoading = false;
@@ -4014,13 +4015,25 @@ function renderRouteFareControl() {
       fare.reference_fare_usd
     );
 
-    const adjustment = numberValue(
+    const baseAdjustment = numberValue(
+      routeFareBase.get(key)
+    );
+
+    const pendingAdjustment = numberValue(
       routeFarePending.get(key)
+    );
+
+    const finalAdjustment = Math.max(
+      -20,
+      Math.min(
+        20,
+        baseAdjustment + pendingAdjustment
+      )
     );
 
     const newFare =
       referenceFare *
-      (1 + adjustment / 100);
+      (1 + finalAdjustment / 100);
 
     const currentElement =
       rowElement.querySelector(
@@ -4043,7 +4056,7 @@ function renderRouteFareControl() {
         : "—";
 
     adjustmentElement.textContent =
-      `${adjustment}%`;
+      `${pendingAdjustment}%`;
 
     newElement.textContent =
       newFare > 0
@@ -4051,7 +4064,7 @@ function renderRouteFareControl() {
         : "—";
   }
 }
-
+         
 async function loadRouteFareControl() {
   const route = state.selectedRoute;
 
@@ -4092,8 +4105,9 @@ async function loadRouteFareControl() {
         "ROUTE_FARES_QUERY_FAILED"
       );
     }
-
+       
     routeFareData.clear();
+    routeFareBase.clear();
     routeFarePending.clear();
 
     for (const fare of data.fares) {
@@ -4114,7 +4128,7 @@ async function loadRouteFareControl() {
 
       routeFareData.set(key, fare);
 
-      routeFarePending.set(
+      routeFareBase.set(
         key,
         Math.trunc(
           numberValue(
@@ -4122,6 +4136,8 @@ async function loadRouteFareControl() {
           )
         )
       );
+
+      routeFarePending.set(key, 0);
     }
 
     renderRouteFareControl();
@@ -4230,21 +4246,30 @@ function changeRouteFareAdjustment(
     serviceClass
   );
 
-  const current = numberValue(
+  const baseAdjustment = numberValue(
+    routeFareBase.get(key)
+  );
+
+  const currentPending = numberValue(
     routeFarePending.get(key)
+  );
+
+  const nextFinalAdjustment = Math.max(
+    -20,
+    Math.min(
+      20,
+      baseAdjustment + currentPending + step
+    )
   );
 
   routeFarePending.set(
     key,
-    Math.max(
-      -20,
-      Math.min(20, current + step)
-    )
+    nextFinalAdjustment - baseAdjustment
   );
 
   renderRouteFareControl();
 }
-
+         
 function resetRouteFareControl() {
   for (const direction of [
     "OUTBOUND",
@@ -4255,19 +4280,19 @@ function resetRouteFareControl() {
       "C",
       "F"
     ]) {
-      routeFarePending.set(
-        routeFareKey(
-          direction,
-          serviceClass
-        ),
-        0
+      const key = routeFareKey(
+        direction,
+        serviceClass
       );
+
+      routeFareBase.set(key, 0);
+      routeFarePending.set(key, 0);
     }
   }
 
   renderRouteFareControl();
 }
-
+         
 async function saveRouteFareControl() {
   const route = state.selectedRoute;
 
@@ -4296,13 +4321,19 @@ async function saveRouteFareControl() {
       "C",
       "F"
     ]) {
+         
+            const key = routeFareKey(
+        direction,
+        serviceClass
+      );
+
       adjustments[direction][serviceClass] =
-        numberValue(
-          routeFarePending.get(
-            routeFareKey(
-              direction,
-              serviceClass
-            )
+        Math.max(
+          -20,
+          Math.min(
+            20,
+            numberValue(routeFareBase.get(key)) +
+            numberValue(routeFarePending.get(key))
           )
         );
     }
