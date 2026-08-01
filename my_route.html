@@ -1256,13 +1256,39 @@
 
 .route-fare-modal .route-modal-header {
   position: sticky;
+  display: flex;
   align-items: center;
+  justify-content: center;
+  text-align: center;
   background:
     linear-gradient(
       90deg,
       rgba(11, 28, 56, 0.99),
       rgba(6, 17, 37, 0.99)
     );
+}
+
+.route-fare-modal .route-modal-header > div {
+  width: 100%;
+  padding: 0 64px;
+}
+
+.route-fare-modal .route-modal-kicker,
+.route-fare-modal .route-modal-title,
+.route-fare-modal .route-modal-subtitle {
+  width: 100%;
+  text-align: center;
+}
+
+.route-fare-modal .route-modal-close {
+  position: absolute;
+  top: 50%;
+  right: 1.4rem;
+  transform: translateY(-50%);
+}
+
+.route-fare-modal .route-modal-close:hover {
+  transform: translateY(-50%);
 }
 
 .route-fare-body {
@@ -2771,6 +2797,20 @@ routeFareCloseX: document.getElementById(
 ),
 routeFareCancel: document.getElementById(
   "routeFareCancel"
+),
+routeFareReset: document.getElementById(
+  "routeFareReset"
+),
+routeFareSave: document.getElementById(
+  "routeFareSave"
+),
+routeFareStatus: document.getElementById(
+  "routeFareStatus"
+),
+routeFareRows: Array.from(
+  document.querySelectorAll(
+    "[data-route-fare-direction][data-route-fare-class]"
+  )
 )
       };
 
@@ -3908,6 +3948,192 @@ async function saveTicketControl() {
     state.ticketSaving = false;
     elements.ticketSave.disabled = false;
   }
+const routeFareData = new Map();
+const routeFarePending = new Map();
+
+let routeFareLoading = false;
+let routeFareSaving = false;
+
+function routeFareKey(direction, serviceClass) {
+  return `${direction}:${serviceClass}`;
+}
+
+function setRouteFareStatus(message = "", status = "") {
+  elements.routeFareStatus.textContent = message;
+  elements.routeFareStatus.dataset.state = status;
+}
+
+function setRouteFareBusy() {
+  const busy = routeFareLoading || routeFareSaving;
+
+  elements.routeFareReset.disabled = busy;
+  elements.routeFareSave.disabled = busy;
+
+  for (const button of elements.routeFareModal.querySelectorAll(
+    "[data-route-fare-step]"
+  )) {
+    button.disabled = busy;
+  }
+}
+
+function renderRouteFareControl() {
+  for (const rowElement of elements.routeFareRows) {
+    const direction =
+      rowElement.dataset.routeFareDirection;
+
+    const serviceClass =
+      rowElement.dataset.routeFareClass;
+
+    const key = routeFareKey(
+      direction,
+      serviceClass
+    );
+
+    const fare = routeFareData.get(key) || {};
+
+    const currentFare = numberValue(
+      fare.final_fare_usd
+    );
+
+    const referenceFare = numberValue(
+      fare.reference_fare_usd
+    );
+
+    const adjustment = numberValue(
+      routeFarePending.get(key)
+    );
+
+    const newFare =
+      referenceFare *
+      (1 + adjustment / 100);
+
+    const currentElement =
+      rowElement.querySelector(
+        "[data-route-fare-current]"
+      );
+
+    const adjustmentElement =
+      rowElement.querySelector(
+        "[data-route-fare-adjust-value]"
+      );
+
+    const newElement =
+      rowElement.querySelector(
+        "[data-route-fare-new]"
+      );
+
+    currentElement.textContent =
+      currentFare > 0
+        ? formatFareMoney(currentFare)
+        : "—";
+
+    adjustmentElement.textContent =
+      `${adjustment}%`;
+
+    newElement.textContent =
+      newFare > 0
+        ? formatFareMoney(newFare)
+        : "—";
+  }
+}
+
+async function loadRouteFareControl() {
+  const route = state.selectedRoute;
+
+  if (!route || routeFareLoading) return;
+
+  const routePlanId =
+    integerValue(route.route_plan_id);
+
+  if (routePlanId <= 0) return;
+
+  routeFareLoading = true;
+  setRouteFareBusy();
+  setRouteFareStatus("Loading route fares...");
+
+  try {
+    const response = await fetch(
+      `${API_URL}/${routePlanId}/fares`,
+      {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          Accept: "application/json"
+        },
+        cache: "no-store"
+      }
+    );
+
+    const data = await response.json();
+
+    if (
+      !response.ok ||
+      !data?.ok ||
+      !Array.isArray(data.fares) ||
+      data.fares.length !== 6
+    ) {
+      throw new Error(
+        data?.error ||
+        "ROUTE_FARES_QUERY_FAILED"
+      );
+    }
+
+    routeFareData.clear();
+    routeFarePending.clear();
+
+    for (const fare of data.fares) {
+      const direction =
+        String(fare.direction || "")
+          .trim()
+          .toUpperCase();
+
+      const serviceClass =
+        String(fare.service_class || "")
+          .trim()
+          .toUpperCase();
+
+      const key = routeFareKey(
+        direction,
+        serviceClass
+      );
+
+      routeFareData.set(key, fare);
+
+      routeFarePending.set(
+        key,
+        Math.trunc(
+          numberValue(
+            fare.adjustment_percent
+          )
+        )
+      );
+    }
+
+    renderRouteFareControl();
+
+    setRouteFareStatus(
+      "Route fares loaded.",
+      "success"
+    );
+  } catch (error) {
+    routeFareData.clear();
+    routeFarePending.clear();
+
+    renderRouteFareControl();
+
+    setRouteFareStatus(
+      "Route fares could not be loaded.",
+      "error"
+    );
+
+    console.error(
+      "ROUTE_FARES_LOAD_FAILED",
+      error
+    );
+  } finally {
+    routeFareLoading = false;
+    setRouteFareBusy();
+  }
 }
 
 function openRouteFareModal() {
@@ -3918,10 +4144,11 @@ function openRouteFareModal() {
   const origin = textValue(route.origin);
   const destination = textValue(route.destination);
 
-  state.routeFareTrigger = document.activeElement;
+  state.routeFareTrigger =
+    document.activeElement;
 
   elements.routeFareTitle.textContent =
-    `${origin} ⇄ ${destination} · Ticket Price`;
+    `${origin} ⇄ ${destination}`;
 
   elements.routeFareSubtitle.textContent =
     "Applies to future flights not started.";
@@ -3932,37 +4159,188 @@ function openRouteFareModal() {
   elements.routeFareReturnRoute.textContent =
     `${destination} → ${origin}`;
 
-  elements.routeFareOverlay.classList.add("is-open");
+  elements.routeFareOverlay.classList.add(
+    "is-open"
+  );
 
   elements.routeFareOverlay.setAttribute(
     "aria-hidden",
     "false"
   );
 
-  document.body.classList.add("route-modal-open");
+  document.body.classList.add(
+    "route-modal-open"
+  );
 
   elements.routeFareCloseX.focus();
+
+  loadRouteFareControl();
 }
 
 function closeRouteFareModal() {
   if (
-    !elements.routeFareOverlay.classList.contains("is-open")
+    !elements.routeFareOverlay.classList.contains(
+      "is-open"
+    )
   ) {
     return;
   }
 
-  elements.routeFareOverlay.classList.remove("is-open");
+  elements.routeFareOverlay.classList.remove(
+    "is-open"
+  );
 
   elements.routeFareOverlay.setAttribute(
     "aria-hidden",
     "true"
   );
 
+  setRouteFareStatus();
+
   if (
     state.routeFareTrigger &&
     document.contains(state.routeFareTrigger)
   ) {
     state.routeFareTrigger.focus();
+  }
+}
+
+function changeRouteFareAdjustment(
+  direction,
+  serviceClass,
+  step
+) {
+  const key = routeFareKey(
+    direction,
+    serviceClass
+  );
+
+  const current = numberValue(
+    routeFarePending.get(key)
+  );
+
+  routeFarePending.set(
+    key,
+    Math.max(
+      -20,
+      Math.min(20, current + step)
+    )
+  );
+
+  renderRouteFareControl();
+}
+
+function resetRouteFareControl() {
+  for (const direction of [
+    "OUTBOUND",
+    "RETURN"
+  ]) {
+    for (const serviceClass of [
+      "Y",
+      "C",
+      "F"
+    ]) {
+      routeFarePending.set(
+        routeFareKey(
+          direction,
+          serviceClass
+        ),
+        0
+      );
+    }
+  }
+
+  renderRouteFareControl();
+}
+
+async function saveRouteFareControl() {
+  const route = state.selectedRoute;
+
+  if (
+    !route ||
+    routeFareLoading ||
+    routeFareSaving
+  ) {
+    return;
+  }
+
+  const routePlanId =
+    integerValue(route.route_plan_id);
+
+  const adjustments = {
+    OUTBOUND: {},
+    RETURN: {}
+  };
+
+  for (const direction of [
+    "OUTBOUND",
+    "RETURN"
+  ]) {
+    for (const serviceClass of [
+      "Y",
+      "C",
+      "F"
+    ]) {
+      adjustments[direction][serviceClass] =
+        numberValue(
+          routeFarePending.get(
+            routeFareKey(
+              direction,
+              serviceClass
+            )
+          )
+        );
+    }
+  }
+
+  routeFareSaving = true;
+  setRouteFareBusy();
+  setRouteFareStatus("Saving route fares...");
+
+  try {
+    const response = await fetch(
+      `${API_URL}/${routePlanId}/fares`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          adjustments
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data?.ok) {
+      throw new Error(
+        data?.error ||
+        "ROUTE_FARES_SAVE_FAILED"
+      );
+    }
+
+    await loadRouteFareControl();
+
+    setRouteFareStatus(
+      "Route fares saved.",
+      "success"
+    );
+  } catch (error) {
+    setRouteFareStatus(
+      "Route fares could not be saved.",
+      "error"
+    );
+
+    console.error(
+      "ROUTE_FARES_SAVE_FAILED",
+      error
+    );
+  } finally {
+    routeFareSaving = false;
+    setRouteFareBusy();
   }
 }
          
@@ -4121,6 +4499,39 @@ elements.routeFareCloseX.addEventListener(
 elements.routeFareCancel.addEventListener(
   "click",
   closeRouteFareModal
+);
+
+elements.routeFareReset.addEventListener(
+  "click",
+  resetRouteFareControl
+);
+
+elements.routeFareSave.addEventListener(
+  "click",
+  saveRouteFareControl
+);
+
+elements.routeFareModal.addEventListener(
+  "click",
+  event => {
+    const button = event.target.closest(
+      "[data-route-fare-step]"
+    );
+
+    if (!button) return;
+
+    const row = button.closest(
+      "[data-route-fare-direction][data-route-fare-class]"
+    );
+
+    if (!row) return;
+
+    changeRouteFareAdjustment(
+      row.dataset.routeFareDirection,
+      row.dataset.routeFareClass,
+      Number(button.dataset.routeFareStep)
+    );
+  }
 );
 
 elements.routeFareOverlay.addEventListener(
