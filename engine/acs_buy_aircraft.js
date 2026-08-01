@@ -926,6 +926,8 @@ function openBuyModal(ac) {
 
   updateModalSummary();
 
+  ACS_refreshBuyOrderSlotAvailability();
+
   ACS_syncSeatConfigurationButton();
 
   document.getElementById(
@@ -2026,6 +2028,94 @@ let ACS_factorySlotsState = {
   month: null
 };
 
+let ACS_selectedFactoryAvailability = {
+  model_key: null,
+  status: "IDLE",
+  data: null
+};
+
+function ACS_setBuyOrderSlotState(status, data = null) {
+  const modelKey = selectedAircraft?.model_key || null;
+  const badge = document.getElementById("buyOrderSlotStatus");
+  const confirmButton = document.getElementById("modalConfirm");
+
+  ACS_selectedFactoryAvailability = {
+    model_key: modelKey,
+    status,
+    data
+  };
+
+  if (badge) {
+    badge.textContent =
+      status === "AVAILABLE"
+        ? "OEM SLOT AVAILABLE"
+        : status === "UNAVAILABLE"
+          ? "NO OEM SLOTS AVAILABLE"
+          : status === "ERROR"
+            ? "SLOT STATUS UNAVAILABLE"
+            : "CHECKING OEM SLOTS";
+  }
+
+  if (confirmButton) {
+    confirmButton.disabled = status !== "AVAILABLE";
+    confirmButton.title =
+      status === "AVAILABLE"
+        ? ""
+        : "A real future OEM slot is required before ordering.";
+  }
+}
+
+async function ACS_refreshBuyOrderSlotAvailability() {
+  if (!selectedAircraft?.model_key) {
+    ACS_setBuyOrderSlotState("UNAVAILABLE");
+    updateModalSummary();
+    return;
+  }
+
+  const requestedModelKey = selectedAircraft.model_key;
+  const simDate = ACS_getCurrentSimDateParts();
+
+  ACS_setBuyOrderSlotState("LOADING");
+  updateModalSummary();
+
+  const url =
+    `${ACS_FACTORY_SLOTS_AVAILABILITY_ENDPOINT}` +
+    `?model_key=${encodeURIComponent(requestedModelKey)}` +
+    `&year=${encodeURIComponent(simDate.year)}` +
+    `&month=${encodeURIComponent(simDate.month)}`;
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      credentials: "include"
+    });
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || `Factory Slots HTTP ${response.status}`);
+    }
+
+    if (selectedAircraft?.model_key !== requestedModelKey) return;
+
+    const nextWindow = data.next_available_delivery_window || null;
+    const hasRealSlot = Boolean(
+      nextWindow && Number(nextWindow.available || 0) > 0
+    );
+
+    ACS_setBuyOrderSlotState(
+      hasRealSlot ? "AVAILABLE" : "UNAVAILABLE",
+      data
+    );
+  } catch (error) {
+    if (selectedAircraft?.model_key !== requestedModelKey) return;
+
+    console.error("❌ Buy Order slot check failed:", error);
+    ACS_setBuyOrderSlotState("ERROR");
+  }
+
+  updateModalSummary();
+}
+
 function ACS_getCurrentSimDateParts() {
   try {
     if (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime) {
@@ -2515,19 +2605,14 @@ if (loadStatus) {
         nextWindow = ACS_getProjectedFactorySlotDateLabel(
           Number(nwYear),
           Number(nwMonth),
-          capacity,
-          reserved
+          Number(rawNextWindow.capacity || 0),
+          Number(rawNextWindow.reserved || 0)
         );
       }
     } else if (typeof rawNextWindow === "string") {
       nextWindow = rawNextWindow;
     } else {
-      nextWindow = ACS_getProjectedFactorySlotDateLabel(
-        state.year,
-        state.month,
-        capacity,
-        reserved
-      );
+      nextWindow = "NO SLOTS PUBLISHED";
     }
 
     if (capacityEl) capacityEl.textContent = `${capacity}/month`;
@@ -2587,20 +2672,23 @@ document.addEventListener("DOMContentLoaded", () => {
    - Final delivery authority will be backend order endpoint
    ============================================================ */
 
-function ACS_calculateDeliveryPreviewDate(qty) {
-   
-  const now = (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime)
-    ? new Date(ACS_TIME.currentTime)
-    : new Date();
+function ACS_calculateDeliveryPreviewDate() {
+  if (
+    ACS_selectedFactoryAvailability.model_key !== selectedAircraft?.model_key ||
+    ACS_selectedFactoryAvailability.status !== "AVAILABLE"
+  ) {
+    return null;
+  }
 
-  const quantity = Math.max(1, Number(qty || 1));
+  const rawDate =
+    ACS_selectedFactoryAvailability.data
+      ?.next_available_delivery_window
+      ?.estimated_delivery_preview;
 
-  const baseDays = 60;
-  const bufferDays = Math.max(0, quantity - 1) * 15;
+  if (!rawDate) return null;
 
-  return new Date(
-    now.getTime() + ((baseDays + bufferDays) * 24 * 60 * 60 * 1000)
-  );
+  const deliveryDate = new Date(rawDate);
+  return Number.isNaN(deliveryDate.getTime()) ? null : deliveryDate;
 }
 
 /* ============================================================
@@ -2661,10 +2749,16 @@ function updateModalSummary() {
      This preview does NOT reserve slots.
      ============================================================ */
 
-  const deliveryDate = ACS_calculateDeliveryPreviewDate(qty);
-  const d = deliveryDate.toUTCString().substring(5, 16);
+  const deliveryDate = ACS_calculateDeliveryPreviewDate();
 
-  summary += `Estimated delivery: <b>${d}</b><br>`;
+  if (deliveryDate) {
+    const d = deliveryDate.toUTCString().substring(5, 16);
+    summary += `Estimated delivery: <b>${d}</b><br>`;
+  } else if (ACS_selectedFactoryAvailability.status === "LOADING") {
+    summary += "Estimated delivery: <b>Checking OEM slots…</b><br>";
+  } else {
+    summary += "Estimated delivery: <b>No factory slot available</b><br>";
+  }
 
   /* ============================================================
      🟩 BUY NEW — PURCHASE / FINANCED PURCHASE
@@ -3311,7 +3405,8 @@ const leasePolicyVersion =
 
       } finally {
 
-        confirmBtn.disabled = false;
+        confirmBtn.disabled =
+          ACS_selectedFactoryAvailability.status !== "AVAILABLE";
         confirmBtn.textContent = "Confirm Order";
 
       }
