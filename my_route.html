@@ -1194,6 +1194,347 @@
 }
 }
 
+/* ============================================================
+   INDIVIDUAL ROUTE FARE CONTROL
+   ============================================================ */
+
+.route-ticket-price-action {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  padding-top: 0.25rem;
+}
+
+.route-ticket-price-launch {
+  min-width: 210px;
+  min-height: 40px;
+  padding: 0.65rem 1.4rem;
+  color: #ffe7a6;
+  border: 1px solid rgba(255, 179, 0, 0.72);
+  border-radius: 9px;
+  background: linear-gradient(
+    180deg,
+    rgba(52, 39, 16, 0.96),
+    rgba(24, 22, 20, 0.98)
+  );
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 232, 170, 0.08),
+    0 4px 12px rgba(0, 0, 0, 0.28);
+}
+
+.route-ticket-price-launch:hover:not(:disabled) {
+  color: #ffffff;
+  border-color: #ffb300;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 232, 170, 0.12),
+    0 0 16px rgba(255, 179, 0, 0.2);
+}
+
+.route-ticket-price-launch:disabled {
+  opacity: 0.45;
+  cursor: wait;
+}
+
+.route-fare-modal-overlay {
+  z-index: 11000;
+  background: rgba(1, 7, 19, 0.9);
+}
+
+.route-fare-modal {
+  width: min(1180px, calc(100vw - 36px));
+  background:
+    linear-gradient(
+      135deg,
+      rgba(14, 31, 61, 0.99),
+      rgba(5, 13, 29, 0.99)
+    );
+}
+
+.route-fare-modal .route-modal-header {
+  position: sticky;
+  align-items: center;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(11, 28, 56, 0.99),
+      rgba(6, 17, 37, 0.99)
+    );
+}
+
+.route-fare-body {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem 1.4rem 1.45rem;
+}
+
+.route-fare-status {
+  min-height: 1.25rem;
+  color: var(--route-muted);
+  text-align: center;
+  font-size: 0.8rem;
+}
+
+.route-fare-status[data-state="success"] {
+  color: #6fffb0;
+}
+
+.route-fare-status[data-state="error"] {
+  color: #ff6868;
+}
+
+.route-fare-directions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.route-fare-direction {
+  --direction-accent: #63b7ff;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(99, 183, 255, 0.34);
+  border-radius: 13px;
+  background: rgba(4, 12, 28, 0.72);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.035),
+    0 12px 26px rgba(0, 0, 0, 0.18);
+}
+
+.route-fare-direction[data-direction="RETURN"] {
+  --direction-accent: #b89cff;
+  border-color: rgba(184, 156, 255, 0.34);
+}
+
+.route-fare-direction-header {
+  padding: 1rem 1.05rem 0.9rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.075);
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--direction-accent) 14%, transparent),
+      transparent
+    );
+}
+
+.route-fare-direction-label {
+  color: var(--direction-accent);
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.route-fare-direction-route {
+  display: block;
+  margin-top: 0.4rem;
+  color: #ffffff;
+  font-family: "Orbitron", sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.route-fare-column-headings,
+.route-fare-row {
+  display: grid;
+  grid-template-columns:
+    minmax(105px, 0.8fr)
+    minmax(90px, 0.75fr)
+    minmax(170px, 1.2fr)
+    minmax(90px, 0.75fr);
+  align-items: center;
+}
+
+.route-fare-column-headings {
+  color: var(--route-gold);
+  background: rgba(255, 255, 255, 0.025);
+  font-size: 0.61rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.route-fare-column-headings > div,
+.route-fare-row > div {
+  min-width: 0;
+  padding: 0.72rem 0.65rem;
+  text-align: center;
+}
+
+.route-fare-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.065);
+}
+
+.route-fare-class {
+  position: relative;
+  padding-left: 1rem;
+  text-align: left;
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.035em;
+}
+
+.route-fare-class::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 4px;
+  height: 26px;
+  border-radius: 4px;
+  transform: translateY(-50%);
+  background: currentColor;
+  box-shadow: 0 0 7px currentColor;
+}
+
+.route-fare-class[data-service-class="Y"] {
+  color: #70c8ff;
+}
+
+.route-fare-class[data-service-class="C"] {
+  color: #b89cff;
+}
+
+.route-fare-class[data-service-class="F"] {
+  color: #ffcf68;
+}
+
+.route-fare-current,
+.route-fare-new {
+  color: #ffffff;
+  font-size: 0.88rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.route-fare-new {
+  color: var(--direction-accent);
+}
+
+.route-fare-adjust {
+  display: grid;
+  grid-template-columns: 36px minmax(54px, 1fr) 36px;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.route-fare-step {
+  min-height: 34px;
+  color: #ffffff;
+  border: 1px solid
+    color-mix(in srgb, var(--direction-accent) 65%, transparent);
+  border-radius: 8px;
+  background:
+    color-mix(in srgb, var(--direction-accent) 13%, transparent);
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.route-fare-step:hover:not(:disabled) {
+  background:
+    color-mix(in srgb, var(--direction-accent) 26%, transparent);
+}
+
+.route-fare-step:disabled {
+  opacity: 0.4;
+  cursor: wait;
+}
+
+.route-fare-adjust-value {
+  color: #ffffff;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.route-fare-footer-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.route-fare-reset,
+.route-fare-save {
+  min-height: 42px;
+  padding: 0.65rem 1.35rem;
+  border-radius: 9px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.route-fare-reset {
+  color: #ffe7a6;
+  border: 1px solid rgba(255, 179, 0, 0.68);
+  background: rgba(255, 179, 0, 0.08);
+}
+
+.route-fare-save {
+  color: #ffffff;
+  border: 1px solid rgba(72, 158, 255, 0.76);
+  background: linear-gradient(
+    180deg,
+    rgba(22, 58, 105, 0.98),
+    rgba(9, 29, 62, 1)
+  );
+  font-family: "Orbitron", sans-serif;
+}
+
+.route-fare-save:hover:not(:disabled) {
+  border-color: #6babff;
+  box-shadow: 0 0 14px rgba(68, 144, 255, 0.24);
+}
+
+.route-fare-save:disabled {
+  opacity: 0.45;
+  cursor: wait;
+}
+
+@media (max-width: 980px) {
+  .route-fare-directions {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .route-fare-column-headings {
+    display: none;
+  }
+
+  .route-fare-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .route-fare-row > div {
+    text-align: left;
+  }
+
+  .route-fare-adjust {
+    grid-column: 1 / -1;
+  }
+
+  .route-fare-footer-actions {
+    flex-direction: column;
+  }
+
+  .route-fare-footer-actions > button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 900px) {
+  .ticket-fare-grid {
+      
 @media (max-width: 900px) {
   .ticket-fare-grid {
     grid-template-columns: 1fr 1fr;
