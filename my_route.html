@@ -2112,20 +2112,21 @@
       </header>
 
       <div class="route-modal-body">
-        <section class="route-modal-section">
-          <h3 class="route-modal-section-title">Route Overview</h3>
-          <div id="routeOverviewFacts" class="route-facts"></div>
-        </section>
+     <section class="route-modal-section">
+     <h3 class="route-modal-section-title">Route Overview</h3>
 
-        <div class="route-ticket-price-action">
-        <button
-         id="routeTicketPriceOpen"
-         class="route-ticket-price-launch"
-         type="button"
-         >
-         TICKET PRICE
+    <div id="routeOverviewFacts" class="route-facts"></div>
+
+    <div class="route-ticket-price-action">
+      <button
+        id="routeTicketPriceOpen"
+        class="route-ticket-price-launch"
+        type="button"
+      >
+        TICKET PRICE
         </button>
        </div>
+       </section>
        
         <section class="route-modal-section">
           <h3 class="route-modal-section-title">Aircraft Assignment</h3>
@@ -2187,6 +2188,455 @@
     </section>
   </div>
 
+  <div
+  id="routeFareModalOverlay"
+  class="route-modal-overlay route-fare-modal-overlay"
+  aria-hidden="true"
+>
+  <section
+    class="route-modal route-fare-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="routeFareModalTitle"
+  >
+    <header class="route-modal-header">
+      <div>
+        <div class="route-modal-kicker">Route Fare Control</div>
+
+        <h2 id="routeFareModalTitle" class="route-modal-title">
+          Route Ticket Price
+        </h2>
+
+        <p id="routeFareModalSubtitle" class="route-modal-subtitle">
+          Applies to future flights not started.
+        </p>
+      </div>
+
+      <button
+        id="routeFareCloseX"
+        class="route-modal-close"
+        type="button"
+        aria-label="Close route fare control"
+      >
+        ×
+      </button>
+    </header>
+
+    <div class="route-fare-body">
+      <div
+        id="routeFareStatus"
+        class="route-fare-status"
+        role="status"
+        aria-live="polite"
+      ></div>
+
+      <div class="route-fare-directions">
+        <section
+          class="route-fare-direction"
+          data-direction="OUTBOUND"
+        >
+          <header class="route-fare-direction-header">
+            <div class="route-fare-direction-label">
+              Outbound
+            </div>
+
+            <strong
+              id="routeFareOutboundRoute"
+              class="route-fare-direction-route"
+            >
+              — → —
+            </strong>
+          </header>
+
+          <div class="route-fare-column-headings">
+            <div>Class</div>
+            <div>Current Fare</div>
+            <div>Adjustment</div>
+            <div>New Fare</div>
+          </div>
+
+          <div
+            class="route-fare-row"
+            data-route-fare-direction="OUTBOUND"
+            data-route-fare-class="Y"
+          >
+            <div
+              class="route-fare-class"
+              data-service-class="Y"
+            >
+              Y · Economy
+            </div>
+
+            <div
+              class="route-fare-current"
+              data-route-fare-current
+            >
+              —
+            </div>
+
+            <div class="route-fare-adjust">
+              <button
+                class="route-fare-step"
+                type="button"
+                data-route-fare-step="-1"
+                aria-label="Decrease outbound Economy fare"
+              >
+                −
+              </button>
+
+              <span
+                class="route-fare-adjust-value"
+                data-route-fare-adjust-value
+              >
+                0%
+              </span>
+
+              <button
+                class="route-fare-step"
+                type="button"
+                data-route-fare-step="1"
+                aria-label="Increase outbound Economy fare"
+              >
+                +
+              </button>
+            </div>
+
+            <div
+              class="route-fare-new"
+              data-route-fare-new
+            >
+              —
+            </div>
+          </div>
+
+          <div
+            class="route-fare-row"
+            data-route-fare-direction="OUTBOUND"
+            data-route-fare-class="C"
+          >
+            <div
+              class="route-fare-class"
+              data-service-class="C"
+            >
+              C · Business
+            </div>
+
+            <div
+              class="route-fare-current"
+              data-route-fare-current
+            >
+              —
+            </div>
+
+            <div class="route-fare-adjust">
+              <button
+                class="route-fare-step"
+                type="button"
+                data-route-fare-step="-1"
+                aria-label="Decrease outbound Business fare"
+              >
+                −
+              </button>
+
+              <span
+                class="route-fare-adjust-value"
+                data-route-fare-adjust-value
+              >
+                0%
+              </span>
+
+              <button
+                class="route-fare-step"
+                type="button"
+                data-route-fare-step="1"
+                aria-label="Increase outbound Business fare"
+              >
+                +
+              </button>
+            </div>
+
+            <div
+              class="route-fare-new"
+              data-route-fare-new
+            >
+              —
+            </div>
+          </div>
+
+          <div
+            class="route-fare-row"
+            data-route-fare-direction="OUTBOUND"
+            data-route-fare-class="F"
+          >
+            <div
+              class="route-fare-class"
+              data-service-class="F"
+            >
+              F · First
+            </div>
+
+            <div
+              class="route-fare-current"
+              data-route-fare-current
+            >
+              —
+            </div>
+
+            <div class="route-fare-adjust">
+              <button
+                class="route-fare-step"
+                type="button"
+                data-route-fare-step="-1"
+                aria-label="Decrease outbound First fare"
+              >
+                −
+              </button>
+
+              <span
+                class="route-fare-adjust-value"
+                data-route-fare-adjust-value
+              >
+                0%
+              </span>
+
+              <button
+                class="route-fare-step"
+                type="button"
+                data-route-fare-step="1"
+                aria-label="Increase outbound First fare"
+              >
+                +
+              </button>
+            </div>
+
+            <div
+              class="route-fare-new"
+              data-route-fare-new
+            >
+              —
+            </div>
+          </div>
+        </section>
+
+        <section
+          class="route-fare-direction"
+          data-direction="RETURN"
+        >
+          <header class="route-fare-direction-header">
+            <div class="route-fare-direction-label">
+              Return
+            </div>
+
+            <strong
+              id="routeFareReturnRoute"
+              class="route-fare-direction-route"
+            >
+              — → —
+            </strong>
+          </header>
+
+          <div class="route-fare-column-headings">
+            <div>Class</div>
+            <div>Current Fare</div>
+            <div>Adjustment</div>
+            <div>New Fare</div>
+          </div>
+
+          <div
+            class="route-fare-row"
+            data-route-fare-direction="RETURN"
+            data-route-fare-class="Y"
+          >
+            <div
+              class="route-fare-class"
+              data-service-class="Y"
+            >
+              Y · Economy
+            </div>
+
+            <div
+              class="route-fare-current"
+              data-route-fare-current
+            >
+              —
+            </div>
+
+            <div class="route-fare-adjust">
+              <button
+                class="route-fare-step"
+                type="button"
+                data-route-fare-step="-1"
+                aria-label="Decrease return Economy fare"
+              >
+                −
+              </button>
+
+              <span
+                class="route-fare-adjust-value"
+                data-route-fare-adjust-value
+              >
+                0%
+              </span>
+
+              <button
+                class="route-fare-step"
+                type="button"
+                data-route-fare-step="1"
+                aria-label="Increase return Economy fare"
+              >
+                +
+              </button>
+            </div>
+
+            <div
+              class="route-fare-new"
+              data-route-fare-new
+            >
+              —
+            </div>
+          </div>
+
+          <div
+            class="route-fare-row"
+            data-route-fare-direction="RETURN"
+            data-route-fare-class="C"
+          >
+            <div
+              class="route-fare-class"
+              data-service-class="C"
+            >
+              C · Business
+            </div>
+
+            <div
+              class="route-fare-current"
+              data-route-fare-current
+            >
+              —
+            </div>
+
+            <div class="route-fare-adjust">
+              <button
+                class="route-fare-step"
+                type="button"
+                data-route-fare-step="-1"
+                aria-label="Decrease return Business fare"
+              >
+                −
+              </button>
+
+              <span
+                class="route-fare-adjust-value"
+                data-route-fare-adjust-value
+              >
+                0%
+              </span>
+
+              <button
+                class="route-fare-step"
+                type="button"
+                data-route-fare-step="1"
+                aria-label="Increase return Business fare"
+              >
+                +
+              </button>
+            </div>
+
+            <div
+              class="route-fare-new"
+              data-route-fare-new
+            >
+              —
+            </div>
+          </div>
+
+          <div
+            class="route-fare-row"
+            data-route-fare-direction="RETURN"
+            data-route-fare-class="F"
+          >
+            <div
+              class="route-fare-class"
+              data-service-class="F"
+            >
+              F · First
+            </div>
+
+            <div
+              class="route-fare-current"
+              data-route-fare-current
+            >
+              —
+            </div>
+
+            <div class="route-fare-adjust">
+              <button
+                class="route-fare-step"
+                type="button"
+                data-route-fare-step="-1"
+                aria-label="Decrease return First fare"
+              >
+                −
+              </button>
+
+              <span
+                class="route-fare-adjust-value"
+                data-route-fare-adjust-value
+              >
+                0%
+              </span>
+
+              <button
+                class="route-fare-step"
+                type="button"
+                data-route-fare-step="1"
+                aria-label="Increase return First fare"
+              >
+                +
+              </button>
+            </div>
+
+            <div
+              class="route-fare-new"
+              data-route-fare-new
+            >
+              —
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <footer class="route-modal-footer">
+      <div class="route-fare-footer-actions">
+        <button
+          id="routeFareReset"
+          class="route-fare-reset"
+          type="button"
+        >
+          Reset
+        </button>
+
+        <button
+          id="routeFareCancel"
+          class="route-modal-close-btn"
+          type="button"
+        >
+          Cancel
+        </button>
+
+        <button
+          id="routeFareSave"
+          class="route-fare-save"
+          type="button"
+        >
+          Save Route Fares
+        </button>
+      </div>
+    </footer>
+  </section>
+</div>
+ 
   <footer class="acs-footer">
     <span>© 2026 Aviation Capital Simulator. All rights reserved.</span>
     <span class="acs-footer-separator">•</span>
