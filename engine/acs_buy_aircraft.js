@@ -3328,6 +3328,45 @@ const leasePolicyVersion =
         return;
       }
 
+      const cabinKey = window.ACS_CABIN.makeAircraftKey(ac);
+
+const cabinConfiguration =
+  ACS_cabinPreviewByAircraft.get(cabinKey) ||
+  window.ACS_CABIN.getFactoryDefault(ac);
+
+let cabinOrderPayload = null;
+
+if (cabinConfiguration) {
+  const cabinValidation =
+    window.ACS_CABIN.validateConfiguration(
+      ac,
+      cabinConfiguration
+    );
+
+  if (!cabinValidation.valid) {
+    alert(
+      "❌ Invalid cabin configuration.\n\n" +
+      cabinValidation.message
+    );
+    return;
+  }
+
+  cabinOrderPayload = {
+    Y: {
+      product: cabinConfiguration.Y.product,
+      seats: Number(cabinConfiguration.Y.seats || 0)
+    },
+    C: {
+      product: cabinConfiguration.C.product,
+      seats: Number(cabinConfiguration.C.seats || 0)
+    },
+    F: {
+      product: cabinConfiguration.F.product,
+      seats: Number(cabinConfiguration.F.seats || 0)
+    }
+  };
+}
+  
       confirmBtn.disabled = true;
       confirmBtn.textContent = "Processing...";
 
@@ -3349,6 +3388,7 @@ const leasePolicyVersion =
   sim_year: simYear,
   sim_month: simMonth,
   sim_day: simDay,
+  cabin_configuration: cabinOrderPayload,
 
   /* Lease New OCC metadata */
   lease_years: leaseYears,
