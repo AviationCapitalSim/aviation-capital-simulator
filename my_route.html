@@ -590,6 +590,94 @@
       background: rgba(80, 200, 120, 0.1);
     }
 
+    .route-result-button {
+      min-width: 96px;
+      padding: 5px 10px;
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.025);
+      font-family: "Orbitron", sans-serif;
+      font-size: 0.72rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.035em;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .route-result-button[data-level="loss"] {
+      color: #ff4d4d;
+      background: rgba(255, 77, 77, 0.08);
+      text-shadow: 0 0 9px rgba(255, 77, 77, 0.56);
+    }
+
+    .route-result-button[data-level="orange"] {
+      color: #ff7a00;
+      background: rgba(255, 122, 0, 0.08);
+      text-shadow: 0 0 8px rgba(255, 122, 0, 0.5);
+    }
+
+    .route-result-button[data-level="amber"] {
+      color: #ffb300;
+      background: rgba(255, 179, 0, 0.08);
+      text-shadow: 0 0 8px rgba(255, 179, 0, 0.48);
+    }
+
+    .route-result-button[data-level="profit"] {
+      color: #50c878;
+      background: rgba(80, 200, 120, 0.08);
+      text-shadow: 0 0 8px rgba(80, 200, 120, 0.52);
+    }
+
+    .route-result-popover {
+      position: fixed;
+      z-index: 9000;
+      width: 268px;
+      padding: 14px 16px;
+      color: #f5f7fa;
+      border: 1px solid rgba(255, 179, 0, 0.58);
+      border-radius: 12px;
+      background: linear-gradient(
+        180deg,
+        rgba(12, 31, 65, 0.99),
+        rgba(5, 15, 34, 0.99)
+      );
+      box-shadow:
+        0 18px 44px rgba(0, 0, 0, 0.62),
+        0 0 18px rgba(255, 179, 0, 0.12);
+    }
+
+    .route-result-popover[hidden] {
+      display: none;
+    }
+
+    .route-result-popover-title {
+      margin: 0 0 10px;
+      color: var(--route-gold);
+      font-family: "Orbitron", sans-serif;
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .route-result-popover-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 5px 0;
+      color: var(--route-muted);
+      font-size: 0.76rem;
+    }
+
+    .route-result-popover-row strong {
+      color: #ffffff;
+      font-family: "Orbitron", sans-serif;
+      font-size: 0.74rem;
+      font-variant-numeric: tabular-nums;
+    }
+
     .route-table-message {
       padding: 3rem 1.5rem;
       color: var(--route-muted);
@@ -1912,7 +2000,7 @@
               <th scope="col">Pax · 7d</th>
               <th scope="col">LF</th>
               <th scope="col">Weekly Demand</th>
-              <th scope="col">State</th>
+              <th scope="col">Route Result · Last 7 Days</th>
               <th scope="col">View</th>
             </tr>
           </thead>
@@ -1929,6 +2017,28 @@
       </div>
     </section>
   </main>
+
+  <div
+    id="routeResultPopover"
+    class="route-result-popover"
+    role="dialog"
+    aria-label="Passenger revenue"
+    hidden
+  >
+    <h3 class="route-result-popover-title">Passenger Revenue</h3>
+    <div class="route-result-popover-row">
+      <span>Y Economy</span>
+      <strong id="routeResultRevenueY">$0</strong>
+    </div>
+    <div class="route-result-popover-row">
+      <span>C Business</span>
+      <strong id="routeResultRevenueC">$0</strong>
+    </div>
+    <div class="route-result-popover-row">
+      <span>F First</span>
+      <strong id="routeResultRevenueF">$0</strong>
+    </div>
+  </div>
 
   <div
   id="ticketControlOverlay"
@@ -2710,6 +2820,7 @@
   marketLoading: false,
 
   loading: false,
+  resultTrigger: null,
 
 ticketLoading: false,
 ticketSaving: false,
@@ -2746,6 +2857,10 @@ ticketPending: {
         pageStatus: document.getElementById("routePageStatus"),
         previousPage: document.getElementById("routePreviousPage"),
         nextPage: document.getElementById("routeNextPage"),
+        resultPopover: document.getElementById("routeResultPopover"),
+        resultRevenueY: document.getElementById("routeResultRevenueY"),
+        resultRevenueC: document.getElementById("routeResultRevenueC"),
+        resultRevenueF: document.getElementById("routeResultRevenueF"),
         modalOverlay: document.getElementById("routeDetailOverlay"),
         modal: document.getElementById("routeDetailModal"),
         modalTitle: document.getElementById("routeDetailTitle"),
@@ -2860,6 +2975,21 @@ routeFareRows: Array.from(
         }).format(numberValue(value));
       }
 
+      function formatRouteResult(value) {
+        const amount = integerValue(value);
+        if (amount > 0) return `+${formatMoney(amount)}`;
+        if (amount < 0) return `−${formatMoney(Math.abs(amount))}`;
+        return "$0";
+      }
+
+      function routeResultLevel(value) {
+        const amount = integerValue(value);
+        if (amount <= 0) return "loss";
+        if (amount < 200) return "orange";
+        if (amount < 500) return "amber";
+        return "profit";
+      }
+
       function formatFareMoney(value) {
            
   return new Intl.NumberFormat("en-US", {
@@ -2923,7 +3053,18 @@ function populateAircraftFilter() {
 
       function formatDays(days) {
         if (!Array.isArray(days) || days.length === 0) return "—";
-        return days.map(day => String(day).toUpperCase()).join(" · ");
+        const labels = {
+          MON: "MO",
+          TUE: "TU",
+          WED: "WE",
+          THU: "TH",
+          FRI: "FR",
+          SAT: "SA",
+          SUN: "SU"
+        };
+        return days
+          .map(day => labels[String(day).trim().toUpperCase()] || String(day).toUpperCase())
+          .join(" · ");
       }
 
       function combinedCurrentPeriod(route) {
@@ -2937,6 +3078,64 @@ function populateAircraftFilter() {
           seats,
           loadFactor: seats > 0 ? passengers / seats : 0
         };
+      }
+
+      function combinedRouteResult(route) {
+        const outbound = route?.performance?.outbound?.last_7_days || {};
+        const inbound = route?.performance?.return?.last_7_days || {};
+        const canonicalNet = route?.route_result?.last_7_days?.net;
+
+        return canonicalNet === null || canonicalNet === undefined
+          ? integerValue(outbound.profit) + integerValue(inbound.profit)
+          : integerValue(canonicalNet);
+      }
+
+      function closeRouteResultPopover() {
+        if (state.resultTrigger) {
+          state.resultTrigger.setAttribute("aria-expanded", "false");
+        }
+        state.resultTrigger = null;
+        elements.resultPopover.hidden = true;
+      }
+
+      function positionRouteResultPopover(trigger) {
+        const rect = trigger.getBoundingClientRect();
+        const popover = elements.resultPopover;
+        const margin = 10;
+        const width = popover.offsetWidth;
+        const height = popover.offsetHeight;
+        const left = Math.min(
+          window.innerWidth - width - margin,
+          Math.max(margin, rect.left + rect.width / 2 - width / 2)
+        );
+        let top = rect.bottom + 8;
+
+        if (top + height > window.innerHeight - margin) {
+          top = Math.max(margin, rect.top - height - 8);
+        }
+
+        popover.style.left = `${Math.round(left)}px`;
+        popover.style.top = `${Math.round(top)}px`;
+      }
+
+      function openRouteResultPopover(route, trigger) {
+        if (state.resultTrigger === trigger && !elements.resultPopover.hidden) {
+          closeRouteResultPopover();
+          return;
+        }
+
+        closeRouteResultPopover();
+
+        const revenue =
+          route?.route_result?.last_7_days?.passenger_revenue || {};
+
+        elements.resultRevenueY.textContent = formatMoney(revenue.y);
+        elements.resultRevenueC.textContent = formatMoney(revenue.c);
+        elements.resultRevenueF.textContent = formatMoney(revenue.f);
+        elements.resultPopover.hidden = false;
+        state.resultTrigger = trigger;
+        trigger.setAttribute("aria-expanded", "true");
+        positionRouteResultPopover(trigger);
       }
 
       function resetSummary() {
@@ -3057,13 +3256,21 @@ function populateAircraftFilter() {
           "Outbound / Return"
         );
 
-        const stateCell = document.createElement("td");
-        const badge = document.createElement("span");
-        badge.className = "route-status-badge";
-        badge.dataset.state = textValue(route.route_state).toUpperCase();
-        badge.textContent = textValue(route.route_state);
-        stateCell.append(badge);
-        row.append(stateCell);
+        const resultCell = document.createElement("td");
+        const resultButton = document.createElement("button");
+        const routeResult = combinedRouteResult(route);
+        resultButton.type = "button";
+        resultButton.className = "route-result-button";
+        resultButton.dataset.routeResultId = String(routeId);
+        resultButton.dataset.level = routeResultLevel(routeResult);
+        resultButton.textContent = formatRouteResult(routeResult);
+        resultButton.setAttribute("aria-expanded", "false");
+        resultButton.setAttribute(
+          "aria-label",
+          `Open ${textValue(route.origin)} to ${textValue(route.destination)} passenger revenue`
+        );
+        resultCell.append(resultButton);
+        row.append(resultCell);
 
         const actionCell = document.createElement("td");
         const viewButton = document.createElement("button");
@@ -3079,6 +3286,7 @@ function populateAircraftFilter() {
       }
 
       function renderTable() {
+        closeRouteResultPopover();
         const total = state.filteredRoutes.length;
         const totalPages = Math.max(1, Math.ceil(total / state.rowsPerPage));
         state.page = Math.min(Math.max(1, state.page), totalPages);
@@ -4619,9 +4827,45 @@ document.addEventListener(
       });
 
       elements.tableBody.addEventListener("click", event => {
+        const resultTrigger = event.target.closest("[data-route-result-id]");
+
+        if (resultTrigger) {
+          const route = state.routes.find(
+            item => integerValue(item.route_plan_id) === integerValue(resultTrigger.dataset.routeResultId)
+          );
+          if (route) openRouteResultPopover(route, resultTrigger);
+          return;
+        }
+
         const trigger = event.target.closest("[data-route-id]");
         if (!trigger) return;
         openRouteModal(trigger.dataset.routeId, trigger);
+      });
+
+      document.addEventListener("click", event => {
+        if (
+          elements.resultPopover.hidden ||
+          event.target.closest("[data-route-result-id]") ||
+          event.target.closest("#routeResultPopover")
+        ) {
+          return;
+        }
+        closeRouteResultPopover();
+      });
+
+      elements.tableScroll.addEventListener(
+        "scroll",
+        closeRouteResultPopover,
+        { passive: true }
+      );
+
+      window.addEventListener("resize", closeRouteResultPopover);
+
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape" && !elements.resultPopover.hidden) {
+          event.preventDefault();
+          closeRouteResultPopover();
+        }
       });
 
       elements.marketPreviousPage.addEventListener(
