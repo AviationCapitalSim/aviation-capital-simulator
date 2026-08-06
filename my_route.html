@@ -1999,6 +1999,7 @@
               <th scope="col">Freq.</th>
               <th scope="col">Pax · 7d</th>
               <th scope="col">LF</th>
+              <th scope="col">Route Image</th>
               <th scope="col">Weekly Demand</th>
               <th scope="col">Route Result</th>
               <th scope="col">View</th>
@@ -3247,9 +3248,46 @@ function populateAircraftFilter() {
         aircraftCell.append(registrationButton, aircraftName);
         row.append(aircraftCell);
 
-        createCell(row, formatInteger(route.frequency_per_week), formatDays(route.selected_days));
-        createCell(row, formatInteger(current.passengers));
-        createCell(row, formatPercent(current.loadFactor));
+                const routeFrequency =
+          integerValue(route.frequency_per_week);
+
+        createCell(
+          row,
+          routeFrequency === 7
+            ? "DAILY"
+            : `${formatInteger(routeFrequency)}× WK`,
+          routeFrequency === 7
+            ? ""
+            : formatDays(route.selected_days)
+        );
+
+        createCell(
+          row,
+          formatInteger(current.passengers)
+        );
+
+        createCell(
+          row,
+          formatPercent(current.loadFactor)
+        );
+
+        const routeImage = route?.route_image || null;
+
+        const routeImageCell = createCell(
+          row,
+          routeImage
+            ? formatPercent(routeImage.score)
+            : "—"
+        );
+
+        if (routeImage) {
+          routeImageCell.title =
+            `Continuity: ${formatPercent(routeImage.continuity)}`
+            + ` · Due 90D: ${formatInteger(routeImage.due_flights_90d)}`
+            + ` · Completed: ${formatInteger(routeImage.completed_flights_90d)}`
+            + ` · Held: ${formatInteger(routeImage.held_flights_90d)}`;
+        }
+
         createCell(
           row,
           `${formatInteger(route.demand?.outbound?.weekly_total)} / ${formatInteger(route.demand?.return?.weekly_total)}`,
