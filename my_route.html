@@ -629,6 +629,51 @@
       text-shadow: 0 0 8px rgba(80, 200, 120, 0.52);
     }
 
+        .route-image-value {
+      display: inline-block;
+      min-width: 72px;
+      padding: 5px 10px;
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.025);
+      font-family: "Orbitron", sans-serif;
+      font-size: 0.72rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.035em;
+      white-space: nowrap;
+    }
+
+    .route-image-value[data-level="red"] {
+      color: #ff4d4d;
+      background: rgba(255, 77, 77, 0.08);
+      text-shadow: 0 0 9px rgba(255, 77, 77, 0.56);
+    }
+
+    .route-image-value[data-level="orange"] {
+      color: #ff7a00;
+      background: rgba(255, 122, 0, 0.08);
+      text-shadow: 0 0 8px rgba(255, 122, 0, 0.5);
+    }
+
+    .route-image-value[data-level="amber"] {
+      color: #ffb300;
+      background: rgba(255, 179, 0, 0.08);
+      text-shadow: 0 0 8px rgba(255, 179, 0, 0.48);
+    }
+
+    .route-image-value[data-level="yellow"] {
+      color: #ffe066;
+      background: rgba(255, 224, 102, 0.08);
+      text-shadow: 0 0 8px rgba(255, 224, 102, 0.45);
+    }
+
+    .route-image-value[data-level="green"] {
+      color: #50c878;
+      background: rgba(80, 200, 120, 0.08);
+      text-shadow: 0 0 8px rgba(80, 200, 120, 0.52);
+    }
+       
     .route-result-popover {
       position: fixed;
       z-index: 9000;
@@ -3248,7 +3293,7 @@ function populateAircraftFilter() {
         aircraftCell.append(registrationButton, aircraftName);
         row.append(aircraftCell);
 
-                const routeFrequency =
+        const routeFrequency =
           integerValue(route.frequency_per_week);
 
         createCell(
@@ -3271,23 +3316,44 @@ function populateAircraftFilter() {
           formatPercent(current.loadFactor)
         );
 
-        const routeImage = route?.route_image || null;
+                const routeImage = route?.route_image || null;
+        const routeImageScore =
+          routeImage
+            ? numberValue(routeImage.score)
+            : null;
 
         const routeImageCell = createCell(
           row,
-          routeImage
-            ? formatPercent(routeImage.score)
+          routeImageScore !== null
+            ? formatPercent(routeImageScore)
             : "—"
         );
 
-        if (routeImage) {
+        if (routeImageScore !== null) {
+          const routeImageValue =
+            routeImageCell.querySelector("span");
+
+          routeImageValue.className =
+            "route-image-value";
+
+          routeImageValue.dataset.level =
+            routeImageScore < 0.20
+              ? "red"
+              : routeImageScore < 0.40
+                ? "orange"
+                : routeImageScore < 0.60
+                  ? "amber"
+                  : routeImageScore < 0.80
+                    ? "yellow"
+                    : "green";
+
           routeImageCell.title =
             `Continuity: ${formatPercent(routeImage.continuity)}`
             + ` · Due 90D: ${formatInteger(routeImage.due_flights_90d)}`
             + ` · Completed: ${formatInteger(routeImage.completed_flights_90d)}`
             + ` · Held: ${formatInteger(routeImage.held_flights_90d)}`;
         }
-
+           
         createCell(
           row,
           `${formatInteger(route.demand?.outbound?.weekly_total)} / ${formatInteger(route.demand?.return?.weekly_total)}`,
@@ -3546,7 +3612,8 @@ function populateAircraftFilter() {
         appendPerformanceRow("Return", "Previous 7 days", route.performance?.return?.previous_7_days);
       }
 
-      function marketOperatorLabel(operator) {
+function marketOperatorLabel(operator) {
+     
   const airline = operator?.airline || {};
 
   return (
