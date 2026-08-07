@@ -3,801 +3,854 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Fuel Center - Aviation Capital Simulator</title>
 
-  <link rel="stylesheet" href="styles.css?v=3.2">
+  <link rel="stylesheet" href="styles.css?v=3.1">
 
   <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
   <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
   <link rel="apple-touch-icon" href="acs_logo_180.png">
   <link rel="manifest" href="manifest.json">
-</head>
-<style>
-/* ============================================================
-   ACS OCC — FUEL CENTER
-   PERMANENT GLOBAL STYLES
-   ============================================================ */
 
-:root {
-  --fuel-blue: #4a9ef8;
-  --fuel-blue-soft: rgba(74, 158, 248, 0.34);
-  --fuel-gold: #ffb300;
-  --fuel-gold-light: #ffe08a;
-  --fuel-red: #ff4f5f;
-  --fuel-green-light: #67f2a3;
-  --fuel-text: #edf5ff;
-  --fuel-muted: #9fb6cf;
-  --fuel-panel: rgba(3, 13, 31, 0.14);
-}
-
-.fuel-center {
-  width: min(1600px, 100%);
-  margin: 0 auto;
-  padding-bottom: 60px;
-}
-
-.fuel-center .acs-page-title {
-  margin-bottom: 30px;
-}
-
-/* ============================================================
-   FUEL SELECTION CARDS
-   ============================================================ */
-
-.fuel-market-board {
-  width: 100%;
-}
-
-.fuel-card-grid {
-  display: grid;
-  grid-template-columns:
-    repeat(
-      auto-fit,
-      minmax(210px, 1fr)
-    );
-  gap: 1rem;
-}
-
-.fuel-card {
-  position: relative;
-  isolation: isolate;
-
-  min-width: 0;
-  min-height: 152px;
-
-  padding: 1.2rem 1rem;
-  overflow: hidden;
-
-  color: var(--fuel-text);
-  text-align: center;
-
-  border:
-    1px solid
-    var(--fuel-blue-soft);
-
-  border-radius: 20px;
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(74, 158, 248, 0.07),
-      transparent 42%
-    ),
-    var(--fuel-panel);
-
-  box-shadow:
-    0 18px 42px
-      rgba(0, 5, 18, 0.18),
-    inset 0 1px 0
-      rgba(205, 232, 255, 0.08);
-
-  cursor: pointer;
-
-  transition:
-    transform 220ms ease,
-    border-color 220ms ease,
-    box-shadow 220ms ease,
-    background 220ms ease;
-}
-
-.fuel-card::after {
-  content: "";
-
-  position: absolute;
-  z-index: -1;
-
-  top: -85px;
-  right: -65px;
-
-  width: 170px;
-  height: 170px;
-
-  border-radius: 50%;
-
-  background:
-    rgba(74, 158, 248, 0.10);
-
-  filter: blur(28px);
-  pointer-events: none;
-}
-
-.fuel-card:hover {
-  transform: translateY(-4px);
-
-  border-color:
-    rgba(74, 158, 248, 0.68);
-
-  box-shadow:
-    0 22px 48px
-      rgba(0, 7, 24, 0.24),
-    0 0 22px
-      rgba(74, 158, 248, 0.10),
-    inset 0 1px 0
-      rgba(219, 239, 255, 0.12);
-}
-
-.fuel-card.is-selected {
-  border-color:
-    rgba(255, 179, 0, 0.92);
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255, 179, 0, 0.08),
-      transparent 44%
-    ),
-    var(--fuel-panel);
-
-  box-shadow:
-    0 22px 50px
-      rgba(0, 7, 24, 0.24),
-    0 0 26px
-      rgba(255, 179, 0, 0.16),
-    inset 0 1px 0
-      rgba(255, 226, 151, 0.18);
-}
-
-.fuel-card.is-selected::before {
-  content: "";
-
-  position: absolute;
-
-  inset:
-    0 13% auto;
-
-  height: 2px;
-
-  background:
-    linear-gradient(
-      90deg,
-      transparent,
-      var(--fuel-gold-light),
-      var(--fuel-gold),
-      transparent
-    );
-}
-
-.fuel-card-name {
-  display: block;
-
-  color: var(--fuel-gold);
-
-  font-family:
-    "Orbitron",
-    "Eurostile",
-    "Segoe UI",
-    sans-serif;
-
-  font-size:
-    clamp(
-      0.82rem,
-      1.2vw,
-      1rem
-    );
-
-  font-weight: 700;
-  letter-spacing: 0.035em;
-}
-
-.fuel-card-price {
-  display: block;
-
-  margin-top: 0.75rem;
-
-  color: #ffffff;
-
-  font-family:
-    "Orbitron",
-    monospace;
-
-  font-size:
-    clamp(
-      1.05rem,
-      1.6vw,
-      1.34rem
-    );
-
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-
-.fuel-card-meta {
-  display: flex;
-  justify-content: center;
-
-  gap: 0.75rem;
-
-  margin-top: 0.55rem;
-
-  color: var(--fuel-muted);
-
-  font-size: 0.76rem;
-  letter-spacing: 0.03em;
-}
-
-.fuel-empty-message {
-  margin: 2rem 0 0;
-  color: var(--fuel-muted);
-}
-
-/* ============================================================
-   FUEL WORKSPACE
-   ============================================================ */
-
-.fuel-workspace {
-  display: grid;
-
-  grid-template-columns:
-    minmax(0, 2fr)
-    minmax(290px, 0.72fr);
-
-  gap: 1.2rem;
-
-  margin-top: 1.25rem;
-  text-align: left;
-}
-
-.fuel-panel {
-  min-width: 0;
-
-  padding: 1.35rem;
-
-  border:
-    1px solid
-    rgba(74, 158, 248, 0.30);
-
-  border-radius: 22px;
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(74, 158, 248, 0.045),
-      transparent 44%
-    ),
-    var(--fuel-panel);
-
-  box-shadow:
-    0 20px 50px
-      rgba(0, 5, 18, 0.18),
-    inset 0 1px 0
-      rgba(205, 232, 255, 0.07);
-}
-
-.fuel-panel-header {
-  display: flex;
-
-  align-items: flex-start;
-  justify-content: space-between;
-
-  gap: 1rem;
-
-  margin-bottom: 1.1rem;
-}
-
-.fuel-panel-header h2 {
-  margin: 0;
-
-  color: var(--fuel-gold);
-
-  font-family:
-    "Orbitron",
-    "Eurostile",
-    "Segoe UI",
-    sans-serif;
-
-  font-size:
-    clamp(
-      0.9rem,
-      1.3vw,
-      1.08rem
-    );
-
-  font-weight: 700;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-}
-
-.fuel-selected-name {
-  margin: 0.4rem 0 0;
-
-  color: #c8d8ea;
-
-  font-size: 0.8rem;
-  letter-spacing: 0.055em;
-  text-transform: uppercase;
-}
-
-.fuel-current-reading {
-  flex: 0 0 auto;
-
-  text-align: right;
-
-  font-family:
-    "Orbitron",
-    monospace;
-
-  font-variant-numeric:
-    tabular-nums;
-}
-
-.fuel-current-reading strong {
-  display: block;
-
-  color: #ffffff;
-
-  font-size:
-    clamp(
-      0.95rem,
-      1.4vw,
-      1.2rem
-    );
-}
-
-.fuel-current-reading span {
-  display: block;
-  margin-top: 0.25rem;
-  font-size: 0.76rem;
-}
-
-.fuel-change-neutral {
-  color: var(--fuel-blue);
-}
-
-.fuel-change-attention {
-  color: var(--fuel-gold);
-}
-
-.fuel-change-critical {
-  color: var(--fuel-red);
-}
-
-.fuel-change-decrease {
-  color: var(--fuel-green-light);
-}
-
-/* ============================================================
-   MARKET PRICE + MARKET MOVEMENT
-   ============================================================ */
-
-.fuel-chart-shell {
-  position: relative;
-  width: 100%;
-}
-
-.fuel-chart {
-  display: block;
-
-  width: 100%;
-  height: auto;
-  min-height: 360px;
-
-  overflow: visible;
-}
-
-.fuel-chart-grid-line {
-  stroke:
-    rgba(159, 182, 207, 0.15);
-
-  stroke-width: 1;
-
-  vector-effect:
-    non-scaling-stroke;
-}
-
-.fuel-chart-zero-line {
-  stroke:
-    rgba(235, 244, 255, 0.30);
-
-  stroke-width: 1;
-
-  vector-effect:
-    non-scaling-stroke;
-}
-
-.fuel-chart-axis-text,
-.fuel-chart-section-label {
-  fill: #91aac5;
-
-  font-family:
-    "Poppins",
-    "Segoe UI",
-    sans-serif;
-
-  font-size: 12px;
-}
-
-.fuel-chart-section-label {
-  fill: #c8d8ea;
-
-  font-family:
-    "Orbitron",
-    "Eurostile",
-    sans-serif;
-
-  font-size: 11px;
-  letter-spacing: 0.08em;
-}
-
-.fuel-price-line {
-  fill: none;
-
-  stroke:
-    var(--fuel-gold);
-
-  stroke-width: 3;
-
-  stroke-linecap: round;
-  stroke-linejoin: round;
-
-  filter:
-    drop-shadow(
-      0 0 5px
-      rgba(255, 179, 0, 0.32)
-    );
-
-  vector-effect:
-    non-scaling-stroke;
-}
-
-.fuel-price-area {
-  fill:
-    url(#fuelPriceAreaGradient);
-}
-
-.fuel-chart-point {
-  fill:
-    var(--fuel-gold-light);
-
-  stroke: #071427;
-  stroke-width: 2;
-
-  cursor: pointer;
-
-  vector-effect:
-    non-scaling-stroke;
-}
-
-.fuel-chart-point:hover,
-.fuel-chart-point:focus {
-  stroke: #ffffff;
-  outline: none;
-}
-
-.fuel-movement-bar {
-  opacity: 0.94;
-  cursor: pointer;
-}
-
-.fuel-movement-bar.is-neutral {
-  fill: var(--fuel-blue);
-}
-
-.fuel-movement-bar.is-attention {
-  fill: var(--fuel-gold);
-}
-
-.fuel-movement-bar.is-critical {
-  fill: var(--fuel-red);
-}
-
-.fuel-movement-bar.is-decrease {
-  fill: var(--fuel-green-light);
-}
-
-/* ============================================================
-   CHART TOOLTIP
-   ============================================================ */
-
-.fuel-chart-tooltip {
-  position: absolute;
-  z-index: 5;
-
-  width: max-content;
-  max-width: 220px;
-
-  padding: 0.7rem 0.8rem;
-
-  color: #edf6ff;
-
-  border:
-    1px solid
-    rgba(74, 158, 248, 0.46);
-
-  border-radius: 10px;
-
-  background:
-    rgba(5, 17, 39, 0.94);
-
-  box-shadow:
-    0 12px 28px
-      rgba(0, 5, 18, 0.38);
-
-  font-size: 0.75rem;
-  line-height: 1.55;
-
-  pointer-events: none;
-}
-
-.fuel-chart-tooltip strong {
-  display: block;
-
-  color: var(--fuel-gold);
-
-  font-family:
-    "Orbitron",
-    sans-serif;
-
-  font-size: 0.7rem;
-  letter-spacing: 0.04em;
-}
-
-.fuel-chart-key {
-  display: flex;
-  flex-wrap: wrap;
-
-  gap:
-    0.6rem 1.1rem;
-
-  margin-top: 0.5rem;
-
-  color: #9fb6cf;
-  font-size: 0.72rem;
-}
-
-.fuel-chart-key span {
-  display: inline-flex;
-  align-items: center;
-
-  gap: 0.4rem;
-}
-
-.fuel-chart-key i {
-  width: 9px;
-  height: 9px;
-
-  border-radius: 2px;
-}
-
-.movement-neutral {
-  background:
-    var(--fuel-blue);
-}
-
-.movement-attention {
-  background:
-    var(--fuel-gold);
-}
-
-.movement-critical {
-  background:
-    var(--fuel-red);
-}
-
-.movement-decrease {
-  background:
-    var(--fuel-green-light);
-}
-
-/* ============================================================
-   FUEL INFORMATION
-   ============================================================ */
-
-.fuel-information-list {
-  margin: 0;
-}
-
-.fuel-information-list > div {
-  display: grid;
-
-  grid-template-columns:
-    minmax(0, 1fr)
-    auto;
-
-  gap: 1rem;
-
-  padding: 0.88rem 0;
-
-  border-bottom:
-    1px solid
-    rgba(126, 169, 215, 0.15);
-}
-
-.fuel-information-list dt {
-  color: #91aac5;
-
-  font-size: 0.76rem;
-  text-transform: uppercase;
-}
-
-.fuel-information-list dd {
-  margin: 0;
-
-  color: #edf5ff;
-
-  font-family:
-    "Orbitron",
-    "Eurostile",
-    sans-serif;
-
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-align: right;
-  text-transform: uppercase;
-}
-
-/* ============================================================
-   PRICE RECORD
-   ============================================================ */
-
-.fuel-price-record {
-  margin-top: 1rem;
-}
-
-.fuel-price-record summary {
-  color: var(--fuel-gold);
-
-  font-family:
-    "Orbitron",
-    sans-serif;
-
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-
-  cursor: pointer;
-}
-
-.fuel-price-record-list {
-  display: grid;
-
-  gap: 0.2rem;
-
-  max-height: 280px;
-
-  margin-top: 0.8rem;
-
-  overflow-y: auto;
-
-  scrollbar-width: thin;
-}
-
-.fuel-price-record-row {
-  display: grid;
-
-  grid-template-columns:
-    1fr
-    auto
-    auto;
-
-  gap: 0.75rem;
-
-  padding: 0.55rem 0.2rem;
-
-  color: #9fb6cf;
-
-  border-bottom:
-    1px solid
-    rgba(126, 169, 215, 0.10);
-
-  font-size: 0.73rem;
-}
-
-.fuel-price-record-row strong {
-  color: #edf5ff;
-
-  font-family:
-    "Orbitron",
-    monospace;
-
-  font-size: 0.68rem;
-  font-weight: 500;
-}
-
-/* ============================================================
-   FUEL CENTER RESPONSIVE
-   ============================================================ */
-
-@media (max-width: 1100px) {
-  .fuel-workspace {
-    grid-template-columns: 1fr;
-  }
-
-  .fuel-information-panel {
-    width: 100%;
-  }
-}
-
-@media (max-width: 850px) {
-  .fuel-card-grid {
-    grid-template-columns:
-      repeat(
-        2,
-        minmax(0, 1fr)
+  <style>
+    /* ============================================================
+       ACS OCC — FUEL CENTER
+       PAGE-SPECIFIC STYLES
+       ============================================================ */
+
+    :root {
+      --fuel-blue: #4a9ef8;
+      --fuel-amber: #ffb300;
+      --fuel-red: #ff4f5f;
+      --fuel-green: #67f2a3;
+      --fuel-text: #edf5ff;
+      --fuel-muted: #91aac5;
+      --fuel-border: rgba(74, 158, 248, 0.30);
+      --fuel-panel: rgba(3, 13, 31, 0.16);
+    }
+
+    body {
+      margin: 0;
+      color: white;
+      font-family: "Poppins", sans-serif;
+    }
+
+    /* ============================================================
+       ACS HEADER — SAME STRUCTURE AS ROUTES
+       ============================================================ */
+
+    .acs-header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.8rem 2rem;
+      background: rgba(12, 23, 50, 0.45);
+      backdrop-filter: blur(9px);
+      border-bottom: 2px solid #ffb300;
+      z-index: 5000;
+    }
+
+    .acs-logo {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .acs-logo img {
+      height: 46px;
+    }
+
+    .acs-logo h1 {
+      margin: 0;
+      color: #ffb300;
+      font-size: 1.1rem;
+    }
+
+    .acs-nav {
+      display: flex;
+      gap: 2rem;
+    }
+
+    .acs-nav a {
+      position: relative;
+      padding-bottom: 6px;
+      color: #dbe4ff;
+      font-size: 1rem;
+      letter-spacing: 0.4px;
+      text-decoration: none;
+      transition: 0.25s ease;
+    }
+
+    .acs-nav a:hover {
+      color: #ffca3a;
+      text-shadow: 0 0 6px rgba(255, 179, 0, 0.45);
+    }
+
+    .acs-nav a:hover::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -8px;
+      width: 100%;
+      height: 2px;
+      border-radius: 2px;
+      background: linear-gradient(to right, #ffb300, #ffe7a0);
+      box-shadow: 0 0 8px rgba(255, 200, 60, 0.45);
+    }
+
+    .acs-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding-right: 12px;
+      flex-shrink: 0;
+    }
+
+    .support-btn,
+    .support-btn:visited {
+      padding: 0.45rem 1.1rem;
+      border: 1px solid rgba(138, 180, 255, 0.45);
+      border-radius: 12px;
+      background: rgba(138, 180, 255, 0.08);
+      color: #8ab4ff;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .logout-btn {
+      padding: 0.45rem 1.1rem;
+      border: 1px solid #ffb300;
+      border-radius: 12px;
+      background: rgba(255, 179, 0, 0.05);
+      color: #ffb300;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .acs-clock-header {
+      width: 260px;
+      flex: 0 0 260px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0.45rem 0.8rem;
+      overflow: hidden;
+      border: 1px solid rgba(0, 255, 128, 0.18);
+      border-radius: 10px;
+      background: rgba(0, 255, 128, 0.08);
+      color: #00ff80;
+      font-family: "Orbitron", monospace;
+      font-size: 0.95rem;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    /* ============================================================
+       FUEL CENTER
+       ============================================================ */
+
+    .acs-main.fuel-center {
+      width: min(1600px, 100%);
+      box-sizing: border-box;
+      margin: 0 auto;
+      padding: 110px 2rem 70px;
+      text-align: center;
+    }
+
+    /* ============================================================
+       ACS PAGE TITLE — SAME SYSTEM AS ROUTES
+       ============================================================ */
+
+    .acs-page-title {
+      position: relative;
+      width: 100%;
+      max-width: 900px;
+      box-sizing: border-box;
+      margin: 18px auto 30px;
+      padding: 18px 28px 20px;
+      text-align: center;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+    }
+
+    .acs-page-title-main {
+      color: #f7f8fb;
+      font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: 0.34em;
+      line-height: 1;
+      text-transform: uppercase;
+      text-shadow:
+        0 1px 0 rgba(0, 0, 0, 0.85),
+        0 0 10px rgba(255, 255, 255, 0.20),
+        0 0 22px rgba(255, 255, 255, 0.10);
+    }
+
+    .acs-page-title-sub {
+      position: relative;
+      display: inline-block;
+      margin-top: 11px;
+      color: #ffb300;
+      font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.42em;
+      text-transform: uppercase;
+      text-shadow:
+        0 0 8px rgba(255, 179, 0, 0.35),
+        0 0 16px rgba(255, 179, 0, 0.18);
+    }
+
+    .acs-page-title-sub::before,
+    .acs-page-title-sub::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 82px;
+      height: 2px;
+      background: linear-gradient(
+        to right,
+        transparent,
+        #ffb300,
+        transparent
       );
-  }
+      opacity: 0.8;
+    }
 
-  .fuel-chart {
-    min-height: 320px;
-  }
-}
+    .acs-page-title-sub::before {
+      right: 100%;
+      margin-right: 18px;
+    }
 
-@media (max-width: 560px) {
-  .fuel-center {
-    padding-left: 0.85rem;
-    padding-right: 0.85rem;
-  }
+    .acs-page-title-sub::after {
+      left: 100%;
+      margin-left: 18px;
+    }
 
-  .fuel-card-grid {
-    gap: 0.7rem;
-  }
+    /* ============================================================
+       ACTIVE AVIATION FUELS
+       ============================================================ */
 
-  .fuel-card {
-    min-height: 138px;
+    .fuel-card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(205px, 1fr));
+      gap: 1rem;
+      width: 100%;
+    }
 
-    padding:
-      1rem 0.65rem;
+    .fuel-card {
+      position: relative;
+      min-width: 0;
+      min-height: 140px;
+      padding: 1.1rem 0.9rem;
+      overflow: hidden;
+      border: 1px solid rgba(74, 158, 248, 0.35);
+      border-radius: 19px;
+      background:
+        linear-gradient(
+          145deg,
+          rgba(74, 158, 248, 0.06),
+          transparent 46%
+        ),
+        var(--fuel-panel);
+      box-shadow:
+        inset 0 1px 0 rgba(205, 232, 255, 0.08),
+        0 16px 36px rgba(0, 5, 18, 0.16);
+      color: var(--fuel-text);
+      cursor: pointer;
+      text-align: center;
+      transition:
+        transform 0.22s ease,
+        border-color 0.22s ease,
+        box-shadow 0.22s ease;
+    }
 
-    border-radius: 17px;
-  }
+    .fuel-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(74, 158, 248, 0.72);
+    }
 
-  .fuel-card-meta {
-    flex-direction: column;
-    gap: 0.15rem;
-  }
+    .fuel-card.is-selected {
+      border-color: rgba(255, 179, 0, 0.92);
+      background:
+        linear-gradient(
+          145deg,
+          rgba(255, 179, 0, 0.08),
+          transparent 48%
+        ),
+        var(--fuel-panel);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 226, 151, 0.18),
+        0 0 25px rgba(255, 179, 0, 0.14);
+    }
 
-  .fuel-panel {
-    padding: 1rem;
-    border-radius: 18px;
-  }
+    .fuel-card.is-selected::before {
+      content: "";
+      position: absolute;
+      inset: 0 14% auto;
+      height: 2px;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        #ffe08a,
+        #ffb300,
+        transparent
+      );
+    }
 
-  .fuel-panel-header {
-    align-items: center;
-  }
+    .fuel-card-name {
+      display: block;
+      color: #ffb300;
+      font-family: "Orbitron", "Eurostile", sans-serif;
+      font-size: 0.92rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
 
-  .fuel-chart {
-    min-height: 275px;
-  }
+    .fuel-card-price {
+      display: block;
+      margin-top: 0.72rem;
+      color: #ffffff;
+      font-family: "Orbitron", monospace;
+      font-size: 1.26rem;
+      font-variant-numeric: tabular-nums;
+    }
 
-  .fuel-chart-key {
-    display: grid;
+    .fuel-card-meta {
+      display: flex;
+      justify-content: center;
+      gap: 0.7rem;
+      margin-top: 0.52rem;
+      color: var(--fuel-muted);
+      font-size: 0.72rem;
+      letter-spacing: 0.025em;
+    }
 
-    grid-template-columns:
-      1fr 1fr;
-  }
+    .fuel-empty-message {
+      margin: 2rem 0;
+      color: var(--fuel-muted);
+    }
 
-  .fuel-information-list > div {
-    gap: 0.5rem;
-  }
-}
+    /* ============================================================
+       WORKSPACE
+       ============================================================ */
 
-@media (prefers-reduced-motion: reduce) {
-  .fuel-card {
-    transition: none;
-  }
-}
-</style>
+    .fuel-workspace {
+      display: grid;
+      grid-template-columns:
+        minmax(0, 2fr)
+        minmax(290px, 0.72fr);
+      gap: 1.2rem;
+      margin-top: 1.25rem;
+      text-align: left;
+    }
+
+    .fuel-workspace[hidden],
+    .fuel-empty-message[hidden] {
+      display: none !important;
+    }
+
+    .fuel-panel {
+      min-width: 0;
+      padding: 1.35rem;
+      border: 1px solid var(--fuel-border);
+      border-radius: 22px;
+      background:
+        linear-gradient(
+          145deg,
+          rgba(74, 158, 248, 0.04),
+          transparent 45%
+        ),
+        var(--fuel-panel);
+      box-shadow:
+        inset 0 1px 0 rgba(205, 232, 255, 0.07),
+        0 18px 44px rgba(0, 5, 18, 0.15);
+    }
+
+    .fuel-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 0.65rem;
+    }
+
+    .fuel-panel-header h2 {
+      margin: 0;
+      color: #ffb300;
+      font-family: "Orbitron", "Eurostile", sans-serif;
+      font-size: 1.02rem;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+
+    .fuel-selected-name {
+      margin: 0.38rem 0 0;
+      color: #c8d8ea;
+      font-size: 0.78rem;
+      letter-spacing: 0.055em;
+      text-transform: uppercase;
+    }
+
+    .fuel-current-reading {
+      flex: 0 0 auto;
+      color: white;
+      font-family: "Orbitron", monospace;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+
+    .fuel-current-reading strong {
+      display: block;
+      font-size: 1.12rem;
+    }
+
+    .fuel-current-reading span {
+      display: block;
+      margin-top: 0.22rem;
+      font-size: 0.74rem;
+    }
+
+    .fuel-change-neutral {
+      color: var(--fuel-blue);
+    }
+
+    .fuel-change-attention {
+      color: var(--fuel-amber);
+    }
+
+    .fuel-change-critical {
+      color: var(--fuel-red);
+    }
+
+    .fuel-change-decrease {
+      color: var(--fuel-green);
+    }
+
+    /* ============================================================
+       MARKET PRICE + MARKET MOVEMENT
+       ============================================================ */
+
+    .fuel-chart-shell {
+      position: relative;
+      width: 100%;
+    }
+
+    .fuel-chart {
+      display: block;
+      width: 100%;
+      height: auto;
+      min-height: 420px;
+      overflow: visible;
+    }
+
+    .fuel-chart-grid-line {
+      stroke: rgba(159, 182, 207, 0.15);
+      stroke-width: 1;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .fuel-chart-zero-line {
+      stroke: rgba(235, 244, 255, 0.30);
+      stroke-width: 1;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .fuel-chart-axis-text,
+    .fuel-chart-section-label {
+      fill: #91aac5;
+      font-family: "Poppins", "Segoe UI", sans-serif;
+      font-size: 12px;
+    }
+
+    .fuel-chart-section-label {
+      fill: #c8d8ea;
+      font-family: "Orbitron", sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+    }
+
+    .fuel-price-line {
+      fill: none;
+      stroke: #ffb300;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(
+        0 0 5px rgba(255, 179, 0, 0.32)
+      );
+      vector-effect: non-scaling-stroke;
+    }
+
+    .fuel-price-area {
+      fill: url(#fuelPriceAreaGradient);
+    }
+
+    .fuel-chart-point {
+      fill: #ffe08a;
+      stroke: #071427;
+      stroke-width: 2;
+      cursor: pointer;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .fuel-chart-point:hover {
+      stroke: white;
+    }
+
+    .fuel-movement-bar {
+      opacity: 0.94;
+      cursor: pointer;
+    }
+
+    .fuel-movement-bar.is-neutral {
+      fill: var(--fuel-blue);
+    }
+
+    .fuel-movement-bar.is-attention {
+      fill: var(--fuel-amber);
+    }
+
+    .fuel-movement-bar.is-critical {
+      fill: var(--fuel-red);
+    }
+
+    .fuel-movement-bar.is-decrease {
+      fill: var(--fuel-green);
+    }
+
+    /* ============================================================
+       CHART TOOLTIP
+       ============================================================ */
+
+    .fuel-chart-tooltip {
+      position: absolute;
+      z-index: 10;
+      width: max-content;
+      max-width: 220px;
+      padding: 0.68rem 0.78rem;
+      border: 1px solid rgba(74, 158, 248, 0.46);
+      border-radius: 10px;
+      background: rgba(5, 17, 39, 0.96);
+      box-shadow: 0 12px 28px rgba(0, 5, 18, 0.38);
+      color: #edf6ff;
+      font-size: 0.74rem;
+      line-height: 1.5;
+      pointer-events: none;
+    }
+
+    .fuel-chart-tooltip[hidden] {
+      display: none !important;
+    }
+
+    .fuel-chart-tooltip strong {
+      display: block;
+      color: #ffb300;
+      font-family: "Orbitron", sans-serif;
+      font-size: 0.69rem;
+      letter-spacing: 0.04em;
+    }
+
+    .fuel-chart-key {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem 1.1rem;
+      margin-top: 0.45rem;
+      color: #9fb6cf;
+      font-size: 0.72rem;
+    }
+
+    .fuel-chart-key span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .fuel-chart-key i {
+      width: 9px;
+      height: 9px;
+      border-radius: 2px;
+    }
+
+    .movement-neutral {
+      background: var(--fuel-blue);
+    }
+
+    .movement-attention {
+      background: var(--fuel-amber);
+    }
+
+    .movement-critical {
+      background: var(--fuel-red);
+    }
+
+    .movement-decrease {
+      background: var(--fuel-green);
+    }
+
+    /* ============================================================
+       FUEL INFORMATION
+       ============================================================ */
+
+    .fuel-information-list {
+      margin: 0;
+    }
+
+    .fuel-information-list > div {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 1rem;
+      padding: 0.84rem 0;
+      border-bottom: 1px solid rgba(126, 169, 215, 0.15);
+    }
+
+    .fuel-information-list dt {
+      color: #91aac5;
+      font-size: 0.74rem;
+      text-transform: uppercase;
+    }
+
+    .fuel-information-list dd {
+      margin: 0;
+      color: #edf5ff;
+      font-family: "Orbitron", "Eurostile", sans-serif;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-align: right;
+      text-transform: uppercase;
+    }
+
+    /* ============================================================
+       PRICE RECORD
+       ============================================================ */
+
+    .fuel-price-record {
+      margin-top: 1rem;
+    }
+
+    .fuel-price-record summary {
+      color: #ffb300;
+      font-family: "Orbitron", sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .fuel-price-record-list {
+      display: grid;
+      gap: 0.15rem;
+      max-height: 286px;
+      margin-top: 0.8rem;
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+
+    .fuel-price-record-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 0.7rem;
+      padding: 0.52rem 0.2rem;
+      border-bottom: 1px solid rgba(126, 169, 215, 0.10);
+      color: #9fb6cf;
+      font-size: 0.71rem;
+    }
+
+    .fuel-price-record-row strong {
+      color: #edf5ff;
+      font-family: "Orbitron", monospace;
+      font-size: 0.67rem;
+      font-weight: 500;
+    }
+
+    /* ============================================================
+       FOOTER
+       ============================================================ */
+
+    .acs-footer {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 18px 20px;
+      border-top: 1px solid rgba(138, 180, 255, 0.18);
+      background: rgba(3, 10, 24, 0.28);
+      color: rgba(255, 255, 255, 0.88);
+      font-family: "Segoe UI", sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .acs-footer-separator {
+      margin: 0 8px;
+      color: rgba(255, 255, 255, 0.38);
+    }
+
+    .acs-footer-link,
+    .acs-footer-link:visited {
+      color: #ffb300;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .acs-footer-link:hover {
+      color: #ffd870;
+      text-shadow: 0 0 8px rgba(255, 179, 0, 0.35);
+    }
+
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
+
+    @media (max-width: 1100px) {
+      .acs-logo h1 {
+        display: none;
+      }
+
+      .acs-nav {
+        gap: 1.15rem;
+      }
+
+      .acs-clock-header {
+        width: 225px;
+        flex-basis: 225px;
+        font-size: 0.82rem;
+      }
+
+      .fuel-workspace {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 850px) {
+      .acs-header {
+        position: relative;
+        flex-wrap: wrap;
+        gap: 0.8rem;
+        padding: 0.75rem 1rem;
+      }
+
+      .acs-nav {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .acs-right {
+        margin-left: auto;
+      }
+
+      .acs-clock-header {
+        width: auto;
+        flex-basis: auto;
+      }
+
+      .acs-main.fuel-center {
+        padding: 24px 1rem 55px;
+      }
+
+      .fuel-card-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .fuel-chart {
+        min-height: 340px;
+      }
+
+      .acs-footer {
+        overflow-x: auto;
+        padding: 16px 14px;
+        font-size: 0.76rem;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .acs-logo img {
+        height: 40px;
+      }
+
+      .support-btn,
+      .logout-btn {
+        padding: 0.38rem 0.7rem;
+        font-size: 0.78rem;
+      }
+
+      .acs-clock-header {
+        width: 100%;
+        flex: 1 0 100%;
+        box-sizing: border-box;
+      }
+
+      .acs-page-title {
+        margin: 10px auto 22px;
+        padding: 14px 8px 16px;
+      }
+
+      .acs-page-title-main {
+        font-size: 22px;
+        letter-spacing: 0.18em;
+      }
+
+      .acs-page-title-sub {
+        font-size: 10px;
+        letter-spacing: 0.18em;
+      }
+
+      .acs-page-title-sub::before,
+      .acs-page-title-sub::after {
+        display: none;
+      }
+
+      .fuel-card-grid {
+        gap: 0.7rem;
+      }
+
+      .fuel-card {
+        min-height: 130px;
+        padding: 0.9rem 0.55rem;
+        border-radius: 16px;
+      }
+
+      .fuel-card-meta {
+        flex-direction: column;
+        gap: 0.12rem;
+      }
+
+      .fuel-panel {
+        padding: 1rem;
+        border-radius: 18px;
+      }
+
+      .fuel-chart {
+        min-height: 285px;
+      }
+
+      .fuel-chart-key {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .fuel-card {
+        transition: none;
+      }
+    }
+  </style>
+</head>
+
 <body>
   <header class="acs-header">
     <div class="acs-logo">
@@ -810,13 +863,17 @@
       <a href="bank.html">Bank</a>
       <a href="aircraft.html">Aircraft</a>
       <a href="routes.html">Routes</a>
-      <a href="fuel.html" class="active" aria-current="page">Fuel</a>
       <a href="hr.html">HR</a>
     </nav>
 
     <div class="acs-right">
       <a href="support.html" class="support-btn">Support</a>
-      <button type="button" class="logout-btn" id="logoutButton">
+
+      <button
+        type="button"
+        class="logout-btn"
+        id="logoutButton"
+      >
         Logout
       </button>
 
@@ -845,7 +902,7 @@
 
     <section
       class="fuel-market-board"
-      aria-label="Available aviation fuels"
+      aria-label="Active aviation fuels"
     >
       <div
         class="fuel-card-grid"
@@ -898,19 +955,10 @@
           <svg
             class="fuel-chart"
             id="fuelChart"
-            viewBox="0 0 980 500"
+            viewBox="0 0 980 520"
             role="img"
-            aria-labelledby="fuelChartAccessibleTitle fuelChartAccessibleDescription"
+            aria-label="Aviation fuel market price and market movement"
           >
-            <title id="fuelChartAccessibleTitle">
-              Aviation fuel market price
-            </title>
-
-            <desc id="fuelChartAccessibleDescription">
-              Historical market price and percentage movement
-              through the current ACS date.
-            </desc>
-
             <defs>
               <linearGradient
                 id="fuelPriceAreaGradient"
@@ -923,13 +971,13 @@
                   offset="0%"
                   stop-color="#ffb300"
                   stop-opacity="0.20"
-                />
+                ></stop>
 
                 <stop
                   offset="100%"
                   stop-color="#ffb300"
                   stop-opacity="0"
-                />
+                ></stop>
               </linearGradient>
             </defs>
 
@@ -1024,6 +1072,11 @@
           </div>
 
           <div>
+            <dt>Introduced</dt>
+            <dd id="fuelIntroduced"></dd>
+          </div>
+
+          <div>
             <dt>Market status</dt>
             <dd id="fuelMarketStatus"></dd>
           </div>
@@ -1088,6 +1141,6 @@
 
   <script src="acs_time_recovery.js"></script>
   <script src="time_engine.js"></script>
-  <script src="acs_fuel.js?v=1.0"></script>
+  <script src="acs_fuel.js?v=2.0"></script>
 </body>
 </html>
