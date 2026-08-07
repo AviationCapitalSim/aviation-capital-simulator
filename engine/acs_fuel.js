@@ -1,363 +1,321 @@
 "use strict";
 
 /* ============================================================
-   ACS OCC — FUEL CENTER
+   ACS OCC — FUEL CENTER v2.0
+
+   No future prices.
+   Everything stops at the current ACS year.
+   Railway connection will be added later.
    ============================================================ */
 
 (function fuelCenterModule() {
-  const API_ENDPOINT = "/v1/fuel/market";
   const SVG_NS = "http://www.w3.org/2000/svg";
+  const FIRST_YEAR = 1940;
 
-  const elements = {
-    cardGrid: document.getElementById("fuelCardGrid"),
-    emptyMessage: document.getElementById("fuelEmptyMessage"),
-    workspace: document.getElementById("fuelWorkspace"),
-
-    selectedFuelName:
-      document.getElementById("selectedFuelName"),
-
-    informationFuelName:
-      document.getElementById("informationFuelName"),
-
-    selectedFuelPrice:
-      document.getElementById("selectedFuelPrice"),
-
-    selectedFuelChange:
-      document.getElementById("selectedFuelChange"),
-
-    fuelFamily:
-      document.getElementById("fuelFamily"),
-
-    fuelEngineType:
-      document.getElementById("fuelEngineType"),
-
-    fuelGrade:
-      document.getElementById("fuelGrade"),
-
-    fuelIdentification:
-      document.getElementById("fuelIdentification"),
-
-    fuelMarketStatus:
-      document.getElementById("fuelMarketStatus"),
-
-    fuelMarketUnit:
-      document.getElementById("fuelMarketUnit"),
-
-    fuelSpecification:
-      document.getElementById("fuelSpecification"),
-
-    priceRecordList:
-      document.getElementById("fuelPriceRecordList"),
-
-    chart:
-      document.getElementById("fuelChart"),
-
-    chartGrid:
-      document.getElementById("fuelPriceGrid"),
-
-    chartAxes:
-      document.getElementById("fuelChartAxes"),
-
-    chartPoints:
-      document.getElementById("fuelChartPoints"),
-
-    priceArea:
-      document.getElementById("fuelPriceArea"),
-
-    priceLine:
-      document.getElementById("fuelPriceLine"),
-
-    movementBars:
-      document.getElementById("fuelMovementBars"),
-
-    tooltip:
-      document.getElementById("fuelChartTooltip"),
-
-    chartShell:
-      document.getElementById("fuelChartShell"),
-
-    logoutButton:
-      document.getElementById("logoutButton")
-  };
-
+  const elements = {};
   const state = {
-    asOf: null,
-    fuels: [],
-    selectedFuelId: null
+    currentYear: FIRST_YEAR,
+    selectedFuelId: null,
+    fuels: []
   };
 
   /*
-   * Datos iniciales para construir y visualizar Fuel Center.
-   * Cuando conectemos Railway, la estructura de la página
-   * y de la gráfica no tendrá que cambiar.
+   * ACS historical market base.
+   * This internal series allows Fuel Center to work now.
+   * Railway will later return the final official dataset.
    */
+  const MARKET_ANCHORS = [
+    [1940, 0.18],
+    [1942, 0.19],
+    [1945, 0.21],
+    [1948, 0.24],
+    [1950, 0.27],
+    [1954, 0.29],
+    [1958, 0.30],
+    [1963, 0.31],
+    [1968, 0.34],
+    [1972, 0.36],
+    [1974, 0.53],
+    [1976, 0.59],
+    [1979, 0.86],
+    [1981, 1.35],
+    [1985, 1.20],
+    [1986, 0.93],
+    [1990, 1.22],
+    [1994, 1.18],
+    [1998, 1.07],
+    [2000, 1.51],
+    [2004, 1.88],
+    [2008, 3.30],
+    [2009, 2.40],
+    [2012, 3.62],
+    [2016, 2.14],
+    [2019, 2.69],
+    [2020, 2.17],
+    [2021, 3.01],
+    [2022, 4.90],
+    [2023, 3.78],
+    [2024, 3.45],
+    [2025, 3.38],
+    [2026, 3.42]
+  ];
 
-  const localFuelMarket = {
-    asOf: "1963-07-22",
-
-    fuels: [
-      createLocalFuel(
-        "avgas-80-87",
-        "AVGAS 80/87",
-        "80/87",
-        "Red",
-        [
-          0.18,
-          0.19,
-          0.20,
-          0.22,
-          0.21,
-          0.23,
-          0.24,
-          0.23,
-          0.25,
-          0.26,
-          0.27,
-          0.27
-        ]
-      ),
-
-      createLocalFuel(
-        "avgas-91-96",
-        "AVGAS 91/96",
-        "91/96",
-        "Blue",
-        [
-          0.20,
-          0.21,
-          0.22,
-          0.24,
-          0.23,
-          0.25,
-          0.26,
-          0.25,
-          0.27,
-          0.29,
-          0.30,
-          0.29
-        ]
-      ),
-
-      createLocalFuel(
-        "avgas-100-130",
-        "AVGAS 100/130",
-        "100/130",
-        "Green",
-        [
-          0.22,
-          0.23,
-          0.24,
-          0.25,
-          0.24,
-          0.26,
-          0.27,
-          0.29,
-          0.28,
-          0.30,
-          0.30,
-          0.31
-        ]
-      ),
-
-      createLocalFuel(
-        "avgas-115-145",
-        "AVGAS 115/145",
-        "115/145",
-        "Purple",
-        [
-          0.26,
-          0.27,
-          0.28,
-          0.30,
-          0.29,
-          0.31,
-          0.32,
-          0.33,
-          0.32,
-          0.34,
-          0.35,
-          0.36
-        ]
-      )
-    ]
-  };
-
-  function createLocalFuel(
-    id,
-    name,
-    grade,
-    identification,
-    values
-  ) {
-    const dates = [
-      "1940-01-01",
-      "1942-01-01",
-      "1944-01-01",
-      "1946-01-01",
-      "1948-01-01",
-      "1950-01-01",
-      "1952-01-01",
-      "1954-01-01",
-      "1956-01-01",
-      "1958-01-01",
-      "1960-01-01",
-      "1963-07-01"
-    ];
-
-    return {
-      id,
-      name,
+  const FUEL_DEFINITIONS = [
+    {
+      id: "avgas-80-87",
+      name: "AVGAS 80/87",
       family: "Aviation Gasoline",
       engineType: "Piston",
-      grade,
-      identification,
+      grade: "80/87",
+      identification: "Red",
+      introduced: 1940,
       marketStatus: "Active",
       unit: "USD / US GAL",
-      unitLabel: "USD/GAL",
-      specification: "Historical Grade",
+      specification: "Historical AVGAS Grade",
+      factor: 0.96,
+      offset: 0.010
+    },
+    {
+      id: "avgas-91-96",
+      name: "AVGAS 91/96",
+      family: "Aviation Gasoline",
+      engineType: "Piston",
+      grade: "91/96",
+      identification: "Blue",
+      introduced: 1940,
+      marketStatus: "Active",
+      unit: "USD / US GAL",
+      specification: "Historical AVGAS Grade",
+      factor: 1.00,
+      offset: 0.015
+    },
+    {
+      id: "avgas-100-130",
+      name: "AVGAS 100/130",
+      family: "Aviation Gasoline",
+      engineType: "Piston",
+      grade: "100/130",
+      identification: "Green",
+      introduced: 1940,
+      marketStatus: "Active",
+      unit: "USD / US GAL",
+      specification: "ASTM D910 Family",
+      factor: 1.06,
+      offset: 0.020
+    },
+    {
+      id: "avgas-115-145",
+      name: "AVGAS 115/145",
+      family: "Aviation Gasoline",
+      engineType: "High-output Piston",
+      grade: "115/145",
+      identification: "Purple",
+      introduced: 1940,
+      marketStatus: "Active",
+      unit: "USD / US GAL",
+      specification: "Historical Military Grade",
+      factor: 1.16,
+      offset: 0.025
+    },
+    {
+      id: "jet-a1",
+      name: "JET A-1",
+      family: "Kerosene Jet Fuel",
+      engineType: "Turbine",
+      grade: "JET A-1",
+      identification: "Straw / Clear",
+      introduced: 1951,
+      marketStatus: "Active",
+      unit: "USD / US GAL",
+      specification: "DEF STAN 91-091",
+      factor: 0.89,
+      offset: 0.008
+    },
+    {
+      id: "jet-a",
+      name: "JET A",
+      family: "Kerosene Jet Fuel",
+      engineType: "Turbine",
+      grade: "JET A",
+      identification: "Straw / Clear",
+      introduced: 1956,
+      marketStatus: "Active",
+      unit: "USD / US GAL",
+      specification: "ASTM D1655",
+      factor: 0.91,
+      offset: 0.008
+    }
+  ];
 
-      series: dates.map((date, index) => ({
-        date,
-        price: values[index]
-      }))
-    };
+  function cacheElements() {
+    const elementIds = [
+      "fuelCardGrid",
+      "fuelEmptyMessage",
+      "fuelWorkspace",
+      "selectedFuelName",
+      "selectedFuelPrice",
+      "selectedFuelChange",
+      "informationFuelName",
+      "fuelFamily",
+      "fuelEngineType",
+      "fuelGrade",
+      "fuelIdentification",
+      "fuelIntroduced",
+      "fuelMarketStatus",
+      "fuelMarketUnit",
+      "fuelSpecification",
+      "fuelPriceRecordList",
+      "fuelChartShell",
+      "fuelChartTooltip",
+      "fuelPriceGrid",
+      "fuelPriceArea",
+      "fuelPriceLine",
+      "fuelMovementBars",
+      "fuelChartAxes",
+      "fuelChartPoints",
+      "logoutButton",
+      "acs-clock"
+    ];
+
+    elementIds.forEach((id) => {
+      elements[id] = document.getElementById(id);
+    });
   }
 
-  /*
-   * En Railway este método consultará:
-   *
-   * GET /v1/fuel/market
-   *
-   * Mientras el endpoint no exista, Fuel Center utilizará
-   * los datos locales definidos arriba.
-   */
+  function clampYear(year) {
+    const lastAvailableYear =
+      MARKET_ANCHORS[MARKET_ANCHORS.length - 1][0];
 
-  async function loadFuelMarket() {
-    try {
-      const response = await fetch(API_ENDPOINT, {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          Accept: "application/json"
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          `Fuel market request failed: ${response.status}`
-        );
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.info(
-        "ACS Fuel Center is using local market data."
-      );
-
-      return localFuelMarket;
-    }
+    return Math.max(
+      FIRST_YEAR,
+      Math.min(
+        Number(year) || FIRST_YEAR,
+        lastAvailableYear
+      )
+    );
   }
 
-  function validateAndNormalizeMarket(payload) {
-    if (
-      !payload ||
-      typeof payload.asOf !== "string" ||
-      !Array.isArray(payload.fuels)
-    ) {
-      throw new Error(
-        "Fuel market response has an invalid structure."
-      );
+  function getYearFromClock() {
+    const clock = elements["acs-clock"];
+
+    if (!clock) {
+      return FIRST_YEAR;
     }
 
-    const asOfDate = new Date(
-      `${payload.asOf}T23:59:59Z`
+    const years = clock.textContent.match(
+      /\b(19\d{2}|20\d{2})\b/g
     );
 
-    if (Number.isNaN(asOfDate.getTime())) {
-      throw new Error(
-        "Fuel market response has an invalid date."
-      );
+    if (!years || !years.length) {
+      return FIRST_YEAR;
     }
 
-    const fuels = payload.fuels
-      .filter((fuel) => {
-        return (
-          fuel &&
-          typeof fuel.id === "string" &&
-          typeof fuel.name === "string"
+    return clampYear(
+      years[years.length - 1]
+    );
+  }
+
+  function interpolateMarketPrice(year) {
+    if (year <= MARKET_ANCHORS[0][0]) {
+      return MARKET_ANCHORS[0][1];
+    }
+
+    for (
+      let index = 1;
+      index < MARKET_ANCHORS.length;
+      index += 1
+    ) {
+      const previous = MARKET_ANCHORS[index - 1];
+      const next = MARKET_ANCHORS[index];
+
+      if (year <= next[0]) {
+        const progress =
+          (year - previous[0]) /
+          (next[0] - previous[0]);
+
+        return previous[1] +
+          ((next[1] - previous[1]) * progress);
+      }
+    }
+
+    return MARKET_ANCHORS[
+      MARKET_ANCHORS.length - 1
+    ][1];
+  }
+
+  function deterministicTexture(
+    year,
+    fuelIndex
+  ) {
+    const wave = Math.sin(
+      (year * 1.73) +
+      (fuelIndex * 2.4)
+    );
+
+    return wave * 0.012;
+  }
+
+  function buildFuelSeries(
+    fuel,
+    fuelIndex,
+    throughYear
+  ) {
+    const records = [];
+
+    const firstYear = Math.max(
+      FIRST_YEAR,
+      fuel.introduced
+    );
+
+    for (
+      let year = firstYear;
+      year <= throughYear;
+      year += 1
+    ) {
+      const basePrice =
+        interpolateMarketPrice(year);
+
+      const price =
+        (basePrice * fuel.factor) +
+        fuel.offset +
+        deterministicTexture(
+          year,
+          fuelIndex
         );
-      })
-      .map((fuel) => {
-        return normalizeFuel(fuel, asOfDate);
-      })
-      .filter((fuel) => {
-        return fuel.series.length > 0;
+
+      records.push({
+        year,
+        price: Math.max(
+          0.01,
+          Number(price.toFixed(3))
+        )
       });
+    }
 
-    return {
-      asOf: payload.asOf,
-      fuels
-    };
+    return records;
   }
 
-  function normalizeFuel(fuel, asOfDate) {
-    const series = Array.isArray(fuel.series)
-      ? fuel.series
-          .map((record) => {
-            return {
-              date: new Date(
-                `${record.date}T00:00:00Z`
-              ),
-
-              price: Number(record.price)
-            };
-          })
-          .filter((record) => {
-            return (
-              !Number.isNaN(record.date.getTime()) &&
-              Number.isFinite(record.price) &&
-              record.price >= 0 &&
-              record.date <= asOfDate
-            );
-          })
-          .sort((a, b) => {
-            return a.date - b.date;
-          })
-      : [];
-
-    return {
-      id: fuel.id,
-      name: fuel.name,
-
-      family:
-        fuel.family || "—",
-
-      engineType:
-        fuel.engineType || "—",
-
-      grade:
-        fuel.grade || "—",
-
-      identification:
-        fuel.identification || "—",
-
-      marketStatus:
-        fuel.marketStatus || "Active",
-
-      unit:
-        fuel.unit || "USD / US GAL",
-
-      unitLabel:
-        fuel.unitLabel || "USD/GAL",
-
-      specification:
-        fuel.specification || "—",
-
-      series
-    };
+  function createVisibleFuels(year) {
+    return FUEL_DEFINITIONS
+      .filter((fuel) => {
+        return fuel.introduced <= year;
+      })
+      .map((fuel, index) => {
+        return {
+          ...fuel,
+          series: buildFuelSeries(
+            fuel,
+            index,
+            year
+          )
+        };
+      });
   }
 
-  function calculateChange(series, index) {
+  function getMovement(
+    series,
+    index
+  ) {
     if (
       index <= 0 ||
       !series[index - 1] ||
@@ -369,18 +327,16 @@
       };
     }
 
-    const currentPrice = series[index].price;
-    const previousPrice = series[index - 1].price;
-
     const amount =
-      currentPrice - previousPrice;
-
-    const percent =
-      (amount / previousPrice) * 100;
+      series[index].price -
+      series[index - 1].price;
 
     return {
       amount,
-      percent
+      percent:
+        (amount /
+          series[index - 1].price) *
+        100
     };
   }
 
@@ -401,40 +357,40 @@
   }
 
   function formatPrice(value) {
-    return `$${value.toFixed(2)}`;
-  }
-
-  function formatMoneyChange(value) {
-    const absoluteValue = Math.abs(value).toFixed(2);
-
-    if (value > 0) {
-      return `+$${absoluteValue}`;
-    }
-
-    if (value < 0) {
-      return `-$${absoluteValue}`;
-    }
-
-    return "$0.00";
+    return `$${Number(value).toFixed(2)}`;
   }
 
   function formatPercent(value) {
     const sign = value > 0 ? "+" : "";
 
-    return `${sign}${value.toFixed(1)}%`;
+    return `${sign}${Number(value).toFixed(1)}%`;
   }
 
-  function formatDate(date) {
-    return new Intl.DateTimeFormat(
-      "en-US",
-      {
-        timeZone: "UTC",
-        month: "short",
-        year: "numeric"
+  function createSVGElement(
+    name,
+    attributes = {},
+    text = ""
+  ) {
+    const element =
+      document.createElementNS(
+        SVG_NS,
+        name
+      );
+
+    Object.entries(attributes).forEach(
+      ([attribute, value]) => {
+        element.setAttribute(
+          attribute,
+          String(value)
+        );
       }
-    )
-      .format(date)
-      .toUpperCase();
+    );
+
+    if (text) {
+      element.textContent = text;
+    }
+
+    return element;
   }
 
   function createFuelCard(fuel) {
@@ -444,90 +400,82 @@
     const latest =
       fuel.series[latestIndex];
 
-    const change =
-      calculateChange(
+    const movement =
+      getMovement(
         fuel.series,
         latestIndex
       );
 
     const category =
-      movementClass(change.percent);
+      movementClass(
+        movement.percent
+      );
 
-    const button =
+    const card =
       document.createElement("button");
 
-    button.type = "button";
-    button.className = "fuel-card";
-    button.dataset.fuelId = fuel.id;
-
-    button.setAttribute(
+    card.type = "button";
+    card.className = "fuel-card";
+    card.dataset.fuelId = fuel.id;
+    card.setAttribute(
       "aria-pressed",
       "false"
     );
 
-    const name =
-      document.createElement("span");
+    card.innerHTML = `
+      <span class="fuel-card-name"></span>
 
-    name.className = "fuel-card-name";
-    name.textContent = fuel.name;
+      <strong class="fuel-card-price"></strong>
 
-    const price =
-      document.createElement("strong");
+      <span class="fuel-card-meta">
+        <span class="fuel-change-${category}"></span>
+        <span class="fuel-family-label"></span>
+      </span>
+    `;
 
-    price.className = "fuel-card-price";
+    card.querySelector(
+      ".fuel-card-name"
+    ).textContent = fuel.name;
 
-    price.textContent =
+    card.querySelector(
+      ".fuel-card-price"
+    ).textContent =
       `${formatPrice(latest.price)} / GAL`;
 
-    const meta =
-      document.createElement("span");
+    card.querySelector(
+      `.fuel-change-${category}`
+    ).textContent =
+      formatPercent(
+        movement.percent
+      );
 
-    meta.className = "fuel-card-meta";
-
-    const changeText =
-      document.createElement("span");
-
-    changeText.className =
-      `fuel-change-${category}`;
-
-    changeText.textContent =
-      formatPercent(change.percent);
-
-    const family =
-      document.createElement("span");
-
-    family.textContent =
+    card.querySelector(
+      ".fuel-family-label"
+    ).textContent =
       fuel.family.toUpperCase();
 
-    meta.append(
-      changeText,
-      family
-    );
-
-    button.append(
-      name,
-      price,
-      meta
-    );
-
-    button.addEventListener(
+    card.addEventListener(
       "click",
-      () => {
-        selectFuel(fuel.id);
-      }
+      () => selectFuel(fuel.id)
     );
 
-    return button;
+    return card;
   }
 
-  function renderFuelCards() {
-    elements.cardGrid.replaceChildren();
+  function renderCards() {
+    elements.fuelCardGrid.replaceChildren();
 
     state.fuels.forEach((fuel) => {
-      elements.cardGrid.appendChild(
+      elements.fuelCardGrid.appendChild(
         createFuelCard(fuel)
       );
     });
+
+    elements.fuelEmptyMessage.hidden =
+      state.fuels.length > 0;
+
+    elements.fuelWorkspace.hidden =
+      state.fuels.length === 0;
   }
 
   function selectFuel(fuelId) {
@@ -541,7 +489,7 @@
 
     state.selectedFuelId = fuel.id;
 
-    elements.cardGrid
+    elements.fuelCardGrid
       .querySelectorAll(".fuel-card")
       .forEach((card) => {
         const selected =
@@ -558,29 +506,31 @@
         );
       });
 
-    renderFuelInformation(fuel);
+    renderInformation(fuel);
     renderPriceRecord(fuel);
     renderChart(fuel);
   }
 
-  function renderFuelInformation(fuel) {
+  function renderInformation(fuel) {
     const latestIndex =
       fuel.series.length - 1;
 
     const latest =
       fuel.series[latestIndex];
 
-    const change =
-      calculateChange(
+    const movement =
+      getMovement(
         fuel.series,
         latestIndex
       );
 
     const category =
-      movementClass(change.percent);
+      movementClass(
+        movement.percent
+      );
 
     elements.selectedFuelName.textContent =
-      fuel.name;
+      `${fuel.name} · THROUGH ${state.currentYear}`;
 
     elements.informationFuelName.textContent =
       fuel.name;
@@ -588,11 +538,11 @@
     elements.selectedFuelPrice.textContent =
       `${formatPrice(latest.price)} / GAL`;
 
-    elements.selectedFuelChange.textContent =
-      formatPercent(change.percent);
-
     elements.selectedFuelChange.className =
       `fuel-change-${category}`;
+
+    elements.selectedFuelChange.textContent =
+      `${formatPercent(movement.percent)} ANNUAL MOVEMENT`;
 
     elements.fuelFamily.textContent =
       fuel.family;
@@ -606,6 +556,9 @@
     elements.fuelIdentification.textContent =
       fuel.identification;
 
+    elements.fuelIntroduced.textContent =
+      String(fuel.introduced);
+
     elements.fuelMarketStatus.textContent =
       fuel.marketStatus;
 
@@ -617,916 +570,643 @@
   }
 
   function renderPriceRecord(fuel) {
-    const fragment =
-      document.createDocumentFragment();
+    elements.fuelPriceRecordList
+      .replaceChildren();
 
     [...fuel.series]
       .reverse()
-      .forEach((record, reversedIndex) => {
-        const originalIndex =
-          fuel.series.length -
-          1 -
-          reversedIndex;
+      .forEach(
+        (record, reverseIndex) => {
+          const originalIndex =
+            fuel.series.length -
+            1 -
+            reverseIndex;
 
-        const change =
-          calculateChange(
-            fuel.series,
-            originalIndex
-          );
+          const movement =
+            getMovement(
+              fuel.series,
+              originalIndex
+            );
 
-        const row =
-          document.createElement("div");
+          const row =
+            document.createElement("div");
 
-        row.className =
-          "fuel-price-record-row";
+          row.className =
+            "fuel-price-record-row";
 
-        const date =
-          document.createElement("span");
+          row.innerHTML = `
+            <span>${record.year}</span>
 
-        date.textContent =
-          formatDate(record.date);
+            <strong>
+              ${formatPrice(record.price)}
+            </strong>
 
-        const price =
-          document.createElement("strong");
+            <strong
+              class="fuel-change-${movementClass(
+                movement.percent
+              )}"
+            >
+              ${formatPercent(
+                movement.percent
+              )}
+            </strong>
+          `;
 
-        price.textContent =
-          formatPrice(record.price);
-
-        const percent =
-          document.createElement("strong");
-
-        percent.className =
-          `fuel-change-${movementClass(
-            change.percent
-          )}`;
-
-        percent.textContent =
-          originalIndex === 0
-            ? "—"
-            : formatPercent(change.percent);
-
-        row.append(
-          date,
-          price,
-          percent
-        );
-
-        fragment.appendChild(row);
-      });
-
-    elements.priceRecordList.replaceChildren(
-      fragment
-    );
+          elements.fuelPriceRecordList
+            .appendChild(row);
+        }
+      );
   }
 
-  function createSvgElement(
-    tagName,
-    attributes = {}
+  function showTooltip(
+    event,
+    record,
+    movement
   ) {
-    const element =
-      document.createElementNS(
-        SVG_NS,
-        tagName
-      );
+    const shellRectangle =
+      elements.fuelChartShell
+        .getBoundingClientRect();
 
-    Object.entries(attributes)
-      .forEach(([name, value]) => {
-        element.setAttribute(
-          name,
-          String(value)
+    elements.fuelChartTooltip.innerHTML = `
+      <strong>${record.year}</strong>
+      Market Price:
+      ${formatPrice(record.price)} / GAL
+      <br>
+      Market Movement:
+      ${formatPercent(movement.percent)}
+    `;
+
+    elements.fuelChartTooltip.hidden =
+      false;
+
+    const left = Math.min(
+      event.clientX -
+        shellRectangle.left +
+        12,
+      shellRectangle.width - 205
+    );
+
+    const top = Math.max(
+      8,
+      event.clientY -
+        shellRectangle.top -
+        78
+    );
+
+    elements.fuelChartTooltip.style.left =
+      `${Math.max(8, left)}px`;
+
+    elements.fuelChartTooltip.style.top =
+      `${top}px`;
+  }
+
+  function hideTooltip() {
+    elements.fuelChartTooltip.hidden =
+      true;
+  }
+
+  function bindChartHover(
+    element,
+    record,
+    movement
+  ) {
+    element.addEventListener(
+      "pointermove",
+      (event) => {
+        showTooltip(
+          event,
+          record,
+          movement
         );
-      });
+      }
+    );
 
-    return element;
+    element.addEventListener(
+      "pointerleave",
+      hideTooltip
+    );
   }
 
   function renderChart(fuel) {
     const series = fuel.series;
 
-    if (!series.length) {
-      return;
+    const width = 980;
+    const left = 70;
+    const right = 28;
+    const top = 42;
+    const priceBottom = 318;
+    const movementTop = 382;
+    const movementBottom = 478;
+
+    const plotWidth =
+      width - left - right;
+
+    const priceValues =
+      series.map(
+        (record) => record.price
+      );
+
+    const minimum =
+      Math.min(...priceValues);
+
+    const maximum =
+      Math.max(...priceValues);
+
+    const pricePadding =
+      Math.max(
+        (maximum - minimum) * 0.16,
+        0.025
+      );
+
+    const minimumPrice =
+      Math.max(
+        0,
+        minimum - pricePadding
+      );
+
+    const maximumPrice =
+      maximum + pricePadding;
+
+    const priceRange =
+      Math.max(
+        0.01,
+        maximumPrice - minimumPrice
+      );
+
+    const movements =
+      series.map(
+        (record, index) => {
+          return getMovement(
+            series,
+            index
+          ).percent;
+        }
+      );
+
+    const movementLimit =
+      Math.max(
+        12,
+        ...movements.map(
+          (value) =>
+            Math.abs(value)
+        )
+      );
+
+    const zeroY =
+      (movementTop + movementBottom) / 2;
+
+    function xFor(index) {
+      if (series.length === 1) {
+        return left + (plotWidth / 2);
+      }
+
+      return left +
+        (
+          index /
+          (series.length - 1)
+        ) *
+        plotWidth;
     }
 
-    const layout = {
-      left: 78,
-      right: 950,
-
-      priceTop: 38,
-      priceBottom: 294,
-
-      movementTop: 352,
-      movementZero: 416,
-      movementBottom: 474
-    };
-
-    const timestamps =
-      series.map((record) => {
-        return record.date.getTime();
-      });
-
-    const prices =
-      series.map((record) => {
-        return record.price;
-      });
-
-    const changes =
-      series.map((record, index) => {
-        return calculateChange(
-          series,
-          index
-        ).percent;
-      });
-
-    const minTime =
-      Math.min(...timestamps);
-
-    const maxTime =
-      Math.max(...timestamps);
-
-    const rawMinPrice =
-      Math.min(...prices);
-
-    const rawMaxPrice =
-      Math.max(...prices);
-
-    const pricePadding = Math.max(
-      (rawMaxPrice - rawMinPrice) * 0.18,
-      0.02
-    );
-
-    const minPrice = Math.max(
-      0,
-      rawMinPrice - pricePadding
-    );
-
-    const maxPrice =
-      rawMaxPrice + pricePadding;
-
-    const maxMovement = Math.max(
-      10,
-      ...changes.map((value) => {
-        return Math.abs(value);
-      })
-    );
-
-    const scaleX = (timestamp) => {
-      if (maxTime === minTime) {
-        return (
-          layout.left +
-          layout.right
-        ) / 2;
-      }
-
-      return (
-        layout.left +
+    function yForPrice(price) {
+      return priceBottom -
         (
-          (timestamp - minTime) /
-          (maxTime - minTime)
-        ) *
-        (
-          layout.right -
-          layout.left
-        )
-      );
-    };
-
-    const scalePriceY = (price) => {
-      if (maxPrice === minPrice) {
-        return (
-          layout.priceTop +
-          layout.priceBottom
-        ) / 2;
-      }
-
-      return (
-        layout.priceBottom -
-        (
-          (price - minPrice) /
-          (maxPrice - minPrice)
-        ) *
-        (
-          layout.priceBottom -
-          layout.priceTop
-        )
-      );
-    };
-
-    const scaleMovementY = (percent) => {
-      if (percent >= 0) {
-        return (
-          layout.movementZero -
-          (percent / maxMovement) *
           (
-            layout.movementZero -
-            layout.movementTop
-          )
-        );
-      }
-
-      return (
-        layout.movementZero +
-        (
-          Math.abs(percent) /
-          maxMovement
+            price - minimumPrice
+          ) /
+          priceRange
         ) *
         (
-          layout.movementBottom -
-          layout.movementZero
+          priceBottom - top
+        );
+    }
+
+    function yForMovement(percent) {
+      return zeroY -
+        (
+          percent /
+          movementLimit
+        ) *
+        (
+          (
+            movementBottom -
+            movementTop
+          ) /
+          2
+        );
+    }
+
+    elements.fuelPriceGrid
+      .replaceChildren();
+
+    elements.fuelChartAxes
+      .replaceChildren();
+
+    elements.fuelChartPoints
+      .replaceChildren();
+
+    elements.fuelMovementBars
+      .replaceChildren();
+
+    elements.fuelPriceLine
+      .setAttribute("d", "");
+
+    elements.fuelPriceArea
+      .setAttribute("d", "");
+
+    elements.fuelChartAxes.appendChild(
+      createSVGElement(
+        "text",
+        {
+          x: left,
+          y: 20,
+          class:
+            "fuel-chart-section-label"
+        },
+        "MARKET PRICE · USD / US GAL"
+      )
+    );
+
+    elements.fuelChartAxes.appendChild(
+      createSVGElement(
+        "text",
+        {
+          x: left,
+          y: movementTop - 15,
+          class:
+            "fuel-chart-section-label"
+        },
+        "MARKET MOVEMENT · ANNUAL %"
+      )
+    );
+
+    for (
+      let line = 0;
+      line <= 4;
+      line += 1
+    ) {
+      const ratio = line / 4;
+
+      const y =
+        top +
+        ratio *
+        (
+          priceBottom - top
+        );
+
+      const price =
+        maximumPrice -
+        ratio *
+        priceRange;
+
+      elements.fuelPriceGrid.appendChild(
+        createSVGElement(
+          "line",
+          {
+            x1: left,
+            y1: y,
+            x2: width - right,
+            y2: y,
+            class:
+              "fuel-chart-grid-line"
+          }
         )
       );
-    };
 
-    renderGridAndAxes(
-      series,
-      layout,
-      minPrice,
-      maxPrice,
-      maxMovement,
-      scaleX,
-      scalePriceY
+      elements.fuelChartAxes.appendChild(
+        createSVGElement(
+          "text",
+          {
+            x: left - 12,
+            y: y + 4,
+            "text-anchor": "end",
+            class:
+              "fuel-chart-axis-text"
+          },
+          `$${price.toFixed(2)}`
+        )
+      );
+    }
+
+    elements.fuelPriceGrid.appendChild(
+      createSVGElement(
+        "line",
+        {
+          x1: left,
+          y1: zeroY,
+          x2: width - right,
+          y2: zeroY,
+          class:
+            "fuel-chart-zero-line"
+        }
+      )
+    );
+
+    elements.fuelChartAxes.appendChild(
+      createSVGElement(
+        "text",
+        {
+          x: left - 12,
+          y: zeroY + 4,
+          "text-anchor": "end",
+          class:
+            "fuel-chart-axis-text"
+        },
+        "0%"
+      )
     );
 
     const points =
-      series.map((record) => {
-        return {
-          x: scaleX(
-            record.date.getTime()
-          ),
-
-          y: scalePriceY(
-            record.price
-          )
-        };
-      });
-
-    const linePath = points
-      .map((point, index) => {
-        const command =
-          index === 0 ? "M" : "L";
-
-        return (
-          `${command}` +
-          `${point.x.toFixed(2)} ` +
-          `${point.y.toFixed(2)}`
-        );
-      })
-      .join(" ");
-
-    const finalPoint =
-      points[points.length - 1];
-
-    const firstPoint =
-      points[0];
-
-    const areaPath =
-      `${linePath} ` +
-      `L${finalPoint.x.toFixed(2)} ` +
-      `${layout.priceBottom} ` +
-      `L${firstPoint.x.toFixed(2)} ` +
-      `${layout.priceBottom} Z`;
-
-    elements.priceLine.setAttribute(
-      "d",
-      linePath
-    );
-
-    elements.priceArea.setAttribute(
-      "d",
-      areaPath
-    );
-
-    renderMovementBars(
-      fuel,
-      changes,
-      layout,
-      scaleX,
-      scaleMovementY
-    );
-
-    renderChartPoints(
-      fuel,
-      points
-    );
-  }
-
-  function renderGridAndAxes(
-    series,
-    layout,
-    minPrice,
-    maxPrice,
-    maxMovement,
-    scaleX,
-    scalePriceY
-  ) {
-    const gridFragment =
-      document.createDocumentFragment();
-
-    const axesFragment =
-      document.createDocumentFragment();
-
-    const priceTicks = 4;
-
-    for (
-      let index = 0;
-      index <= priceTicks;
-      index += 1
-    ) {
-      const value =
-        minPrice +
-        (
-          (maxPrice - minPrice) /
-          priceTicks
-        ) *
-        index;
-
-      const y =
-        scalePriceY(value);
-
-      gridFragment.appendChild(
-        createSvgElement(
-          "line",
-          {
-            class:
-              "fuel-chart-grid-line",
-
-            x1:
-              layout.left,
-
-            y1:
-              y,
-
-            x2:
-              layout.right,
-
-            y2:
-              y
-          }
-        )
+      series.map(
+        (record, index) => {
+          return [
+            xFor(index),
+            yForPrice(record.price)
+          ];
+        }
       );
 
-      const label =
-        createSvgElement(
-          "text",
-          {
-            class:
-              "fuel-chart-axis-text",
+    if (points.length) {
+      const linePath =
+        points
+          .map(
+            ([x, y], index) => {
+              const command =
+                index === 0
+                  ? "M"
+                  : "L";
 
-            x:
-              layout.left - 12,
+              return `${command}${x.toFixed(
+                2
+              )},${y.toFixed(2)}`;
+            }
+          )
+          .join(" ");
 
-            y:
-              y + 4,
+      const firstX = points[0][0];
 
-            "text-anchor":
-              "end"
-          }
+      const lastX =
+        points[
+          points.length - 1
+        ][0];
+
+      elements.fuelPriceLine
+        .setAttribute(
+          "d",
+          linePath
         );
 
-      label.textContent =
-        formatPrice(value);
-
-      axesFragment.appendChild(label);
+      elements.fuelPriceArea
+        .setAttribute(
+          "d",
+          `${linePath} L${lastX},${priceBottom} L${firstX},${priceBottom} Z`
+        );
     }
 
-    const movementLabel =
-      createSvgElement(
-        "text",
-        {
-          class:
-            "fuel-chart-section-label",
-
-          x:
-            layout.left,
-
-          y:
-            layout.movementTop - 15
-        }
-      );
-
-    movementLabel.textContent =
-      "MARKET MOVEMENT";
-
-    axesFragment.appendChild(
-      movementLabel
-    );
-
-    gridFragment.appendChild(
-      createSvgElement(
-        "line",
-        {
-          class:
-            "fuel-chart-zero-line",
-
-          x1:
-            layout.left,
-
-          y1:
-            layout.movementZero,
-
-          x2:
-            layout.right,
-
-          y2:
-            layout.movementZero
-        }
-      )
-    );
-
-    const positiveLabel =
-      createSvgElement(
-        "text",
-        {
-          class:
-            "fuel-chart-axis-text",
-
-          x:
-            layout.left - 12,
-
-          y:
-            layout.movementTop + 4,
-
-          "text-anchor":
-            "end"
-        }
-      );
-
-    positiveLabel.textContent =
-      `+${maxMovement.toFixed(0)}%`;
-
-    const zeroLabel =
-      createSvgElement(
-        "text",
-        {
-          class:
-            "fuel-chart-axis-text",
-
-          x:
-            layout.left - 12,
-
-          y:
-            layout.movementZero + 4,
-
-          "text-anchor":
-            "end"
-        }
-      );
-
-    zeroLabel.textContent = "0%";
-
-    const negativeLabel =
-      createSvgElement(
-        "text",
-        {
-          class:
-            "fuel-chart-axis-text",
-
-          x:
-            layout.left - 12,
-
-          y:
-            layout.movementBottom + 4,
-
-          "text-anchor":
-            "end"
-        }
-      );
-
-    negativeLabel.textContent =
-      `-${maxMovement.toFixed(0)}%`;
-
-    axesFragment.append(
-      positiveLabel,
-      zeroLabel,
-      negativeLabel
-    );
-
-    const desiredLabels =
-      Math.min(
-        6,
+    const barSlot =
+      plotWidth /
+      Math.max(
+        1,
         series.length
       );
 
-    const usedIndices =
-      new Set();
+    const barWidth =
+      Math.max(
+        3,
+        Math.min(
+          18,
+          barSlot * 0.58
+        )
+      );
 
-    for (
-      let labelIndex = 0;
-      labelIndex < desiredLabels;
-      labelIndex += 1
-    ) {
-      const seriesIndex =
-        Math.round(
-          (series.length - 1) *
-          (
-            labelIndex /
-            Math.max(
-              1,
-              desiredLabels - 1
-            )
-          )
-        );
+    const pointInterval =
+      Math.max(
+        1,
+        Math.ceil(
+          series.length / 22
+        )
+      );
 
-      if (
-        usedIndices.has(seriesIndex)
-      ) {
-        continue;
-      }
-
-      usedIndices.add(seriesIndex);
-
-      const record =
-        series[seriesIndex];
-
-      const x =
-        scaleX(
-          record.date.getTime()
-        );
-
-      const label =
-        createSvgElement(
-          "text",
-          {
-            class:
-              "fuel-chart-axis-text",
-
-            x,
-
-            y:
-              496,
-
-            "text-anchor":
-              seriesIndex === 0
-                ? "start"
-                : seriesIndex ===
-                  series.length - 1
-                  ? "end"
-                  : "middle"
-          }
-        );
-
-      label.textContent =
-        String(
-          record.date.getUTCFullYear()
-        );
-
-      axesFragment.appendChild(label);
-    }
-
-    elements.chartGrid.replaceChildren(
-      gridFragment
-    );
-
-    elements.chartAxes.replaceChildren(
-      axesFragment
-    );
-  }
-
-  function renderMovementBars(
-    fuel,
-    changes,
-    layout,
-    scaleX,
-    scaleMovementY
-  ) {
-    const fragment =
-      document.createDocumentFragment();
-
-    const series =
-      fuel.series;
-
-    const availableWidth =
-      layout.right -
-      layout.left;
-
-    const barWidth = Math.max(
-      3,
-      Math.min(
-        18,
-        (
-          availableWidth /
-          Math.max(
-            series.length,
-            1
-          )
-        ) *
-        0.58
-      )
-    );
+    const labelInterval =
+      Math.max(
+        1,
+        Math.ceil(
+          series.length / 8
+        )
+      );
 
     series.forEach(
       (record, index) => {
-        if (index === 0) {
-          return;
-        }
-
-        const percent =
-          changes[index];
-
-        const category =
-          movementClass(percent);
+        const movement =
+          getMovement(
+            series,
+            index
+          );
 
         const x =
-          scaleX(
-            record.date.getTime()
-          ) -
-          barWidth / 2;
+          xFor(index);
 
-        const scaledY =
-          scaleMovementY(percent);
+        const movementY =
+          yForMovement(
+            movement.percent
+          );
 
-        const y =
-          percent >= 0
-            ? scaledY
-            : layout.movementZero;
+        const barY =
+          Math.min(
+            zeroY,
+            movementY
+          );
 
-        const height =
+        const barHeight =
           Math.max(
-            2,
+            1.5,
             Math.abs(
-              layout.movementZero -
-              scaledY
+              movementY - zeroY
             )
           );
 
         const bar =
-          createSvgElement(
+          createSVGElement(
             "rect",
             {
+              x:
+                x -
+                (barWidth / 2),
+              y: barY,
+              width: barWidth,
+              height: barHeight,
+              rx: 2,
               class:
-                `fuel-movement-bar ` +
-                `is-${category}`,
-
-              x,
-
-              y,
-
-              width:
-                barWidth,
-
-              height,
-
-              rx:
-                1.5,
-
-              tabindex:
-                0,
-
-              role:
-                "button",
-
-              "aria-label":
-                `${formatDate(record.date)} ` +
-                `${formatPercent(percent)}`
+                `fuel-movement-bar is-${movementClass(
+                  movement.percent
+                )}`
             }
           );
 
-        attachChartInteraction(
+        bindChartHover(
           bar,
-          fuel,
-          index,
-          x + barWidth / 2,
-          y
+          record,
+          movement
         );
 
-        fragment.appendChild(bar);
-      }
-    );
+        elements.fuelMovementBars
+          .appendChild(bar);
 
-    elements.movementBars.replaceChildren(
-      fragment
-    );
-  }
+        if (
+          index % pointInterval === 0 ||
+          index === series.length - 1
+        ) {
+          const point =
+            createSVGElement(
+              "circle",
+              {
+                cx: x,
+                cy:
+                  yForPrice(
+                    record.price
+                  ),
+                r: 4,
+                class:
+                  "fuel-chart-point"
+              }
+            );
 
-  function renderChartPoints(
-    fuel,
-    points
-  ) {
-    const fragment =
-      document.createDocumentFragment();
-
-    points.forEach(
-      (point, index) => {
-        const record =
-          fuel.series[index];
-
-        const circle =
-          createSvgElement(
-            "circle",
-            {
-              class:
-                "fuel-chart-point",
-
-              cx:
-                point.x,
-
-              cy:
-                point.y,
-
-              r:
-                index ===
-                points.length - 1
-                  ? 5.5
-                  : 3.5,
-
-              tabindex:
-                0,
-
-              role:
-                "button",
-
-              "aria-label":
-                `${formatDate(record.date)} ` +
-                `${formatPrice(record.price)}`
-            }
+          bindChartHover(
+            point,
+            record,
+            movement
           );
 
-        attachChartInteraction(
-          circle,
-          fuel,
-          index,
-          point.x,
-          point.y
-        );
+          elements.fuelChartPoints
+            .appendChild(point);
+        }
 
-        fragment.appendChild(circle);
+        if (
+          index % labelInterval === 0 ||
+          index === series.length - 1
+        ) {
+          elements.fuelChartAxes
+            .appendChild(
+              createSVGElement(
+                "text",
+                {
+                  x,
+                  y: 506,
+                  "text-anchor":
+                    "middle",
+                  class:
+                    "fuel-chart-axis-text"
+                },
+                String(record.year)
+              )
+            );
+        }
       }
     );
-
-    elements.chartPoints.replaceChildren(
-      fragment
-    );
   }
 
-  function attachChartInteraction(
-    target,
-    fuel,
-    index,
-    svgX,
-    svgY
-  ) {
-    const show = () => {
-      showTooltip(
-        fuel,
-        index,
-        svgX,
-        svgY
+  function renderForYear(year) {
+    const previousSelection =
+      state.selectedFuelId;
+
+    state.currentYear =
+      clampYear(year);
+
+    state.fuels =
+      createVisibleFuels(
+        state.currentYear
       );
-    };
 
-    target.addEventListener(
-      "mouseenter",
-      show
-    );
+    renderCards();
 
-    target.addEventListener(
-      "focus",
-      show
-    );
+    const selectedStillExists =
+      state.fuels.some(
+        (fuel) =>
+          fuel.id ===
+          previousSelection
+      );
 
-    target.addEventListener(
-      "mouseleave",
-      hideTooltip
-    );
+    const nextFuelId =
+      selectedStillExists
+        ? previousSelection
+        : state.fuels[0]?.id;
 
-    target.addEventListener(
-      "blur",
-      hideTooltip
-    );
+    if (nextFuelId) {
+      selectFuel(nextFuelId);
+    }
   }
 
-  function showTooltip(
-    fuel,
-    index,
-    svgX,
-    svgY
-  ) {
-    const record =
-      fuel.series[index];
+  function watchACSClock() {
+    const clock =
+      elements["acs-clock"];
 
-    const previous =
-      index > 0
-        ? fuel.series[index - 1]
-        : null;
+    if (
+      !clock ||
+      typeof MutationObserver !==
+        "function"
+    ) {
+      return;
+    }
 
-    const change =
-      calculateChange(
-        fuel.series,
-        index
+    let lastYear =
+      state.currentYear;
+
+    const observer =
+      new MutationObserver(
+        () => {
+          const nextYear =
+            getYearFromClock();
+
+          if (
+            nextYear !== lastYear
+          ) {
+            lastYear = nextYear;
+            renderForYear(nextYear);
+          }
+        }
       );
 
-    const svgRect =
-      elements.chart
-        .getBoundingClientRect();
-
-    const shellRect =
-      elements.chartShell
-        .getBoundingClientRect();
-
-    const horizontalScale =
-      svgRect.width / 980;
-
-    const verticalScale =
-      svgRect.height / 500;
-
-    elements.tooltip.innerHTML = "";
-
-    const title =
-      document.createElement("strong");
-
-    title.textContent =
-      `${fuel.name} · ` +
-      `${formatDate(record.date)}`;
-
-    const details =
-      document.createElement("span");
-
-    const previousText =
-      previous
-        ? formatPrice(previous.price)
-        : "—";
-
-    const amountText =
-      index > 0
-        ? formatMoneyChange(
-            change.amount
-          )
-        : "—";
-
-    const percentText =
-      index > 0
-        ? formatPercent(
-            change.percent
-          )
-        : "—";
-
-    details.innerHTML =
-      `PRICE&nbsp;&nbsp;` +
-      `${formatPrice(record.price)}` +
-      `<br>` +
-      `PREVIOUS&nbsp;&nbsp;` +
-      `${previousText}` +
-      `<br>` +
-      `CHANGE&nbsp;&nbsp;` +
-      `${amountText}` +
-      `<br>` +
-      `VARIATION&nbsp;&nbsp;` +
-      `${percentText}`;
-
-    elements.tooltip.append(
-      title,
-      details
+    observer.observe(
+      clock,
+      {
+        childList: true,
+        subtree: true,
+        characterData: true
+      }
     );
-
-    elements.tooltip.hidden = false;
-
-    const tooltipWidth =
-      elements.tooltip.offsetWidth;
-
-    const tooltipHeight =
-      elements.tooltip.offsetHeight;
-
-    const rawLeft =
-      svgRect.left -
-      shellRect.left +
-      svgX *
-      horizontalScale -
-      tooltipWidth / 2;
-
-    const rawTop =
-      svgRect.top -
-      shellRect.top +
-      svgY *
-      verticalScale -
-      tooltipHeight -
-      12;
-
-    const maxLeft =
-      Math.max(
-        0,
-        shellRect.width -
-        tooltipWidth
-      );
-
-    elements.tooltip.style.left =
-      `${Math.min(
-        Math.max(rawLeft, 0),
-        maxLeft
-      )}px`;
-
-    elements.tooltip.style.top =
-      `${Math.max(rawTop, 0)}px`;
-  }
-
-  function hideTooltip() {
-    elements.tooltip.hidden = true;
   }
 
   function handleLogout() {
+    alert(
+      "👋 Session closed. Your fleet awaits your command!"
+    );
+
     window.location.href =
       "login.html";
   }
 
-  function initializeClock() {
+  function initializeFuelCenter() {
+    cacheElements();
+
+    if (
+      !elements.fuelCardGrid ||
+      !elements.fuelWorkspace
+    ) {
+      console.error(
+        "ACS FUEL CENTER — Required HTML elements are missing."
+      );
+
+      return;
+    }
+
+    if (elements.logoutButton) {
+      elements.logoutButton
+        .addEventListener(
+          "click",
+          handleLogout
+        );
+    }
+
     if (
       typeof window.registerTimeListener ===
         "function" &&
@@ -1539,59 +1219,35 @@
 
       window.updateClockDisplay();
     }
-  }
 
-  async function initializeFuelCenter() {
-    elements.logoutButton.addEventListener(
-      "click",
-      handleLogout
+    renderForYear(
+      getYearFromClock()
     );
 
-    initializeClock();
+    watchACSClock();
 
-    try {
-      const payload =
-        await loadFuelMarket();
-
-      const market =
-        validateAndNormalizeMarket(
-          payload
+    window.setTimeout(
+      () => {
+        renderForYear(
+          getYearFromClock()
         );
-
-      state.asOf =
-        market.asOf;
-
-      state.fuels =
-        market.fuels;
-
-      if (!state.fuels.length) {
-        elements.emptyMessage.hidden =
-          false;
-
-        return;
-      }
-
-      renderFuelCards();
-
-      elements.workspace.hidden =
-        false;
-
-      selectFuel(
-        state.fuels[0].id
-      );
-    } catch (error) {
-      console.error(
-        "ACS Fuel Center initialization failed:",
-        error
-      );
-
-      elements.emptyMessage.hidden =
-        false;
-    }
+      },
+      800
+    );
   }
 
-  document.addEventListener(
-    "DOMContentLoaded",
-    initializeFuelCenter
-  );
+  if (
+    document.readyState ===
+    "loading"
+  ) {
+    document.addEventListener(
+      "DOMContentLoaded",
+      initializeFuelCenter,
+      {
+        once: true
+      }
+    );
+  } else {
+    initializeFuelCenter();
+  }
 }());
