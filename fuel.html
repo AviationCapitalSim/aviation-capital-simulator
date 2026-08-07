@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fuel Center - Aviation Capital Simulator</title>
+
+  <link rel="stylesheet" href="styles.css?v=3.2">
+
+  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+  <link rel="apple-touch-icon" href="acs_logo_180.png">
+  <link rel="manifest" href="manifest.json">
+</head>
+
+<body>
+  <header class="acs-header">
+    <div class="acs-logo">
+      <img src="acs_logo.png" alt="ACS Logo">
+      <h1>Aviation Capital Simulator</h1>
+    </div>
+
+    <nav class="acs-nav" aria-label="ACS main navigation">
+      <a href="dashboard.html">Main</a>
+      <a href="bank.html">Bank</a>
+      <a href="aircraft.html">Aircraft</a>
+      <a href="routes.html">Routes</a>
+      <a href="fuel.html" class="active" aria-current="page">Fuel</a>
+      <a href="hr.html">HR</a>
+    </nav>
+
+    <div class="acs-right">
+      <a href="support.html" class="support-btn">Support</a>
+      <button type="button" class="logout-btn" id="logoutButton">
+        Logout
+      </button>
+
+      <div id="acs-clock" class="acs-clock-header">
+        00:00 — 01 JAN 1940
+      </div>
+    </div>
+  </header>
+
+  <main class="acs-main fuel-center">
+    <section
+      class="acs-page-title"
+      aria-labelledby="fuelCenterTitle"
+    >
+      <div
+        class="acs-page-title-main"
+        id="fuelCenterTitle"
+      >
+        Fuel Center
+      </div>
+
+      <div class="acs-page-title-sub">
+        Global Fuel Market &amp; Airlines
+      </div>
+    </section>
+
+    <section
+      class="fuel-market-board"
+      aria-label="Available aviation fuels"
+    >
+      <div
+        class="fuel-card-grid"
+        id="fuelCardGrid"
+      ></div>
+
+      <p
+        class="fuel-empty-message"
+        id="fuelEmptyMessage"
+        hidden
+      >
+        Fuel market data is currently unavailable.
+      </p>
+    </section>
+
+    <section
+      class="fuel-workspace"
+      id="fuelWorkspace"
+      hidden
+    >
+      <article
+        class="fuel-panel fuel-chart-panel"
+        aria-labelledby="marketPriceTitle"
+      >
+        <header class="fuel-panel-header">
+          <div>
+            <h2 id="marketPriceTitle">
+              Market Price
+            </h2>
+
+            <p
+              class="fuel-selected-name"
+              id="selectedFuelName"
+            ></p>
+          </div>
+
+          <div
+            class="fuel-current-reading"
+            aria-live="polite"
+          >
+            <strong id="selectedFuelPrice"></strong>
+            <span id="selectedFuelChange"></span>
+          </div>
+        </header>
+
+        <div
+          class="fuel-chart-shell"
+          id="fuelChartShell"
+        >
+          <svg
+            class="fuel-chart"
+            id="fuelChart"
+            viewBox="0 0 980 500"
+            role="img"
+            aria-labelledby="fuelChartAccessibleTitle fuelChartAccessibleDescription"
+          >
+            <title id="fuelChartAccessibleTitle">
+              Aviation fuel market price
+            </title>
+
+            <desc id="fuelChartAccessibleDescription">
+              Historical market price and percentage movement
+              through the current ACS date.
+            </desc>
+
+            <defs>
+              <linearGradient
+                id="fuelPriceAreaGradient"
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
+                <stop
+                  offset="0%"
+                  stop-color="#ffb300"
+                  stop-opacity="0.20"
+                />
+
+                <stop
+                  offset="100%"
+                  stop-color="#ffb300"
+                  stop-opacity="0"
+                />
+              </linearGradient>
+            </defs>
+
+            <g id="fuelPriceGrid"></g>
+
+            <path
+              class="fuel-price-area"
+              id="fuelPriceArea"
+            ></path>
+
+            <path
+              class="fuel-price-line"
+              id="fuelPriceLine"
+            ></path>
+
+            <g id="fuelMovementBars"></g>
+            <g id="fuelChartAxes"></g>
+            <g id="fuelChartPoints"></g>
+          </svg>
+
+          <div
+            class="fuel-chart-tooltip"
+            id="fuelChartTooltip"
+            role="status"
+            hidden
+          ></div>
+        </div>
+
+        <div
+          class="fuel-chart-key"
+          role="group"
+          aria-label="Market movement color scale"
+        >
+          <span>
+            <i class="movement-neutral"></i>
+            -3% to +3%
+          </span>
+
+          <span>
+            <i class="movement-attention"></i>
+            +3% to +10%
+          </span>
+
+          <span>
+            <i class="movement-critical"></i>
+            Above +10%
+          </span>
+
+          <span>
+            <i class="movement-decrease"></i>
+            Below -3%
+          </span>
+        </div>
+      </article>
+
+      <aside
+        class="fuel-panel fuel-information-panel"
+        aria-labelledby="fuelInformationTitle"
+      >
+        <header class="fuel-panel-header">
+          <div>
+            <h2 id="fuelInformationTitle">
+              Fuel Information
+            </h2>
+
+            <p
+              class="fuel-selected-name"
+              id="informationFuelName"
+            ></p>
+          </div>
+        </header>
+
+        <dl class="fuel-information-list">
+          <div>
+            <dt>Fuel family</dt>
+            <dd id="fuelFamily"></dd>
+          </div>
+
+          <div>
+            <dt>Engine type</dt>
+            <dd id="fuelEngineType"></dd>
+          </div>
+
+          <div>
+            <dt>Grade</dt>
+            <dd id="fuelGrade"></dd>
+          </div>
+
+          <div>
+            <dt>Identification</dt>
+            <dd id="fuelIdentification"></dd>
+          </div>
+
+          <div>
+            <dt>Market status</dt>
+            <dd id="fuelMarketStatus"></dd>
+          </div>
+
+          <div>
+            <dt>Market unit</dt>
+            <dd id="fuelMarketUnit"></dd>
+          </div>
+
+          <div>
+            <dt>Specification</dt>
+            <dd id="fuelSpecification"></dd>
+          </div>
+        </dl>
+
+        <details class="fuel-price-record">
+          <summary>
+            Price Record
+          </summary>
+
+          <div
+            class="fuel-price-record-list"
+            id="fuelPriceRecordList"
+          ></div>
+        </details>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="acs-footer">
+    <span class="acs-footer-text">
+      © 2026 Aviation Capital Simulator. All rights reserved.
+    </span>
+
+    <span class="acs-footer-separator">•</span>
+
+    <a
+      href="mailto:aviationcapitalsim@gmail.com"
+      class="acs-footer-link"
+    >
+      aviationcapitalsim@gmail.com
+    </a>
+
+    <span class="acs-footer-separator">•</span>
+
+    <a
+      href="privacy.html"
+      class="acs-footer-link"
+    >
+      Privacy Policy
+    </a>
+
+    <span class="acs-footer-separator">•</span>
+
+    <a
+      href="terms.html"
+      class="acs-footer-link"
+    >
+      Terms of Service
+    </a>
+  </footer>
+
+  <script src="acs_time_recovery.js"></script>
+  <script src="time_engine.js"></script>
+  <script src="acs_fuel.js?v=1.0"></script>
+</body>
+</html>
