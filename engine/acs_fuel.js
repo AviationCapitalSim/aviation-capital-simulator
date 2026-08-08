@@ -87,13 +87,8 @@
     "chartXAxis",
     "barList",
     "chartEmpty",
-    "fuelTooltip",
-    "sourceName",
-    "sourceMarket",
-    "sourceMethod",
-    "sourceCoverage",
-    "sourceQuality"
-  ];
+    "fuelTooltip"
+   ];
 
   function cacheElements() {
     REQUIRED_ELEMENT_IDS.forEach((id) => {
@@ -191,6 +186,7 @@
 
     return {
       ok: true,
+      world_year: numberOrNull(payload.world_year),       
       as_of: payload.as_of || null,
       dataset_revision: payload.dataset_revision || null,
       fuels: payload.fuels.map(normalizeFuel).filter((fuel) => fuel.id)
@@ -309,16 +305,6 @@
     text(elements.fuelMarketUnit, fuel.unit);
     text(elements.fuelSpecification, fuel.specification);
 
-    renderSourceInformation(fuel, latest);
-  }
-
-  function renderSourceInformation(fuel, latest) {
-    const source = fuel.source || {};
-    text(elements.sourceName, latest?.source_name || source.name || "Not connected");
-    text(elements.sourceMarket, source.market || "Pending definition");
-    text(elements.sourceMethod, latest?.source_method || source.method || "No transformation");
-    text(elements.sourceCoverage, source.coverage || "No verified records");
-    text(elements.sourceQuality, latest?.quality_grade || source.quality_grade || "UNAVAILABLE");
   }
 
   function renderEmptyChart(message) {
@@ -476,9 +462,11 @@
       : state.fuels[0].id;
 
     setStatus(
-      payload.as_of ? `VERIFIED THROUGH ${payload.as_of}` : "VERIFIED DATA ONLINE",
-      "ready"
-    );
+  payload.world_year
+    ? `AVAILABLE THROUGH ${payload.world_year}`
+    : "MARKET DATA ONLINE",
+  "ready"
+);
     renderCards();
     selectFuel(state.selectedFuelId);
   }
