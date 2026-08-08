@@ -889,7 +889,9 @@
 </head>
 
 <body class="fuel-center-page">
+     
   <!-- SAME ACS HEADER STRUCTURE USED BY ROUTES -->
+     
   <header class="acs-header">
     <div class="acs-logo">
       <img src="acs_logo.png" alt="ACS Logo">
@@ -922,8 +924,7 @@
 
     <section class="fuel-market-heading" aria-label="Fuel market status">
       <p>
-        Read-only market information with visible provenance. No strategy
-        recommendations and no invented fallback values.
+        Current aviation fuel market information. 
       </p>
       <div class="fuel-data-status" aria-live="polite">
         <span>Market data status</span>
@@ -1005,16 +1006,6 @@
       </aside>
     </section>
 
-    <section class="fuel-source-panel" aria-labelledby="sourceTitle">
-      <h2 id="sourceTitle">Data Provenance</h2>
-      <div class="fuel-source-grid">
-        <div><span>Source</span><strong id="sourceName">Not connected</strong></div>
-        <div><span>Market</span><strong id="sourceMarket">Pending definition</strong></div>
-        <div><span>Method</span><strong id="sourceMethod">No transformation</strong></div>
-        <div><span>Coverage</span><strong id="sourceCoverage">No verified records</strong></div>
-        <div><span>Quality</span><strong id="sourceQuality">UNAVAILABLE</strong></div>
-      </div>
-    </section>
   </main>
 
   <div class="fuel-tooltip" id="fuelTooltip" hidden></div>
