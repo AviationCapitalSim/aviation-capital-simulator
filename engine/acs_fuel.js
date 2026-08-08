@@ -254,11 +254,11 @@
     text(family, fuel.family);
     text(price, latest ? formatPrice(latest.price, fuel.unit) : "DATA PENDING");
     text(
-      period,
-      latest
-        ? `${latest.period} · ${latest.quality_grade}`
-        : "NO VERIFIED MARKET RECORD"
-    );
+  period,
+  latest
+    ? latest.period
+    : "NO VERIFIED MARKET RECORD"
+);
 
     card.append(name, family, price, period);
     card.addEventListener("click", () => selectFuel(fuel.id));
@@ -325,24 +325,22 @@
   }
 
   function showTooltip(event, fuel, record) {
-    const tooltip = elements.fuelTooltip;
-    tooltip.replaceChildren();
+  const tooltip = elements.fuelTooltip;
+  tooltip.replaceChildren();
 
-    const title = document.createElement("strong");
-    const price = document.createElement("div");
-    const movement = document.createElement("div");
-    const quality = document.createElement("div");
+  const title = document.createElement("strong");
+  const price = document.createElement("div");
+  const movement = document.createElement("div");
 
-    title.textContent = record.period;
-    price.textContent = formatPrice(record.price, fuel.unit);
-    movement.textContent = `Annual movement: ${formatPercent(record.annual_change_percent)}`;
-    quality.textContent = `Quality: ${record.quality_grade}`;
-    tooltip.append(title, price, movement, quality);
+  title.textContent = record.period;
+  price.textContent = formatPrice(record.price, fuel.unit);
+  movement.textContent = `Annual movement: ${formatPercent(record.annual_change_percent)}`;
+  tooltip.append(title, price, movement);
 
-    tooltip.hidden = false;
-    tooltip.style.left = `${Math.min(global.innerWidth - 265, event.clientX + 14)}px`;
-    tooltip.style.top = `${Math.max(8, event.clientY - 90)}px`;
-  }
+  tooltip.hidden = false;
+  tooltip.style.left = `${Math.min(global.innerWidth - 265, event.clientX + 14)}px`;
+  tooltip.style.top = `${Math.max(8, event.clientY - 90)}px`;
+}
 
   function hideTooltip() {
     elements.fuelTooltip.hidden = true;
