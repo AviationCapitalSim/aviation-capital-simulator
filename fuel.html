@@ -1,5 +1,5 @@
 <!-- ============================================================
-     ACS OCC - FUEL CENTER v3.0
+     ACS OCC - FUEL CENTER v3.1
      DATE: 07 AUGUST 2026
      ------------------------------------------------------------
      Read-only aviation fuel market intelligence.
@@ -15,314 +15,664 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="ACS OCC Fuel Center aviation fuel market intelligence.">
   <title>Fuel Center | ACS OCC</title>
+
+  <!-- ACS GLOBAL STYLE AUTHORITY -->
   <link rel="stylesheet" href="styles.css?v=3.1">
+
+  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+  <link rel="apple-touch-icon" href="acs_logo_180.png">
+  <link rel="manifest" href="manifest.json">
+
   <style>
-    :root {
-      --fuel-bg: #061226;
-      --fuel-panel: rgba(5, 18, 40, 0.82);
-      --fuel-panel-soft: rgba(9, 28, 57, 0.58);
-      --fuel-blue: #45a6ff;
-      --fuel-blue-soft: rgba(69, 166, 255, 0.18);
-      --fuel-amber: #ffb300;
-      --fuel-red: #ff5263;
-      --fuel-green: #58e39a;
+    /* ============================================================
+       ACS OCC - FUEL CENTER VISUAL STYLE v3.1
+       DATE: 07 AUGUST 2026
+       ------------------------------------------------------------
+       Visual alignment with Routes.
+       Transparent ACS surfaces over the global ACS background.
+       Style only: no data or functional rules.
+       ============================================================ */
+
+    .fuel-center-page {
+      --fuel-gold: #ffb300;
       --fuel-text: #f3f7fc;
-      --fuel-muted: #8da5bf;
-      --fuel-border: rgba(91, 151, 213, 0.25);
-      --fuel-grid: rgba(103, 158, 211, 0.12);
+      --fuel-muted: rgba(205, 220, 237, 0.68);
+      --fuel-border: rgba(91, 158, 255, 0.26);
+      --fuel-surface: rgba(255, 255, 255, 0.015);
+      --fuel-surface-hover: rgba(255, 255, 255, 0.028);
+      --fuel-blue: #4aa7ff;
+      --fuel-green: #55e39a;
+      --fuel-red: #ff5364;
     }
 
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      min-width: 320px;
-      color: var(--fuel-text);
-      background:
-        radial-gradient(circle at 50% 12%, rgba(20, 74, 128, 0.25), transparent 38%),
-        linear-gradient(rgba(3, 13, 29, 0.90), rgba(3, 13, 29, 0.96)),
-        url("acs_background.jpg") center / cover fixed;
-      font-family: "Poppins", Arial, sans-serif;
+    .fuel-center-page .fuel-center {
+      width: min(1540px, 100%);
+      box-sizing: border-box;
+      margin: 0 auto;
+      padding-bottom: 70px;
+      text-align: left;
     }
 
-    button, a { font: inherit; }
+    .fuel-center-page .acs-page-title {
+      margin-bottom: 16px;
+    }
 
-    .acs-header {
-      position: sticky;
-      top: 0;
-      z-index: 20;
+    .fuel-market-heading {
       display: grid;
-      grid-template-columns: auto 1fr auto;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 22px;
       align-items: center;
-      gap: 24px;
-      min-height: 74px;
-      padding: 10px 28px;
-      border-bottom: 2px solid var(--fuel-amber);
-      background: rgba(4, 16, 36, 0.90);
-      backdrop-filter: blur(14px);
+      margin-bottom: 18px;
     }
 
-    .acs-brand, .acs-actions, .acs-nav { display: flex; align-items: center; }
-    .acs-brand { gap: 12px; }
-    .acs-brand img { width: 46px; height: 46px; object-fit: contain; }
-    .acs-brand strong { color: var(--fuel-amber); font-size: 0.88rem; letter-spacing: 0.08em; }
-    .acs-brand small { display: block; margin-top: 2px; color: var(--fuel-muted); font-size: 0.62rem; letter-spacing: 0.12em; }
-    .acs-nav { justify-content: center; gap: clamp(12px, 2.2vw, 34px); }
-    .acs-nav a { color: #dce9f6; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-decoration: none; text-transform: uppercase; }
-    .acs-nav a:hover, .acs-nav a:focus-visible { color: var(--fuel-amber); }
-    .acs-actions { justify-content: flex-end; gap: 12px; }
+    .fuel-market-heading > p {
+      max-width: 760px;
+      margin: 0;
+      color: var(--fuel-muted);
+      font-size: 0.82rem;
+      line-height: 1.65;
+    }
 
-    .acs-clock, .logout-btn {
-      min-height: 38px;
-      border-radius: 9px;
+    .fuel-data-status {
+      min-width: 255px;
+      padding: 14px 17px;
+      border: 1px solid var(--fuel-border);
+      border-radius: 13px;
+      background: var(--fuel-surface);
+      box-shadow: none;
+      text-align: center;
+    }
+
+    .fuel-data-status span,
+    .fuel-source-grid span {
+      display: block;
+      color: var(--fuel-muted);
+      font-size: 0.57rem;
+      font-weight: 600;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .fuel-data-status strong {
+      display: block;
+      margin-top: 7px;
+      color: var(--fuel-gold);
       font-family: "Orbitron", monospace;
       font-size: 0.72rem;
       letter-spacing: 0.05em;
     }
 
-    .acs-clock {
+    .fuel-card-grid {
       display: grid;
-      place-items: center;
-      min-width: 210px;
-      padding: 7px 12px;
-      border: 1px solid rgba(88, 227, 154, 0.28);
-      color: var(--fuel-green);
-      background: rgba(88, 227, 154, 0.07);
-      white-space: nowrap;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      width: 100%;
+      margin-bottom: 18px;
     }
-
-    .logout-btn {
-      padding: 7px 14px;
-      border: 1px solid rgba(255, 179, 0, 0.72);
-      color: var(--fuel-amber);
-      background: rgba(255, 179, 0, 0.05);
-      cursor: pointer;
-    }
-
-    .fuel-main { width: min(1500px, calc(100% - 36px)); margin: 0 auto; padding: 42px 0 56px; }
-
-    .fuel-hero {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 30px;
-      align-items: end;
-      margin-bottom: 28px;
-    }
-
-    .fuel-kicker { margin: 0 0 9px; color: var(--fuel-amber); font: 700 0.68rem/1 "Orbitron", monospace; letter-spacing: 0.28em; text-transform: uppercase; }
-    .fuel-hero h1 { margin: 0; font: 700 clamp(2rem, 4vw, 3.8rem)/0.95 "Orbitron", sans-serif; letter-spacing: 0.08em; text-transform: uppercase; }
-    .fuel-hero p { max-width: 720px; margin: 15px 0 0; color: #a9bed2; font-size: 0.88rem; line-height: 1.65; }
-
-    .data-status {
-      min-width: 260px;
-      padding: 15px 18px;
-      border: 1px solid var(--fuel-border);
-      border-radius: 13px;
-      background: var(--fuel-panel-soft);
-    }
-
-    .data-status span { display: block; color: var(--fuel-muted); font: 700 0.58rem/1 "Orbitron", monospace; letter-spacing: 0.16em; text-transform: uppercase; }
-    .data-status strong { display: block; margin-top: 8px; color: var(--fuel-amber); font: 700 0.76rem/1.3 "Orbitron", monospace; letter-spacing: 0.05em; }
-
-    .fuel-card-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 13px; margin-bottom: 18px; }
 
     .fuel-card {
       position: relative;
-      min-height: 136px;
+      min-width: 0;
+      min-height: 138px;
       padding: 18px;
       overflow: hidden;
       border: 1px solid var(--fuel-border);
-      border-radius: 15px;
+      border-radius: 18px;
+      background: var(--fuel-surface);
+      background-image: none;
+      box-shadow: none;
       color: var(--fuel-text);
-      background: linear-gradient(145deg, rgba(10, 34, 65, 0.90), rgba(3, 16, 35, 0.92));
       text-align: left;
       cursor: pointer;
-      transition: border-color 160ms ease, transform 160ms ease, background 160ms ease;
+      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
     }
 
-    .fuel-card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: transparent; }
-    .fuel-card:hover { transform: translateY(-2px); border-color: rgba(255, 179, 0, 0.52); }
-    .fuel-card.is-selected { border-color: var(--fuel-amber); background: linear-gradient(145deg, rgba(55, 43, 11, 0.72), rgba(6, 24, 46, 0.94)); }
-    .fuel-card.is-selected::before { background: var(--fuel-amber); box-shadow: 0 0 16px var(--fuel-amber); }
-    .fuel-card-name { display: block; color: var(--fuel-amber); font: 700 0.75rem/1.2 "Orbitron", monospace; letter-spacing: 0.05em; }
-    .fuel-card-family { display: block; margin-top: 7px; color: var(--fuel-muted); font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; }
-    .fuel-card-price { display: block; margin-top: 20px; font: 700 1.05rem/1 "Orbitron", monospace; }
-    .fuel-card-period { display: block; margin-top: 8px; color: #7894af; font-size: 0.63rem; }
+    .fuel-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 3px;
+      background: transparent;
+    }
 
-    .fuel-workspace { display: grid; grid-template-columns: minmax(0, 2fr) minmax(280px, 0.72fr); gap: 18px; }
-    .fuel-panel { border: 1px solid var(--fuel-border); border-radius: 17px; background: var(--fuel-panel); box-shadow: 0 22px 60px rgba(0, 0, 0, 0.18); }
-    .fuel-panel-header { display: flex; justify-content: space-between; gap: 20px; align-items: start; padding: 19px 21px 16px; border-bottom: 1px solid var(--fuel-border); }
-    .fuel-panel-header h2 { margin: 0; color: var(--fuel-amber); font: 700 0.76rem/1.2 "Orbitron", monospace; letter-spacing: 0.08em; text-transform: uppercase; }
-    .fuel-panel-header p { margin: 7px 0 0; color: var(--fuel-muted); font-size: 0.67rem; letter-spacing: 0.04em; }
+    .fuel-card:hover,
+    .fuel-card:focus-visible {
+      transform: translateY(-2px);
+      border-color: rgba(255, 179, 0, 0.42);
+      background: var(--fuel-surface-hover);
+      outline: none;
+    }
 
-    .current-reading { text-align: right; }
-    .current-reading strong { display: block; font: 700 1rem/1 "Orbitron", monospace; }
-    .current-reading span { display: block; margin-top: 7px; color: var(--fuel-muted); font-size: 0.62rem; }
+    .fuel-card.is-selected {
+      border-color: var(--fuel-gold);
+      background: rgba(255, 179, 0, 0.025);
+    }
 
-    .bar-chart-shell { position: relative; min-height: 430px; padding: 28px 22px 20px; }
+    .fuel-card.is-selected::before {
+      background: var(--fuel-gold);
+      box-shadow: 0 0 12px rgba(255, 179, 0, 0.42);
+    }
+
+    .fuel-card-name {
+      display: block;
+      color: var(--fuel-gold);
+      font-family: "Orbitron", monospace;
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .fuel-card-family {
+      display: block;
+      margin-top: 7px;
+      color: var(--fuel-muted);
+      font-size: 0.6rem;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+    }
+
+    .fuel-card-price {
+      display: block;
+      margin-top: 20px;
+      color: var(--fuel-text);
+      font-family: "Orbitron", monospace;
+      font-size: 0.94rem;
+      font-weight: 700;
+    }
+
+    .fuel-card-period {
+      display: block;
+      margin-top: 8px;
+      color: var(--fuel-muted);
+      font-size: 0.6rem;
+    }
+
+    .fuel-workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(290px, 0.72fr);
+      gap: 18px;
+    }
+
+    .fuel-panel,
+    .fuel-source-panel {
+      min-width: 0;
+      border: 1px solid var(--fuel-border);
+      border-radius: 18px;
+      background: var(--fuel-surface);
+      background-image: none;
+      box-shadow: none;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+
+    .fuel-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 18px 20px 15px;
+      border-bottom: 1px solid var(--fuel-border);
+    }
+
+    .fuel-panel-header h2,
+    .fuel-source-panel h2 {
+      margin: 0;
+      color: var(--fuel-gold);
+      font-family: "Orbitron", monospace;
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    .fuel-panel-header p {
+      margin: 7px 0 0;
+      color: var(--fuel-muted);
+      font-size: 0.65rem;
+    }
+
+    .fuel-current-reading {
+      text-align: right;
+    }
+
+    .fuel-current-reading strong {
+      display: block;
+      color: var(--fuel-text);
+      font-family: "Orbitron", monospace;
+      font-size: 0.95rem;
+    }
+
+    .fuel-current-reading span {
+      display: block;
+      margin-top: 7px;
+      color: var(--fuel-muted);
+      font-size: 0.59rem;
+    }
+
+    .fuel-info {
+      padding: 5px 20px 17px;
+    }
+
+    .fuel-info dl {
+      margin: 0;
+    }
+
+    .fuel-info dl > div {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      padding: 13px 0;
+      border-bottom: 1px solid rgba(91, 158, 255, 0.13);
+    }
+
+    .fuel-info dt {
+      color: var(--fuel-muted);
+      font-size: 0.59rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .fuel-info dd {
+      margin: 0;
+      color: var(--fuel-text);
+      font-family: "Orbitron", monospace;
+      font-size: 0.61rem;
+      font-weight: 600;
+      line-height: 1.35;
+      text-align: right;
+    }
+
+    .bar-chart-shell {
+      position: relative;
+      min-height: 430px;
+      padding: 28px 20px 18px;
+    }
+
     .bar-chart {
       position: relative;
       display: grid;
       grid-template-columns: 58px minmax(0, 1fr);
-      grid-template-rows: minmax(310px, 1fr) 32px;
-      min-height: 370px;
+      grid-template-rows: minmax(315px, 1fr) 32px;
+      min-height: 375px;
     }
 
-    .chart-y-axis { position: relative; grid-row: 1; color: var(--fuel-muted); font: 500 0.58rem/1 "Orbitron", monospace; }
-    .chart-y-axis span { position: absolute; right: 13px; transform: translateY(50%); }
+    .chart-y-axis {
+      position: relative;
+      grid-row: 1;
+      color: var(--fuel-muted);
+      font-family: "Orbitron", monospace;
+      font-size: 0.55rem;
+    }
+
+    .chart-y-axis span {
+      position: absolute;
+      right: 12px;
+      transform: translateY(50%);
+    }
+
     .bar-viewport {
       position: relative;
       grid-row: 1;
-      display: flex;
-      align-items: stretch;
       min-width: 0;
       overflow-x: auto;
       overflow-y: hidden;
-      border-left: 1px solid rgba(123, 169, 211, 0.22);
-      border-bottom: 1px solid rgba(123, 169, 211, 0.24);
-      background: repeating-linear-gradient(to bottom, transparent 0, transparent calc(25% - 1px), var(--fuel-grid) 25%);
-      scrollbar-color: rgba(255, 179, 0, 0.42) transparent;
+      border-left: 1px solid rgba(135, 178, 219, 0.2);
+      border-bottom: 1px solid rgba(135, 178, 219, 0.22);
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent calc(25% - 1px),
+        rgba(145, 181, 218, 0.11) 25%
+      );
+      scrollbar-color: rgba(255, 179, 0, 0.38) transparent;
     }
 
-    .bar-list { display: flex; align-items: flex-end; gap: 5px; width: 100%; min-width: 720px; padding: 18px 12px 0; }
-    .market-bar { position: relative; flex: 1 0 9px; min-width: 8px; height: var(--bar-height, 0%); border: 0; border-radius: 4px 4px 1px 1px; background: var(--fuel-blue); cursor: pointer; opacity: 0.92; }
-    .market-bar:hover, .market-bar:focus-visible { outline: 1px solid white; outline-offset: 2px; opacity: 1; }
+    .bar-list {
+      display: flex;
+      align-items: flex-end;
+      gap: 5px;
+      width: 100%;
+      min-width: 720px;
+      height: 100%;
+      padding: 18px 12px 0;
+    }
+
+    .market-bar {
+      flex: 1 0 9px;
+      min-width: 8px;
+      height: var(--bar-height, 0%);
+      padding: 0;
+      border: 0;
+      border-radius: 4px 4px 1px 1px;
+      background: var(--fuel-blue);
+      box-shadow: none;
+      cursor: pointer;
+      opacity: 0.92;
+    }
+
+    .market-bar:hover,
+    .market-bar:focus-visible {
+      outline: 1px solid rgba(255, 255, 255, 0.86);
+      outline-offset: 2px;
+      opacity: 1;
+    }
+
     .market-bar.is-neutral { background: var(--fuel-blue); }
-    .market-bar.is-attention { background: var(--fuel-amber); }
+    .market-bar.is-attention { background: var(--fuel-gold); }
     .market-bar.is-critical { background: var(--fuel-red); }
     .market-bar.is-decrease { background: var(--fuel-green); }
-    .market-bar.is-projection { background: repeating-linear-gradient(135deg, rgba(255,179,0,.90) 0 4px, rgba(255,179,0,.28) 4px 8px); }
 
-    .chart-x-axis { position: relative; grid-column: 2; grid-row: 2; color: var(--fuel-muted); font: 500 0.56rem/1 "Orbitron", monospace; }
-    .chart-empty { position: absolute; inset: 72px 8% 74px; z-index: 3; display: grid; place-items: center; border: 1px dashed rgba(141, 165, 191, 0.30); border-radius: 13px; background: rgba(4, 17, 36, 0.72); text-align: center; }
-    .chart-empty strong { display: block; color: #dbe8f4; font: 700 0.76rem/1.4 "Orbitron", monospace; letter-spacing: 0.08em; }
-    .chart-empty span { display: block; max-width: 480px; margin-top: 10px; color: var(--fuel-muted); font-size: 0.72rem; line-height: 1.55; }
-    .chart-empty[hidden] { display: none; }
+    .market-bar.is-projection {
+      background: repeating-linear-gradient(
+        135deg,
+        rgba(255, 179, 0, 0.88) 0 4px,
+        rgba(255, 179, 0, 0.22) 4px 8px
+      );
+    }
 
-    .chart-legend { display: flex; flex-wrap: wrap; gap: 16px; padding: 0 21px 20px; color: var(--fuel-muted); font-size: 0.61rem; }
-    .chart-legend span { display: inline-flex; align-items: center; gap: 7px; }
-    .legend-dot { width: 8px; height: 8px; border-radius: 2px; background: var(--dot); }
+    .chart-x-axis {
+      position: relative;
+      grid-column: 2;
+      grid-row: 2;
+      color: var(--fuel-muted);
+      font-family: "Orbitron", monospace;
+      font-size: 0.54rem;
+    }
 
-    .fuel-info { padding: 5px 21px 18px; }
-    .fuel-info dl { margin: 0; }
-    .fuel-info dl div { display: grid; grid-template-columns: 1fr auto; gap: 16px; padding: 13px 0; border-bottom: 1px solid rgba(91, 151, 213, 0.13); }
-    .fuel-info dt { color: var(--fuel-muted); font-size: 0.61rem; letter-spacing: 0.08em; text-transform: uppercase; }
-    .fuel-info dd { margin: 0; color: #e7f1fa; font: 600 0.64rem/1.3 "Orbitron", monospace; text-align: right; }
+    .chart-empty {
+      position: absolute;
+      inset: 70px 8% 72px;
+      z-index: 3;
+      display: grid;
+      place-items: center;
+      border: 1px dashed rgba(141, 165, 191, 0.28);
+      border-radius: 13px;
+      background: rgba(255, 255, 255, 0.008);
+      text-align: center;
+    }
 
-    .source-panel { margin-top: 18px; padding: 18px 21px; border: 1px solid var(--fuel-border); border-radius: 17px; background: var(--fuel-panel-soft); }
-    .source-panel h2 { margin: 0 0 14px; color: var(--fuel-amber); font: 700 0.72rem/1 "Orbitron", monospace; letter-spacing: 0.08em; }
-    .source-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
-    .source-grid span { display: block; color: var(--fuel-muted); font-size: 0.57rem; letter-spacing: 0.09em; text-transform: uppercase; }
-    .source-grid strong { display: block; margin-top: 6px; color: #dce9f5; font-size: 0.67rem; line-height: 1.35; }
+    .chart-empty[hidden] {
+      display: none;
+    }
 
-    .fuel-tooltip { position: fixed; z-index: 50; min-width: 190px; max-width: 250px; padding: 11px 13px; pointer-events: none; border: 1px solid rgba(255, 179, 0, 0.46); border-radius: 9px; background: rgba(2, 12, 27, 0.97); color: #dce9f5; box-shadow: 0 14px 35px rgba(0,0,0,.4); font-size: 0.68rem; line-height: 1.5; }
-    .fuel-tooltip strong { color: var(--fuel-amber); }
+    .chart-empty strong {
+      display: block;
+      color: var(--fuel-text);
+      font-family: "Orbitron", monospace;
+      font-size: 0.73rem;
+      letter-spacing: 0.07em;
+    }
 
-    .acs-footer { padding: 24px; color: #718ba6; font-size: 0.68rem; text-align: center; }
+    .chart-empty span {
+      display: block;
+      max-width: 460px;
+      margin-top: 10px;
+      color: var(--fuel-muted);
+      font-size: 0.69rem;
+      line-height: 1.55;
+    }
+
+    .chart-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding: 0 20px 19px;
+      color: var(--fuel-muted);
+      font-size: 0.59rem;
+    }
+
+    .chart-legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+    }
+
+    .legend-dot.is-neutral { background: var(--fuel-blue); }
+    .legend-dot.is-attention { background: var(--fuel-gold); }
+    .legend-dot.is-critical { background: var(--fuel-red); }
+    .legend-dot.is-decrease { background: var(--fuel-green); }
+
+    .fuel-source-panel {
+      margin-top: 18px;
+      padding: 18px 20px;
+    }
+
+    .fuel-source-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .fuel-source-grid strong {
+      display: block;
+      margin-top: 6px;
+      color: var(--fuel-text);
+      font-size: 0.65rem;
+      line-height: 1.35;
+    }
+
+    .fuel-tooltip {
+      position: fixed;
+      z-index: 6000;
+      min-width: 190px;
+      max-width: 250px;
+      padding: 11px 13px;
+      pointer-events: none;
+      border: 1px solid rgba(255, 179, 0, 0.42);
+      border-radius: 9px;
+      background: rgba(3, 10, 24, 0.94);
+      color: var(--fuel-text);
+      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.3);
+      font-size: 0.66rem;
+      line-height: 1.5;
+    }
+
+    .fuel-tooltip strong {
+      color: var(--fuel-gold);
+    }
 
     @media (max-width: 1100px) {
-      .acs-header { grid-template-columns: auto 1fr; }
-      .acs-nav { order: 3; grid-column: 1 / -1; padding: 8px 0 3px; border-top: 1px solid var(--fuel-border); }
-      .fuel-card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .fuel-workspace { grid-template-columns: 1fr; }
-      .source-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .fuel-card-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .fuel-workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .fuel-source-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
     }
 
     @media (max-width: 700px) {
-      .acs-header { padding: 9px 14px; gap: 12px; }
-      .acs-brand div { display: none; }
-      .acs-actions { gap: 7px; }
-      .acs-clock { min-width: 0; font-size: 0.61rem; }
-      .logout-btn { padding-inline: 10px; font-size: 0.61rem; }
-      .acs-nav { justify-content: flex-start; overflow-x: auto; }
-      .fuel-main { width: min(100% - 22px, 1500px); padding-top: 28px; }
-      .fuel-hero { grid-template-columns: 1fr; align-items: start; }
-      .data-status { min-width: 0; }
-      .fuel-card-grid { grid-template-columns: 1fr 1fr; gap: 9px; }
-      .fuel-card { min-height: 128px; padding: 15px 13px; }
-      .bar-chart-shell { min-height: 390px; padding-inline: 10px; }
-      .source-grid { grid-template-columns: 1fr 1fr; }
+      .fuel-center-page .fuel-center {
+        padding-right: 1rem;
+        padding-left: 1rem;
+      }
+
+      .fuel-market-heading {
+        grid-template-columns: 1fr;
+      }
+
+      .fuel-data-status {
+        min-width: 0;
+      }
+
+      .fuel-card-grid {
+        gap: 9px;
+      }
+
+      .fuel-card {
+        min-height: 128px;
+        padding: 15px 13px;
+      }
+
+      .bar-chart-shell {
+        min-height: 390px;
+        padding-right: 10px;
+        padding-left: 10px;
+      }
+
+      .fuel-source-grid {
+        grid-template-columns: 1fr 1fr;
+      }
     }
 
-    @media (max-width: 430px) {
-      .fuel-card-grid { grid-template-columns: 1fr; }
-      .fuel-hero h1 { font-size: 2rem; }
-      .source-grid { grid-template-columns: 1fr; }
+    @media (max-width: 470px) {
+      .fuel-card-grid,
+      .fuel-source-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .fuel-panel-header {
+        flex-direction: column;
+      }
+
+      .fuel-current-reading {
+        text-align: left;
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+      .fuel-center-page *,
+      .fuel-center-page *::before,
+      .fuel-center-page *::after {
+        transition: none !important;
+      }
     }
   </style>
 </head>
-<body>
+
+<body class="fuel-center-page">
+  <!-- SAME ACS HEADER STRUCTURE USED BY ROUTES -->
   <header class="acs-header">
-    <div class="acs-brand">
-      <img src="acs_logo.png" alt="Aviation Capital Simulator">
-      <div><strong>ACS OCC</strong><small>AVIATION CAPITAL SIMULATOR</small></div>
+    <div class="acs-logo">
+      <img src="acs_logo.png" alt="ACS Logo">
+      <h1>Aviation Capital Simulator</h1>
     </div>
+
     <nav class="acs-nav" aria-label="ACS main navigation">
-      <a href="dashboard.html">Main</a><a href="bank.html">Bank</a><a href="aircraft.html">Aircraft</a><a href="routes.html">Routes</a><a href="hr.html">HR</a>
+      <a href="dashboard.html">Main</a>
+      <a href="bank.html">Bank</a>
+      <a href="aircraft.html">Aircraft</a>
+      <a href="routes.html">Routes</a>
+      <a href="hr.html">HR</a>
     </nav>
-    <div class="acs-actions">
-      <div class="acs-clock" id="acs-clock">ACS TIME CONNECTING</div>
+
+    <div class="acs-right">
+      <a href="support.html" class="support-btn">Support</a>
       <button type="button" class="logout-btn" id="logoutButton">Logout</button>
+      <div id="acs-clock" class="acs-clock-header">00:00 — 01 JAN 1940</div>
     </div>
   </header>
 
-  <main class="fuel-main">
-    <section class="fuel-hero" aria-labelledby="fuelCenterTitle">
-      <div>
-        <p class="fuel-kicker">Global market intelligence</p>
-        <h1 id="fuelCenterTitle">Fuel Center</h1>
-        <p>Verified aviation fuel history synchronized with the ACS world. Fuel Center reports market information and provenance without forecasts, strategy recommendations or invented fallback values.</p>
+  <main class="acs-main fuel-center">
+    <section class="acs-page-title" aria-labelledby="fuelCenterTitle">
+      <div class="acs-page-title-main" id="fuelCenterTitle">FUEL CENTER</div>
+      <div class="acs-page-title-sub">GLOBAL MARKET INTELLIGENCE</div>
+      <div class="acs-page-title-tag">
+        Verified aviation fuel history synchronized with the ACS world.
       </div>
-      <div class="data-status" aria-live="polite"><span>Market data status</span><strong id="marketDataStatus">DATASET PENDING</strong></div>
     </section>
 
-    <section class="fuel-card-grid" id="fuelCardGrid" aria-label="Aviation fuel products"></section>
+    <section class="fuel-market-heading" aria-label="Fuel market status">
+      <p>
+        Read-only market information with visible provenance. No strategy
+        recommendations and no invented fallback values.
+      </p>
+      <div class="fuel-data-status" aria-live="polite">
+        <span>Market data status</span>
+        <strong id="marketDataStatus">DATASET PENDING</strong>
+      </div>
+    </section>
+
+    <section
+      class="fuel-card-grid"
+      id="fuelCardGrid"
+      aria-label="Aviation fuel products"
+    ></section>
 
     <section class="fuel-workspace">
-      <article class="fuel-panel" aria-labelledby="marketHistoryTitle">
+      <article class="fuel-panel fuel-chart-panel" aria-labelledby="marketHistoryTitle">
         <header class="fuel-panel-header">
-          <div><h2 id="marketHistoryTitle">Historical Market Bars</h2><p id="selectedFuelName">Select a fuel product</p></div>
-          <div class="current-reading"><strong id="selectedFuelPrice">--</strong><span id="selectedFuelChange">NO VERIFIED READING</span></div>
+          <div>
+            <h2 id="marketHistoryTitle">Historical Market Bars</h2>
+            <p id="selectedFuelName">Select a fuel product</p>
+          </div>
+          <div class="fuel-current-reading">
+            <strong id="selectedFuelPrice">--</strong>
+            <span id="selectedFuelChange">NO VERIFIED READING</span>
+          </div>
         </header>
+
         <div class="bar-chart-shell">
-          <div class="bar-chart" role="img" aria-label="Historical aviation fuel prices shown exclusively as vertical bars">
+          <div
+            class="bar-chart"
+            role="img"
+            aria-label="Historical aviation fuel prices shown exclusively as vertical bars"
+          >
             <div class="chart-y-axis" id="chartYAxis"></div>
-            <div class="bar-viewport"><div class="bar-list" id="barList"></div></div>
+            <div class="bar-viewport">
+              <div class="bar-list" id="barList"></div>
+            </div>
             <div class="chart-x-axis" id="chartXAxis"></div>
           </div>
-          <div class="chart-empty" id="chartEmpty"><div><strong>VERIFIED MARKET DATA REQUIRED</strong><span>The visual structure is ready. Bars will appear only after Railway returns traceable records from PostgreSQL.</span></div></div>
+
+          <div class="chart-empty" id="chartEmpty">
+            <div>
+              <strong>VERIFIED MARKET DATA REQUIRED</strong>
+              <span>
+                Bars will appear only after Railway returns traceable
+                PostgreSQL records.
+              </span>
+            </div>
+          </div>
         </div>
+
         <div class="chart-legend" aria-label="Annual movement legend">
-          <span><i class="legend-dot" style="--dot:var(--fuel-blue)"></i>Stable −3% to +3%</span>
-          <span><i class="legend-dot" style="--dot:var(--fuel-amber)"></i>Increase +3% to +10%</span>
-          <span><i class="legend-dot" style="--dot:var(--fuel-red)"></i>Increase above +10%</span>
-          <span><i class="legend-dot" style="--dot:var(--fuel-green)"></i>Decrease below −3%</span>
+          <span><i class="legend-dot is-neutral"></i>Stable -3% to +3%</span>
+          <span><i class="legend-dot is-attention"></i>Increase +3% to +10%</span>
+          <span><i class="legend-dot is-critical"></i>Increase above +10%</span>
+          <span><i class="legend-dot is-decrease"></i>Decrease below -3%</span>
         </div>
       </article>
 
-      <aside class="fuel-panel" aria-labelledby="fuelInformationTitle">
-        <header class="fuel-panel-header"><div><h2 id="fuelInformationTitle">Fuel Information</h2><p id="informationFuelName">Technical definition</p></div></header>
-        <div class="fuel-info"><dl>
-          <div><dt>Fuel family</dt><dd id="fuelFamily">--</dd></div>
-          <div><dt>Engine type</dt><dd id="fuelEngineType">--</dd></div>
-          <div><dt>Grade</dt><dd id="fuelGrade">--</dd></div>
-          <div><dt>Identification</dt><dd id="fuelIdentification">--</dd></div>
-          <div><dt>Introduced</dt><dd id="fuelIntroduced">PENDING REVIEW</dd></div>
-          <div><dt>Market status</dt><dd id="fuelMarketStatus">UNVERIFIED</dd></div>
-          <div><dt>Market unit</dt><dd id="fuelMarketUnit">USD / US GAL</dd></div>
-          <div><dt>Specification</dt><dd id="fuelSpecification">--</dd></div>
-        </dl></div>
+      <aside class="fuel-panel fuel-information-panel" aria-labelledby="fuelInformationTitle">
+        <header class="fuel-panel-header">
+          <div>
+            <h2 id="fuelInformationTitle">Fuel Information</h2>
+            <p id="informationFuelName">Technical definition</p>
+          </div>
+        </header>
+
+        <div class="fuel-info">
+          <dl>
+            <div><dt>Fuel family</dt><dd id="fuelFamily">--</dd></div>
+            <div><dt>Engine type</dt><dd id="fuelEngineType">--</dd></div>
+            <div><dt>Grade</dt><dd id="fuelGrade">--</dd></div>
+            <div><dt>Identification</dt><dd id="fuelIdentification">--</dd></div>
+            <div><dt>Introduced</dt><dd id="fuelIntroduced">PENDING REVIEW</dd></div>
+            <div><dt>Market status</dt><dd id="fuelMarketStatus">UNVERIFIED</dd></div>
+            <div><dt>Market unit</dt><dd id="fuelMarketUnit">USD / US GAL</dd></div>
+            <div><dt>Specification</dt><dd id="fuelSpecification">--</dd></div>
+          </dl>
+        </div>
       </aside>
     </section>
 
-    <section class="source-panel" aria-labelledby="sourceTitle">
-      <h2 id="sourceTitle">DATA PROVENANCE</h2>
-      <div class="source-grid">
+    <section class="fuel-source-panel" aria-labelledby="sourceTitle">
+      <h2 id="sourceTitle">Data Provenance</h2>
+      <div class="fuel-source-grid">
         <div><span>Source</span><strong id="sourceName">Not connected</strong></div>
         <div><span>Market</span><strong id="sourceMarket">Pending definition</strong></div>
         <div><span>Method</span><strong id="sourceMethod">No transformation</strong></div>
@@ -333,10 +683,20 @@
   </main>
 
   <div class="fuel-tooltip" id="fuelTooltip" hidden></div>
-  <footer class="acs-footer">© 2026 Aviation Capital Simulator · ACS OCC Fuel Center</footer>
+
+  <footer class="acs-footer">
+    <span class="acs-footer-text">© 2026 Aviation Capital Simulator. All rights reserved.</span>
+    <span class="acs-footer-separator">•</span>
+    <a href="mailto:aviationcapitalsim@gmail.com" class="acs-footer-link">aviationcapitalsim@gmail.com</a>
+    <span class="acs-footer-separator">•</span>
+    <a href="privacy.html" class="acs-footer-link">Privacy Policy</a>
+    <span class="acs-footer-separator">•</span>
+    <a href="terms.html" class="acs-footer-link">Terms of Service</a>
+  </footer>
+
   <script src="engine/acs_auth_guard.js"></script>
   <script src="acs_time_recovery.js"></script>
   <script src="time_engine.js"></script>
-  <script src="engine/acs_fuel.js?v=3.0"></script>
+  <script src="engine/acs_fuel.js?v=3.1"></script>
 </body>
 </html>
