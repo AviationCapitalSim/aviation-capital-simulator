@@ -906,7 +906,7 @@
 
     <div class="acs-right">
       <a href="support.html" class="support-btn">Support</a>
-      <button type="button" class="logout-btn" id="logoutButton">Logout</button>
+      <a class="logout-btn" onclick="handleLogout()">Logout</a>
       <div id="acs-clock" class="acs-clock-header">00:00 — 01 JAN 1940</div>
     </div>
   </header>
@@ -1029,6 +1029,13 @@
     <a href="terms.html" class="acs-footer-link">Terms of Service</a>
   </footer>
 
+  <script>
+function handleLogout() {
+  alert("👋 Session closed. Your fleet awaits your command!");
+  window.location.href = "login.html";
+}
+</script>
+     
   <script src="engine/acs_auth_guard.js"></script>
   <script src="acs_time_recovery.js"></script>
   <script src="time_engine.js"></script>
