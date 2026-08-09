@@ -1547,10 +1547,21 @@ setText(
     );
   }
 
-  function resetAircraftInsuranceDisplay() {
+   function resetAircraftInsuranceDisplay() {
+    const modal = $("aircraftInsuranceModal");
+
+    if (modal) {
+      modal.dataset.currentPlan = "BASIC";
+      modal.dataset.selectedPlan = "BASIC";
+    }
+
     setText("insuranceCurrentPlan", "Basic");
     setText("insuranceCurrentStatus", "Active");
-    setText("insuranceNextPayment", "—");
+    setText(
+      "insuranceCurrentPremium",
+      "0.15% / month"
+    );
+    setText("insuranceNextPayment", "Monthly");
     setText("insuranceOutstandingBalance", "—");
 
     setText("insuranceBasicPremium", "—");
@@ -1575,10 +1586,18 @@ setText(
         "#aircraftInsuranceModal .insurance-plan-card"
       )
       .forEach(card => {
-        const isBasic = card.dataset.plan === "BASIC";
+        const isBasic =
+          card.dataset.plan === "BASIC";
 
-        card.classList.toggle("is-current", isBasic);
-        card.classList.toggle("is-selected", isBasic);
+        card.classList.toggle(
+          "is-current",
+          isBasic
+        );
+
+        card.classList.toggle(
+          "is-selected",
+          isBasic
+        );
       });
 
     document
@@ -1586,16 +1605,18 @@ setText(
         "#aircraftInsuranceModal .insurance-select-btn"
       )
       .forEach(button => {
-        const plan = button.dataset.insurancePlan;
+        const plan =
+          button.dataset.insurancePlan;
 
-        button.disabled = true;
+        button.disabled = false;
+
         button.textContent =
           plan === "BASIC"
             ? "Current Policy"
             : `Select ${normalizeDisplay(plan)}`;
       });
   }
-
+   
   function openAircraftInsuranceModal(aircraft) {
     if (!aircraft?.id) return;
 
