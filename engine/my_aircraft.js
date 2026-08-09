@@ -767,11 +767,19 @@ async function resolveCompletedMaintenanceEvents() {
     ? ACS_MY_AIRCRAFT.pendingOrders
     : [];
 
-const pendingDeliveryCount = pendingOrders.reduce(
+const pendingOrdersCount = pendingOrders.reduce(
   (total, order) =>
     total + Math.max(1, safeNumber(order.quantity, 1)),
   0
 );
+
+const pendingFleetCount = fleet.filter(
+  aircraft =>
+    normalizeStatus(aircraft.status) === "PENDING_DELIVERY"
+).length;
+
+const pendingDeliveryCount =
+  pendingOrdersCount + pendingFleetCount;
 
 const counts = {
   totalFleet: fleet.length,
