@@ -1536,6 +1536,149 @@ setText(
     });
   }
 
+    /* ============================================================
+     AIRCRAFT INSURANCE MODAL
+     ============================================================ */
+
+  function getInsuranceAircraftName(aircraft) {
+    return safeText(
+      aircraft?.catalog_aircraft_name ||
+      aircraft?.aircraft_name
+    );
+  }
+
+  function resetAircraftInsuranceDisplay() {
+    setText("insuranceCurrentPlan", "Basic");
+    setText("insuranceCurrentStatus", "Active");
+    setText("insuranceNextPayment", "—");
+    setText("insuranceOutstandingBalance", "—");
+
+    setText("insuranceBasicPremium", "—");
+    setText("insuranceStandardPremium", "—");
+    setText("insuranceGoldPremium", "—");
+
+    const status = $("insuranceCurrentStatus");
+
+    if (status) {
+      status.dataset.status = "ACTIVE";
+    }
+
+    const notice = $("insuranceChangeNotice");
+
+    if (notice) {
+      notice.textContent = "";
+      notice.classList.remove("is-visible");
+    }
+
+    document
+      .querySelectorAll(
+        "#aircraftInsuranceModal .insurance-plan-card"
+      )
+      .forEach(card => {
+        const isBasic = card.dataset.plan === "BASIC";
+
+        card.classList.toggle("is-current", isBasic);
+        card.classList.toggle("is-selected", isBasic);
+      });
+
+    document
+      .querySelectorAll(
+        "#aircraftInsuranceModal .insurance-select-btn"
+      )
+      .forEach(button => {
+        const plan = button.dataset.insurancePlan;
+
+        button.disabled = true;
+        button.textContent =
+          plan === "BASIC"
+            ? "Current Policy"
+            : `Select ${normalizeDisplay(plan)}`;
+      });
+  }
+
+  function openAircraftInsuranceModal(aircraft) {
+    if (!aircraft?.id) return;
+
+    ACS_MY_AIRCRAFT.selectedAircraft = aircraft;
+
+    const aircraftName =
+      getInsuranceAircraftName(aircraft);
+
+    setText(
+      "insuranceAircraftName",
+      aircraftName
+    );
+
+    setText(
+      "insuranceAircraftRegistration",
+      getRegistrationDisplay(aircraft)
+    );
+
+    const image = $("insuranceAircraftImage");
+
+    if (image) {
+      const imageAircraft =
+        normalizeMyAircraftImageObject(aircraft);
+
+      window.ACS_setAircraftImage(
+        image,
+        imageAircraft
+      );
+
+      image.alt =
+        `${aircraftName} ${getRegistrationDisplay(aircraft)}`;
+    }
+
+    resetAircraftInsuranceDisplay();
+
+    const modal = $("aircraftInsuranceModal");
+
+    if (modal) {
+      modal.style.display = "flex";
+      modal.setAttribute("aria-hidden", "false");
+    }
+  }
+
+  function closeAircraftInsuranceModal() {
+    const modal = $("aircraftInsuranceModal");
+
+    if (modal) {
+      modal.style.display = "none";
+      modal.setAttribute("aria-hidden", "true");
+    }
+  }
+
+  function bindAircraftInsuranceModal() {
+    const modal = $("aircraftInsuranceModal");
+    const closeButton = $("insuranceCloseButton");
+
+    if (closeButton) {
+      closeButton.addEventListener(
+        "click",
+        closeAircraftInsuranceModal
+      );
+    }
+
+    if (modal) {
+      modal.addEventListener("click", event => {
+        if (event.target === modal) {
+          closeAircraftInsuranceModal();
+        }
+      });
+    }
+
+    document.addEventListener("keydown", event => {
+      if (event.key !== "Escape") return;
+
+      const isOpen =
+        $("aircraftInsuranceModal")?.style.display === "flex";
+
+      if (isOpen) {
+        closeAircraftInsuranceModal();
+      }
+    });
+  }
+   
   function bindAircraftAuthorityActions(aircraft) {
      
     const btnServiceCD = $("acpServiceCD");
@@ -2234,6 +2377,7 @@ function bindPendingDeliveryModal() {
   async function initMyAircraft() {
     try {
       renderLoadingState();
+      bindAircraftInsuranceModal();
 
       await resolveCompletedMaintenanceEvents();
 
