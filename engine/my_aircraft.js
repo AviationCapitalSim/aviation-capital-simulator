@@ -1558,8 +1558,7 @@ setText(
  
     if (btnInsurance) {
       btnInsurance.onclick = () => {
-        console.log("🟦 Insurance Control pending:", aircraft);
-        alert("Insurance Control will be connected in a later block.");
+        openAircraftInsuranceModal(aircraft);
       };
     }
 
