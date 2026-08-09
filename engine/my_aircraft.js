@@ -1680,6 +1680,117 @@ setText(
       );
     }
 
+    document
+      .querySelectorAll(
+        "#aircraftInsuranceModal .insurance-select-btn"
+      )
+      .forEach(button => {
+        button.addEventListener("click", () => {
+          const selectedPlan =
+            String(
+              button.dataset.insurancePlan || ""
+            ).toUpperCase();
+
+          const currentPlan =
+            String(
+              modal?.dataset.currentPlan || "BASIC"
+            ).toUpperCase();
+
+          if (
+            !["BASIC", "STANDARD", "GOLD"]
+              .includes(selectedPlan)
+          ) {
+            return;
+          }
+
+          if (modal) {
+            modal.dataset.selectedPlan =
+              selectedPlan;
+          }
+
+          document
+            .querySelectorAll(
+              "#aircraftInsuranceModal .insurance-plan-card"
+            )
+            .forEach(card => {
+              card.classList.toggle(
+                "is-selected",
+                card.dataset.plan === selectedPlan
+              );
+            });
+
+          document
+            .querySelectorAll(
+              "#aircraftInsuranceModal .insurance-select-btn"
+            )
+            .forEach(planButton => {
+              const plan =
+                planButton.dataset.insurancePlan;
+
+              if (plan === currentPlan) {
+                planButton.textContent =
+                  "Current Policy";
+                return;
+              }
+
+              if (plan !== selectedPlan) {
+                planButton.textContent =
+                  `Select ${normalizeDisplay(plan)}`;
+                return;
+              }
+
+              const order = {
+                BASIC: 1,
+                STANDARD: 2,
+                GOLD: 3
+              };
+
+              planButton.textContent =
+                order[selectedPlan] >
+                order[currentPlan]
+                  ? "Upgrade Immediately"
+                  : "Schedule Downgrade";
+            });
+
+          const notice =
+            $("insuranceChangeNotice");
+
+          if (!notice) return;
+
+          if (selectedPlan === currentPlan) {
+            notice.textContent =
+              `${normalizeDisplay(
+                currentPlan
+              )} is the current policy.`;
+          } else {
+            const order = {
+              BASIC: 1,
+              STANDARD: 2,
+              GOLD: 3
+            };
+
+            notice.textContent =
+              order[selectedPlan] >
+              order[currentPlan]
+                ? (
+                  `${normalizeDisplay(
+                    selectedPlan
+                  )} is an immediate upgrade. ` +
+                  `The exact monthly premium will be shown ` +
+                  `before final confirmation.`
+                )
+                : (
+                  `${normalizeDisplay(
+                    selectedPlan
+                  )} is a downgrade. ` +
+                  `It will be scheduled for the next payment date.`
+                );
+          }
+
+          notice.classList.add("is-visible");
+        });
+      });
+
     if (modal) {
       modal.addEventListener("click", event => {
         if (event.target === modal) {
@@ -1689,12 +1800,11 @@ setText(
     }
 
     document.addEventListener("keydown", event => {
-      if (event.key !== "Escape") return;
-
-      const isOpen =
-        $("aircraftInsuranceModal")?.style.display === "flex";
-
-      if (isOpen) {
+      if (
+        event.key === "Escape" &&
+        $("aircraftInsuranceModal")
+          ?.style.display === "flex"
+      ) {
         closeAircraftInsuranceModal();
       }
     });
