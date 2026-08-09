@@ -4200,9 +4200,20 @@ html body .order-book-table tbody tr:hover {
 }
 
 #aircraftInsuranceModal .insurance-confirm-btn {
-  color: #ffe4a0;
-  border: 1px solid rgba(255, 190, 45, 0.8);
-  box-shadow: 0 0 14px rgba(255, 179, 0, 0.1);
+  color: #70ffbd;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(26, 117, 78, 0.2),
+      rgba(7, 48, 34, 0.28)
+    );
+
+  border: 1px solid rgba(66, 232, 153, 0.88);
+
+  box-shadow:
+    inset 0 1px 0 rgba(176, 255, 220, 0.1),
+    0 0 16px rgba(66, 232, 153, 0.18);
 }
 
 #aircraftInsuranceModal .insurance-cancel-btn {
@@ -4216,6 +4227,16 @@ html body .order-book-table tbody tr:hover {
   background: rgba(255, 255, 255, 0.06);
 }
 
+#aircraftInsuranceModal .insurance-confirm-btn:hover {
+  color: #ffffff;
+  background: rgba(38, 190, 124, 0.18);
+  border-color: #63ffc0;
+
+  box-shadow:
+    inset 0 1px 0 rgba(210, 255, 235, 0.14),
+    0 0 22px rgba(66, 232, 153, 0.3);
+}
+    
 #aircraftInsuranceModal .insurance-confirm-btn:disabled,
 #aircraftInsuranceModal .insurance-cancel-btn:disabled {
   opacity: 0.5;
