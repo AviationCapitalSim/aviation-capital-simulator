@@ -3521,10 +3521,19 @@ html body .order-book-table tbody tr:hover {
   height: 155px;
   min-height: 155px;
 
-  object-fit: cover;
-  object-position: center 54%;
+  object-fit: contain;
+  object-position: center;
 
-  background: rgba(3, 13, 30, 0.35);
+  padding: 5px;
+  box-sizing: border-box;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(11, 31, 58, 0.38),
+      rgba(3, 13, 30, 0.5)
+    );
+
   border: 1px solid rgba(83, 195, 255, 0.4);
   border-radius: 11px;
 
@@ -3646,7 +3655,14 @@ html body .order-book-table tbody tr:hover {
 
 #aircraftInsuranceModal
 .insurance-plan-card[data-plan="BASIC"] {
-  border-color: rgba(66, 232, 153, 0.38);
+  border-color: rgba(255, 179, 0, 0.5);
+
+  background:
+    linear-gradient(
+      155deg,
+      rgba(69, 53, 24, 0.27),
+      rgba(7, 22, 45, 0.44)
+    );
 }
 
 #aircraftInsuranceModal
@@ -3674,10 +3690,13 @@ html body .order-book-table tbody tr:hover {
 #aircraftInsuranceModal
 .insurance-plan-card.is-selected[data-plan="BASIC"] {
   transform: translateY(-3px);
-  border-color: #42e899;
-  box-shadow: 0 0 23px rgba(66, 232, 153, 0.2);
-}
+  border-color: #ffb300;
 
+  box-shadow:
+    0 0 22px rgba(255, 179, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+    
 #aircraftInsuranceModal
 .insurance-plan-card.is-selected[data-plan="STANDARD"] {
   transform: translateY(-3px);
@@ -3711,7 +3730,7 @@ html body .order-book-table tbody tr:hover {
 #aircraftInsuranceModal
 .insurance-plan-card[data-plan="BASIC"]
 .insurance-plan-badge {
-  color: #42e899;
+  color: #ffbd27;
 }
 
 #aircraftInsuranceModal
@@ -3865,12 +3884,97 @@ html body .order-book-table tbody tr:hover {
   filter: brightness(1.13);
 }
 
+#aircraftInsuranceModal .insurance-select-btn {
+  width: 100%;
+  min-height: 35px;
+  margin-top: 8px;
+
+  color: #e5edf8;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(25, 46, 77, 0.76),
+      rgba(10, 25, 49, 0.86)
+    );
+
+  border: 1px solid rgba(116, 157, 207, 0.64);
+  border-radius: 8px;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 5px 14px rgba(0, 0, 0, 0.18);
+
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  cursor: pointer;
+
+  transition:
+    transform 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
+}
+
+#aircraftInsuranceModal
+.insurance-plan-card[data-plan="BASIC"]
+.insurance-select-btn {
+  color: #ffe5a0;
+  border-color: rgba(255, 179, 0, 0.7);
+}
+
+#aircraftInsuranceModal
+.insurance-plan-card[data-plan="STANDARD"]
+.insurance-select-btn {
+  color: #d8ecff;
+  border-color: rgba(93, 171, 241, 0.72);
+}
+
+#aircraftInsuranceModal
+.insurance-plan-card[data-plan="GOLD"]
+.insurance-select-btn {
+  color: #ffe7a3;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(75, 57, 21, 0.72),
+      rgba(33, 28, 23, 0.86)
+    );
+
+  border-color: rgba(255, 179, 0, 0.78);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 230, 157, 0.09),
+    0 5px 15px rgba(255, 179, 0, 0.09);
+}
+
+#aircraftInsuranceModal .insurance-select-btn:hover {
+  transform: translateY(-1px);
+  color: #ffffff;
+  border-color: #ffb300;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 15px rgba(255, 179, 0, 0.16);
+}
+
 #aircraftInsuranceModal
 .insurance-plan-card.is-current
 .insurance-select-btn {
-  color: #06172a;
-  background: #42e899;
-  border-color: #42e899;
+  color: #ffe9ad;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(66, 53, 28, 0.75),
+      rgba(27, 29, 35, 0.88)
+    );
+
+  border-color: rgba(255, 179, 0, 0.78);
 }
 
 #aircraftInsuranceModal .insurance-notice {
