@@ -1825,7 +1825,10 @@ setText(
       });
   }
    
-  function openAircraftInsuranceModal(aircraft) {
+     async function openAircraftInsuranceModal(
+    aircraft
+    ) {
+        
     if (!aircraft?.id) return;
 
     ACS_MY_AIRCRAFT.selectedAircraft = aircraft;
@@ -1887,13 +1890,37 @@ setText(
       }
     }
 
-    resetAircraftInsuranceDisplay();
-
-    const modal = $("aircraftInsuranceModal");
+        const modal = $("aircraftInsuranceModal");
 
     if (modal) {
       modal.style.display = "flex";
-      modal.setAttribute("aria-hidden", "false");
+      modal.setAttribute(
+        "aria-hidden",
+        "false"
+      );
+    }
+
+    setAircraftInsuranceLoading();
+
+    try {
+      const insurance =
+        await fetchAircraftInsurance(
+          aircraft.id
+        );
+
+      renderAircraftInsurance(
+        insurance
+      );
+
+    } catch (error) {
+      console.error(
+        "AIRCRAFT INSURANCE LOAD ERROR:",
+        error
+      );
+
+      showAircraftInsuranceError(
+        error
+      );
     }
   }
 
