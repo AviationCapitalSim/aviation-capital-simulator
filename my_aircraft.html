@@ -4116,6 +4116,118 @@ html body .order-book-table tbody tr:hover {
   display: block;
 }
 
+#aircraftInsuranceModal .insurance-decision-panel {
+  display: none;
+  margin-top: 9px;
+  padding: 9px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(18, 44, 78, 0.34),
+      rgba(6, 20, 43, 0.46)
+    );
+
+  border: 1px solid rgba(94, 174, 230, 0.42);
+  border-radius: 10px;
+
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+#aircraftInsuranceModal
+.insurance-decision-panel.is-visible {
+  display: block;
+}
+
+#aircraftInsuranceModal .insurance-decision-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+}
+
+#aircraftInsuranceModal
+.insurance-decision-summary > div {
+  min-height: 48px;
+  padding: 7px;
+  box-sizing: border-box;
+
+  text-align: center;
+  background: rgba(7, 23, 49, 0.34);
+  border: 1px solid rgba(118, 163, 210, 0.22);
+  border-radius: 7px;
+}
+
+#aircraftInsuranceModal
+.insurance-decision-summary span {
+  display: block;
+  margin-bottom: 5px;
+
+  color: #9eb5d0;
+  font-family: "Orbitron", sans-serif;
+  font-size: 6px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+#aircraftInsuranceModal
+.insurance-decision-summary strong {
+  color: #ffffff;
+  font-size: 10px;
+}
+
+#aircraftInsuranceModal .insurance-decision-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+#aircraftInsuranceModal .insurance-confirm-btn,
+#aircraftInsuranceModal .insurance-cancel-btn {
+  min-height: 34px;
+
+  background: rgba(7, 20, 40, 0.2);
+  border-radius: 8px;
+
+  font-family: "Orbitron", sans-serif;
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+#aircraftInsuranceModal .insurance-confirm-btn {
+  color: #ffe4a0;
+  border: 1px solid rgba(255, 190, 45, 0.8);
+  box-shadow: 0 0 14px rgba(255, 179, 0, 0.1);
+}
+
+#aircraftInsuranceModal .insurance-cancel-btn {
+  color: #d7e4f2;
+  border: 1px solid rgba(159, 184, 211, 0.58);
+}
+
+#aircraftInsuranceModal .insurance-confirm-btn:hover,
+#aircraftInsuranceModal .insurance-cancel-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+#aircraftInsuranceModal .insurance-confirm-btn:disabled,
+#aircraftInsuranceModal .insurance-cancel-btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+@media (max-width: 650px) {
+  #aircraftInsuranceModal .insurance-decision-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+    
 #aircraftInsuranceModal .insurance-footer {
   display: flex;
   justify-content: center;
@@ -5721,11 +5833,67 @@ html body .order-book-table tbody tr:hover {
 
       </section>
 
-      <div
+            <div
         id="insuranceChangeNotice"
         class="insurance-notice"
         role="status"
       ></div>
+
+      <section
+        id="insuranceDecisionPanel"
+        class="insurance-decision-panel"
+        aria-hidden="true"
+      >
+        <div class="insurance-decision-summary">
+
+          <div>
+            <span>Current Plan</span>
+            <strong id="insuranceDecisionCurrent">
+              —
+            </strong>
+          </div>
+
+          <div>
+            <span>Selected Plan</span>
+            <strong id="insuranceDecisionSelected">
+              —
+            </strong>
+          </div>
+
+          <div>
+            <span>New Monthly Premium</span>
+            <strong id="insuranceDecisionPremium">
+              —
+            </strong>
+          </div>
+
+          <div>
+            <span>Effective Date</span>
+            <strong id="insuranceDecisionEffective">
+              —
+            </strong>
+          </div>
+
+        </div>
+
+        <div class="insurance-decision-actions">
+          <button
+            id="insuranceConfirmSelection"
+            class="insurance-confirm-btn"
+            type="button"
+          >
+            Confirm
+          </button>
+
+          <button
+            id="insuranceCancelSelection"
+            class="insurance-cancel-btn"
+            type="button"
+          >
+            Cancel
+          </button>
+        </div>
+      </section>
 
     </div>
 
