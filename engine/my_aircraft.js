@@ -1635,11 +1635,33 @@ setText(
       getRegistrationDisplay(aircraft)
     );
 
-    const image = $("insuranceAircraftImage");
+    const image =
+      $("insuranceAircraftImage");
+
+    const photoStage =
+      $("insuranceAircraftPhotoStage");
 
     if (image) {
       const imageAircraft =
         normalizeMyAircraftImageObject(aircraft);
+
+      const syncInsurancePhotoBackground = () => {
+        const photoSource =
+          image.currentSrc || image.src;
+
+        if (!photoSource || !photoStage) return;
+
+        photoStage.style.setProperty(
+          "--insurance-aircraft-photo",
+          `url(${JSON.stringify(photoSource)})`
+        );
+      };
+
+      image.addEventListener(
+        "load",
+        syncInsurancePhotoBackground,
+        { once: true }
+      );
 
       window.ACS_setAircraftImage(
         image,
@@ -1648,6 +1670,13 @@ setText(
 
       image.alt =
         `${aircraftName} ${getRegistrationDisplay(aircraft)}`;
+
+      if (
+        image.complete &&
+        image.naturalWidth > 0
+      ) {
+        syncInsurancePhotoBackground();
+      }
     }
 
     resetAircraftInsuranceDisplay();
