@@ -3398,6 +3398,405 @@ html body .order-book-table tbody tr:hover {
 }
 
 /* ============================================================
+   AIRCRAFT INSURANCE MODAL
+   ============================================================ */
+
+#aircraftInsuranceModal.modal-bg {
+  z-index: 10040;
+  padding: 18px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  background: rgba(0, 5, 15, 0.88);
+  backdrop-filter: blur(9px);
+}
+
+#aircraftInsuranceModal .insurance-modal {
+  width: min(1050px, calc(100vw - 36px));
+  max-height: calc(100dvh - 36px);
+  overflow-y: auto;
+  box-sizing: border-box;
+
+  color: #edf6ff;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(11, 29, 59, 0.98),
+      rgba(4, 13, 31, 0.99)
+    );
+
+  border: 1px solid rgba(255, 179, 0, 0.65);
+  border-radius: 15px;
+  box-shadow:
+    0 25px 70px rgba(0, 0, 0, 0.72),
+    0 0 28px rgba(255, 179, 0, 0.08);
+}
+
+#aircraftInsuranceModal .insurance-header {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.9fr) minmax(380px, 1.4fr);
+  gap: 18px;
+  padding: 18px;
+  border-bottom: 1px solid rgba(255, 179, 0, 0.25);
+}
+
+#aircraftInsuranceModal .insurance-title-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+#aircraftInsuranceModal .insurance-kicker {
+  margin-bottom: 8px;
+  color: #ffb300;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+#aircraftInsuranceModal .insurance-title {
+  margin: 0;
+  color: #ffb300;
+  font-size: clamp(25px, 3vw, 38px);
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+#aircraftInsuranceModal .insurance-aircraft-name {
+  margin: 13px 0 4px;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+#aircraftInsuranceModal .insurance-registration {
+  width: fit-content;
+  margin-top: 4px;
+  padding: 5px 11px;
+
+  color: #66d7ff;
+  background: rgba(32, 157, 224, 0.12);
+  border: 1px solid rgba(76, 196, 255, 0.55);
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+#aircraftInsuranceModal .insurance-aircraft-image {
+  display: block;
+  width: 100%;
+  height: 205px;
+  min-height: 205px;
+  object-fit: cover;
+  object-position: center 54%;
+
+  background: #061126;
+  border: 1px solid rgba(83, 195, 255, 0.34);
+  border-radius: 12px;
+}
+
+#aircraftInsuranceModal .insurance-body {
+  padding: 18px;
+}
+
+#aircraftInsuranceModal .insurance-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+  margin-bottom: 17px;
+}
+
+#aircraftInsuranceModal .insurance-summary-item {
+  min-height: 76px;
+  padding: 11px 8px;
+  box-sizing: border-box;
+
+  text-align: center;
+  background: rgba(15, 32, 62, 0.78);
+  border: 1px solid rgba(109, 143, 187, 0.22);
+  border-radius: 9px;
+}
+
+#aircraftInsuranceModal .insurance-summary-item span {
+  display: block;
+  margin-bottom: 7px;
+  color: #8fa8c9;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+#aircraftInsuranceModal .insurance-summary-item strong {
+  color: #ffffff;
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+#aircraftInsuranceModal #insuranceCurrentStatus[data-status="ACTIVE"] {
+  color: #42e899;
+}
+
+#aircraftInsuranceModal #insuranceCurrentStatus[data-status="PAYMENT_DUE"] {
+  color: #ff6575;
+}
+
+#aircraftInsuranceModal .insurance-plans-title {
+  margin: 0 0 11px;
+  color: #ffb300;
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+#aircraftInsuranceModal .insurance-plans {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 11px;
+}
+
+#aircraftInsuranceModal .insurance-plan-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 360px;
+  padding: 15px;
+  box-sizing: border-box;
+
+  background:
+    linear-gradient(
+      155deg,
+      rgba(17, 37, 70, 0.92),
+      rgba(7, 19, 42, 0.96)
+    );
+
+  border: 1px solid rgba(102, 140, 190, 0.28);
+  border-radius: 11px;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+
+#aircraftInsuranceModal .insurance-plan-card.is-current {
+  border-color: rgba(58, 221, 146, 0.76);
+  box-shadow: 0 0 20px rgba(58, 221, 146, 0.12);
+}
+
+#aircraftInsuranceModal .insurance-plan-card.is-selected {
+  border-color: rgba(255, 179, 0, 0.82);
+  box-shadow: 0 0 22px rgba(255, 179, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+#aircraftInsuranceModal .insurance-current-badge {
+  position: absolute;
+  top: 11px;
+  right: 11px;
+  display: none;
+
+  padding: 4px 8px;
+  color: #06172a;
+  background: #42e899;
+  border-radius: 999px;
+
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+#aircraftInsuranceModal .insurance-plan-card.is-current
+.insurance-current-badge {
+  display: block;
+}
+
+#aircraftInsuranceModal .insurance-plan-name {
+  margin: 0 0 13px;
+  color: #ffffff;
+  font-size: 20px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+#aircraftInsuranceModal .insurance-plan-card[data-plan="GOLD"]
+.insurance-plan-name {
+  color: #ffbf24;
+}
+
+#aircraftInsuranceModal .insurance-plan-values {
+  display: grid;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+#aircraftInsuranceModal .insurance-value-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid rgba(118, 150, 190, 0.16);
+}
+
+#aircraftInsuranceModal .insurance-value-line span {
+  color: #91a8c5;
+  font-size: 11px;
+}
+
+#aircraftInsuranceModal .insurance-value-line strong {
+  color: #ffffff;
+  font-size: 12px;
+  text-align: right;
+}
+
+#aircraftInsuranceModal .insurance-benefits {
+  flex: 1;
+  margin: 0;
+  padding-left: 18px;
+  color: #c9d7e8;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+#aircraftInsuranceModal .insurance-benefits li {
+  margin-bottom: 5px;
+}
+
+#aircraftInsuranceModal .insurance-select-btn {
+  width: 100%;
+  min-height: 39px;
+  margin-top: 12px;
+
+  color: #d9e5f4;
+  background: linear-gradient(180deg, #17305a, #0c1c39);
+  border: 1px solid rgba(101, 157, 220, 0.55);
+  border-radius: 8px;
+
+  font: inherit;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+#aircraftInsuranceModal .insurance-select-btn:hover:not(:disabled) {
+  color: #ffffff;
+  border-color: #5acbff;
+  box-shadow: 0 0 13px rgba(64, 190, 255, 0.18);
+}
+
+#aircraftInsuranceModal .insurance-select-btn:disabled {
+  opacity: 0.58;
+  cursor: default;
+}
+
+#aircraftInsuranceModal .insurance-plan-card.is-current
+.insurance-select-btn {
+  color: #07182b;
+  background: #42e899;
+  border-color: #42e899;
+}
+
+#aircraftInsuranceModal .insurance-notice {
+  display: none;
+  margin-top: 13px;
+  padding: 10px 13px;
+
+  color: #dce9f8;
+  background: rgba(26, 55, 92, 0.5);
+  border: 1px solid rgba(86, 174, 232, 0.32);
+  border-radius: 8px;
+
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+#aircraftInsuranceModal .insurance-notice.is-visible {
+  display: block;
+}
+
+#aircraftInsuranceModal .insurance-footer {
+  display: flex;
+  justify-content: center;
+  padding: 0 18px 18px;
+}
+
+#aircraftInsuranceModal .insurance-close-btn {
+  min-width: 210px;
+  min-height: 39px;
+
+  color: #dce8f7;
+  background: linear-gradient(180deg, #172640, #0d172b);
+  border: 1px solid rgba(139, 161, 191, 0.48);
+  border-radius: 999px;
+
+  font: inherit;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+#aircraftInsuranceModal .insurance-close-btn:hover {
+  color: #ffffff;
+  border-color: #ffb300;
+}
+
+@media (max-width: 900px) {
+  #aircraftInsuranceModal .insurance-header {
+    grid-template-columns: 1fr;
+  }
+
+  #aircraftInsuranceModal .insurance-aircraft-image {
+    height: 190px;
+    min-height: 190px;
+  }
+
+  #aircraftInsuranceModal .insurance-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #aircraftInsuranceModal .insurance-plans {
+    grid-template-columns: 1fr;
+  }
+
+  #aircraftInsuranceModal .insurance-plan-card {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  #aircraftInsuranceModal.modal-bg {
+    padding: 6px;
+  }
+
+  #aircraftInsuranceModal .insurance-modal {
+    width: calc(100vw - 12px);
+    max-height: calc(100dvh - 12px);
+  }
+
+  #aircraftInsuranceModal .insurance-header,
+  #aircraftInsuranceModal .insurance-body {
+    padding: 13px;
+  }
+
+  #aircraftInsuranceModal .insurance-aircraft-image {
+    height: 165px;
+    min-height: 165px;
+  }
+
+  #aircraftInsuranceModal .insurance-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+    
+/* ============================================================
    MY AIRCRAFT — CABIN CONFIGURATION
    Desktop / Tablet / Mobile
    ============================================================ */
@@ -4625,7 +5024,273 @@ html body .order-book-table tbody tr:hover {
 
   </div>
 </div>
-  
+
+<!-- ============================================================
+     AIRCRAFT INSURANCE
+     ============================================================ -->
+
+<div
+  class="modal-bg"
+  id="aircraftInsuranceModal"
+  style="display:none;"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="insuranceModalTitle"
+  aria-hidden="true"
+>
+  <div class="insurance-modal">
+
+    <header class="insurance-header">
+
+      <div class="insurance-title-panel">
+        <div class="insurance-kicker">
+          Aircraft Protection
+        </div>
+
+        <h3
+          class="insurance-title"
+          id="insuranceModalTitle"
+        >
+          Aircraft Insurance
+        </h3>
+
+        <div
+          class="insurance-aircraft-name"
+          id="insuranceAircraftName"
+        >
+          Aircraft
+        </div>
+
+        <div
+          class="insurance-registration"
+          id="insuranceAircraftRegistration"
+        >
+          —
+        </div>
+      </div>
+
+      <img
+        id="insuranceAircraftImage"
+        class="insurance-aircraft-image"
+        alt="Aircraft"
+      >
+
+    </header>
+
+    <div class="insurance-body">
+
+      <section
+        class="insurance-summary"
+        aria-label="Current insurance information"
+      >
+        <div class="insurance-summary-item">
+          <span>Current Policy</span>
+          <strong id="insuranceCurrentPlan">
+            Basic
+          </strong>
+        </div>
+
+        <div class="insurance-summary-item">
+          <span>Policy Status</span>
+          <strong
+            id="insuranceCurrentStatus"
+            data-status="ACTIVE"
+          >
+            Active
+          </strong>
+        </div>
+
+        <div class="insurance-summary-item">
+          <span>Next Payment</span>
+          <strong id="insuranceNextPayment">
+            —
+          </strong>
+        </div>
+
+        <div class="insurance-summary-item">
+          <span>Outstanding Balance</span>
+          <strong id="insuranceOutstandingBalance">
+            —
+          </strong>
+        </div>
+      </section>
+
+      <h4 class="insurance-plans-title">
+        Available Coverage
+      </h4>
+
+      <section class="insurance-plans">
+
+        <!-- BASIC -->
+
+        <article
+          class="insurance-plan-card is-current is-selected"
+          data-plan="BASIC"
+        >
+          <span class="insurance-current-badge">
+            Current
+          </span>
+
+          <h5 class="insurance-plan-name">
+            Basic
+          </h5>
+
+          <div class="insurance-plan-values">
+            <div class="insurance-value-line">
+              <span>Hull Coverage</span>
+              <strong>50%</strong>
+            </div>
+
+            <div class="insurance-value-line">
+              <span>Deductible</span>
+              <strong>20%</strong>
+            </div>
+
+            <div class="insurance-value-line">
+              <span>Monthly Premium</span>
+              <strong id="insuranceBasicPremium">—</strong>
+            </div>
+          </div>
+
+          <ul class="insurance-benefits">
+            <li>Mandatory protection for every aircraft.</li>
+            <li>Passenger and third-party liability.</li>
+            <li>Partial protection against accidental hull damage.</li>
+            <li>Coverage while flying, taxiing or parked.</li>
+            <li>Normal wear and maintenance are not covered.</li>
+          </ul>
+
+          <button
+            class="insurance-select-btn"
+            data-insurance-plan="BASIC"
+            type="button"
+            disabled
+          >
+            Current Policy
+          </button>
+        </article>
+
+        <!-- STANDARD -->
+
+        <article
+          class="insurance-plan-card"
+          data-plan="STANDARD"
+        >
+          <span class="insurance-current-badge">
+            Current
+          </span>
+
+          <h5 class="insurance-plan-name">
+            Standard
+          </h5>
+
+          <div class="insurance-plan-values">
+            <div class="insurance-value-line">
+              <span>Hull Coverage</span>
+              <strong>80%</strong>
+            </div>
+
+            <div class="insurance-value-line">
+              <span>Deductible</span>
+              <strong>10%</strong>
+            </div>
+
+            <div class="insurance-value-line">
+              <span>Monthly Premium</span>
+              <strong id="insuranceStandardPremium">—</strong>
+            </div>
+          </div>
+
+          <ul class="insurance-benefits">
+            <li>Includes all Basic protection.</li>
+            <li>Higher accidental hull damage coverage.</li>
+            <li>Forced-landing recovery and aircraft removal.</li>
+            <li>Protection for temporarily removed components.</li>
+            <li>Reduced financial exposure after an accident.</li>
+          </ul>
+
+          <button
+            class="insurance-select-btn"
+            data-insurance-plan="STANDARD"
+            type="button"
+            disabled
+          >
+            Select Standard
+          </button>
+        </article>
+
+        <!-- GOLD -->
+
+        <article
+          class="insurance-plan-card"
+          data-plan="GOLD"
+        >
+          <span class="insurance-current-badge">
+            Current
+          </span>
+
+          <h5 class="insurance-plan-name">
+            Gold
+          </h5>
+
+          <div class="insurance-plan-values">
+            <div class="insurance-value-line">
+              <span>Hull Coverage</span>
+              <strong>100%</strong>
+            </div>
+
+            <div class="insurance-value-line">
+              <span>Deductible</span>
+              <strong>5%</strong>
+            </div>
+
+            <div class="insurance-value-line">
+              <span>Monthly Premium</span>
+              <strong id="insuranceGoldPremium">—</strong>
+            </div>
+          </div>
+
+          <ul class="insurance-benefits">
+            <li>Includes all Standard protection.</li>
+            <li>Full agreed-value hull protection.</li>
+            <li>Enhanced passenger and third-party liability.</li>
+            <li>Emergency transport of replacement parts.</li>
+            <li>Emergency crew and passenger assistance.</li>
+          </ul>
+
+          <button
+            class="insurance-select-btn"
+            data-insurance-plan="GOLD"
+            type="button"
+            disabled
+          >
+            Select Gold
+          </button>
+        </article>
+
+      </section>
+
+      <div
+        id="insuranceChangeNotice"
+        class="insurance-notice"
+        role="status"
+      ></div>
+
+    </div>
+
+    <footer class="insurance-footer">
+      <button
+        id="insuranceCloseButton"
+        class="insurance-close-btn"
+        type="button"
+      >
+        Close
+      </button>
+    </footer>
+
+  </div>
+</div>
+
 <!-- ============================================================
      ✈️ SERVICE C & D CONTROL — ACS × AIRBUS OCC
      ------------------------------------------------------------
