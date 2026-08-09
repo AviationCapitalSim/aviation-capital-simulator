@@ -1547,6 +1547,214 @@ setText(
     );
   }
 
+    async function fetchAircraftInsurance(
+    aircraftId
+  ) {
+    const response = await fetch(
+      `${ACS_MY_AIRCRAFT_API_BASE}` +
+      `/v1/aircraft/fleet/${aircraftId}/insurance`,
+      {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          Accept: "application/json"
+        }
+      }
+    );
+
+    const payload =
+      await response.json().catch(() => null);
+
+    if (!response.ok || !payload?.ok) {
+      throw new Error(
+        payload?.details ||
+        payload?.error ||
+        "Insurance information is unavailable."
+      );
+    }
+
+    return payload;
+  }
+
+  function setAircraftInsuranceLoading() {
+    setText("insuranceCurrentPlan", "Loading");
+    setText("insuranceCurrentStatus", "Loading");
+    setText("insuranceCurrentPremium", "—");
+    setText("insuranceNextPayment", "—");
+    setText("insuranceOutstandingBalance", "—");
+
+    setText("insuranceBasicPremium", "—");
+    setText("insuranceStandardPremium", "—");
+    setText("insuranceGoldPremium", "—");
+
+    document
+      .querySelectorAll(
+        "#aircraftInsuranceModal .insurance-select-btn"
+      )
+      .forEach(button => {
+        button.disabled = true;
+      });
+  }
+
+  function renderAircraftInsurance(payload) {
+    const modal = $("aircraftInsuranceModal");
+    const policy = payload?.policy;
+    const quotes = payload?.quotes;
+
+    if (!modal || !policy || !quotes) {
+      return;
+    }
+
+    const currentPlan =
+      normalizeStatus(
+        policy.plan_code || "BASIC"
+      );
+
+    const policyStatus =
+      normalizeStatus(
+        policy.policy_status || "ACTIVE"
+      );
+
+    modal.dataset.currentPlan = currentPlan;
+    modal.dataset.selectedPlan = currentPlan;
+
+    setText(
+      "insuranceCurrentPlan",
+      normalizeDisplay(currentPlan)
+    );
+
+    setText(
+      "insuranceCurrentStatus",
+      normalizeDisplay(policyStatus)
+    );
+
+    setText(
+      "insuranceCurrentPremium",
+      formatMoney(
+        policy.monthly_premium,
+        "USD"
+      )
+    );
+
+    setText(
+      "insuranceNextPayment",
+      formatDate(
+        policy.next_payment_sim
+      )
+    );
+
+    setText(
+      "insuranceOutstandingBalance",
+      formatMoney(
+        policy.outstanding_balance,
+        "USD"
+      )
+    );
+
+    setText(
+      "insuranceBasicPremium",
+      formatMoney(
+        quotes.BASIC?.monthly_premium,
+        "USD"
+      )
+    );
+
+    setText(
+      "insuranceStandardPremium",
+      formatMoney(
+        quotes.STANDARD?.monthly_premium,
+        "USD"
+      )
+    );
+
+    setText(
+      "insuranceGoldPremium",
+      formatMoney(
+        quotes.GOLD?.monthly_premium,
+        "USD"
+      )
+    );
+
+    const statusElement =
+      $("insuranceCurrentStatus");
+
+    if (statusElement) {
+      statusElement.dataset.status =
+        policyStatus;
+    }
+
+    document
+      .querySelectorAll(
+        "#aircraftInsuranceModal .insurance-plan-card"
+      )
+      .forEach(card => {
+        const isCurrent =
+          card.dataset.plan === currentPlan;
+
+        card.classList.toggle(
+          "is-current",
+          isCurrent
+        );
+
+        card.classList.toggle(
+          "is-selected",
+          isCurrent
+        );
+      });
+
+    document
+      .querySelectorAll(
+        "#aircraftInsuranceModal .insurance-select-btn"
+      )
+      .forEach(button => {
+        const plan =
+          normalizeStatus(
+            button.dataset.insurancePlan
+          );
+
+        button.disabled = false;
+
+        button.textContent =
+          plan === currentPlan
+            ? "Current Policy"
+            : `Select ${normalizeDisplay(plan)}`;
+      });
+
+    const notice =
+      $("insuranceChangeNotice");
+
+    if (notice) {
+      notice.textContent = "";
+      notice.classList.remove("is-visible");
+    }
+  }
+
+  function showAircraftInsuranceError(error) {
+    setText(
+      "insuranceCurrentStatus",
+      "Unavailable"
+    );
+
+    const notice =
+      $("insuranceChangeNotice");
+
+    if (notice) {
+      notice.textContent =
+        error?.message ||
+        "Insurance information is unavailable.";
+
+      notice.classList.add("is-visible");
+    }
+
+    document
+      .querySelectorAll(
+        "#aircraftInsuranceModal .insurance-select-btn"
+      )
+      .forEach(button => {
+        button.disabled = true;
+      });
+  }
+
    function resetAircraftInsuranceDisplay() {
     const modal = $("aircraftInsuranceModal");
 
