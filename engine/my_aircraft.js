@@ -1706,6 +1706,82 @@ setText(
         );
       });
 
+        const pendingPlan =
+      normalizeStatus(
+        policy.pending_plan_code || ""
+      );
+
+    const hasPendingPlan =
+      ["BASIC", "STANDARD", "GOLD"]
+        .includes(pendingPlan) &&
+      pendingPlan !== currentPlan;
+
+    const pendingEffectiveDate =
+      hasPendingPlan
+        ? formatDate(
+            policy.pending_plan_effective_sim
+          )
+        : "—";
+
+    document
+      .querySelectorAll(
+        "#aircraftInsuranceModal .insurance-plan-card"
+      )
+      .forEach(card => {
+        const cardPlan =
+          normalizeStatus(
+            card.dataset.plan
+          );
+
+        const isCurrent =
+          cardPlan === currentPlan;
+
+        const isPending =
+          hasPendingPlan &&
+          cardPlan === pendingPlan;
+
+        card.classList.toggle(
+          "is-current",
+          isCurrent
+        );
+
+        card.classList.toggle(
+          "is-selected",
+          isCurrent
+        );
+
+        card.classList.toggle(
+          "is-pending",
+          isPending
+        );
+
+        const badge =
+          card.querySelector(
+            ".insurance-current-badge"
+          );
+
+        if (badge) {
+          if (isCurrent) {
+            badge.textContent = "Current";
+            badge.style.display = "block";
+            badge.style.background = "#42e899";
+            badge.style.color = "#07182b";
+
+          } else if (isPending) {
+            badge.textContent = "Scheduled";
+            badge.style.display = "block";
+            badge.style.background = "#ffb300";
+            badge.style.color = "#07182b";
+
+          } else {
+            badge.textContent = "Current";
+            badge.style.display = "none";
+            badge.style.background = "";
+            badge.style.color = "";
+          }
+        }
+      });
+
     document
       .querySelectorAll(
         "#aircraftInsuranceModal .insurance-select-btn"
@@ -1716,31 +1792,53 @@ setText(
             button.dataset.insurancePlan
           );
 
-        button.disabled = false;
+        const isCurrent =
+          plan === currentPlan;
 
-        button.textContent =
-          plan === currentPlan
-            ? "Current Policy"
-            : `Select ${normalizeDisplay(plan)}`;
+        const isPending =
+          hasPendingPlan &&
+          plan === pendingPlan;
+
+        if (isCurrent) {
+          button.disabled = true;
+          button.textContent =
+            "Current Policy";
+
+        } else if (isPending) {
+          button.disabled = true;
+          button.textContent =
+            "Downgrade Scheduled";
+
+        } else {
+          button.disabled = false;
+          button.textContent =
+            `Select ${normalizeDisplay(plan)}`;
+        }
       });
 
-        const notice =
+    const notice =
       $("insuranceChangeNotice");
 
     if (notice) {
-      if (policy.pending_plan_code) {
+      if (hasPendingPlan) {
         notice.textContent =
           `${normalizeDisplay(
-            policy.pending_plan_code
-          )} is scheduled to begin on ` +
-          `${formatDate(
-            policy.pending_plan_effective_sim
-          )}.`;
+            currentPlan
+          )} remains the current active policy until ` +
+          `${pendingEffectiveDate}. ` +
+          `${normalizeDisplay(
+            pendingPlan
+          )} will become the current policy on that date.`;
 
-        notice.classList.add("is-visible");
+        notice.classList.add(
+          "is-visible"
+        );
+
       } else {
         notice.textContent = "";
-        notice.classList.remove("is-visible");
+        notice.classList.remove(
+          "is-visible"
+        );
       }
     }
 
