@@ -207,6 +207,9 @@ async function ACS_FINANCE_syncFromServer() {
         leasing: Number(f.cost_leasing || 0),
         salaries: Number(f.cost_hr || 0),
         maintenance: Number(f.cost_maintenance || 0),
+        aircraft_insurance: Number(f.cost_insurance || 0),
+        depreciation: Number(f.cost_depreciation || 0),
+        taxes: Number(f.cost_taxes || 0),
         penalties: Number(f.cost_other || 0),
         used_aircraft_purchase:
           Number(f.cost_used_aircraft_purchase || 0),
