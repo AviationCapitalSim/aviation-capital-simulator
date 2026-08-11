@@ -221,7 +221,11 @@ async function ACS_FINANCE_syncFromServer() {
           f.cost_depreciation ??
           0
         ),
-        taxes: Number(f.cost_taxes || 0),
+        taxes: Number(
+        f.cost_taxes_display ??
+        f.cost_taxes ??
+        0
+        ),
         penalties: Number(f.cost_other || 0),
         used_aircraft_purchase:
           Number(f.cost_used_aircraft_purchase || 0),
