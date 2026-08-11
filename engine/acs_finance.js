@@ -207,7 +207,11 @@ async function ACS_FINANCE_syncFromServer() {
         leasing: Number(f.cost_leasing || 0),
         salaries: Number(f.cost_hr || 0),
         maintenance: Number(f.cost_maintenance || 0),
-        "Aircraft Insurance": Number(f.cost_insurance || 0),
+        "Aircraft Insurance": Number(
+          f.cost_insurance_display ??
+          f.cost_insurance ??
+          0
+        ),
          depreciation: Number(
           f.cost_depreciation_display ??
           f.cost_depreciation ??
