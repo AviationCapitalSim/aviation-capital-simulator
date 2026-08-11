@@ -260,9 +260,35 @@ body {
 .finance-meter-fill {
   height: 100%;
   width: 0%;
-  transition: width 0.35s ease-out;
-  background: #4da3ff;          /* azul técnico OCC */
+  transition:
+    width 0.35s ease-out,
+    background-color 0.25s ease;
+  background: #4da3ff;
   border-radius: 6px;
+}
+
+/* Income — production */
+.finance-meter--income .finance-meter-fill {
+  background: #00f59a;
+  box-shadow: 0 0 9px rgba(0, 245, 154, 0.70);
+}
+
+/* Operating expenses */
+.finance-meter--expense .finance-meter-fill {
+  background: #ff4d5e;
+  box-shadow: 0 0 9px rgba(255, 77, 94, 0.60);
+}
+
+/* Aircraft investments */
+.finance-meter--investment .finance-meter-fill {
+  background: #ffb300;
+  box-shadow: 0 0 9px rgba(255, 179, 0, 0.55);
+}
+
+/* Financing */
+.finance-meter--financing .finance-meter-fill {
+  background: #4da3ff;
+  box-shadow: 0 0 9px rgba(77, 163, 255, 0.55);
 }
      
 /* log table compact */
@@ -1944,68 +1970,99 @@ function loadBreakdown() {
 
   const f = window.ACS_Finance;
   if (!f) {
-  console.error("❌ Finance not loaded (loadBreakdown)");
-  return;
+    console.error("❌ Finance not loaded (loadBreakdown)");
+    return;
   }
-     
-  const grid = document.getElementById("breakdownGrid");
+
+  const grid =
+    document.getElementById("breakdownGrid");
+
   if (!grid) return;
 
   grid.innerHTML = "";
 
-  let cost = f.cost || {};
-  let income = f.income || {};
-     
+  const cost = f.cost || {};
+  const income = f.income || {};
   const categories = [];
 
-  // INCOME
+  /*
+   * ACS OCC visual classification:
+   * income, expense, investment and financing.
+   */
   categories.push({
     label: "Live Route Revenue",
-    value: Number(income?.live_revenue || 0)
+    value: Number(income?.live_revenue || 0),
+    tone: "income"
   });
 
   categories.push({
     label: "Weekly Route Revenue",
-    value: Number(income?.weekly_revenue || 0)
+    value: Number(income?.weekly_revenue || 0),
+    tone: "income"
   });
 
-  // COSTS
-  Object.keys(cost || {}).forEach(k => {
+  const investmentKeys = new Set([
+    "used_aircraft_purchase",
+    "new_aircraft_purchase"
+  ]);
+
+  Object.keys(cost).forEach((key) => {
     categories.push({
-      label: k,
-      value: Number(cost[k] || 0)
+      label: key,
+      value: Number(cost[key] || 0),
+      tone: investmentKeys.has(key)
+        ? "investment"
+        : "expense"
     });
   });
 
-       
-  // LOANS
-  const loans = Array.isArray(f.bank?.loans) ? f.bank.loans : [];
-  const totalLoans = loans.reduce((s,l)=>s + Number(l?.remaining || 0),0);
+  const loans =
+    Array.isArray(f.bank?.loans)
+      ? f.bank.loans
+      : [];
+
+  const totalLoans = loans.reduce(
+    (sum, loan) =>
+      sum + Number(loan?.remaining || 0),
+    0
+  );
 
   categories.push({
     label: "Bank Loans",
-    value: totalLoans
+    value: totalLoans,
+    tone: "financing"
   });
 
-  const max = Math.max(...categories.map(c => c.value), 1);
+  const max = Math.max(
+    ...categories.map(category => category.value),
+    1
+  );
 
-  categories.forEach(cat => {
+  categories.forEach((category) => {
 
-    const pct = (cat.value / max) * 100;
+    const percentage =
+      (category.value / max) * 100;
 
-    const el = document.createElement("div");
-    el.className = "finance-meter";
+    const element =
+      document.createElement("div");
 
-    el.innerHTML = `
+    element.className =
+      `finance-meter finance-meter--${category.tone}`;
+
+    element.innerHTML = `
       <div class="finance-meter-title">
-        ${cat.label} — ${ACS_money(cat.value)}
+        ${category.label} — ${ACS_money(category.value)}
       </div>
+
       <div class="finance-meter-bar">
-        <div class="finance-meter-fill" style="width:${pct}%"></div>
+        <div
+          class="finance-meter-fill"
+          style="width:${percentage}%">
+        </div>
       </div>
     `;
 
-    grid.appendChild(el);
+    grid.appendChild(element);
 
   });
 
