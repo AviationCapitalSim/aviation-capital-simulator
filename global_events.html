@@ -2,11 +2,9 @@
      ACS OCC - GLOBAL EVENTS v1.0
      DATE: 12 AUGUST 2026
      ------------------------------------------------------------
-     Historical aviation events and operational intelligence.
-     Visual interface for aviation, operational, geopolitical,
-     airport infrastructure and economic events.
-     Historical clock integration will be handled separately.
-     PostgreSQL will be the only event-data authority.
+     Global aviation events and operational intelligence.
+     Visual interface for historical and real-world events.
+     No simulation effects or database integration in this phase.
      ============================================================ -->
 
 <!DOCTYPE html>
@@ -16,9 +14,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Global Events - Aviation Capital Simulator</title>
   <meta name="description" content="Global aviation events, historical milestones and operational intelligence">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- ACS GLOBAL STYLE AUTHORITY -->
+  <link rel="stylesheet" href="styles.css?v=3.1">
+
+  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+  <link rel="apple-touch-icon" href="acs_logo_180.png">
+  <link rel="manifest" href="manifest.json">
   <style>
     :root {
       --acs-gold: #ffb300;
@@ -34,157 +37,15 @@
       --acs-surface-hover: rgba(255, 255, 255, .034);
     }
 
-    * { box-sizing: border-box; }
-    html { color-scheme: dark; }
-    body {
-      min-height: 100vh;
-      margin: 0;
-      overflow-x: hidden;
-      background: #071427;
-      color: var(--acs-text);
-      font-family: "Poppins", "Segoe UI", sans-serif;
+    .global-events-page .global-events-center {
+      width: min(1540px, 100%);
+      box-sizing: border-box;
+      margin: 0 auto;
+      padding-bottom: 70px;
+      text-align: left;
     }
 
-    body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -2;
-
-  background:
-    url("acs_background.jpg")
-    center center / cover
-    no-repeat;
-
-  opacity: 0.80;
-
-  pointer-events: none;
-}
-
-    body::after {
-      content: "";
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      background:
-        radial-gradient(circle at 50% -15%, rgba(40, 91, 164, .32), transparent 48%),
-        linear-gradient(180deg, rgba(4, 10, 24, .70), rgba(3, 9, 22, .94));
-      pointer-events: none;
-    }
-
-    button, input { font: inherit; }
-    button { color: inherit; }
-
-    .acs-header {
-      position: fixed;
-      inset: 0 0 auto;
-      z-index: 5000;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 26px;
-      min-height: 74px;
-      padding: .8rem 2rem;
-      border-bottom: 2px solid var(--acs-gold);
-      background: rgba(12, 23, 50, .45);
-      backdrop-filter: blur(12px) saturate(125%);
-    }
-
-    .acs-logo { display: flex; align-items: center; gap: .9rem; min-width: 225px; }
-    .acs-symbol {
-      display: grid;
-      place-items: center;
-      width: 46px;
-      height: 46px;
-      border: 1px solid rgba(255, 179, 0, .62);
-      border-radius: 11px;
-      background: linear-gradient(145deg, rgba(255,179,0,.17), rgba(255,179,0,.03));
-      box-shadow: inset 0 1px 0 rgba(255,232,172,.20), 0 0 16px rgba(255,179,0,.12);
-      color: var(--acs-gold);
-      font: 700 .8rem "Orbitron", sans-serif;
-      letter-spacing: .08em;
-    }
-    .acs-logo h1 { margin: 0; color: var(--acs-gold); font-size: 1.02rem; font-weight: 600; }
-
-    .acs-nav { display: flex; justify-content: center; gap: 1.7rem; flex: 1; }
-    .acs-nav a {
-      position: relative;
-      padding-bottom: 6px;
-      color: #dbe4ff;
-      font-size: .93rem;
-      text-decoration: none;
-      transition: .25s ease;
-    }
-    .acs-nav a:hover, .acs-nav a.active { color: #ffca3a; text-shadow: 0 0 6px rgba(255,179,0,.45); }
-    .acs-nav a:hover::after, .acs-nav a.active::after {
-      content: "";
-      position: absolute;
-      right: 0;
-      bottom: -8px;
-      left: 0;
-      height: 2px;
-      border-radius: 2px;
-      background: linear-gradient(90deg, var(--acs-gold), #ffe7a0);
-      box-shadow: 0 0 8px rgba(255,200,60,.45);
-    }
-
-    .acs-right { display: flex; align-items: center; gap: 12px; }
-    .support-btn, .logout-btn {
-      padding: .45rem .95rem;
-      border-radius: 11px;
-      background: rgba(138,180,255,.08);
-      color: #8ab4ff;
-      border: 1px solid rgba(138,180,255,.38);
-      text-decoration: none;
-      font-size: .82rem;
-      font-weight: 600;
-    }
-    .logout-btn { border-color: var(--acs-gold); background: rgba(255,179,0,.05); color: var(--acs-gold); cursor: pointer; }
-    .acs-clock-header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 260px;
-      padding: .45rem .8rem;
-      border: 1px solid rgba(0,255,128,.18);
-      border-radius: 10px;
-      background: rgba(0,255,128,.08);
-      color: #00ff80;
-      font: 500 .86rem "Orbitron", monospace;
-      font-variant-numeric: tabular-nums;
-      white-space: nowrap;
-    }
-
-    .acs-main { width: min(1540px, 100%); margin: 0 auto; padding: 110px 2rem 72px; }
-    .acs-page-title { max-width: 900px; margin: 18px auto 24px; padding: 18px 28px 20px; text-align: center; }
-    .acs-page-title-main {
-      color: #f7f8fb;
-      font: 700 32px/1 "Orbitron", sans-serif;
-      letter-spacing: .34em;
-      text-transform: uppercase;
-      text-shadow: 0 1px #000, 0 0 10px rgba(255,255,255,.20), 0 0 22px rgba(255,255,255,.10);
-    }
-    .acs-page-title-sub {
-      position: relative;
-      display: inline-block;
-      margin-top: 12px;
-      color: var(--acs-gold);
-      font: 700 14px "Orbitron", sans-serif;
-      letter-spacing: .42em;
-      text-transform: uppercase;
-      text-shadow: 0 0 8px rgba(255,179,0,.35);
-    }
-    .acs-page-title-sub::before, .acs-page-title-sub::after {
-      content: "";
-      position: absolute;
-      top: 50%;
-      width: 82px;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--acs-gold), transparent);
-    }
-    .acs-page-title-sub::before { right: 100%; margin-right: 18px; }
-    .acs-page-title-sub::after { left: 100%; margin-left: 18px; }
-    .acs-page-title-tag { margin-top: 11px; color: rgba(220,226,238,.82); font-size: 12px; letter-spacing: .18em; }
+    .global-events-page .acs-page-title { margin-bottom: 24px; }
 
     .command-strip {
       display: grid;
@@ -298,32 +159,18 @@
     .timeline-step.is-current { color: var(--acs-gold); }
     .timeline-step.is-current::before { border-color: var(--acs-gold); background: var(--acs-gold); box-shadow: 0 0 9px rgba(255,179,0,.5); }
 
-    .acs-footer { width: 100%; padding: 18px 20px; border-top: 1px solid rgba(138,180,255,.18); background: rgba(3,10,24,.28); color: rgba(255,255,255,.78); font-size: .78rem; text-align: center; white-space: nowrap; }
-    .acs-footer a { color: var(--acs-gold); font-weight: 600; text-decoration: none; }
-    .acs-footer-separator { margin: 0 8px; color: rgba(255,255,255,.34); }
     .empty-state { padding: 42px; border: 1px dashed var(--acs-border); border-radius: 18px; color: var(--acs-muted); font-size: .7rem; text-align: center; }
 
     @media (max-width: 1220px) {
-      .acs-nav { gap: 1rem; }
-      .acs-right .support-btn, .acs-right .logout-btn { display: none; }
       .events-workspace { grid-template-columns: minmax(0, 1.45fr) minmax(310px, .8fr); }
       .event-card { grid-template-columns: 220px minmax(0, 1fr); }
     }
     @media (max-width: 940px) {
-      .acs-header { flex-wrap: wrap; padding: .7rem 1rem; }
-      .acs-logo { min-width: auto; }
-      .acs-logo h1 { display: none; }
-      .acs-nav { order: 3; flex-basis: 100%; padding-top: 6px; }
-      .acs-clock-header { width: 230px; }
-      .acs-main { padding-top: 140px; }
       .events-workspace { grid-template-columns: 1fr; }
       .event-detail { position: static; }
     }
     @media (max-width: 700px) {
-      .acs-main { padding-right: 1rem; padding-left: 1rem; }
-      .acs-page-title-main { font-size: 24px; letter-spacing: .22em; }
-      .acs-page-title-sub { font-size: 10px; letter-spacing: .25em; }
-      .acs-page-title-sub::before, .acs-page-title-sub::after { display: none; }
+      .global-events-page .global-events-center { padding-right: 1rem; padding-left: 1rem; }
       .command-strip { grid-template-columns: 1fr 1fr; }
       .command-cell:nth-child(2) { border-right: 0; }
       .command-cell:nth-child(-n+2) { border-bottom: 1px solid rgba(91,158,255,.16); }
@@ -331,20 +178,17 @@
       .event-card { grid-template-columns: 1fr; }
       .event-image { height: 180px; min-height: 0; border-right: 0; border-bottom: 1px solid rgba(91,158,255,.16); }
       .event-image::after { background: linear-gradient(180deg, transparent 55%, rgba(4,11,27,.72)); }
-      .acs-footer { overflow-x: auto; font-size: .68rem; }
     }
     @media (max-width: 520px) {
-      .acs-clock-header { width: 190px; font-size: .7rem; }
-      .acs-nav { justify-content: flex-start; overflow-x: auto; }
       .detail-grid { grid-template-columns: 1fr; }
     }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }
   </style>
 </head>
-<body>
+<body class="global-events-page">
   <header class="acs-header">
     <div class="acs-logo">
-      <div class="acs-symbol" aria-hidden="true">ACS</div>
+      <img src="acs_logo.png" alt="ACS Logo">
       <h1>Aviation Capital Simulator</h1>
     </div>
     <nav class="acs-nav" aria-label="ACS main navigation">
@@ -356,12 +200,11 @@
     </nav>
     <div class="acs-right">
       <a href="support.html" class="support-btn">Support</a>
-      <button class="logout-btn" type="button">Logout</button>
-      <div id="acs-clock" class="acs-clock-header">12:40 — 01 JAN 1988</div>
+      <a class="logout-btn" onclick="handleLogout()">Logout</a>
     </div>
   </header>
 
-  <main class="acs-main">
+  <main class="acs-main global-events-center">
     <section class="acs-page-title" aria-labelledby="globalEventsTitle">
       <div class="acs-page-title-main" id="globalEventsTitle">GLOBAL EVENTS</div>
       <div class="acs-page-title-sub">WORLD INTELLIGENCE &amp; OPERATIONS</div>
@@ -403,6 +246,22 @@
     <a href="terms.html">Terms of Service</a>
   </footer>
 
-  <script src="global_events.js?v=1.0"></script>
+  <script>
+    function handleLogout() {
+      alert("👋 Session closed. Your fleet awaits your command!");
+      window.location.href = "login.html";
+    }
+  </script>
+
+<!-- ============================================================
+     ⏳ ACS TIME ENGINE V12 — 24/7 RECOVERY LAYER
+     ============================================================ -->
+     
+<script src="acs_time_recovery.js"></script>  
+<script src="time_engine.js"></script>
+ 
+  <script src="engine/acs_auth_guard.js"></script>
+  <script src="engine/acs_global_events.js?v=1.0"></script>
+     
 </body>
 </html>
