@@ -10,10 +10,25 @@
    ============================================================ */
 
 (function GlobalEvents() {
-  const events = [];
+  const events = [
+    {
+      id: "aviation-boeing-727-service-entry",
+      aircraftModel: "Boeing 727-100",
+      category: "aviation",
+      categoryLabel: "Aviation",
+      title: "Boeing 727 Enters Scheduled Airline Service",
+      summary: "The Boeing 727 has entered scheduled passenger service in the United States.",
+      description: "The three-engine jet is designed for short- and medium-range routes and can operate from airports that are unsuitable for larger first-generation jetliners.",
+      aviationEffect: "The new aircraft expands jet operations into shorter routes and airports with more restrictive runway conditions.",
+      image: "img_global/boeing_727_service_entry.jpg",
+      publishedAt: "1964-02-01",
+      date: "01 FEB 1964",
+      region: "United States"
+    }
+  ];
 
-  const stageLabels = ["Scheduled", "Developing", "Active", "Recovery", "Closed"];
   const state = { filter: "all", selectedId: null };
+  let availableEvents = [];
   const feed = document.getElementById("eventFeed");
   const detail = document.getElementById("eventDetail");
   const workspace = document.getElementById("eventsWorkspace");
@@ -28,8 +43,35 @@
     })[character]);
   }
 
+  function readWorldDate() {
+    const clockText = document.getElementById("acs-clock")?.textContent || "";
+    const match = clockText.match(/\b(\d{2})\s+([A-Z]{3})\s+(\d{4})\b/i);
+    if (!match) return null;
+
+    const months = {
+      JAN: 0, FEB: 1, MAR: 2, APR: 3, MAY: 4, JUN: 5,
+      JUL: 6, AUG: 7, SEP: 8, OCT: 9, NOV: 10, DEC: 11
+    };
+    const month = months[match[2].toUpperCase()];
+    if (month === undefined) return null;
+    return new Date(Date.UTC(Number(match[3]), month, Number(match[1])));
+  }
+
+  function refreshAvailableEvents() {
+    const worldDate = readWorldDate();
+    availableEvents = worldDate
+      ? events.filter(event => new Date(`${event.publishedAt}T00:00:00Z`) <= worldDate)
+      : [];
+    availableEvents.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
+    state.selectedId = availableEvents.some(event => event.id === state.selectedId)
+      ? state.selectedId
+      : availableEvents[0]?.id || null;
+  }
+
   function visibleEvents() {
-    return state.filter === "all" ? events : events.filter(event => event.category === state.filter);
+    return state.filter === "all"
+      ? availableEvents
+      : availableEvents.filter(event => event.category === state.filter);
   }
 
   function cardTemplate(event) {
@@ -40,14 +82,12 @@
         <span class="event-card-body">
           <span class="event-eyebrow">
             <span class="event-category">${escapeHTML(event.categoryLabel)}</span>
-            <span class="event-state state-${escapeHTML(event.state)}">${escapeHTML(event.stateLabel)}</span>
           </span>
           <span class="event-title">${escapeHTML(event.title)}</span>
           <span class="event-summary">${escapeHTML(event.summary)}</span>
           <span class="event-meta">
             <span>Date <b>${escapeHTML(event.date)}</b></span>
             <span>Region <b>${escapeHTML(event.region)}</b></span>
-            <span>Priority <b>${escapeHTML(event.priority)}</b></span>
           </span>
         </span>
       </button>`;
@@ -59,26 +99,17 @@
       ? visible.map(cardTemplate).join("")
       : '<div class="empty-state">NO EVENTS IN THIS CATEGORY</div>';
     count.textContent = `${String(visible.length).padStart(2, "0")} EVENT${visible.length === 1 ? "" : "S"} DISPLAYED`;
-    activeCount.textContent = String(events.filter(event => event.state === "active").length).padStart(2, "0");
-    regionCount.textContent = String(new Set(events.map(event => event.region).filter(Boolean)).size).padStart(2, "0");
-    operationsReadiness.textContent = events.some(event => event.state === "active") ? "ELEVATED" : "STANDBY";
-    operationsReadiness.classList.toggle("tone-gold", events.some(event => event.state === "active"));
-    operationsReadiness.classList.toggle("tone-green", !events.some(event => event.state === "active"));
+    activeCount.textContent = String(availableEvents.length).padStart(2, "0");
+    regionCount.textContent = String(new Set(availableEvents.map(event => event.region).filter(Boolean)).size).padStart(2, "0");
+    operationsReadiness.textContent = availableEvents.length ? "MONITORING" : "STANDBY";
 
     feed.querySelectorAll("[data-event-id]").forEach(card => {
       card.addEventListener("click", () => selectEvent(card.dataset.eventId));
     });
   }
 
-  function timelineTemplate(event) {
-    return stageLabels.map((label, index) => {
-      const status = index < event.stage ? " is-complete" : index === event.stage ? " is-current" : "";
-      return `<span class="timeline-step${status}">${escapeHTML(label)}</span>`;
-    }).join("");
-  }
-
   function renderDetail() {
-    const event = events.find(item => item.id === state.selectedId) || visibleEvents()[0] || events[0];
+    const event = availableEvents.find(item => item.id === state.selectedId) || visibleEvents()[0] || availableEvents[0];
     if (!event) {
       detail.replaceChildren();
       detail.hidden = true;
@@ -92,25 +123,18 @@
     detail.innerHTML = `
       <div class="detail-image">
         <img src="${escapeHTML(event.image)}" alt="" loading="eager">
-        <span class="detail-severity">${escapeHTML(event.severity)}</span>
       </div>
       <div class="detail-body">
         <div class="detail-category">${escapeHTML(event.categoryLabel)}</div>
         <h2 class="detail-title">${escapeHTML(event.title)}</h2>
         <p class="detail-description">${escapeHTML(event.description)}</p>
         <dl class="detail-grid">
-          <div><dt>Official date</dt><dd>${escapeHTML(event.date)}</dd></div>
-          <div><dt>Current state</dt><dd>${escapeHTML(event.stateLabel)}</dd></div>
-          <div><dt>Geographic scope</dt><dd>${escapeHTML(event.scope)}</dd></div>
-          <div><dt>Historical source</dt><dd>${escapeHTML(event.source)}</dd></div>
+          <div><dt>Published</dt><dd>${escapeHTML(event.date)}</dd></div>
+          <div><dt>Location</dt><dd>${escapeHTML(event.region)}</dd></div>
         </dl>
         <section class="detail-section">
-          <h3>Operational Impact</h3>
-          <ul class="impact-list">${event.impacts.map(([label, value]) => `<li><span>${escapeHTML(label)}</span><strong>${escapeHTML(value)}</strong></li>`).join("")}</ul>
-        </section>
-        <section class="detail-section">
-          <h3>Event Lifecycle</h3>
-          <div class="timeline">${timelineTemplate(event)}</div>
+          <h3>Aviation Effect</h3>
+          <p class="detail-description">${escapeHTML(event.aviationEffect)}</p>
         </section>
       </div>`;
   }
@@ -132,6 +156,20 @@
     });
   });
 
-  renderFeed();
-  renderDetail();
+  function refreshFromClock() {
+    refreshAvailableEvents();
+    renderFeed();
+    renderDetail();
+  }
+
+  const clock = document.getElementById("acs-clock");
+  if (clock && typeof MutationObserver === "function") {
+    new MutationObserver(refreshFromClock).observe(clock, {
+      childList: true,
+      subtree: true,
+      characterData: true
+    });
+  }
+
+  refreshFromClock();
 })();
