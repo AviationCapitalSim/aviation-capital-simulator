@@ -24,7 +24,7 @@
       publishedAt: "1964-02-01",
       date: "01 FEB 1964",
       region: "United States"
-    }
+      },
 
 {
   id: "disruptions-alaska-earthquake-1964",
@@ -38,7 +38,7 @@
   publishedAt: "1964-03-27",
   date: "27 MAR 1964",
   region: "Alaska, United States"
-}
+  },
 
 {
   id: "economy-new-york-worlds-fair-1964",
@@ -52,7 +52,7 @@
   publishedAt: "1964-04-22",
   date: "22 APR 1964",
   region: "New York, United States"
-}
+},
 
 {
   id: "world-tanganyika-zanzibar-union-1964",
@@ -66,7 +66,8 @@
   publishedAt: "1964-04-26",
   date: "26 APR 1964",
   region: "East Africa"
-}   
+},
+     
   ];
 
   const state = { filter: "all", selectedId: null };
