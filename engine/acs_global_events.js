@@ -6,91 +6,21 @@
    ------------------------------------------------------------
    Global Events presentation and interaction layer.
    Event filtering, selection, details and lifecycle display.
-   No database writes or simulation effects are performed here.
-   PostgreSQL will be the only event-data authority.
+   No database writes or simulation effects in this phase.
    ============================================================ */
 
-/* Global Events presentation and interaction layer. */
-
 (function GlobalEvents() {
-  const events = [
-    {
-      id: "aviation-737-400",
-      category: "aviation",
-      categoryLabel: "Aviation Industry",
-      state: "upcoming",
-      stateLabel: "Upcoming",
-      title: "Boeing Introduces the 737-400 Programme",
-      summary: "A stretched member of the 737 Classic family enters the industry's near-term fleet outlook.",
-      description: "Industry intelligence highlights a new narrow-body development milestone, separating manufacturer news from operational disruptions and giving airline leadership a clear view of fleet developments.",
-      image: "assets/event-aviation-737-rollout.png",
-      date: "26 FEB 1988",
-      region: "North America",
-      scope: "Global aviation",
-      severity: "INDUSTRY MILESTONE",
-      priority: "Advisory",
-      source: "Aviation archives",
-      impacts: [
-        ["Recommended action", "Monitor fleet outlook"],
-        ["Flight operations", "No direct impact"],
-        ["Commercial", "Assessment pending"]
-      ],
-      stage: 0
-    },
-    {
-      id: "operational-florida-tornado",
-      category: "operational",
-      categoryLabel: "Operational Disruption",
-      state: "active",
-      stateLabel: "Active",
-      title: "Severe Tornado Threat Affects Florida Operations",
-      summary: "Airport operations face rapidly changing weather conditions, ground holds and network disruption risk.",
-      description: "Severe weather requires continuous monitoring of geographic exposure, operational severity, affected airports and the expected recovery of the regional network.",
-      image: "assets/event-weather-tornado.png",
-      date: "01 JAN 1988",
-      region: "Florida, United States",
-      scope: "Regional airports",
-      severity: "SEVERE",
-      priority: "Immediate review",
-      source: "Weather monitoring",
-      impacts: [
-        ["Airport capacity", "Potentially constrained"],
-        ["Flight operations", "Delay / cancellation risk"],
-        ["Recommended action", "Monitor and reassess"]
-      ],
-      stage: 2
-    },
-    {
-      id: "geopolitical-aruba-status",
-      category: "geopolitical",
-      categoryLabel: "Geopolitical Change",
-      state: "closed",
-      stateLabel: "Historical",
-      title: "Aruba Adopts a New Constitutional Status and Flag",
-      summary: "A structural world change updates territorial identity without being treated as an operational emergency.",
-      description: "The geopolitical channel records historical changes to territories, flags and administrative relationships. These events remain distinct from weather and manufacturer news and can later drive verified structural updates.",
-      image: "assets/event-geopolitical-aruba.png",
-      date: "01 JAN 1986",
-      region: "Aruba, Caribbean",
-      scope: "Territorial structure",
-      severity: "STRUCTURAL CHANGE",
-      priority: "Historical record",
-      source: "Government archives",
-      impacts: [
-        ["Territory", "Identity update"],
-        ["Flight operations", "No direct impact"],
-        ["Data systems", "Review required"]
-      ],
-      stage: 4
-    }
-  ];
+  const events = [];
 
   const stageLabels = ["Scheduled", "Developing", "Active", "Recovery", "Closed"];
-  const state = { filter: "all", selectedId: events[1].id };
+  const state = { filter: "all", selectedId: null };
   const feed = document.getElementById("eventFeed");
   const detail = document.getElementById("eventDetail");
+  const workspace = document.getElementById("eventsWorkspace");
   const count = document.getElementById("eventCount");
   const activeCount = document.getElementById("activeCount");
+  const regionCount = document.getElementById("regionCount");
+  const operationsReadiness = document.getElementById("operationsReadiness");
 
   function escapeHTML(value) {
     return String(value).replace(/[&<>"]/g, character => ({
@@ -130,6 +60,10 @@
       : '<div class="empty-state">NO EVENTS IN THIS CATEGORY</div>';
     count.textContent = `${String(visible.length).padStart(2, "0")} EVENT${visible.length === 1 ? "" : "S"} DISPLAYED`;
     activeCount.textContent = String(events.filter(event => event.state === "active").length).padStart(2, "0");
+    regionCount.textContent = String(new Set(events.map(event => event.region).filter(Boolean)).size).padStart(2, "0");
+    operationsReadiness.textContent = events.some(event => event.state === "active") ? "ELEVATED" : "STANDBY";
+    operationsReadiness.classList.toggle("tone-gold", events.some(event => event.state === "active"));
+    operationsReadiness.classList.toggle("tone-green", !events.some(event => event.state === "active"));
 
     feed.querySelectorAll("[data-event-id]").forEach(card => {
       card.addEventListener("click", () => selectEvent(card.dataset.eventId));
@@ -145,7 +79,15 @@
 
   function renderDetail() {
     const event = events.find(item => item.id === state.selectedId) || visibleEvents()[0] || events[0];
-    if (!event) return;
+    if (!event) {
+      detail.replaceChildren();
+      detail.hidden = true;
+      workspace.classList.add("is-empty");
+      return;
+    }
+
+    detail.hidden = false;
+    workspace.classList.remove("is-empty");
 
     detail.innerHTML = `
       <div class="detail-image">
@@ -188,11 +130,6 @@
       renderFeed();
       renderDetail();
     });
-  });
-
-  document.querySelector(".logout-btn")?.addEventListener("click", () => {
-    window.alert("Session closed. Your fleet awaits your command!");
-    window.location.href = "login.html";
   });
 
   renderFeed();
