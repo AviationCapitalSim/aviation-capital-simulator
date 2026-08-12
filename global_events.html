@@ -46,15 +46,20 @@
     }
 
     body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      z-index: -2;
-      background: url("assets/event-aviation-737-rollout.png") center / cover no-repeat;
-      opacity: .18;
-      filter: saturate(.78);
-      transform: scale(1.03);
-    }
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+
+  background:
+    url("acs_background.jpg")
+    center center / cover
+    no-repeat;
+
+  opacity: 0.80;
+
+  pointer-events: none;
+}
 
     body::after {
       content: "";
