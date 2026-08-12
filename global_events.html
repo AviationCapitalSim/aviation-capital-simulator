@@ -421,7 +421,28 @@
       .detail-grid { grid-template-columns: 1fr; }
     }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }
-  </style>
+
+/* ============================================================
+   GLOBAL EVENTS — ARTICLE DETAIL ALIGNMENT
+   ============================================================ */
+
+.global-events-page .detail-category {
+  margin-top: 0;
+  padding-top: 14px;
+  text-align: center;
+}
+
+.global-events-page .detail-grid dt,
+.global-events-page .detail-grid dd {
+  width: 100%;
+  text-align: center;
+}
+
+.global-events-page .detail-grid dd {
+  margin-top: 8px;
+}
+  
+</style>
 </head>
 <body class="global-events-page">
   <header class="acs-header">
