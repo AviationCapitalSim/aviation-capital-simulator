@@ -441,8 +441,59 @@
 .global-events-page .detail-grid dd {
   margin-top: 8px;
 }
-  
+
+/* ============================================================
+   GLOBAL EVENTS — COMPACT NEWS FEED
+   ============================================================ */
+
+.global-events-page .event-feed {
+  gap: 9px;
+}
+
+.global-events-page .event-card {
+  grid-template-columns: 170px minmax(0, 1fr);
+  min-height: 112px;
+  max-height: 112px;
+  border-radius: 15px;
+}
+
+.global-events-page .event-image {
+  min-height: 112px;
+  height: 112px;
+}
+
+.global-events-page .event-card-body {
+  padding: 11px 15px;
+}
+
+.global-events-page .event-category {
+  font-size: 0.50rem;
+}
+
+.global-events-page .event-title {
+  margin: 7px 0 4px;
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.global-events-page .event-summary {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 0.60rem;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.global-events-page .event-meta {
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 7px;
+  font-size: 0.51rem;
+}
+      
 </style>
+     
 </head>
 <body class="global-events-page">
   <header class="acs-header">
