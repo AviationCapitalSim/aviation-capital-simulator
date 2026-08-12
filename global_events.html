@@ -1,0 +1,403 @@
+<!-- ============================================================
+     ACS OCC - GLOBAL EVENTS v1.0
+     DATE: 12 AUGUST 2026
+     ------------------------------------------------------------
+     Historical aviation events and operational intelligence.
+     Visual interface for aviation, operational, geopolitical,
+     airport infrastructure and economic events.
+     Historical clock integration will be handled separately.
+     PostgreSQL will be the only event-data authority.
+     ============================================================ -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Global Events - Aviation Capital Simulator</title>
+  <meta name="description" content="Global aviation events, historical milestones and operational intelligence">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --acs-gold: #ffb300;
+      --acs-gold-light: #ffe08a;
+      --acs-blue: #4aa7ff;
+      --acs-green: #55e39a;
+      --acs-red: #ff5364;
+      --acs-purple: #b89bff;
+      --acs-text: #f3f7fc;
+      --acs-muted: rgba(205, 220, 237, .68);
+      --acs-border: rgba(91, 158, 255, .26);
+      --acs-surface: rgba(255, 255, 255, .018);
+      --acs-surface-hover: rgba(255, 255, 255, .034);
+    }
+
+    * { box-sizing: border-box; }
+    html { color-scheme: dark; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+      background: #071427;
+      color: var(--acs-text);
+      font-family: "Poppins", "Segoe UI", sans-serif;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background: url("assets/event-aviation-737-rollout.png") center / cover no-repeat;
+      opacity: .18;
+      filter: saturate(.78);
+      transform: scale(1.03);
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background:
+        radial-gradient(circle at 50% -15%, rgba(40, 91, 164, .32), transparent 48%),
+        linear-gradient(180deg, rgba(4, 10, 24, .70), rgba(3, 9, 22, .94));
+      pointer-events: none;
+    }
+
+    button, input { font: inherit; }
+    button { color: inherit; }
+
+    .acs-header {
+      position: fixed;
+      inset: 0 0 auto;
+      z-index: 5000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 26px;
+      min-height: 74px;
+      padding: .8rem 2rem;
+      border-bottom: 2px solid var(--acs-gold);
+      background: rgba(12, 23, 50, .45);
+      backdrop-filter: blur(12px) saturate(125%);
+    }
+
+    .acs-logo { display: flex; align-items: center; gap: .9rem; min-width: 225px; }
+    .acs-symbol {
+      display: grid;
+      place-items: center;
+      width: 46px;
+      height: 46px;
+      border: 1px solid rgba(255, 179, 0, .62);
+      border-radius: 11px;
+      background: linear-gradient(145deg, rgba(255,179,0,.17), rgba(255,179,0,.03));
+      box-shadow: inset 0 1px 0 rgba(255,232,172,.20), 0 0 16px rgba(255,179,0,.12);
+      color: var(--acs-gold);
+      font: 700 .8rem "Orbitron", sans-serif;
+      letter-spacing: .08em;
+    }
+    .acs-logo h1 { margin: 0; color: var(--acs-gold); font-size: 1.02rem; font-weight: 600; }
+
+    .acs-nav { display: flex; justify-content: center; gap: 1.7rem; flex: 1; }
+    .acs-nav a {
+      position: relative;
+      padding-bottom: 6px;
+      color: #dbe4ff;
+      font-size: .93rem;
+      text-decoration: none;
+      transition: .25s ease;
+    }
+    .acs-nav a:hover, .acs-nav a.active { color: #ffca3a; text-shadow: 0 0 6px rgba(255,179,0,.45); }
+    .acs-nav a:hover::after, .acs-nav a.active::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      bottom: -8px;
+      left: 0;
+      height: 2px;
+      border-radius: 2px;
+      background: linear-gradient(90deg, var(--acs-gold), #ffe7a0);
+      box-shadow: 0 0 8px rgba(255,200,60,.45);
+    }
+
+    .acs-right { display: flex; align-items: center; gap: 12px; }
+    .support-btn, .logout-btn {
+      padding: .45rem .95rem;
+      border-radius: 11px;
+      background: rgba(138,180,255,.08);
+      color: #8ab4ff;
+      border: 1px solid rgba(138,180,255,.38);
+      text-decoration: none;
+      font-size: .82rem;
+      font-weight: 600;
+    }
+    .logout-btn { border-color: var(--acs-gold); background: rgba(255,179,0,.05); color: var(--acs-gold); cursor: pointer; }
+    .acs-clock-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 260px;
+      padding: .45rem .8rem;
+      border: 1px solid rgba(0,255,128,.18);
+      border-radius: 10px;
+      background: rgba(0,255,128,.08);
+      color: #00ff80;
+      font: 500 .86rem "Orbitron", monospace;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .acs-main { width: min(1540px, 100%); margin: 0 auto; padding: 110px 2rem 72px; }
+    .acs-page-title { max-width: 900px; margin: 18px auto 24px; padding: 18px 28px 20px; text-align: center; }
+    .acs-page-title-main {
+      color: #f7f8fb;
+      font: 700 32px/1 "Orbitron", sans-serif;
+      letter-spacing: .34em;
+      text-transform: uppercase;
+      text-shadow: 0 1px #000, 0 0 10px rgba(255,255,255,.20), 0 0 22px rgba(255,255,255,.10);
+    }
+    .acs-page-title-sub {
+      position: relative;
+      display: inline-block;
+      margin-top: 12px;
+      color: var(--acs-gold);
+      font: 700 14px "Orbitron", sans-serif;
+      letter-spacing: .42em;
+      text-transform: uppercase;
+      text-shadow: 0 0 8px rgba(255,179,0,.35);
+    }
+    .acs-page-title-sub::before, .acs-page-title-sub::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 82px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--acs-gold), transparent);
+    }
+    .acs-page-title-sub::before { right: 100%; margin-right: 18px; }
+    .acs-page-title-sub::after { left: 100%; margin-left: 18px; }
+    .acs-page-title-tag { margin-top: 11px; color: rgba(220,226,238,.82); font-size: 12px; letter-spacing: .18em; }
+
+    .command-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-bottom: 16px;
+      border: 1px solid var(--acs-border);
+      border-radius: 15px;
+      background: rgba(255,255,255,.015);
+      overflow: hidden;
+    }
+    .command-cell { padding: 15px 18px; border-right: 1px solid rgba(91,158,255,.16); }
+    .command-cell:last-child { border-right: 0; }
+    .command-cell span { display: block; color: var(--acs-muted); font-size: .55rem; letter-spacing: .13em; text-transform: uppercase; }
+    .command-cell strong { display: block; margin-top: 7px; font: 600 .72rem "Orbitron"; letter-spacing: .04em; }
+    .tone-green { color: var(--acs-green); }
+    .tone-gold { color: var(--acs-gold); }
+    .tone-blue { color: var(--acs-blue); }
+
+    .event-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 16px;
+    }
+    .filter-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    .filter-btn {
+      padding: 9px 13px;
+      border: 1px solid var(--acs-border);
+      border-radius: 10px;
+      background: rgba(255,255,255,.012);
+      color: var(--acs-muted);
+      font: 600 .57rem "Orbitron";
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: .2s ease;
+    }
+    .filter-btn:hover, .filter-btn.is-active { border-color: var(--acs-gold); background: rgba(255,179,0,.04); color: var(--acs-gold); }
+    .event-count { color: var(--acs-muted); font: 600 .57rem "Orbitron"; letter-spacing: .08em; white-space: nowrap; }
+
+    .events-workspace { display: grid; grid-template-columns: minmax(0, 1.62fr) minmax(330px, .72fr); gap: 18px; align-items: start; }
+    .event-feed { display: grid; gap: 14px; }
+    .event-card {
+      position: relative;
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+      min-height: 192px;
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid var(--acs-border);
+      border-radius: 18px;
+      background: var(--acs-surface);
+      color: var(--acs-text);
+      text-align: left;
+      cursor: pointer;
+      transition: transform .2s ease, border-color .2s ease, background .2s ease;
+    }
+    .event-card:hover, .event-card:focus-visible { transform: translateY(-2px); border-color: rgba(255,179,0,.43); background: var(--acs-surface-hover); outline: none; }
+    .event-card.is-selected { border-color: var(--acs-gold); background: rgba(255,179,0,.025); }
+    .event-card.is-selected::before { content: ""; position: absolute; inset: 0 auto 0 0; z-index: 3; width: 3px; background: var(--acs-gold); box-shadow: 0 0 12px rgba(255,179,0,.45); }
+    .event-image { position: relative; min-height: 192px; overflow: hidden; border-right: 1px solid rgba(91,158,255,.16); }
+    .event-image img { width: 100%; height: 100%; object-fit: cover; filter: saturate(.78) contrast(1.04); transition: transform .45s ease; }
+    .event-card:hover .event-image img { transform: scale(1.035); }
+    .event-image::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent 55%, rgba(4,11,27,.74)); }
+    .event-card-body { display: flex; flex-direction: column; min-width: 0; padding: 17px 19px; }
+    .event-eyebrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .event-category { color: var(--acs-blue); font: 700 .55rem "Orbitron"; letter-spacing: .12em; text-transform: uppercase; }
+    .event-state { padding: 5px 8px; border: 1px solid currentColor; border-radius: 999px; font: 700 .49rem "Orbitron"; letter-spacing: .08em; }
+    .state-upcoming { color: var(--acs-blue); }
+    .state-active { color: var(--acs-red); }
+    .state-closed { color: var(--acs-purple); }
+    .event-title { margin: 13px 0 8px; color: #f6f9fd; font: 600 clamp(.82rem, 1.25vw, 1rem)/1.5 "Orbitron"; letter-spacing: .025em; }
+    .event-summary { margin: 0; color: var(--acs-muted); font-size: .68rem; line-height: 1.62; }
+    .event-meta { display: flex; flex-wrap: wrap; gap: 12px 18px; margin-top: auto; padding-top: 15px; color: rgba(205,220,237,.58); font-size: .57rem; }
+    .event-meta b { color: rgba(238,245,252,.86); font-weight: 500; }
+
+    .event-detail {
+      position: sticky;
+      top: 92px;
+      overflow: hidden;
+      border: 1px solid var(--acs-border);
+      border-radius: 18px;
+      background: rgba(4,13,31,.47);
+      backdrop-filter: blur(16px) saturate(120%);
+    }
+    .detail-image { position: relative; height: 205px; overflow: hidden; }
+    .detail-image img { width: 100%; height: 100%; object-fit: cover; }
+    .detail-image::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 35%, rgba(4,13,31,.98)); }
+    .detail-severity { position: absolute; top: 14px; right: 14px; z-index: 1; padding: 7px 10px; border: 1px solid rgba(255,255,255,.25); border-radius: 9px; background: rgba(3,10,24,.72); font: 700 .52rem "Orbitron"; letter-spacing: .08em; backdrop-filter: blur(8px); }
+    .detail-body { padding: 0 20px 20px; }
+    .detail-category { margin-top: -5px; color: var(--acs-gold); font: 700 .55rem "Orbitron"; letter-spacing: .12em; text-transform: uppercase; }
+    .detail-title { margin: 11px 0 9px; color: #fff; font: 600 .9rem/1.55 "Orbitron"; }
+    .detail-description { margin: 0; color: var(--acs-muted); font-size: .66rem; line-height: 1.7; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; margin: 18px 0 0; }
+    .detail-grid > div { padding: 11px 0; border-top: 1px solid rgba(91,158,255,.13); }
+    .detail-grid dt { color: var(--acs-muted); font-size: .50rem; letter-spacing: .10em; text-transform: uppercase; }
+    .detail-grid dd { margin: 6px 0 0; color: #edf5ff; font: 600 .57rem/1.45 "Orbitron"; text-align: left; }
+    .detail-section { margin-top: 17px; padding-top: 15px; border-top: 1px solid var(--acs-border); }
+    .detail-section h3 { margin: 0 0 11px; color: var(--acs-gold); font: 700 .57rem "Orbitron"; letter-spacing: .1em; text-transform: uppercase; }
+    .impact-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+    .impact-list li { display: flex; justify-content: space-between; gap: 12px; color: var(--acs-muted); font-size: .59rem; }
+    .impact-list strong { color: #eaf3ff; font: 600 .54rem "Orbitron"; text-align: right; }
+
+    .timeline { position: relative; display: grid; grid-template-columns: repeat(5, 1fr); margin-top: 14px; }
+    .timeline::before { content: ""; position: absolute; top: 5px; right: 7%; left: 7%; height: 1px; background: rgba(91,158,255,.28); }
+    .timeline-step { position: relative; padding-top: 17px; color: rgba(205,220,237,.42); font: 600 .44rem "Orbitron"; text-align: center; text-transform: uppercase; }
+    .timeline-step::before { content: ""; position: absolute; top: 1px; left: 50%; width: 8px; height: 8px; border: 1px solid rgba(91,158,255,.55); border-radius: 50%; background: #071427; transform: translateX(-50%); }
+    .timeline-step.is-complete { color: var(--acs-green); }
+    .timeline-step.is-complete::before { border-color: var(--acs-green); background: var(--acs-green); box-shadow: 0 0 8px rgba(85,227,154,.4); }
+    .timeline-step.is-current { color: var(--acs-gold); }
+    .timeline-step.is-current::before { border-color: var(--acs-gold); background: var(--acs-gold); box-shadow: 0 0 9px rgba(255,179,0,.5); }
+
+    .acs-footer { width: 100%; padding: 18px 20px; border-top: 1px solid rgba(138,180,255,.18); background: rgba(3,10,24,.28); color: rgba(255,255,255,.78); font-size: .78rem; text-align: center; white-space: nowrap; }
+    .acs-footer a { color: var(--acs-gold); font-weight: 600; text-decoration: none; }
+    .acs-footer-separator { margin: 0 8px; color: rgba(255,255,255,.34); }
+    .empty-state { padding: 42px; border: 1px dashed var(--acs-border); border-radius: 18px; color: var(--acs-muted); font-size: .7rem; text-align: center; }
+
+    @media (max-width: 1220px) {
+      .acs-nav { gap: 1rem; }
+      .acs-right .support-btn, .acs-right .logout-btn { display: none; }
+      .events-workspace { grid-template-columns: minmax(0, 1.45fr) minmax(310px, .8fr); }
+      .event-card { grid-template-columns: 220px minmax(0, 1fr); }
+    }
+    @media (max-width: 940px) {
+      .acs-header { flex-wrap: wrap; padding: .7rem 1rem; }
+      .acs-logo { min-width: auto; }
+      .acs-logo h1 { display: none; }
+      .acs-nav { order: 3; flex-basis: 100%; padding-top: 6px; }
+      .acs-clock-header { width: 230px; }
+      .acs-main { padding-top: 140px; }
+      .events-workspace { grid-template-columns: 1fr; }
+      .event-detail { position: static; }
+    }
+    @media (max-width: 700px) {
+      .acs-main { padding-right: 1rem; padding-left: 1rem; }
+      .acs-page-title-main { font-size: 24px; letter-spacing: .22em; }
+      .acs-page-title-sub { font-size: 10px; letter-spacing: .25em; }
+      .acs-page-title-sub::before, .acs-page-title-sub::after { display: none; }
+      .command-strip { grid-template-columns: 1fr 1fr; }
+      .command-cell:nth-child(2) { border-right: 0; }
+      .command-cell:nth-child(-n+2) { border-bottom: 1px solid rgba(91,158,255,.16); }
+      .event-controls { align-items: flex-start; flex-direction: column; }
+      .event-card { grid-template-columns: 1fr; }
+      .event-image { height: 180px; min-height: 0; border-right: 0; border-bottom: 1px solid rgba(91,158,255,.16); }
+      .event-image::after { background: linear-gradient(180deg, transparent 55%, rgba(4,11,27,.72)); }
+      .acs-footer { overflow-x: auto; font-size: .68rem; }
+    }
+    @media (max-width: 520px) {
+      .acs-clock-header { width: 190px; font-size: .7rem; }
+      .acs-nav { justify-content: flex-start; overflow-x: auto; }
+      .detail-grid { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <header class="acs-header">
+    <div class="acs-logo">
+      <div class="acs-symbol" aria-hidden="true">ACS</div>
+      <h1>Aviation Capital Simulator</h1>
+    </div>
+    <nav class="acs-nav" aria-label="ACS main navigation">
+      <a href="dashboard.html" class="active">Main</a>
+      <a href="bank.html">Bank</a>
+      <a href="aircraft.html">Aircraft</a>
+      <a href="routes.html">Routes</a>
+      <a href="hr.html">HR</a>
+    </nav>
+    <div class="acs-right">
+      <a href="support.html" class="support-btn">Support</a>
+      <button class="logout-btn" type="button">Logout</button>
+      <div id="acs-clock" class="acs-clock-header">12:40 — 01 JAN 1988</div>
+    </div>
+  </header>
+
+  <main class="acs-main">
+    <section class="acs-page-title" aria-labelledby="globalEventsTitle">
+      <div class="acs-page-title-main" id="globalEventsTitle">GLOBAL EVENTS</div>
+      <div class="acs-page-title-sub">WORLD INTELLIGENCE &amp; OPERATIONS</div>
+      <div class="acs-page-title-tag">Track historical milestones, disruptions and structural changes across global aviation.</div>
+    </section>
+
+    <section class="command-strip" aria-label="Global events summary">
+      <div class="command-cell"><span>World status</span><strong class="tone-green">MONITORING</strong></div>
+      <div class="command-cell"><span>Active events</span><strong class="tone-gold" id="activeCount">01</strong></div>
+      <div class="command-cell"><span>Regions monitored</span><strong class="tone-blue">03</strong></div>
+      <div class="command-cell"><span>Operations readiness</span><strong class="tone-gold">ELEVATED</strong></div>
+    </section>
+
+    <section class="event-controls" aria-label="Event filters">
+      <div class="filter-list" role="group" aria-label="Filter by event category">
+        <button class="filter-btn is-active" type="button" data-filter="all">All Events</button>
+        <button class="filter-btn" type="button" data-filter="operational">Operational</button>
+        <button class="filter-btn" type="button" data-filter="aviation">Aviation</button>
+        <button class="filter-btn" type="button" data-filter="geopolitical">Geopolitical</button>
+        <button class="filter-btn" type="button" data-filter="airports">Airports</button>
+        <button class="filter-btn" type="button" data-filter="economic">Economic</button>
+      </div>
+      <span class="event-count" id="eventCount" aria-live="polite">03 EVENTS DISPLAYED</span>
+    </section>
+
+    <section class="events-workspace">
+      <div class="event-feed" id="eventFeed" aria-label="Global event feed"></div>
+      <aside class="event-detail" id="eventDetail" aria-live="polite"></aside>
+    </section>
+  </main>
+
+  <footer class="acs-footer">
+    <span>© 2026 Aviation Capital Simulator. All rights reserved.</span>
+    <span class="acs-footer-separator">•</span>
+    <a href="mailto:aviationcapitalsim@gmail.com">aviationcapitalsim@gmail.com</a>
+    <span class="acs-footer-separator">•</span>
+    <a href="privacy.html">Privacy Policy</a>
+    <span class="acs-footer-separator">•</span>
+    <a href="terms.html">Terms of Service</a>
+  </footer>
+
+  <script src="global_events.js?v=1.0"></script>
+</body>
+</html>
