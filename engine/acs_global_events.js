@@ -25,6 +25,48 @@
       date: "01 FEB 1964",
       region: "United States"
     }
+
+{
+  id: "disruptions-alaska-earthquake-1964",
+  category: "operational",
+  categoryLabel: "Disruptions",
+  title: "Powerful Earthquake Disrupts Alaska Air Transport",
+  summary: "A major earthquake has damaged airport facilities across south-central Alaska.",
+  description: "Runways, taxiways, terminals and control facilities have sustained damage in Anchorage and other affected communities. Several airfields remain operational using temporary communications and traffic-control arrangements.",
+  aviationEffect: "Air services face damaged infrastructure, disrupted communications and temporary operating restrictions across the affected region.",
+  image: "img_global/alaska_earthquake_airport_1964.jpg",
+  publishedAt: "1964-03-27",
+  date: "27 MAR 1964",
+  region: "Alaska, United States"
+}
+
+{
+  id: "economy-new-york-worlds-fair-1964",
+  category: "economic",
+  categoryLabel: "Economy",
+  title: "New York World's Fair Opens to International Visitors",
+  summary: "The New York World's Fair has opened, drawing visitors from across the United States and overseas.",
+  description: "The international exhibition is expected to generate substantial passenger movement into the New York metropolitan area during its operating season.",
+  aviationEffect: "Airlines serving New York may experience increased passenger demand associated with international and domestic visitors.",
+  image: "img_global/new_york_worlds_fair_1964.jpg",
+  publishedAt: "1964-04-22",
+  date: "22 APR 1964",
+  region: "New York, United States"
+}
+
+{
+  id: "world-tanganyika-zanzibar-union-1964",
+  category: "geopolitical",
+  categoryLabel: "World",
+  title: "Tanganyika and Zanzibar Form a United Republic",
+  summary: "Tanganyika and Zanzibar have united as a single sovereign state.",
+  description: "The new United Republic of Tanganyika and Zanzibar now represents both territories under one government. Administrative and international arrangements are being adjusted to reflect the union.",
+  aviationEffect: "Air services, territorial records and international route documentation must now recognize the newly united state.",
+  image: "img_global/tanganyika_zanzibar_union_1964.jpg",
+  publishedAt: "1964-04-26",
+  date: "26 APR 1964",
+  region: "East Africa"
+}   
   ];
 
   const state = { filter: "all", selectedId: null };
