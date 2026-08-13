@@ -2499,10 +2499,10 @@ function setAircraftSalePublishing(
     confirmButton.disabled =
       isPublishing;
 
-    confirmButton.textContent =
+   confirmButton.textContent =
       isPublishing
-        ? "Publishing Aircraft"
-        : "Confirm Sale Listing";
+        ? "PUBLISHING AIRCRAFT"
+        : "CONFIRM SALE";
   }
 
   if (askingPriceInput) {
@@ -3238,7 +3238,7 @@ function resetAircraftSaleModal() {
   confirmButton.disabled = true;
 
   confirmButton.textContent =
-    "Confirm Sale Listing";
+    "CONFIRM SALE";
 }
    
   document
