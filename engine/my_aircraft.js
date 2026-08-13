@@ -52,7 +52,8 @@ pendingOrderIndex: 0,
 
 selectedAircraft: null,
 
-saleQuote: null
+saleQuote: null,
+saleListing: null
   };
 
   /* ============================================================
@@ -3069,7 +3070,8 @@ function updateAircraftSalePricePreview(
 function resetAircraftSaleModal() {
 
   ACS_MY_AIRCRAFT.saleQuote = null; 
-   
+  ACS_MY_AIRCRAFT.saleListing = null;
+
   setText("saleLowestPrice", "—");
   setText("saleMinimumPrice", "—");
   setText("saleSuggestedPrice", "—");
@@ -3111,9 +3113,12 @@ function resetAircraftSaleModal() {
   }
 
   if (confirmButton) {
-    confirmButton.disabled = true;
-  }
+  confirmButton.disabled = true;
 
+  confirmButton.textContent =
+    "Confirm Sale Listing";
+}
+   
   document
     .querySelectorAll(
       "#aircraftSaleModal .sale-price-card"
@@ -3310,6 +3315,9 @@ function bindAircraftSaleModal() {
   const closeBottom =
     $("saleModalCloseBottom");
 
+  const confirmListing =
+  $("saleConfirmListing");
+   
   const askingPriceInput =
   $("saleAskingPrice");
 
@@ -3363,6 +3371,13 @@ if (askingPriceInput) {
     }
   );
 }
+
+  if (confirmListing) {
+  confirmListing.addEventListener(
+    "click",
+    submitAircraftSaleListing
+  );
+}   
    
   if (closeTop) {
     closeTop.addEventListener(
