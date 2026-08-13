@@ -4350,6 +4350,731 @@ html body .order-book-table tbody tr:hover {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* ============================================================
+   🟨 ACS OCC — AIRCRAFT SALE CONTROL
+   ------------------------------------------------------------
+   Compact modal for aircraft market valuation and listing.
+   ============================================================ */
+
+#aircraftSaleModal.modal-bg {
+  display: none;
+  align-items: center;
+  justify-content: center;
+
+  padding: 12px;
+  box-sizing: border-box;
+
+  background: rgba(1, 8, 21, 0.82);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  z-index: 6200;
+}
+
+/* MAIN PANEL */
+
+#aircraftSaleModal .aircraft-sale-modal {
+  width: min(760px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  color: #eaf2ff;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(14, 33, 65, 0.97),
+      rgba(4, 15, 34, 0.99)
+    );
+
+  border: 1px solid rgba(255, 179, 0, 0.62);
+  border-radius: 14px;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 231, 164, 0.08),
+    0 0 28px rgba(0, 0, 0, 0.58),
+    0 0 22px rgba(255, 179, 0, 0.08);
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+#aircraftSaleModal .sale-modal-header {
+  position: relative;
+
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+
+  min-height: 112px;
+  padding: 12px 44px 12px 12px;
+
+  background:
+    linear-gradient(
+      110deg,
+      rgba(15, 41, 79, 0.82),
+      rgba(6, 21, 47, 0.94)
+    );
+
+  border-bottom:
+    1px solid rgba(255, 179, 0, 0.34);
+}
+
+/* AIRCRAFT IMAGE */
+
+#aircraftSaleModal .sale-aircraft-image-stage {
+  height: 88px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(35, 63, 101, 0.38),
+      rgba(7, 22, 47, 0.58)
+    );
+
+  border:
+    1px solid rgba(121, 163, 211, 0.36);
+
+  border-radius: 10px;
+}
+
+#aircraftSaleModal .sale-aircraft-image {
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  object-fit: cover;
+  object-position: center;
+}
+
+/* HEADER INFORMATION */
+
+#aircraftSaleModal .sale-header-information {
+  min-width: 0;
+}
+
+#aircraftSaleModal .sale-modal-kicker {
+  margin-bottom: 5px;
+
+  color: #83b8e8;
+
+  font-family: "Orbitron", sans-serif;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+#aircraftSaleModal .sale-modal-title {
+  margin: 0 0 7px;
+
+  color: #ffb300;
+
+  font-family: "Orbitron", sans-serif;
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+#aircraftSaleModal .sale-aircraft-identity {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+#aircraftSaleModal .sale-aircraft-identity strong {
+  color: #ffffff;
+
+  font-size: 15px;
+  font-weight: 800;
+}
+
+#aircraftSaleModal .sale-aircraft-identity span {
+  color: #70cfff;
+
+  font-family: "Orbitron", sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+#aircraftSaleModal .sale-aircraft-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+
+  margin-top: 8px;
+}
+
+#aircraftSaleModal .sale-aircraft-meta span {
+  padding: 4px 7px;
+
+  color: #afc3dd;
+  background: rgba(18, 43, 78, 0.55);
+
+  border:
+    1px solid rgba(116, 158, 209, 0.25);
+
+  border-radius: 999px;
+
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* TOP CLOSE BUTTON */
+
+#aircraftSaleModal .sale-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+
+  width: 29px;
+  height: 29px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  color: #b9cbe0;
+  background: rgba(7, 20, 43, 0.62);
+
+  border:
+    1px solid rgba(144, 172, 205, 0.36);
+
+  border-radius: 50%;
+
+  font-size: 18px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    color 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease;
+}
+
+#aircraftSaleModal .sale-modal-close:hover {
+  color: #ffffff;
+  background: rgba(255, 179, 0, 0.12);
+  border-color: #ffb300;
+}
+
+/* ============================================================
+   BODY
+   ============================================================ */
+
+#aircraftSaleModal .sale-modal-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+
+  padding: 13px;
+}
+
+#aircraftSaleModal .sale-section-heading {
+  margin-bottom: 8px;
+
+  color: #ffb300;
+
+  font-family: "Orbitron", sans-serif;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+/* FOUR PRICE SCALES */
+
+#aircraftSaleModal .sale-price-scale {
+  display: grid;
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 8px;
+}
+
+#aircraftSaleModal .sale-price-card {
+  min-width: 0;
+  min-height: 64px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 7px;
+
+  padding: 8px;
+
+  color: #dfeafb;
+  background: rgba(13, 34, 68, 0.56);
+
+  border:
+    1px solid rgba(114, 155, 205, 0.32);
+
+  border-radius: 9px;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+#aircraftSaleModal .sale-price-card span {
+  color: #9db3cf;
+
+  font-family: "Orbitron", sans-serif;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+#aircraftSaleModal .sale-price-card strong {
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  white-space: nowrap;
+}
+
+#aircraftSaleModal .sale-price-card:hover {
+  transform: translateY(-1px);
+
+  background: rgba(24, 53, 94, 0.64);
+  border-color: rgba(255, 179, 0, 0.7);
+
+  box-shadow:
+    0 0 14px rgba(255, 179, 0, 0.1);
+}
+
+#aircraftSaleModal .sale-price-card.is-selected {
+  background: rgba(104, 72, 5, 0.24);
+  border-color: #ffb300;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 231, 164, 0.08),
+    0 0 16px rgba(255, 179, 0, 0.14);
+}
+
+/* Lowest allowed */
+
+#aircraftSaleModal .sale-price-lowest {
+  border-color: rgba(235, 104, 104, 0.5);
+}
+
+#aircraftSaleModal .sale-price-lowest strong {
+  color: #ffb0b0;
+}
+
+/* Minimum */
+
+#aircraftSaleModal .sale-price-minimum {
+  border-color: rgba(255, 179, 0, 0.48);
+}
+
+#aircraftSaleModal .sale-price-minimum strong {
+  color: #ffd477;
+}
+
+/* Suggested */
+
+#aircraftSaleModal .sale-price-suggested {
+  border-color: rgba(76, 215, 152, 0.54);
+}
+
+#aircraftSaleModal .sale-price-suggested strong {
+  color: #76efb7;
+}
+
+/* Maximum */
+
+#aircraftSaleModal .sale-price-maximum {
+  border-color: rgba(90, 185, 244, 0.52);
+}
+
+#aircraftSaleModal .sale-price-maximum strong {
+  color: #8bd4ff;
+}
+
+/* ============================================================
+   PLAYER PRICE CONTROL
+   ============================================================ */
+
+#aircraftSaleModal .sale-price-control {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.5fr)
+    minmax(150px, 0.5fr);
+
+  gap: 10px;
+
+  margin-top: 11px;
+}
+
+#aircraftSaleModal .sale-price-input-group,
+#aircraftSaleModal .sale-market-position {
+  padding: 9px;
+
+  background: rgba(8, 25, 53, 0.48);
+
+  border:
+    1px solid rgba(111, 153, 205, 0.26);
+
+  border-radius: 9px;
+}
+
+#aircraftSaleModal .sale-price-input-group label,
+#aircraftSaleModal .sale-market-position span {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color: #9db3cf;
+
+  font-family: "Orbitron", sans-serif;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#aircraftSaleModal .sale-price-input-shell {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+
+  overflow: hidden;
+
+  background: rgba(3, 15, 35, 0.7);
+
+  border:
+    1px solid rgba(255, 179, 0, 0.52);
+
+  border-radius: 8px;
+}
+
+#aircraftSaleModal .sale-price-input-shell:focus-within {
+  border-color: #ffb300;
+
+  box-shadow:
+    0 0 15px rgba(255, 179, 0, 0.12);
+}
+
+#aircraftSaleModal .sale-price-input-shell span {
+  padding: 0 10px;
+
+  color: #ffcf61;
+
+  font-family: "Orbitron", sans-serif;
+  font-size: 8px;
+  font-weight: 900;
+}
+
+#aircraftSaleModal #saleAskingPrice {
+  width: 100%;
+  min-width: 0;
+  height: 36px;
+
+  box-sizing: border-box;
+
+  padding: 7px 10px;
+
+  color: #ffffff;
+  background: transparent;
+
+  border: 0;
+  outline: 0;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  font-variant-numeric: tabular-nums;
+}
+
+/* Remove browser number arrows */
+
+#aircraftSaleModal
+#saleAskingPrice::-webkit-outer-spin-button,
+#aircraftSaleModal
+#saleAskingPrice::-webkit-inner-spin-button {
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+#aircraftSaleModal #saleAskingPrice {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+#aircraftSaleModal .sale-validation-message {
+  min-height: 14px;
+  margin-top: 5px;
+
+  color: #ff9999;
+
+  font-size: 8px;
+  line-height: 1.35;
+}
+
+#aircraftSaleModal .sale-market-position {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+#aircraftSaleModal .sale-market-position strong {
+  color: #ffcf61;
+
+  font-family: "Orbitron", sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   FINANCIAL SUMMARY
+   ============================================================ */
+
+#aircraftSaleModal .sale-financial-summary {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 8px;
+
+  margin-top: 11px;
+}
+
+#aircraftSaleModal .sale-financial-summary > div {
+  min-width: 0;
+
+  padding: 9px;
+
+  text-align: center;
+
+  background: rgba(9, 28, 58, 0.48);
+
+  border:
+    1px solid rgba(111, 153, 205, 0.24);
+
+  border-radius: 8px;
+}
+
+#aircraftSaleModal .sale-financial-summary span {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: #94abc7;
+
+  font-family: "Orbitron", sans-serif;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+#aircraftSaleModal .sale-financial-summary strong {
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+#aircraftSaleModal #saleEstimatedNet {
+  color: #75efb5;
+}
+
+/* ============================================================
+   NOTICES
+   ============================================================ */
+
+#aircraftSaleModal .sale-operation-notice,
+#aircraftSaleModal .sale-modal-message {
+  margin-top: 9px;
+  padding: 8px 10px;
+
+  border-radius: 8px;
+
+  font-size: 8px;
+  line-height: 1.4;
+}
+
+#aircraftSaleModal .sale-operation-notice {
+  color: #b8c9de;
+  background: rgba(17, 43, 77, 0.38);
+
+  border:
+    1px solid rgba(96, 151, 204, 0.26);
+}
+
+#aircraftSaleModal .sale-modal-message {
+  display: none;
+
+  color: #ffd0d0;
+  background: rgba(111, 27, 38, 0.24);
+
+  border:
+    1px solid rgba(232, 79, 99, 0.4);
+}
+
+#aircraftSaleModal .sale-modal-message.is-visible {
+  display: block;
+}
+
+#aircraftSaleModal .sale-modal-message.is-success {
+  color: #a9f7d2;
+  background: rgba(19, 97, 65, 0.24);
+
+  border-color:
+    rgba(63, 221, 145, 0.42);
+}
+
+/* ============================================================
+   FOOTER ACTIONS
+   ============================================================ */
+
+#aircraftSaleModal .sale-modal-actions {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.25fr)
+    minmax(150px, 0.75fr);
+
+  gap: 9px;
+
+  padding: 10px 13px 12px;
+
+  background: rgba(4, 15, 34, 0.78);
+
+  border-top:
+    1px solid rgba(111, 153, 205, 0.22);
+}
+
+#aircraftSaleModal .sale-confirm-btn,
+#aircraftSaleModal .sale-cancel-btn {
+  min-height: 38px;
+
+  padding: 8px 14px;
+
+  border-radius: 8px;
+
+  font-family: "Orbitron", sans-serif;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  cursor: pointer;
+}
+
+#aircraftSaleModal .sale-confirm-btn {
+  color: #ffe3a0;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(123, 83, 4, 0.28),
+      rgba(45, 32, 7, 0.48)
+    );
+
+  border: 1px solid #ffb300;
+
+  box-shadow:
+    0 0 16px rgba(255, 179, 0, 0.12);
+}
+
+#aircraftSaleModal .sale-confirm-btn:hover:not(:disabled) {
+  color: #ffffff;
+  border-color: #ffd05c;
+
+  box-shadow:
+    0 0 20px rgba(255, 179, 0, 0.2);
+}
+
+#aircraftSaleModal .sale-confirm-btn:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+#aircraftSaleModal .sale-cancel-btn {
+  color: #d8e5f4;
+  background: rgba(21, 43, 73, 0.54);
+
+  border:
+    1px solid rgba(145, 174, 207, 0.5);
+}
+
+#aircraftSaleModal .sale-cancel-btn:hover {
+  color: #ffffff;
+  border-color: #ffb300;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 700px) {
+  #aircraftSaleModal .sale-modal-header {
+    grid-template-columns: 130px minmax(0, 1fr);
+  }
+
+  #aircraftSaleModal .sale-price-scale {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  #aircraftSaleModal.modal-bg {
+    padding: 7px;
+  }
+
+  #aircraftSaleModal .aircraft-sale-modal {
+    width: calc(100vw - 14px);
+    max-height: calc(100dvh - 14px);
+  }
+
+  #aircraftSaleModal .sale-modal-header {
+    grid-template-columns: 1fr;
+    gap: 9px;
+
+    padding-right: 42px;
+  }
+
+  #aircraftSaleModal .sale-aircraft-image-stage {
+    height: 96px;
+  }
+
+  #aircraftSaleModal .sale-price-control,
+  #aircraftSaleModal .sale-financial-summary,
+  #aircraftSaleModal .sale-modal-actions {
+    grid-template-columns: 1fr;
+  }
+}
     
 /* ============================================================
    MY AIRCRAFT — CABIN CONFIGURATION
@@ -5666,6 +6391,292 @@ html body .order-book-table tbody tr:hover {
   </div>
 </div>
 
+
+<!-- ============================================================
+     🟨 ACS OCC — AIRCRAFT SALE CONTROL
+     ------------------------------------------------------------
+     Compact commercial listing modal.
+     Backend valuation authority will be connected later.
+     ============================================================ -->
+
+<div
+  class="modal-bg"
+  id="aircraftSaleModal"
+  aria-hidden="true"
+>
+  <div
+    class="aircraft-sale-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="saleModalTitle"
+  >
+
+    <!-- ========================================================
+         HEADER — AIRCRAFT SELECTED FOR SALE
+         ======================================================== -->
+
+    <header class="sale-modal-header">
+
+      <div class="sale-aircraft-image-stage">
+        <img
+          id="saleAircraftImage"
+          class="sale-aircraft-image"
+          src=""
+          alt="Aircraft selected for sale"
+        />
+      </div>
+
+      <div class="sale-header-information">
+
+        <div class="sale-modal-kicker">
+          ACS OCC · Commercial Control
+        </div>
+
+        <h3
+          id="saleModalTitle"
+          class="sale-modal-title"
+        >
+          Aircraft Sale Control
+        </h3>
+
+        <div class="sale-aircraft-identity">
+
+          <strong id="saleAircraftName">
+            —
+          </strong>
+
+          <span id="saleAircraftRegistration">
+            —
+          </span>
+
+        </div>
+
+        <div class="sale-aircraft-meta">
+
+          <span id="saleAircraftYear">
+            Year —
+          </span>
+
+          <span id="saleAircraftCondition">
+            Condition —
+          </span>
+
+          <span id="saleAircraftCycles">
+            Cycles —
+          </span>
+
+        </div>
+
+      </div>
+
+      <button
+        id="saleModalCloseTop"
+        class="sale-modal-close"
+        type="button"
+        aria-label="Close Aircraft Sale Control"
+      >
+        ×
+      </button>
+
+    </header>
+
+    <!-- ========================================================
+         BODY
+         ======================================================== -->
+
+    <div class="sale-modal-body">
+
+      <!-- MARKET VALUATION -->
+
+      <section class="sale-section">
+
+        <div class="sale-section-heading">
+          ACS Market Valuation
+        </div>
+
+        <div class="sale-price-scale">
+
+          <button
+            class="sale-price-card sale-price-lowest"
+            type="button"
+            data-sale-price-source="lowest"
+          >
+            <span>Lowest Allowed</span>
+
+            <strong id="saleLowestPrice">
+              —
+            </strong>
+          </button>
+
+          <button
+            class="sale-price-card sale-price-minimum"
+            type="button"
+            data-sale-price-source="minimum"
+          >
+            <span>Minimum Market</span>
+
+            <strong id="saleMinimumPrice">
+              —
+            </strong>
+          </button>
+
+          <button
+            class="sale-price-card sale-price-suggested"
+            type="button"
+            data-sale-price-source="suggested"
+          >
+            <span>Suggested</span>
+
+            <strong id="saleSuggestedPrice">
+              —
+            </strong>
+          </button>
+
+          <button
+            class="sale-price-card sale-price-maximum"
+            type="button"
+            data-sale-price-source="maximum"
+          >
+            <span>Maximum Market</span>
+
+            <strong id="saleMaximumPrice">
+              —
+            </strong>
+          </button>
+
+        </div>
+
+      </section>
+
+      <!-- PLAYER ASKING PRICE -->
+
+      <section class="sale-section sale-price-control">
+
+        <div class="sale-price-input-group">
+
+          <label for="saleAskingPrice">
+            Your Asking Price
+          </label>
+
+          <div class="sale-price-input-shell">
+
+            <span id="saleCurrencyPrefix">
+              USD
+            </span>
+
+            <input
+              id="saleAskingPrice"
+              type="number"
+              inputmode="numeric"
+              min="1"
+              step="1"
+              autocomplete="off"
+              placeholder="Enter asking price"
+            />
+
+          </div>
+
+          <div
+            id="salePriceValidation"
+            class="sale-validation-message"
+            aria-live="polite"
+          >
+          </div>
+
+        </div>
+
+        <div class="sale-market-position">
+
+          <span>Market Position</span>
+
+          <strong id="saleMarketPosition">
+            —
+          </strong>
+
+        </div>
+
+      </section>
+
+      <!-- COMPACT FINANCIAL SUMMARY -->
+
+      <section class="sale-financial-summary">
+
+        <div>
+          <span>Asking Price</span>
+
+          <strong id="saleSummaryAskingPrice">
+            —
+          </strong>
+        </div>
+
+        <div>
+          <span>Broker Commission</span>
+
+          <strong id="saleBrokerCommission">
+            —
+          </strong>
+        </div>
+
+        <div>
+          <span>Estimated Net</span>
+
+          <strong id="saleEstimatedNet">
+            —
+          </strong>
+        </div>
+
+      </section>
+
+      <!-- OPERATION NOTICE -->
+
+      <div
+        id="saleOperationNotice"
+        class="sale-operation-notice"
+      >
+        Publishing creates a Used Market listing.
+        The aircraft is not sold until a buyer completes
+        the transaction.
+      </div>
+
+      <!-- ERROR / BACKEND MESSAGE -->
+
+      <div
+        id="saleModalMessage"
+        class="sale-modal-message"
+        aria-live="polite"
+      >
+      </div>
+
+    </div>
+
+    <!-- ========================================================
+         FOOTER ACTIONS
+         ======================================================== -->
+
+    <footer class="sale-modal-actions">
+
+      <button
+        id="saleConfirmListing"
+        class="sale-confirm-btn"
+        type="button"
+        disabled
+      >
+        Confirm Sale Listing
+      </button>
+
+      <button
+        id="saleModalCloseBottom"
+        class="sale-cancel-btn"
+        type="button"
+      >
+        Close
+      </button>
+
+    </footer>
+
+  </div>
+</div>
+  
 <!-- ============================================================
      MY AIRCRAFT — CABIN CONFIGURATION
      ============================================================ -->
