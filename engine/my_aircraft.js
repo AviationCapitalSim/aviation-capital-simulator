@@ -2426,14 +2426,293 @@ setText(
       }
     );
   }
+
+/* ============================================================
+   🟨 ACS OCC — AIRCRAFT SALE CONTROL
+   ------------------------------------------------------------
+   First frontend stage:
+   - Open modal from Aircraft Authority Panel
+   - Render selected aircraft identity
+   - Render real aircraft image
+   - Close and return to Aircraft Authority Panel
+   - No valuation authority yet
+   - No finance mutation
+   - No Used Market mutation
+   ============================================================ */
+
+function resetAircraftSaleModal() {
+  setText("saleLowestPrice", "—");
+  setText("saleMinimumPrice", "—");
+  setText("saleSuggestedPrice", "—");
+  setText("saleMaximumPrice", "—");
+
+  setText("saleMarketPosition", "—");
+  setText("saleSummaryAskingPrice", "—");
+  setText("saleBrokerCommission", "—");
+  setText("saleEstimatedNet", "—");
+
+  const askingPriceInput =
+    $("saleAskingPrice");
+
+  const validationMessage =
+    $("salePriceValidation");
+
+  const modalMessage =
+    $("saleModalMessage");
+
+  const confirmButton =
+    $("saleConfirmListing");
+
+  if (askingPriceInput) {
+    askingPriceInput.value = "";
+    askingPriceInput.disabled = true;
+  }
+
+  if (validationMessage) {
+    validationMessage.textContent = "";
+  }
+
+  if (modalMessage) {
+    modalMessage.textContent = "";
+
+    modalMessage.classList.remove(
+      "is-visible",
+      "is-success"
+    );
+  }
+
+  if (confirmButton) {
+    confirmButton.disabled = true;
+  }
+
+  document
+    .querySelectorAll(
+      "#aircraftSaleModal .sale-price-card"
+    )
+    .forEach(card => {
+      card.classList.remove("is-selected");
+      card.disabled = true;
+    });
+}
+
+function renderAircraftSaleIdentity(aircraft) {
+  if (!aircraft) return;
+
+  const aircraftName = safeText(
+    aircraft.catalog_aircraft_name ||
+    aircraft.aircraft_name
+  );
+
+  const registration =
+    getRegistrationDisplay(aircraft);
+
+  const yearBuilt =
+    safeText(aircraft.year_built);
+
+  const condition = Math.round(
+    safeNumber(aircraft.condition_pct, 0)
+  );
+
+  const totalCycles =
+    formatNumber(aircraft.total_cycles);
+
+  setText(
+    "saleAircraftName",
+    aircraftName
+  );
+
+  setText(
+    "saleAircraftRegistration",
+    registration
+  );
+
+  setText(
+    "saleAircraftYear",
+    `Year ${yearBuilt}`
+  );
+
+  setText(
+    "saleAircraftCondition",
+    `Condition ${condition}%`
+  );
+
+  setText(
+    "saleAircraftCycles",
+    `Cycles ${totalCycles}`
+  );
+
+  const image =
+    $("saleAircraftImage");
+
+  if (image) {
+    const imageAircraft =
+      normalizeMyAircraftImageObject(
+        aircraft
+      );
+
+    window.ACS_setAircraftImage(
+      image,
+      imageAircraft
+    );
+
+    image.alt =
+      `${aircraftName} ${registration}`;
+  }
+}
+
+function openAircraftSaleModal(aircraft) {
+  if (!aircraft?.id) return;
+
+  ACS_MY_AIRCRAFT.selectedAircraft =
+    aircraft;
+
+  resetAircraftSaleModal();
+  renderAircraftSaleIdentity(aircraft);
+
+  const aircraftModal =
+    $("aircraftModal");
+
+  const saleModal =
+    $("aircraftSaleModal");
+
+  if (aircraftModal) {
+    aircraftModal.style.display = "none";
+  }
+
+  if (saleModal) {
+    saleModal.style.display = "flex";
+
+    saleModal.setAttribute(
+      "aria-hidden",
+      "false"
+    );
+  }
+
+  document.body.classList.add(
+    "aircraft-sale-modal-open"
+  );
+
+  console.log(
+    "🟨 ACS AIRCRAFT SALE CONTROL OPENED:",
+    {
+      aircraft_id: aircraft.id,
+      registration:
+        aircraft.registration,
+      model_key:
+        aircraft.model_key
+    }
+  );
+}
+
+function closeAircraftSaleModal(
+  returnToAircraftPanel = true
+) {
+  const saleModal =
+    $("aircraftSaleModal");
+
+  const aircraftModal =
+    $("aircraftModal");
+
+  if (saleModal) {
+    saleModal.style.display = "none";
+
+    saleModal.setAttribute(
+      "aria-hidden",
+      "true"
+    );
+  }
+
+  document.body.classList.remove(
+    "aircraft-sale-modal-open"
+  );
+
+  if (
+    returnToAircraftPanel &&
+    ACS_MY_AIRCRAFT.selectedAircraft &&
+    aircraftModal
+  ) {
+    aircraftModal.style.display = "flex";
+  }
+}
+
+function bindAircraftSaleModal() {
+  const saleModal =
+    $("aircraftSaleModal");
+
+  const closeTop =
+    $("saleModalCloseTop");
+
+  const closeBottom =
+    $("saleModalCloseBottom");
+
+  if (closeTop) {
+    closeTop.addEventListener(
+      "click",
+      () => {
+        closeAircraftSaleModal(true);
+      }
+    );
+  }
+
+  if (closeBottom) {
+    closeBottom.addEventListener(
+      "click",
+      () => {
+        closeAircraftSaleModal(true);
+      }
+    );
+  }
+
+  if (saleModal) {
+    saleModal.addEventListener(
+      "click",
+      event => {
+        if (event.target === saleModal) {
+          closeAircraftSaleModal(true);
+        }
+      }
+    );
+  }
+
+  document.addEventListener(
+    "keydown",
+    event => {
+      const isSaleModalOpen =
+        $("aircraftSaleModal")
+          ?.style.display === "flex";
+
+      if (
+        event.key === "Escape" &&
+        isSaleModalOpen
+      ) {
+        closeAircraftSaleModal(true);
+      }
+    }
+  );
+}
    
   function bindAircraftAuthorityActions(aircraft) {
      
-    const btnServiceCD = $("acpServiceCD");
-    const btnCabinConfiguration = $("acpCabinConfiguration");
-    const btnInsurance = $("acpInsurance");
-    const btnStorage = $("acpStorage");
-    const btnScrap = $("acpScrap");
+    const btnServiceCD =
+  $("acpServiceCD");
+
+const btnCabinConfiguration =
+  $("acpCabinConfiguration");
+
+const btnInsurance =
+  $("acpInsurance");
+
+const btnStorage =
+  $("acpStorage");
+
+const btnScrap =
+  $("acpScrap");
+
+const btnSellAircraft =
+  $("acpSellAircraft");
+
+const btnLeaseAircraft =
+  $("acpLeaseAircraft");
 
     if (btnServiceCD) {
     btnServiceCD.onclick = () => {
@@ -2441,6 +2720,22 @@ setText(
      };
    }
 
+   if (btnSellAircraft) {
+  btnSellAircraft.onclick = () => {
+    openAircraftSaleModal(aircraft);
+  };
+}
+
+/*
+  Lease button is present in the ACS OCC interface.
+  Lease system will be connected after Sell is complete.
+  No provisional alert and no false mutation.
+*/
+
+if (btnLeaseAircraft) {
+  btnLeaseAircraft.onclick = null;
+}
+     
      if (btnCabinConfiguration) {
      btnCabinConfiguration.onclick = () => {
      window.ACS_MY_AIRCRAFT_CABIN?.open(aircraft);
@@ -3126,7 +3421,8 @@ function bindPendingDeliveryModal() {
     try {
       renderLoadingState();
       bindAircraftInsuranceModal();
-
+      bindAircraftSaleModal();
+       
       await resolveCompletedMaintenanceEvents();
 
       await loadFleetFromBackend();
