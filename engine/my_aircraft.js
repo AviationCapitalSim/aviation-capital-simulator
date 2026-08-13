@@ -2430,6 +2430,385 @@ setText(
     );
   }
 
+async function fetchAircraftSaleQuote(
+  aircraftId
+) {
+  const response = await fetch(
+    `${ACS_MY_AIRCRAFT_API_BASE}` +
+    `/v1/aircraft/fleet/${aircraftId}/sale/quote`,
+    {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        Accept: "application/json"
+      }
+    }
+  );
+
+  const payload =
+    await response.json().catch(() => null);
+
+  if (!response.ok || !payload?.ok) {
+    throw new Error(
+      payload?.details ||
+      payload?.error ||
+      "Aircraft sale valuation is unavailable."
+    );
+  }
+
+  return payload;
+}
+
+function renderAircraftSaleQuote(payload) {
+  const quote = payload?.quote;
+
+  if (!quote) {
+    throw new Error(
+      "Aircraft sale quote is missing."
+    );
+  }
+
+  ACS_MY_AIRCRAFT.saleQuote = {
+    ...quote,
+    quoteVersion:
+      payload.version || null
+  };
+
+  const currency =
+    quote.currency || "USD";
+
+  setText(
+    "saleCurrencyPrefix",
+    currency
+  );
+
+  setText(
+    "saleLowestPrice",
+    formatMoney(
+      quote.lowest_allowed_price,
+      currency
+    )
+  );
+
+  setText(
+    "saleMinimumPrice",
+    formatMoney(
+      quote.minimum_price,
+      currency
+    )
+  );
+
+  setText(
+    "saleSuggestedPrice",
+    formatMoney(
+      quote.suggested_price,
+      currency
+    )
+  );
+
+  setText(
+    "saleMaximumPrice",
+    formatMoney(
+      quote.maximum_price,
+      currency
+    )
+  );
+
+  const askingPriceInput =
+    $("saleAskingPrice");
+
+  if (askingPriceInput) {
+    askingPriceInput.disabled = false;
+
+    askingPriceInput.min =
+      String(
+        quote.lowest_allowed_price
+      );
+
+    askingPriceInput.value =
+      String(
+        quote.suggested_price
+      );
+  }
+
+  document
+    .querySelectorAll(
+      "#aircraftSaleModal .sale-price-card"
+    )
+    .forEach(card => {
+      card.disabled = false;
+    });
+
+  updateAircraftSalePricePreview(
+    quote.suggested_price
+  );
+
+  selectAircraftSalePriceCard(
+    "suggested"
+  );
+}
+
+function getAircraftSalePriceBySource(
+  source
+) {
+  const quote =
+    ACS_MY_AIRCRAFT.saleQuote;
+
+  if (!quote) return null;
+
+  const prices = {
+    lowest:
+      quote.lowest_allowed_price,
+
+    minimum:
+      quote.minimum_price,
+
+    suggested:
+      quote.suggested_price,
+
+    maximum:
+      quote.maximum_price
+  };
+
+  const price =
+    Number(prices[source]);
+
+  return Number.isFinite(price)
+    ? price
+    : null;
+}
+
+function selectAircraftSalePriceCard(
+  selectedSource
+) {
+  document
+    .querySelectorAll(
+      "#aircraftSaleModal .sale-price-card"
+    )
+    .forEach(card => {
+      card.classList.toggle(
+        "is-selected",
+
+        card.dataset.salePriceSource ===
+          selectedSource
+      );
+    });
+}
+
+function resolveAircraftSaleMarketPosition(
+  askingPrice,
+  quote
+) {
+  if (
+    askingPrice <
+    Number(quote.minimum_price)
+  ) {
+    return {
+      key: "QUICK_SALE",
+      label: "Quick Sale"
+    };
+  }
+
+  if (
+    askingPrice <
+    Number(quote.suggested_price)
+  ) {
+    return {
+      key: "COMPETITIVE",
+      label: "Competitive"
+    };
+  }
+
+  if (
+    askingPrice <=
+    Number(quote.maximum_price)
+  ) {
+    return {
+      key: "MARKET_RANGE",
+      label: "Market Range"
+    };
+  }
+
+  return {
+    key: "ABOVE_MARKET",
+    label: "Above Market"
+  };
+}
+
+function updateAircraftSalePricePreview(
+  rawPrice
+) {
+  const quote =
+    ACS_MY_AIRCRAFT.saleQuote;
+
+  const validationMessage =
+    $("salePriceValidation");
+
+  const confirmButton =
+    $("saleConfirmListing");
+
+  if (!quote) {
+    if (confirmButton) {
+      confirmButton.disabled = true;
+    }
+
+    return;
+  }
+
+  const askingPrice =
+    Number(rawPrice);
+
+  const lowestAllowedPrice =
+    Number(
+      quote.lowest_allowed_price
+    );
+
+  const currency =
+    quote.currency || "USD";
+
+  if (
+    !Number.isFinite(askingPrice) ||
+    askingPrice <= 0
+  ) {
+    setText(
+      "saleMarketPosition",
+      "Invalid Price"
+    );
+
+    setText(
+      "saleSummaryAskingPrice",
+      "—"
+    );
+
+    setText(
+      "saleBrokerCommission",
+      "—"
+    );
+
+    setText(
+      "saleEstimatedNet",
+      "—"
+    );
+
+    if (validationMessage) {
+      validationMessage.textContent =
+        "Enter a valid asking price greater than zero.";
+    }
+
+    if (confirmButton) {
+      confirmButton.disabled = true;
+    }
+
+    selectAircraftSalePriceCard(null);
+
+    return;
+  }
+
+  if (
+    askingPrice <
+    lowestAllowedPrice
+  ) {
+    setText(
+      "saleMarketPosition",
+      "Below Authorized Limit"
+    );
+
+    setText(
+      "saleSummaryAskingPrice",
+      formatMoney(
+        askingPrice,
+        currency
+      )
+    );
+
+    setText(
+      "saleBrokerCommission",
+      "—"
+    );
+
+    setText(
+      "saleEstimatedNet",
+      "—"
+    );
+
+    if (validationMessage) {
+      validationMessage.textContent =
+        `Minimum permitted asking price: ` +
+        formatMoney(
+          lowestAllowedPrice,
+          currency
+        );
+    }
+
+    if (confirmButton) {
+      confirmButton.disabled = true;
+    }
+
+    selectAircraftSalePriceCard(null);
+
+    return;
+  }
+
+  const marketPosition =
+    resolveAircraftSaleMarketPosition(
+      askingPrice,
+      quote
+    );
+
+  const commissionRate =
+    Number(
+      quote.broker_commission_rate
+    ) || 0;
+
+  const brokerCommission =
+    Math.round(
+      askingPrice * commissionRate
+    );
+
+  const estimatedNet =
+    Math.max(
+      0,
+      askingPrice - brokerCommission
+    );
+
+  setText(
+    "saleMarketPosition",
+    marketPosition.label
+  );
+
+  setText(
+    "saleSummaryAskingPrice",
+    formatMoney(
+      askingPrice,
+      currency
+    )
+  );
+
+  setText(
+    "saleBrokerCommission",
+    formatMoney(
+      brokerCommission,
+      currency
+    )
+  );
+
+  setText(
+    "saleEstimatedNet",
+    formatMoney(
+      estimatedNet,
+      currency
+    )
+  );
+
+  if (validationMessage) {
+    validationMessage.textContent = "";
+  }
+
+  if (confirmButton) {
+    confirmButton.disabled = false;
+  }
+}
+
 /* ============================================================
    🟨 ACS OCC — AIRCRAFT SALE CONTROL
    ------------------------------------------------------------
@@ -2444,6 +2823,9 @@ setText(
    ============================================================ */
 
 function resetAircraftSaleModal() {
+
+  ACS_MY_AIRCRAFT.saleQuote = null; 
+   
   setText("saleLowestPrice", "—");
   setText("saleMinimumPrice", "—");
   setText("saleSuggestedPrice", "—");
@@ -2563,7 +2945,9 @@ function renderAircraftSaleIdentity(aircraft) {
   }
 }
 
-function openAircraftSaleModal(aircraft) {
+async function openAircraftSaleModal(
+  aircraft
+) {
   if (!aircraft?.id) return;
 
   ACS_MY_AIRCRAFT.selectedAircraft =
@@ -2577,6 +2961,9 @@ function openAircraftSaleModal(aircraft) {
 
   const saleModal =
     $("aircraftSaleModal");
+
+  const modalMessage =
+    $("saleModalMessage");
 
   if (aircraftModal) {
     aircraftModal.style.display = "none";
@@ -2595,16 +2982,47 @@ function openAircraftSaleModal(aircraft) {
     "aircraft-sale-modal-open"
   );
 
-  console.log(
-    "🟨 ACS AIRCRAFT SALE CONTROL OPENED:",
-    {
-      aircraft_id: aircraft.id,
-      registration:
-        aircraft.registration,
-      model_key:
-        aircraft.model_key
+  try {
+    const payload =
+      await fetchAircraftSaleQuote(
+        aircraft.id
+      );
+
+    /*
+      Protect against a late response if the
+      player changed aircraft before completion.
+    */
+
+    if (
+      Number(
+        ACS_MY_AIRCRAFT
+          .selectedAircraft?.id
+      ) !== Number(aircraft.id)
+    ) {
+      return;
     }
-  );
+
+    renderAircraftSaleQuote(payload);
+
+  } catch (error) {
+    console.error(
+      "ACS AIRCRAFT SALE QUOTE ERROR:",
+      error
+    );
+
+    if (modalMessage) {
+      modalMessage.textContent =
+        error.message;
+
+      modalMessage.classList.add(
+        "is-visible"
+      );
+
+      modalMessage.classList.remove(
+        "is-success"
+      );
+    }
+  }
 }
 
 function closeAircraftSaleModal(
@@ -2648,6 +3066,60 @@ function bindAircraftSaleModal() {
   const closeBottom =
     $("saleModalCloseBottom");
 
+  const askingPriceInput =
+  $("saleAskingPrice");
+
+  const priceCards =
+  document.querySelectorAll(
+    "#aircraftSaleModal .sale-price-card"
+  );
+
+  priceCards.forEach(card => {
+  card.addEventListener(
+    "click",
+    () => {
+      const source =
+        card.dataset.salePriceSource;
+
+      const selectedPrice =
+        getAircraftSalePriceBySource(
+          source
+        );
+
+      if (
+        selectedPrice === null ||
+        !askingPriceInput
+      ) {
+        return;
+      }
+
+      askingPriceInput.value =
+        String(selectedPrice);
+
+      selectAircraftSalePriceCard(
+        source
+      );
+
+      updateAircraftSalePricePreview(
+        selectedPrice
+      );
+    }
+  );
+});
+
+if (askingPriceInput) {
+  askingPriceInput.addEventListener(
+    "input",
+    () => {
+      selectAircraftSalePriceCard(null);
+
+      updateAircraftSalePricePreview(
+        askingPriceInput.value
+      );
+    }
+  );
+}
+   
   if (closeTop) {
     closeTop.addEventListener(
       "click",
