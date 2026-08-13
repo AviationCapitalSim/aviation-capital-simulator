@@ -4909,6 +4909,137 @@ html body .order-book-table tbody tr:hover {
 }
 
 /* ============================================================
+   ACS OCC — SCHEDULE REVIEW CHIP
+   ============================================================ */
+
+#aircraftSaleModal .sale-schedule-review {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  margin-top: 10px;
+  padding: 9px 12px;
+
+  color: #dce8f6;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(105, 71, 4, 0.28),
+      rgba(24, 38, 61, 0.5)
+    );
+
+  border:
+    1px solid rgba(255, 179, 0, 0.55);
+
+  border-radius: 999px;
+
+  cursor: pointer;
+}
+
+#aircraftSaleModal
+.sale-schedule-review[hidden] {
+  display: none;
+}
+
+#aircraftSaleModal
+#saleScheduleConfirmed {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+
+  margin: 0;
+
+  accent-color: #ffb300;
+  cursor: pointer;
+}
+
+#aircraftSaleModal
+.sale-schedule-review-content {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+#aircraftSaleModal
+.sale-schedule-review-content strong {
+  flex: 0 0 auto;
+
+  color: #ffca4f;
+
+  font-family: "Orbitron", sans-serif;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#aircraftSaleModal
+.sale-schedule-review-content > span {
+  color: #c8d5e5;
+
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+#aircraftSaleModal
+.sale-schedule-review:has(
+  #saleScheduleConfirmed:checked
+) {
+  color: #c9f6df;
+  background: rgba(24, 102, 70, 0.2);
+
+  border-color:
+    rgba(70, 225, 153, 0.55);
+}
+
+/* Improve compact modal readability */
+
+#aircraftSaleModal .sale-price-card span,
+#aircraftSaleModal
+.sale-financial-summary span,
+#aircraftSaleModal
+.sale-price-input-group label,
+#aircraftSaleModal
+.sale-market-position span {
+  font-size: 8px;
+}
+
+#aircraftSaleModal .sale-price-card strong,
+#aircraftSaleModal
+.sale-financial-summary strong {
+  font-size: 12px;
+}
+
+#aircraftSaleModal
+.sale-operation-notice,
+#aircraftSaleModal
+.sale-modal-message {
+  font-size: 10px;
+}
+
+@media (max-width: 650px) {
+  #aircraftSaleModal
+  .sale-schedule-review {
+    align-items: flex-start;
+    border-radius: 10px;
+  }
+
+  #aircraftSaleModal
+  .sale-schedule-review-content {
+    display: block;
+  }
+
+  #aircraftSaleModal
+  .sale-schedule-review-content strong {
+    display: block;
+    margin-bottom: 4px;
+  }
+}
+    
+/* ============================================================
    NOTICES
    ============================================================ */
 
@@ -5054,7 +5185,7 @@ html body .order-book-table tbody tr:hover {
   }
 
   #aircraftSaleModal .aircraft-sale-modal {
-    width: calc(100vw - 14px);
+    width: min(860px, calc(100vw - 24px));
     max-height: calc(100dvh - 14px);
   }
 
@@ -6702,6 +6833,34 @@ html body .order-book-table tbody tr:hover {
 
       </section>
 
+      <!-- ========================================================
+     ACS OCC — SCHEDULE REVIEW CHIP
+     ======================================================== -->
+
+<label
+  id="saleScheduleReview"
+  class="sale-schedule-review"
+  hidden
+>
+  <input
+    id="saleScheduleConfirmed"
+    type="checkbox"
+  />
+
+  <span class="sale-schedule-review-content">
+
+    <strong>
+      Schedule Review
+    </strong>
+
+    <span>
+      Review that this aircraft has no assigned or scheduled
+      flights before continuing. 
+    </span>
+
+  </span>
+</label>
+      
       <!-- OPERATION NOTICE -->
 
       <div
