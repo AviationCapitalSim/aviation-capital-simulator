@@ -48,8 +48,11 @@ fleet: [],
 filteredFleet: [],
 orders: [],
 pendingOrders: [],
-pendingOrderIndex: 0,     
-selectedAircraft: null
+pendingOrderIndex: 0,
+
+selectedAircraft: null,
+
+saleQuote: null
   };
 
   /* ============================================================
