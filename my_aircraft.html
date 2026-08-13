@@ -5206,6 +5206,92 @@ html body .order-book-table tbody tr:hover {
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================
+   ACS OCC — AIRCRAFT SALE FINAL WARNING
+   ============================================================ */
+
+.aircraft-sale-warning-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(1, 8, 20, 0.78);
+  backdrop-filter: blur(3px);
+}
+
+.aircraft-sale-warning-box {
+  width: min(520px, 100%);
+  padding: 24px;
+  border: 1px solid #f2ae00;
+  border-radius: 16px;
+  background: #08162c;
+  box-shadow:
+    0 22px 55px rgba(0, 0, 0, 0.55),
+    0 0 24px rgba(242, 174, 0, 0.10);
+}
+
+.aircraft-sale-warning-title {
+  margin-bottom: 14px;
+  color: #f2ae00;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-align: center;
+}
+
+.aircraft-sale-warning-text {
+  color: #e9f0ff;
+  font-size: 15px;
+  line-height: 1.55;
+  text-align: center;
+}
+
+.aircraft-sale-warning-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.aircraft-sale-warning-button {
+  min-height: 46px;
+  border-radius: 10px;
+  background: #0d203c;
+  color: #dce7fa;
+  font: inherit;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+}
+
+.aircraft-sale-warning-button.is-cancel {
+  border: 1px solid #496386;
+}
+
+.aircraft-sale-warning-button.is-confirm {
+  border: 1px solid #f2ae00;
+  color: #ffe09a;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(242, 174, 0, 0.13),
+      rgba(242, 174, 0, 0.04)
+    );
+}
+
+.aircraft-sale-warning-button:hover {
+  filter: brightness(1.16);
+}
+
+@media (max-width: 560px) {
+  .aircraft-sale-warning-actions {
+    grid-template-columns: 1fr;
+  }
+}
     
 /* ============================================================
    MY AIRCRAFT — CABIN CONFIGURATION
