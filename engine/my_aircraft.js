@@ -2437,7 +2437,8 @@ setText(
 
 async function createAircraftSaleListing(
   aircraftId,
-  askingPrice
+  askingPrice,
+  confirmScheduledOperations
 ) {
   const response = await fetch(
     `${ACS_MY_AIRCRAFT_API_BASE}` +
@@ -2452,7 +2453,9 @@ async function createAircraftSaleListing(
       },
 
       body: JSON.stringify({
-        asking_price: askingPrice
+        asking_price: askingPrice,
+        confirm_scheduled_operations:
+          confirmScheduledOperations === true
       })
     }
   );
@@ -2468,18 +2471,15 @@ async function createAircraftSaleListing(
         "Aircraft sale listing could not be created."
       );
 
-    error.code =
-      payload?.error || null;
-
-    error.payload =
-      payload;
+    error.code = payload?.error || null;
+    error.payload = payload;
 
     throw error;
   }
 
   return payload;
 }
-
+   
 function setAircraftSalePublishing(
   isPublishing
 ) {
@@ -2530,6 +2530,120 @@ function setAircraftSalePublishing(
     });
 }
 
+function confirmAircraftSaleWarning() {
+  return new Promise(resolve => {
+    const existingWarning =
+      document.getElementById(
+        "aircraftSaleWarning"
+      );
+
+    if (existingWarning) {
+      existingWarning.remove();
+    }
+
+    const warning =
+      document.createElement("div");
+
+    warning.id =
+      "aircraftSaleWarning";
+
+    warning.className =
+      "aircraft-sale-warning-overlay";
+
+    warning.innerHTML = `
+      <div
+        class="aircraft-sale-warning-box"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="aircraftSaleWarningTitle"
+      >
+        <div
+          id="aircraftSaleWarningTitle"
+          class="aircraft-sale-warning-title"
+        >
+          SCHEDULE REVIEW
+        </div>
+
+        <div class="aircraft-sale-warning-text">
+          Review that this aircraft has no assigned or scheduled flights before continuing.
+        </div>
+
+        <div class="aircraft-sale-warning-actions">
+          <button
+            type="button"
+            id="aircraftSaleWarningCancel"
+            class="aircraft-sale-warning-button is-cancel"
+          >
+            CANCEL
+          </button>
+
+          <button
+            type="button"
+            id="aircraftSaleWarningConfirm"
+            class="aircraft-sale-warning-button is-confirm"
+          >
+            CONFIRM
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(warning);
+
+    const cancelButton =
+      document.getElementById(
+        "aircraftSaleWarningCancel"
+      );
+
+    const confirmButton =
+      document.getElementById(
+        "aircraftSaleWarningConfirm"
+      );
+
+    const finish = confirmed => {
+      document.removeEventListener(
+        "keydown",
+        handleEscape
+      );
+
+      warning.remove();
+      resolve(confirmed);
+    };
+
+    const handleEscape = event => {
+      if (event.key === "Escape") {
+        finish(false);
+      }
+    };
+
+    cancelButton.addEventListener(
+      "click",
+      () => finish(false)
+    );
+
+    confirmButton.addEventListener(
+      "click",
+      () => finish(true)
+    );
+
+    warning.addEventListener(
+      "click",
+      event => {
+        if (event.target === warning) {
+          finish(false);
+        }
+      }
+    );
+
+    document.addEventListener(
+      "keydown",
+      handleEscape
+    );
+
+    confirmButton.focus();
+  });
+}
+   
 async function submitAircraftSaleListing() {
   const aircraft =
     ACS_MY_AIRCRAFT.selectedAircraft;
@@ -2579,6 +2693,13 @@ async function submitAircraftSaleListing() {
     return;
   }
 
+    const saleConfirmed =
+    await confirmAircraftSaleWarning();
+
+  if (!saleConfirmed) {
+    return;
+  }
+   
   if (modalMessage) {
     modalMessage.textContent = "";
 
@@ -2592,9 +2713,10 @@ async function submitAircraftSaleListing() {
 
   try {
     const payload =
-      await createAircraftSaleListing(
+     await createAircraftSaleListing(
         aircraft.id,
-        askingPrice
+        askingPrice,
+        true
       );
 
     ACS_MY_AIRCRAFT.saleListing =
