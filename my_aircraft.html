@@ -5704,6 +5704,43 @@ html body .order-book-table tbody tr:hover {
   transform: translateY(0);
 }
 
+/* COMMERCIAL AUTHORITY — DISABLED */
+
+#aircraftModal .acp-commercial-btn:disabled,
+#aircraftModal .acp-commercial-btn[aria-disabled="true"] {
+  color: rgba(159, 177, 199, 0.48);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(37, 49, 67, 0.28),
+      rgba(15, 25, 41, 0.42)
+    );
+
+  border-color:
+    rgba(126, 147, 174, 0.24);
+
+  box-shadow: none;
+
+  opacity: 0.58;
+  cursor: not-allowed;
+
+  filter: saturate(0.25);
+}
+
+#aircraftModal .acp-commercial-btn:disabled:hover,
+#aircraftModal
+.acp-commercial-btn[aria-disabled="true"]:hover {
+  color: rgba(159, 177, 199, 0.48);
+
+  border-color:
+    rgba(126, 147, 174, 0.24);
+
+  box-shadow: none;
+
+  transform: none;
+}
+    
 /* Responsive */
 
 @media (max-width: 650px) {
@@ -6170,24 +6207,32 @@ html body .order-book-table tbody tr:hover {
 
             <div class="acp-commercial-actions">
 
-              <button
-                id="acpSellAircraft"
-                class="acp-commercial-btn acp-commercial-sell"
-                type="button"
-              >
-                Sell Aircraft
-              </button>
+  <button
+    id="acpSellAircraft"
+    class="acp-commercial-btn acp-commercial-sell"
+    type="button"
+  >
+    Sell Aircraft
+  </button>
 
-              <button
-                id="acpLeaseAircraft"
-                class="acp-commercial-btn acp-commercial-lease"
-                type="button"
-              >
-                Lease Aircraft
-              </button>
+  <button
+    id="acpLeaseAircraft"
+    class="acp-commercial-btn acp-commercial-lease"
+    type="button"
+  >
+    Lease Aircraft
+  </button>
 
-            </div>
+  <button
+    id="acpReturnLeasedAircraft"
+    class="acp-commercial-btn acp-commercial-return"
+    type="button"
+    hidden
+  >
+    Return Leased Aircraft
+  </button>
 
+</div>
           </div>
 
         </section>
