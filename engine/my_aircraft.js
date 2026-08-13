@@ -3189,17 +3189,27 @@ const btnSellAircraft =
 const btnLeaseAircraft =
   $("acpLeaseAircraft");
 
+ const btnReturnLeasedAircraft =
+  $("acpReturnLeasedAircraft");
+     
     if (btnServiceCD) {
     btnServiceCD.onclick = () => {
     openServiceCDControlModal(aircraft);
      };
    }
 
- /* ============================================================
+/* ============================================================
    ACS OCC — COMMERCIAL OWNERSHIP AUTHORITY
    ------------------------------------------------------------
-   Only aircraft owned by the airline can be sold or leased out.
-   LEASED aircraft cannot access either commercial action.
+   OWNED:
+   - Sell Aircraft
+   - Lease Aircraft
+
+   LEASED:
+   - Return Leased Aircraft
+
+   Sell and Lease controls must not be shown for aircraft
+   leased from another company.
    ============================================================ */
 
 const commercialOwnership =
@@ -3207,25 +3217,23 @@ const commercialOwnership =
     aircraft.ownership_type
   );
 
-const isCommerciallyOwned =
+const isOwnedAircraft =
   commercialOwnership === "OWNED";
 
+const isLeasedAircraft =
+  commercialOwnership === "LEASED";
+
+/* OWNED AIRCRAFT ACTIONS */
+
 if (btnSellAircraft) {
+  btnSellAircraft.hidden =
+    !isOwnedAircraft;
+
   btnSellAircraft.disabled =
-    !isCommerciallyOwned;
-
-  btnSellAircraft.setAttribute(
-    "aria-disabled",
-    String(!isCommerciallyOwned)
-  );
-
-  btnSellAircraft.title =
-    isCommerciallyOwned
-      ? "Open Aircraft Sale Control"
-      : "Only airline-owned aircraft can be sold.";
+    !isOwnedAircraft;
 
   btnSellAircraft.onclick =
-    isCommerciallyOwned
+    isOwnedAircraft
       ? () => {
           openAircraftSaleModal(aircraft);
         }
@@ -3233,26 +3241,37 @@ if (btnSellAircraft) {
 }
 
 if (btnLeaseAircraft) {
+  btnLeaseAircraft.hidden =
+    !isOwnedAircraft;
+
   btnLeaseAircraft.disabled =
-    !isCommerciallyOwned;
-
-  btnLeaseAircraft.setAttribute(
-    "aria-disabled",
-    String(!isCommerciallyOwned)
-  );
-
-  btnLeaseAircraft.title =
-    isCommerciallyOwned
-      ? "Open Aircraft Lease Control"
-      : "Only airline-owned aircraft can be leased out.";
+    !isOwnedAircraft;
 
   /*
-    Lease logic will be connected after Sell.
-    The button remains visually available for owned aircraft,
-    without provisional alerts.
+    Lease system will be connected after Sell.
+    No provisional alert or frontend mutation.
   */
 
   btnLeaseAircraft.onclick = null;
+}
+
+/* LEASED AIRCRAFT ACTION */
+
+if (btnReturnLeasedAircraft) {
+  btnReturnLeasedAircraft.hidden =
+    !isLeasedAircraft;
+
+  btnReturnLeasedAircraft.disabled =
+    !isLeasedAircraft;
+
+  /*
+    Return Lease Control will be connected when the
+    lease contract authority is implemented.
+
+    Do not execute a return or financial mutation here.
+  */
+
+  btnReturnLeasedAircraft.onclick = null;
 }
      
      if (btnCabinConfiguration) {
