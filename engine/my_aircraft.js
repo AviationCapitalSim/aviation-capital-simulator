@@ -2430,6 +2430,250 @@ setText(
     );
   }
 
+/* ============================================================
+   ACS OCC — CREATE AIRCRAFT SALE LISTING
+   ============================================================ */
+
+async function createAircraftSaleListing(
+  aircraftId,
+  askingPrice
+) {
+  const response = await fetch(
+    `${ACS_MY_AIRCRAFT_API_BASE}` +
+    `/v1/aircraft/fleet/${aircraftId}/sale/listing`,
+    {
+      method: "POST",
+      credentials: "include",
+
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      },
+
+      body: JSON.stringify({
+        asking_price: askingPrice
+      })
+    }
+  );
+
+  const payload =
+    await response.json().catch(() => null);
+
+  if (!response.ok || !payload?.ok) {
+    const error =
+      new Error(
+        payload?.details ||
+        payload?.error ||
+        "Aircraft sale listing could not be created."
+      );
+
+    error.code =
+      payload?.error || null;
+
+    error.payload =
+      payload;
+
+    throw error;
+  }
+
+  return payload;
+}
+
+function setAircraftSalePublishing(
+  isPublishing
+) {
+  const confirmButton =
+    $("saleConfirmListing");
+
+  const askingPriceInput =
+    $("saleAskingPrice");
+
+  const closeTop =
+    $("saleModalCloseTop");
+
+  const closeBottom =
+    $("saleModalCloseBottom");
+
+  if (confirmButton) {
+    confirmButton.disabled =
+      isPublishing;
+
+    confirmButton.textContent =
+      isPublishing
+        ? "Publishing Aircraft"
+        : "Confirm Sale Listing";
+  }
+
+  if (askingPriceInput) {
+    askingPriceInput.disabled =
+      isPublishing;
+  }
+
+  if (closeTop) {
+    closeTop.disabled =
+      isPublishing;
+  }
+
+  if (closeBottom) {
+    closeBottom.disabled =
+      isPublishing;
+  }
+
+  document
+    .querySelectorAll(
+      "#aircraftSaleModal .sale-price-card"
+    )
+    .forEach(card => {
+      card.disabled =
+        isPublishing;
+    });
+}
+
+async function submitAircraftSaleListing() {
+  const aircraft =
+    ACS_MY_AIRCRAFT.selectedAircraft;
+
+  const quote =
+    ACS_MY_AIRCRAFT.saleQuote;
+
+  const askingPriceInput =
+    $("saleAskingPrice");
+
+  const confirmButton =
+    $("saleConfirmListing");
+
+  const modalMessage =
+    $("saleModalMessage");
+
+  if (
+    !aircraft?.id ||
+    !quote ||
+    !askingPriceInput
+  ) {
+    return;
+  }
+
+  const askingPrice =
+    Number(askingPriceInput.value);
+
+  const lowestAllowedPrice =
+    Number(
+      quote.lowest_allowed_price
+    );
+
+  /*
+    Final frontend check.
+    Railway repeats this validation authoritatively.
+  */
+
+  if (
+    !Number.isFinite(askingPrice) ||
+    askingPrice <= 0 ||
+    askingPrice < lowestAllowedPrice
+  ) {
+    updateAircraftSalePricePreview(
+      askingPriceInput.value
+    );
+
+    return;
+  }
+
+  if (modalMessage) {
+    modalMessage.textContent = "";
+
+    modalMessage.classList.remove(
+      "is-visible",
+      "is-success"
+    );
+  }
+
+  setAircraftSalePublishing(true);
+
+  try {
+    const payload =
+      await createAircraftSaleListing(
+        aircraft.id,
+        askingPrice
+      );
+
+    ACS_MY_AIRCRAFT.saleListing =
+      payload.listing;
+
+    if (modalMessage) {
+      modalMessage.textContent =
+        `Aircraft ${safeText(
+          payload.aircraft?.registration
+        )} is now listed in the ACS Used Market.`;
+
+      modalMessage.classList.add(
+        "is-visible",
+        "is-success"
+      );
+    }
+
+    if (confirmButton) {
+      confirmButton.textContent =
+        "Aircraft Listed";
+
+      confirmButton.disabled = true;
+    }
+
+    if (askingPriceInput) {
+      askingPriceInput.disabled = true;
+    }
+
+    document
+      .querySelectorAll(
+        "#aircraftSaleModal .sale-price-card"
+      )
+      .forEach(card => {
+        card.disabled = true;
+      });
+
+    /*
+      Keep the modal open so the player sees the
+      authoritative confirmation.
+
+      Used Market integration comes next.
+    */
+
+    console.log(
+      "🟨 ACS AIRCRAFT LISTED FOR SALE:",
+      payload
+    );
+
+  } catch (error) {
+    console.error(
+      "ACS CREATE SALE LISTING ERROR:",
+      error
+    );
+
+    setAircraftSalePublishing(false);
+
+    if (modalMessage) {
+      modalMessage.textContent =
+        error.message;
+
+      modalMessage.classList.add(
+        "is-visible"
+      );
+
+      modalMessage.classList.remove(
+        "is-success"
+      );
+    }
+
+    /*
+      Revalidate the button after an unsuccessful
+      request.
+    */
+
+    updateAircraftSalePricePreview(
+      askingPriceInput.value
+    );
+  }
+}
+   
 async function fetchAircraftSaleQuote(
   aircraftId
 ) {
