@@ -2689,8 +2689,9 @@ function ACS_configureUsedMarketActions(
     or another airline.
   */
 
-  if (
-    aircraft?.available_for_lease === true
+    if (
+    aircraft?.available_for_lease === true ||
+    aircraft?.is_player_listing !== true
   ) {
     leaseButton.style.display = "";
 
