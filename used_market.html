@@ -2598,6 +2598,111 @@ function ACS_infoMetricHTML(label, value) {
 }
 
 /* ============================================================
+   ACS USED MARKET — COMMERCIAL ACTION RESOLVER
+   ============================================================ */
+
+function ACS_configureUsedMarketActions(
+  aircraft
+) {
+  const buyButton =
+    document.getElementById(
+      "usedInfoBuyBtn"
+    );
+
+  const leaseButton =
+    document.getElementById(
+      "usedInfoLeaseBtn"
+    );
+
+  if (!buyButton || !leaseButton) {
+    return;
+  }
+
+  const listingType =
+    String(
+      aircraft?.listing_type ||
+      aircraft?.ownership_offer_type ||
+      "SALE"
+    )
+      .trim()
+      .toUpperCase();
+
+  const isOwnListing =
+    aircraft?.is_own_listing === true;
+
+  /*
+    Reset buttons whenever another aircraft
+    information panel is opened.
+  */
+
+  buyButton.style.display = "none";
+  leaseButton.style.display = "none";
+
+  buyButton.disabled = false;
+  leaseButton.disabled = false;
+
+  buyButton.dataset.marketAction = "";
+  leaseButton.dataset.marketAction = "";
+
+  /*
+    Own airline listing:
+    never allow BUY or LEASE against itself.
+  */
+
+  if (isOwnListing) {
+    buyButton.style.display = "";
+
+    buyButton.dataset.marketAction =
+      "CANCEL_LISTING";
+
+    buyButton.textContent =
+      listingType === "LEASE"
+        ? "CANCEL LEASE"
+        : "CANCEL SALE";
+
+    return;
+  }
+
+  /*
+    Sale listing belonging to the system
+    or another airline.
+  */
+
+  if (
+    aircraft?.available_for_purchase === true ||
+    (
+      aircraft?.is_player_listing !== true &&
+      listingType !== "LEASE"
+    )
+  ) {
+    buyButton.style.display = "";
+
+    buyButton.dataset.marketAction =
+      "BUY";
+
+    buyButton.textContent =
+      "BUY AIRCRAFT";
+  }
+
+  /*
+    Lease listing belonging to the system
+    or another airline.
+  */
+
+  if (
+    aircraft?.available_for_lease === true
+  ) {
+    leaseButton.style.display = "";
+
+    leaseButton.dataset.marketAction =
+      "LEASE";
+
+    leaseButton.textContent =
+      "LEASE AIRCRAFT";
+  }
+}
+
+/* ============================================================
    USED MARKET — AIRCRAFT INFORMATION PANEL
    Railway authority · Read only
    ============================================================ */
@@ -3342,6 +3447,15 @@ const dCheckStatus =
     "usedInfoMarketGate",
     marketGate
   );
+     
+  /*
+    Resolve the commercial action using
+    Railway listing authority.
+  */
+
+  ACS_configureUsedMarketActions(
+    aircraft
+  );  
 
   /* Existing ACS aircraft image authority */
 
@@ -3362,6 +3476,114 @@ const dCheckStatus =
     "hidden";
 }
 
+/* ============================================================
+   ACS USED MARKET — CANCEL OWN LISTING
+   ============================================================ */
+
+async function ACS_cancelOwnMarketListing(
+  aircraft
+) {
+  const listingId =
+    Number(
+      aircraft?.market_listing_id
+    );
+
+  if (
+    !Number.isInteger(listingId) ||
+    listingId <= 0
+  ) {
+    console.error(
+      "ACS MARKET LISTING ID INVALID:",
+      aircraft
+    );
+
+    return;
+  }
+
+  const listingType =
+    String(
+      aircraft?.listing_type || "SALE"
+    )
+      .trim()
+      .toUpperCase();
+
+  const actionLabel =
+    listingType === "LEASE"
+      ? "CANCEL LEASE"
+      : "CANCEL SALE";
+
+  const actionButton =
+    document.getElementById(
+      "usedInfoBuyBtn"
+    );
+
+  if (actionButton) {
+    actionButton.disabled = true;
+    actionButton.textContent =
+      "PROCESSING";
+  }
+
+  try {
+    const response =
+      await fetch(
+        "https://api.aviationcapitalsim.com" +
+        `/v1/aircraft/market-listings/${listingId}/cancel`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            Accept: "application/json"
+          }
+        }
+      );
+
+    const payload =
+      await response
+        .json()
+        .catch(() => null);
+
+    if (
+      !response.ok ||
+      payload?.ok !== true
+    ) {
+      throw new Error(
+        payload?.details ||
+        payload?.error ||
+        `${actionLabel} failed.`
+      );
+    }
+
+    console.log(
+      `ACS ${actionLabel} CONFIRMED:`,
+      payload
+    );
+
+    /*
+      Close the information panel and reload
+      authoritative Used Market data.
+ 	*/
+
+    closeInfoModal();
+
+    await ACS_loadUsedMarketFromBackend();
+
+    renderUsedMarket("all");
+    buildFilterChips();
+
+  } catch (error) {
+    console.error(
+      `ACS ${actionLabel} ERROR:`,
+      error
+    );
+
+    if (actionButton) {
+      actionButton.disabled = false;
+      actionButton.textContent =
+        actionLabel;
+    }
+  }
+}
+     
 /* ============================================================
    USED INFO MODAL — ACCESSIBLE CLOSE CONTROL
    ============================================================ */
@@ -3387,10 +3609,10 @@ const dCheckStatus =
 
   if (!modal) return;
 
-  if (buyButton) {
+    if (buyButton) {
     buyButton.addEventListener(
       "click",
-      () => {
+      async () => {
         const aircraftID =
           selectedUsedID;
 
@@ -3401,7 +3623,30 @@ const dCheckStatus =
           return;
         }
 
-        openBuyModal(aircraftID);
+        const aircraft =
+          getUsedById(aircraftID);
+
+        if (!aircraft) {
+          return;
+        }
+
+        const marketAction =
+          buyButton.dataset.marketAction;
+
+        if (
+          marketAction ===
+          "CANCEL_LISTING"
+        ) {
+          await ACS_cancelOwnMarketListing(
+            aircraft
+          );
+
+          return;
+        }
+
+        if (marketAction === "BUY") {
+          openBuyModal(aircraftID);
+        }
       }
     );
   }
