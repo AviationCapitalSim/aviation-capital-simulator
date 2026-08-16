@@ -1001,6 +1001,9 @@
         dashboard.storage
       );
 
+      renderSupervisor(
+        dashboard.supervisor
+      );       
       renderDiagnostics(
         dashboard.diagnostics || []
       );
