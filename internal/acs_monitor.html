@@ -12,7 +12,7 @@
      - Panel privado; no disponible para jugadores.
      ------------------------------------------------------------
      Authority: PostgreSQL / Railway
-     Version: v1.0 | Date: 16 AUG 2026
+     Version: v2.0 | Date: 16 AUG 2026
      ============================================================ -->
 
 <!doctype html>
@@ -107,11 +107,8 @@
           rgba(8, 19, 28, 0.96)
         );
 
-      border:
-        1px solid var(--line);
-
-      box-shadow:
-        0 18px 45px rgba(0, 0, 0, 0.33);
+      border: 1px solid var(--line);
+      box-shadow: 0 18px 45px #0005;
     }
 
     .topbar {
@@ -134,11 +131,7 @@
       margin: 5px 0 0;
 
       font-size:
-        clamp(
-          22px,
-          3vw,
-          31px
-        );
+        clamp(22px, 3vw, 31px);
 
       letter-spacing: 0.04em;
     }
@@ -163,20 +156,24 @@
       border-radius: 999px;
 
       color: var(--muted);
+
       font-size: 11px;
       font-weight: 750;
     }
 
     .STABLE,
-    .INFO {
+    .INFO,
+    .CLEAN {
       color: var(--green);
     }
 
-    .WARNING {
+    .WARNING,
+    .MONITORING {
       color: var(--yellow);
     }
 
-    .CRITICAL {
+    .CRITICAL,
+    .ATTENTION {
       color: var(--red);
     }
 
@@ -185,6 +182,7 @@
         1px solid var(--line);
 
       border-radius: 10px;
+
       padding: 10px 13px;
 
       background: #142b39;
@@ -228,6 +226,7 @@
       display: block;
 
       color: var(--muted);
+
       font-size: 10px;
       letter-spacing: 0.13em;
       text-transform: uppercase;
@@ -235,15 +234,10 @@
 
     .metric strong {
       display: block;
-
       margin: 8px 0 4px;
 
       font-size:
-        clamp(
-          25px,
-          3vw,
-          38px
-        );
+        clamp(25px, 3vw, 38px);
     }
 
     .metric span {
@@ -253,7 +247,10 @@
 
     .grid {
       display: grid;
-      grid-template-columns: 2fr 1fr;
+
+      grid-template-columns:
+        2fr 1fr;
+
       gap: 14px;
     }
 
@@ -267,6 +264,7 @@
       margin: 0;
 
       color: var(--gold);
+
       font-size: 13px;
       letter-spacing: 0.13em;
       text-transform: uppercase;
@@ -277,6 +275,7 @@
       align-items: flex-start;
       justify-content: space-between;
       gap: 12px;
+
       margin-bottom: 14px;
     }
 
@@ -288,23 +287,127 @@
 
     .bar {
       height: 12px;
+      margin-top: 12px;
 
       border:
         1px solid var(--line);
 
       border-radius: 999px;
       overflow: hidden;
-
       background: #050c12;
-      margin-top: 12px;
     }
 
     .bar i {
       display: block;
       width: 0;
       height: 100%;
+
       background: var(--green);
       transition: 0.3s;
+    }
+
+    .diagnostics {
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, 1fr);
+
+      gap: 12px;
+    }
+
+    .diagnostic {
+      padding: 15px;
+
+      border:
+        1px solid var(--line);
+
+      border-top:
+        3px solid var(--line);
+
+      border-radius: 13px;
+
+      background:
+        linear-gradient(
+          145deg,
+          #112632,
+          #0b1922
+        );
+    }
+
+    .diagnostic.CLEAN {
+      border-top-color: var(--green);
+    }
+
+    .diagnostic.MONITORING {
+      border-top-color: var(--yellow);
+    }
+
+    .diagnostic.ATTENTION {
+      border-top-color: var(--red);
+    }
+
+    .diagnostic-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .diagnostic-title b {
+      font-size: 13px;
+    }
+
+    .diagnostic-value {
+      display: block;
+
+      margin: 15px 0 2px;
+
+      font-size: 29px;
+      line-height: 1;
+    }
+
+    .diagnostic-caption {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .diagnostic-details {
+      display: grid;
+      gap: 7px;
+
+      margin-top: 14px;
+      padding-top: 12px;
+
+      border-top:
+        1px solid var(--line);
+    }
+
+    .diagnostic-details div {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .diagnostic-details strong {
+      color: var(--text);
+      font-size: 11px;
+      text-align: right;
+    }
+
+    .diagnostic-note {
+      margin-top: 13px;
+      padding: 9px;
+
+      border-radius: 8px;
+
+      background: #06131b;
+      color: var(--muted);
+
+      font-size: 11px;
+      line-height: 1.45;
     }
 
     .table-wrap {
@@ -355,7 +458,9 @@
     .policy,
     .item {
       padding: 12px;
+
       border-radius: 11px;
+
       background: var(--panel2);
 
       border-left:
@@ -374,18 +479,17 @@
 
       color: var(--muted);
       font-size: 12px;
+
       margin-top: 5px;
     }
 
     .policy.WARNING,
     .item.WARNING {
-      border-left-color:
-        var(--yellow);
+      border-left-color: var(--yellow);
     }
 
     .item.CRITICAL {
-      border-left-color:
-        var(--red);
+      border-left-color: var(--red);
     }
 
     .empty {
@@ -400,38 +504,33 @@
       border-left:
         3px solid var(--gold);
 
-      background:
-        rgba(217, 172, 85, 0.07);
-
+      background: #d9ac5512;
       color: #d9cfba;
+
       border-radius: 8px;
     }
 
     dialog {
       width:
-        min(
-          540px,
-          calc(100% - 28px)
-        );
+        min(540px, calc(100% - 28px));
+
+      padding: 0;
 
       border:
         1px solid var(--line);
 
       border-radius: 17px;
+
       background: #091720;
       color: var(--text);
-      padding: 0;
 
       box-shadow:
         0 35px 100px #000;
     }
 
     dialog::backdrop {
-      background:
-        rgba(0, 0, 0, 0.8);
-
-      backdrop-filter:
-        blur(5px);
+      background: #000c;
+      backdrop-filter: blur(5px);
     }
 
     .modal {
@@ -462,6 +561,7 @@
         1px solid var(--line);
 
       border-radius: 9px;
+
       background: #051018;
       color: var(--text);
     }
@@ -470,6 +570,7 @@
       display: flex;
       justify-content: flex-end;
       gap: 9px;
+
       margin-top: 18px;
     }
 
@@ -483,6 +584,7 @@
         1px solid #8c3039;
 
       border-radius: 9px;
+
       background: #3a171b;
       color: #ffd5d8;
     }
@@ -491,13 +593,21 @@
       padding: 10px;
 
       border-radius: 9px;
+
       background: #102735;
       color: #b8cad5;
+
       font-size: 12px;
     }
 
     .hidden {
       display: none !important;
+    }
+
+    @media (max-width: 1050px) {
+      .diagnostics {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media (max-width: 950px) {
@@ -507,8 +617,7 @@
       }
 
       .grid {
-        grid-template-columns:
-          1fr;
+        grid-template-columns: 1fr;
       }
     }
 
@@ -527,8 +636,7 @@
       }
 
       .metrics {
-        grid-template-columns:
-          1fr;
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -536,9 +644,7 @@
 
 <body>
   <main class="shell">
-
     <header class="topbar">
-
       <div>
         <div class="eyebrow">
           INTERNAL OPERATIONS CONTROL
@@ -550,7 +656,6 @@
       </div>
 
       <div class="top-actions">
-
         <span
           class="status"
           id="accessStatus"
@@ -578,7 +683,6 @@
         >
           Cerrar sesión
         </button>
-
       </div>
     </header>
 
@@ -591,11 +695,8 @@
       id="dashboard"
       class="hidden"
     >
-
       <div class="metrics">
-
         <article class="metric">
-
           <small>
             Volumen estimado
           </small>
@@ -611,11 +712,9 @@
           <div class="bar">
             <i id="volumeBar"></i>
           </div>
-
         </article>
 
         <article class="metric">
-
           <small>
             Espacio usado
           </small>
@@ -627,11 +726,9 @@
           <span>
             PostgreSQL + WAL visible
           </span>
-
         </article>
 
         <article class="metric">
-
           <small>
             Espacio disponible
           </small>
@@ -643,11 +740,9 @@
           <span>
             Capacidad configurada: 500 MB
           </span>
-
         </article>
 
         <article class="metric">
-
           <small>
             WAL
           </small>
@@ -659,19 +754,41 @@
           <span id="storageSeverity">
             —
           </span>
-
         </article>
-
       </div>
 
+      <section class="panel">
+        <div class="head">
+          <div>
+            <h2>
+              Diagnóstico de limpieza
+            </h2>
+
+            <p class="sub">
+              Registros históricos que Guardian considera
+              eliminables sin tocar la operación actual
+            </p>
+          </div>
+
+          <span class="pill CLEAN">
+            SOLO LECTURA
+          </span>
+        </div>
+
+        <div
+          class="diagnostics"
+          id="diagnostics"
+        >
+          <div class="empty">
+            Leyendo detectores PostgreSQL…
+          </div>
+        </div>
+      </section>
+
       <div class="grid">
-
         <div>
-
           <section class="panel">
-
             <div class="head">
-
               <div>
                 <h2>
                   Tablas PostgreSQL
@@ -682,13 +799,10 @@
                   por tamaño total
                 </p>
               </div>
-
             </div>
 
             <div class="table-wrap">
-
               <table>
-
                 <thead>
                   <tr>
                     <th>Tabla</th>
@@ -700,34 +814,25 @@
                 </thead>
 
                 <tbody id="tablesBody"></tbody>
-
               </table>
-
             </div>
-
           </section>
 
           <section class="panel">
-
             <div class="head">
-
               <div>
                 <h2>
                   Auditoría Guardian
                 </h2>
 
                 <p class="sub">
-                  Accesos y futuras acciones
-                  supervisadas
+                  Accesos y futuras acciones supervisadas
                 </p>
               </div>
-
             </div>
 
             <div class="table-wrap">
-
               <table>
-
                 <thead>
                   <tr>
                     <th>Fecha</th>
@@ -738,79 +843,60 @@
                 </thead>
 
                 <tbody id="auditBody"></tbody>
-
               </table>
-
             </div>
-
           </section>
-
         </div>
 
         <aside>
-
           <section class="panel">
-
             <div class="head">
-
               <div>
                 <h2>
                   Políticas de limpieza
                 </h2>
 
                 <p class="sub">
-                  Los botones se habilitarán
-                  después de validar los detectores
+                  Los controles se habilitarán después
+                  de validar los detectores
                 </p>
               </div>
-
             </div>
 
             <div
               class="policies"
               id="policies"
             ></div>
-
           </section>
 
           <section class="panel">
-
             <div class="head">
-
               <div>
                 <h2>
                   Alertas activas
                 </h2>
 
                 <p class="sub">
-                  Guardian informa;
-                  tú decides
+                  Guardian informa; tú decides
                 </p>
               </div>
-
             </div>
 
             <div
               class="list"
               id="alerts"
             ></div>
-
           </section>
-
         </aside>
-
       </div>
     </section>
-
   </main>
 
   <dialog id="setupDialog">
-
     <form
       class="modal"
       id="setupForm"
     >
-
       <h2>
         Crear administrador Guardian
       </h2>
@@ -824,12 +910,10 @@
       <div class="setup-note">
         El correo será
         <b>aviationcapitalsim@gmail.com</b>.
-        Elige aquí tu contraseña privada
-        de Guardian.
+        Elige aquí tu contraseña privada de Guardian.
       </div>
 
       <div class="field">
-
         <label>
           Nombre del administrador
         </label>
@@ -840,11 +924,9 @@
           maxlength="120"
           required
         >
-
       </div>
 
       <div class="field">
-
         <label>
           Correo
         </label>
@@ -856,14 +938,11 @@
           maxlength="320"
           required
         >
-
       </div>
 
       <div class="field">
-
         <label>
-          Contraseña Guardian —
-          mínimo 12 caracteres
+          Contraseña Guardian — mínimo 12 caracteres
         </label>
 
         <input
@@ -874,11 +953,9 @@
           maxlength="200"
           required
         >
-
       </div>
 
       <div class="field">
-
         <label>
           Repetir contraseña
         </label>
@@ -891,11 +968,9 @@
           maxlength="200"
           required
         >
-
       </div>
 
       <div class="field">
-
         <label>
           Clave temporal de configuración
         </label>
@@ -906,7 +981,6 @@
           autocomplete="off"
           required
         >
-
       </div>
 
       <div
@@ -915,7 +989,6 @@
       ></div>
 
       <div class="modal-actions">
-
         <button
           class="gold"
           id="setupButton"
@@ -923,20 +996,15 @@
         >
           Crear administrador
         </button>
-
       </div>
-
     </form>
-
   </dialog>
 
   <dialog id="loginDialog">
-
     <form
       class="modal"
       id="loginForm"
     >
-
       <h2>
         Acceso privado Guardian
       </h2>
@@ -947,7 +1015,6 @@
       </p>
 
       <div class="field">
-
         <label>
           Correo
         </label>
@@ -958,11 +1025,9 @@
           value="aviationcapitalsim@gmail.com"
           required
         >
-
       </div>
 
       <div class="field">
-
         <label>
           Contraseña Guardian
         </label>
@@ -973,7 +1038,6 @@
           autocomplete="current-password"
           required
         >
-
       </div>
 
       <div
@@ -982,7 +1046,6 @@
       ></div>
 
       <div class="modal-actions">
-
         <button
           class="gold"
           id="loginButton"
@@ -990,17 +1053,13 @@
         >
           Abrir Guardian
         </button>
-
       </div>
-
     </form>
-
   </dialog>
 
   <script
     src="acs_monitor.js"
     defer
   ></script>
-
 </body>
 </html>
