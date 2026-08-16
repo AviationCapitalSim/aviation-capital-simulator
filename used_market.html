@@ -2267,6 +2267,57 @@ function ACS_getUsedMarketGate(ac) {
 }
 
 /* ============================================================
+   ACS AIRLINE LISTING — MY AIRCRAFT MAINTENANCE MIRROR
+   ------------------------------------------------------------
+   Permanent authority contract:
+
+   - Applies only to aircraft listed by an airline.
+   - Reads the PostgreSQL maintenance fields also used by
+     My Aircraft.
+   - Performs no date, hours or cycles calculations.
+   - System-generated market aircraft continue using their
+     existing Used Market maintenance rules.
+   ============================================================ */
+
+function ACS_getAirlineMaintenanceMirror(
+  aircraft
+) {
+  if (
+    !aircraft ||
+    aircraft.is_player_listing !== true
+  ) {
+    return null;
+  }
+
+  return {
+    maintenanceStatus:
+      ACS_formatUsedInfoStatus(
+        aircraft.maintenance_status
+      ),
+
+    cStatus:
+      ACS_formatUsedInfoStatus(
+        aircraft.c_check_status
+      ),
+
+    dStatus:
+      ACS_formatUsedInfoStatus(
+        aircraft.d_check_status
+      ),
+
+    maintenanceControl:
+      ACS_formatUsedInfoStatus(
+        aircraft.maintenance_control_status
+      ),
+
+    maintenanceReason:
+      ACS_formatUsedInfoStatus(
+        aircraft.maintenance_control_reason
+      )
+  };
+}
+     
+/* ============================================================
    Helper — Maintenance Advisory
    ------------------------------------------------------------
    ACS OCC rule:
@@ -2288,6 +2339,52 @@ function ACS_getUsedMaintenanceAdvisory(ac) {
     };
   }
 
+    const airlineMaintenance =
+    ACS_getAirlineMaintenanceMirror(ac);
+
+  if (airlineMaintenance) {
+    if (
+      airlineMaintenance.dStatus.includes(
+        "OVERDUE"
+      )
+    ) {
+      return {
+        code: "D_OVERDUE",
+        label: "🟥 D-Check Overdue",
+        detail:
+          "Aircraft will enter D-Check maintenance after acquisition.",
+        extensionDays: 0,
+        checkboxLabel: "",
+        hasOption: false
+      };
+    }
+
+    if (
+      airlineMaintenance.cStatus.includes(
+        "OVERDUE"
+      )
+    ) {
+      return {
+        code: "C_OVERDUE",
+        label: "⚠ C-Check Overdue",
+        detail:
+          "Aircraft will enter C-Check maintenance after acquisition.",
+        extensionDays: 0,
+        checkboxLabel: "",
+        hasOption: false
+      };
+    }
+
+    return {
+      code: "CLEAR",
+      label: "CLEAR",
+      detail: "",
+      extensionDays: 0,
+      checkboxLabel: "",
+      hasOption: false
+    };
+  }
+     
   const simDate = ACS_getUsedMarketSimDate();
 
   const statusText = String(
@@ -2947,6 +3044,28 @@ function ACS_setUsedInfoStatusClass(
 }
      
 function ACS_resolveUsedInfoMaintenance(aircraft) {
+
+  const airlineMaintenance =
+    ACS_getAirlineMaintenanceMirror(
+      aircraft
+    );
+
+  if (airlineMaintenance) {
+    return {
+      maintenanceStatus:
+        airlineMaintenance
+          .maintenanceStatus,
+
+      cStatus:
+        airlineMaintenance
+          .cStatus,
+
+      dStatus:
+        airlineMaintenance
+          .dStatus
+    };
+  }
+     
   const simDate =
     ACS_getUsedMarketSimDate();
 
