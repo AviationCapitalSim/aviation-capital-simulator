@@ -11,7 +11,7 @@
    - No utilizar localStorage.
    - No ejecutar limpiezas automáticamente.
    ------------------------------------------------------------
-   Version: v1.0 | Date: 16 AUG 2026
+   Version: v2.0 | Date: 16 AUG 2026
    ============================================================ */
 
 (() => {
@@ -33,63 +33,34 @@
   const number = (value) =>
     Number(value || 0);
 
-  function formatMB(value) {
-    if (
-      value === null ||
-      value === undefined
-    ) {
-      return "—";
-    }
+  const formatMB = (value) =>
+    value === null ||
+    value === undefined
+      ? "—"
+      : `${number(value).toFixed(1)} MB`;
 
-    return `${number(value).toFixed(1)} MB`;
-  }
+  const formatNumber = (value) =>
+    number(value).toLocaleString("es-ES");
 
-  function formatNumber(value) {
-    return number(value)
-      .toLocaleString("es-ES");
-  }
-
-  function formatDate(value) {
-    if (!value) {
-      return "—";
-    }
-
-    const date =
-      new Date(value);
-
-    if (
-      Number.isNaN(
-        date.getTime()
-      )
-    ) {
-      return String(value);
-    }
-
-    return date.toLocaleString(
-      "es-ES"
-    );
-  }
-
-  function safe(value) {
-    return String(value ?? "")
-      .replace(
-        /[&<>"']/g,
-        (character) => ({
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          "\"": "&quot;",
-          "'": "&#39;"
-        })[character]
-      );
-  }
-
-  function text(
-    id,
+  const formatDate = (value) =>
     value
-  ) {
-    const node =
-      byId(id);
+      ? new Date(value).toLocaleString("es-ES")
+      : "—";
+
+  const safe = (value) =>
+    String(value ?? "").replace(
+      /[&<>"']/g,
+      (character) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      })[character]
+    );
+
+  function text(id, value) {
+    const node = byId(id);
 
     if (node) {
       node.textContent =
@@ -97,23 +68,15 @@
     }
   }
 
-  function showError(
-    id,
-    message
-  ) {
-    const node =
-      byId(id);
+  function showError(id, message) {
+    const node = byId(id);
 
-    node.textContent =
-      message;
-
-    node.style.display =
-      "block";
+    node.textContent = message;
+    node.style.display = "block";
   }
 
   function clearError(id) {
-    const node =
-      byId(id);
+    const node = byId(id);
 
     node.textContent = "";
     node.style.display = "none";
@@ -151,8 +114,7 @@
     } = {}
   ) {
     const headers = {
-      "Content-Type":
-        "application/json"
+      "Content-Type": "application/json"
     };
 
     if (
@@ -163,21 +125,21 @@
         `Bearer ${state.accessToken}`;
     }
 
-    const response =
-      await fetch(
-        `${API_ROOT}${path}`,
-        {
-          method,
-          headers,
+    const response = await fetch(
+      `${API_ROOT}${path}`,
+      {
+        method,
+        headers,
 
-          body: body
+        body:
+          body
             ? JSON.stringify(body)
             : undefined,
 
-          cache: "no-store",
-          credentials: "omit"
-        }
-      );
+        cache: "no-store",
+        credentials: "omit"
+      }
+    );
 
     const payload =
       await response
@@ -188,18 +150,14 @@
       !response.ok ||
       payload.ok === false
     ) {
-      const error =
-        new Error(
-          messages[payload.error] ||
-          payload.error ||
-          `HTTP ${response.status}`
-        );
+      const error = new Error(
+        messages[payload.error] ||
+        payload.error ||
+        `HTTP ${response.status}`
+      );
 
-      error.code =
-        payload.error;
-
-      error.status =
-        response.status;
+      error.code = payload.error;
+      error.status = response.status;
 
       throw error;
     }
@@ -208,19 +166,13 @@
   }
 
   function openLogin() {
-    const setupDialog =
-      byId("setupDialog");
-
-    if (setupDialog.open) {
-      setupDialog.close();
+    if (byId("setupDialog").open) {
+      byId("setupDialog").close();
     }
 
-    clearError(
-      "loginError"
-    );
+    clearError("loginError");
 
-    byId("loginDialog")
-      .showModal();
+    byId("loginDialog").showModal();
   }
 
   async function initialize() {
@@ -230,16 +182,13 @@
           "/guardian/setup-status"
         );
 
-      if (
-        status.setupRequired
-      ) {
-        byId("setupDialog")
-          .showModal();
-
+      if (status.setupRequired) {
+        byId(
+          "setupDialog"
+        ).showModal();
       } else {
         openLogin();
       }
-
     } catch (error) {
       text(
         "accessStatus",
@@ -257,21 +206,14 @@
   ) {
     event.preventDefault();
 
-    clearError(
-      "setupError"
-    );
+    clearError("setupError");
 
     const password =
       byId("setupPassword").value;
 
-    const repeatedPassword =
-      byId(
-        "setupPasswordRepeat"
-      ).value;
-
     if (
       password !==
-      repeatedPassword
+      byId("setupPasswordRepeat").value
     ) {
       showError(
         "setupError",
@@ -281,8 +223,9 @@
       return;
     }
 
-    byId("setupButton")
-      .disabled = true;
+    byId(
+      "setupButton"
+    ).disabled = true;
 
     try {
       await api(
@@ -292,21 +235,15 @@
 
           body: {
             displayName:
-              byId(
-                "setupName"
-              ).value,
+              byId("setupName").value,
 
             email:
-              byId(
-                "setupEmail"
-              ).value,
+              byId("setupEmail").value,
 
             password,
 
             setupKey:
-              byId(
-                "setupKey"
-              ).value
+              byId("setupKey").value
           }
         }
       );
@@ -328,28 +265,26 @@
       window.alert(
         "Administrador creado. Ya puedes entrar a ACS Guardian."
       );
-
     } catch (error) {
       showError(
         "setupError",
         error.message
       );
-
     } finally {
-      byId("setupButton")
-        .disabled = false;
+      byId(
+        "setupButton"
+      ).disabled = false;
     }
   }
 
   async function login(event) {
     event.preventDefault();
 
-    clearError(
-      "loginError"
-    );
+    clearError("loginError");
 
-    byId("loginButton")
-      .disabled = true;
+    byId(
+      "loginButton"
+    ).disabled = true;
 
     try {
       const payload =
@@ -360,14 +295,10 @@
 
             body: {
               email:
-                byId(
-                  "loginEmail"
-                ).value,
+                byId("loginEmail").value,
 
               password:
-                byId(
-                  "loginPassword"
-                ).value
+                byId("loginPassword").value
             }
           }
         );
@@ -419,34 +350,29 @@
 
       state.refreshTimer =
         window.setInterval(
-          () => {
-            refresh()
-              .catch(
-                handleSessionError
-              );
-          },
+          () =>
+            refresh().catch(
+              handleSessionError
+            ),
           60000
         );
-
     } catch (error) {
       showError(
         "loginError",
         error.message
       );
-
     } finally {
-      byId("loginButton")
-        .disabled = false;
+      byId(
+        "loginButton"
+      ).disabled = false;
     }
   }
 
-  function renderStorage(
-    storage
-  ) {
+  function renderStorage(storage) {
     const volume =
       storage.volume;
 
-    const postgresql =
+    const postgres =
       storage.postgresql;
 
     text(
@@ -479,7 +405,7 @@
     text(
       "walMB",
       formatMB(
-        postgresql.walMB
+        postgres.walMB
       )
     );
 
@@ -496,7 +422,6 @@
     const percent =
       Math.min(
         100,
-
         Math.max(
           0,
           number(
@@ -523,37 +448,250 @@
       "tablesBody"
     ).innerHTML =
       storage.largestTables
-        .map((row) => `
-          <tr>
-            <td>
-              ${safe(row.table)}
-            </td>
+        .map(
+          (row) => `
+            <tr>
+              <td>
+                ${safe(row.table)}
+              </td>
 
-            <td>
-              ${formatMB(row.totalMB)}
-            </td>
+              <td>
+                ${formatMB(row.totalMB)}
+              </td>
 
-            <td>
-              ${formatMB(row.tableMB)}
-            </td>
+              <td>
+                ${formatMB(row.tableMB)}
+              </td>
 
-            <td>
-              ${formatMB(row.indexMB)}
-            </td>
+              <td>
+                ${formatMB(row.indexMB)}
+              </td>
 
-            <td>
-              ${formatNumber(
-                row.estimatedRows
-              )}
-            </td>
-          </tr>
-        `)
+              <td>
+                ${formatNumber(
+                  row.estimatedRows
+                )}
+              </td>
+            </tr>
+          `
+        )
         .join("");
   }
 
-  function renderPolicies(
-    policies
+  function renderDiagnostics(
+    diagnostics
   ) {
+    const statusNames = {
+      CLEAN:
+        "LIMPIO",
+
+      MONITORING:
+        "VIGILANDO",
+
+      ATTENTION:
+        "REQUIERE ATENCIÓN"
+    };
+
+    const notes = {
+      CLEAN:
+        "No existen registros históricos eliminables.",
+
+      MONITORING:
+        "Hay registros eliminables, pero todavía no alcanzan el límite configurado.",
+
+      ATTENTION:
+        "El límite configurado fue alcanzado. Guardian recomendará preparar una limpieza supervisada."
+    };
+
+    if (!diagnostics.length) {
+      byId(
+        "diagnostics"
+      ).innerHTML = `
+        <div class="empty">
+          No se recibieron diagnósticos.
+        </div>
+      `;
+
+      return;
+    }
+
+    byId(
+      "diagnostics"
+    ).innerHTML =
+      diagnostics
+        .map((item) => {
+          const metrics =
+            item.metrics || {};
+
+          const policy =
+            item.policy || {};
+
+          const extras = [];
+
+          if (
+            metrics.relatedPassengerRows !==
+            undefined
+          ) {
+            extras.push(`
+              <div>
+                <span>
+                  Resultados de pasajeros
+                </span>
+
+                <strong>
+                  ${formatNumber(
+                    metrics.relatedPassengerRows
+                  )}
+                </strong>
+              </div>
+            `);
+          }
+
+          if (
+            metrics.closedFlightSets !==
+            undefined
+          ) {
+            extras.push(`
+              <div>
+                <span>
+                  Vuelos financieros
+                </span>
+
+                <strong>
+                  ${formatNumber(
+                    metrics.closedFlightSets
+                  )}
+                </strong>
+              </div>
+            `);
+          }
+
+          return `
+            <article
+              class="diagnostic ${safe(item.status)}"
+            >
+              <div class="diagnostic-title">
+                <b>
+                  ${safe(item.title)}
+                </b>
+
+                <span
+                  class="pill ${safe(item.status)}"
+                >
+                  ${safe(
+                    statusNames[item.status] ||
+                    item.status
+                  )}
+                </span>
+              </div>
+
+              <strong class="diagnostic-value">
+                ${formatNumber(
+                  metrics.eligibleRows
+                )}
+              </strong>
+
+              <span class="diagnostic-caption">
+                filas eliminables detectadas
+              </span>
+
+              <div class="diagnostic-details">
+                <div>
+                  <span>
+                    Tabla
+                  </span>
+
+                  <strong>
+                    ${safe(item.table)}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>
+                    Tamaño total
+                  </span>
+
+                  <strong>
+                    ${formatMB(
+                      number(
+                        metrics.totalBytes
+                      ) / 1048576
+                    )}
+                  </strong>
+                </div>
+
+                ${extras.join("")}
+
+                <div>
+                  <span>
+                    Primer registro
+                  </span>
+
+                  <strong>
+                    ${safe(
+                      formatDate(
+                        metrics.firstEligibleAt
+                      )
+                    )}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>
+                    Último registro
+                  </span>
+
+                  <strong>
+                    ${safe(
+                      formatDate(
+                        metrics.lastEligibleAt
+                      )
+                    )}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>
+                    Límite de filas
+                  </span>
+
+                  <strong>
+                    ${formatNumber(
+                      policy.eligibleRowThreshold
+                    )}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>
+                    Límite de tabla
+                  </span>
+
+                  <strong>
+                    ${formatMB(
+                      number(
+                        policy.tableByteThreshold
+                      ) / 1048576
+                    )}
+                  </strong>
+                </div>
+              </div>
+
+              <div class="diagnostic-note">
+                ${safe(
+                  notes[item.status] ||
+                  "Estado pendiente."
+                )}
+
+                Ejecución automática: NO.
+              </div>
+            </article>
+          `;
+        })
+        .join("");
+  }
+
+  function renderPolicies(policies) {
     const names = {
       FLIGHT_HISTORY_COMPACTION:
         "Historial de vuelos cerrados",
@@ -569,139 +707,126 @@
       "policies"
     ).innerHTML =
       policies
-        .map((policy) => `
-          <div class="policy">
-
-            <b>
-              ${safe(
-                names[
+        .map(
+          (policy) => `
+            <div class="policy">
+              <b>
+                ${safe(
+                  names[
+                    policy.action_type
+                  ] ||
                   policy.action_type
-                ] ||
-                policy.action_type
-              )}
-            </b>
+                )}
+              </b>
 
-            <span>
-              Alerta:
-              ${formatNumber(
-                policy
-                  .eligible_row_threshold
-              )}
-              filas o
-              ${formatMB(
-                number(
-                  policy
-                    .table_byte_threshold
-                ) / 1048576
-              )}
-            </span>
+              <span>
+                Alerta:
+                ${formatNumber(
+                  policy.eligible_row_threshold
+                )}
+                filas o
+                ${formatMB(
+                  number(
+                    policy.table_byte_threshold
+                  ) / 1048576
+                )}
+              </span>
 
-            <span>
-              Estado:
-              ${
-                policy.enabled
-                  ? "ACTIVA"
-                  : "DESACTIVADA"
-              }
-
-              · Ejecución automática: NO
-            </span>
-
-          </div>
-        `)
+              <span>
+                Estado:
+                ${
+                  policy.enabled
+                    ? "ACTIVA"
+                    : "DESACTIVADA"
+                }
+                · Ejecución automática: NO
+              </span>
+            </div>
+          `
+        )
         .join("");
   }
 
-  function renderAlerts(
-    alerts
-  ) {
+  function renderAlerts(alerts) {
     byId(
       "alerts"
     ).innerHTML =
       alerts.length
         ? alerts
-            .map((alert) => `
-              <div
-                class="item ${safe(
-                  alert.severity
-                )}"
-              >
+            .map(
+              (alert) => `
+                <div
+                  class="item ${safe(
+                    alert.severity
+                  )}"
+                >
+                  <b>
+                    ${safe(alert.title)}
+                  </b>
 
-                <b>
-                  ${safe(
-                    alert.title
-                  )}
-                </b>
-
-                <span>
-                  ${safe(
-                    alert.message
-                  )}
-                </span>
-
-              </div>
-            `)
+                  <span>
+                    ${safe(alert.message)}
+                  </span>
+                </div>
+              `
+            )
             .join("")
-
         : `
-          <div class="empty">
-            Sin alertas activas.
-          </div>
-        `;
+            <div class="empty">
+              Sin alertas activas.
+            </div>
+          `;
   }
 
-  function renderAudit(
-    entries
-  ) {
+  function renderAudit(entries) {
     byId(
       "auditBody"
     ).innerHTML =
       entries.length
         ? entries
-            .map((entry) => `
-              <tr>
+            .map(
+              (entry) => `
+                <tr>
+                  <td>
+                    ${safe(
+                      formatDate(
+                        entry.created_at
+                      )
+                    )}
+                  </td>
 
-                <td>
-                  ${safe(
-                    formatDate(
-                      entry.created_at
-                    )
-                  )}
-                </td>
+                  <td>
+                    ${safe(
+                      entry.display_name ||
+                      entry.email ||
+                      "Sistema"
+                    )}
+                  </td>
 
-                <td>
-                  ${safe(
-                    entry.display_name ||
-                    entry.email ||
-                    "Sistema"
-                  )}
-                </td>
+                  <td>
+                    ${safe(
+                      entry.event_type
+                    )}
+                  </td>
 
-                <td>
-                  ${safe(
-                    entry.event_type
-                  )}
-                </td>
-
-                <td>
-                  ${safe(
-                    JSON.stringify(
-                      entry.details || {}
-                    )
-                  )}
-                </td>
-
-              </tr>
-            `)
+                  <td>
+                    ${safe(
+                      JSON.stringify(
+                        entry.details || {}
+                      )
+                    )}
+                  </td>
+                </tr>
+              `
+            )
             .join("")
-
         : `
-          <tr>
-            <td colspan="4">
-              Sin registros.
-            </td>
-          </tr>
-        `;
+            <tr>
+              <td colspan="4">
+                Sin registros.
+              </td>
+            </tr>
+          `;
   }
 
   async function refresh() {
@@ -733,6 +858,10 @@
         dashboard.storage
       );
 
+      renderDiagnostics(
+        dashboard.diagnostics || []
+      );
+
       renderPolicies(
         dashboard.policies
       );
@@ -747,15 +876,12 @@
 
       text(
         "lastUpdate",
-
         `Actualizado ${
-          new Date()
-            .toLocaleTimeString(
-              "es-ES"
-            )
+          new Date().toLocaleTimeString(
+            "es-ES"
+          )
         }`
       );
-
     } finally {
       byId(
         "refreshButton"
@@ -763,9 +889,7 @@
     }
   }
 
-  function handleSessionError(
-    error
-  ) {
+  function handleSessionError(error) {
     if (error.status === 401) {
       state.accessToken = null;
 
@@ -791,7 +915,6 @@
       );
 
       openLogin();
-
     } else {
       window.alert(
         `Guardian: ${error.message}`
@@ -809,8 +932,8 @@
         }
       );
     } catch {
-      // The local access is closed
-      // even if the server token expired.
+      // The local session is closed even if
+      // the server is temporarily unavailable.
     }
 
     state.accessToken = null;
@@ -861,12 +984,10 @@
     "refreshButton"
   ).addEventListener(
     "click",
-    () => {
-      refresh()
-        .catch(
-          handleSessionError
-        );
-    }
+    () =>
+      refresh().catch(
+        handleSessionError
+      )
   );
 
   byId(
