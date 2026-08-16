@@ -566,6 +566,25 @@
             `);
           }
 
+          if (
+  metrics.affectedAirlines !==
+  undefined
+) {
+  extras.push(`
+    <div>
+      <span>
+        Compañías involucradas
+      </span>
+
+      <strong>
+        ${formatNumber(
+          metrics.affectedAirlines
+        )}
+      </strong>
+    </div>
+  `);
+}
+   
           return `
             <article
               class="diagnostic ${safe(item.status)}"
