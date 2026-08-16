@@ -368,6 +368,130 @@
     }
   }
 
+  function renderSupervisor(
+  supervisor
+) {
+  const panel =
+    byId("supervisorPanel");
+
+  panel.classList.remove(
+    "hidden"
+  );
+
+  if (!supervisor) {
+    text(
+      "supervisorStatus",
+      "NO DISPONIBLE"
+    );
+
+    byId(
+      "supervisorStatus"
+    ).className =
+      "pill CRITICAL";
+
+    text(
+      "supervisorLastSuccess",
+      "Sin revisión registrada"
+    );
+
+    text(
+      "supervisorInterval",
+      "—"
+    );
+
+    text(
+      "supervisorAuthorization",
+      "BLOQUEADA"
+    );
+
+    return;
+  }
+
+  const statusNames = {
+    STARTING:
+      "INICIANDO",
+
+    RUNNING:
+      "REVISANDO",
+
+    SUCCESS:
+      "OPERATIVO",
+
+    FAILED:
+      "FALLO",
+
+    STANDBY:
+      "EN ESPERA",
+
+    DISABLED:
+      "DESACTIVADO"
+  };
+
+  const statusClass =
+    supervisor.status === "SUCCESS"
+      ? "STABLE"
+      : (
+          supervisor.status === "FAILED" ||
+          supervisor.status === "DISABLED"
+        )
+        ? "CRITICAL"
+        : "WARNING";
+
+  text(
+    "supervisorStatus",
+
+    statusNames[
+      supervisor.status
+    ] ||
+    supervisor.status
+  );
+
+  byId(
+    "supervisorStatus"
+  ).className =
+    `pill ${statusClass}`;
+
+  text(
+    "supervisorLastSuccess",
+
+    formatDate(
+      supervisor.last_success_at
+    )
+  );
+
+  const intervalMinutes =
+    Math.max(
+      1,
+
+      Math.round(
+        number(
+          supervisor
+            .scan_interval_seconds
+        ) / 60
+      )
+    );
+
+  text(
+    "supervisorInterval",
+    `Cada ${intervalMinutes} minutos`
+  );
+
+  text(
+    "supervisorAuthorization",
+
+    supervisor.automatic_cleanup
+      ? "ERROR: AUTOMÁTICA"
+      : "SOLO CON TU AUTORIZACIÓN"
+  );
+
+  byId(
+    "supervisorAuthorization"
+  ).className =
+    supervisor.automatic_cleanup
+      ? "CRITICAL"
+      : "STABLE";
+}
+   
   function renderStorage(storage) {
     const volume =
       storage.volume;
