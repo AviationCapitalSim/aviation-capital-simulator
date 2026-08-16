@@ -3010,7 +3010,9 @@ function ACS_setUsedInfoStatusClass(
     status.includes("CLEAR") ||
     status.includes("ACTIVE") ||
     status.includes("AVAILABLE") ||
-    status.includes("SERVICEABLE")
+    status.includes("SERVICEABLE") ||
+    status === "OPEN"
+    
   ) {
     element.classList.add(
       "used-acp-status-ok"
