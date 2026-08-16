@@ -510,6 +510,68 @@
       border-radius: 8px;
     }
 
+    .supervisor-panel {
+  display: grid;
+
+  grid-template-columns:
+    1.4fr repeat(3, 1fr);
+
+  gap: 1px;
+  margin-bottom: 14px;
+  overflow: hidden;
+
+  border:
+    1px solid var(--line);
+
+  border-radius: 14px;
+  background: var(--line);
+
+  box-shadow:
+    0 18px 45px #0005;
+}
+
+.supervisor-cell {
+  min-width: 0;
+  padding: 13px 15px;
+  background: #0b1a24;
+}
+
+.supervisor-cell small {
+  display: block;
+  margin-bottom: 6px;
+
+  color: var(--muted);
+
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.supervisor-cell strong {
+  display: block;
+  overflow: hidden;
+
+  color: var(--text);
+  font-size: 12px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 950px) {
+  .supervisor-panel {
+    grid-template-columns:
+      1fr 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .supervisor-panel {
+    grid-template-columns:
+      1fr;
+  }
+}
+       
     dialog {
       width:
         min(540px, calc(100% - 28px));
@@ -690,6 +752,54 @@
       Guardian supervisa y recomienda.
       Ninguna limpieza se ejecuta automáticamente.
     </div>
+
+    <section
+  class="supervisor-panel hidden"
+  id="supervisorPanel"
+>
+  <div class="supervisor-cell">
+    <small>
+      Supervisor automático
+    </small>
+
+    <span
+      class="pill"
+      id="supervisorStatus"
+    >
+      SIN LECTURA
+    </span>
+  </div>
+
+  <div class="supervisor-cell">
+    <small>
+      Última revisión exitosa
+    </small>
+
+    <strong id="supervisorLastSuccess">
+      —
+    </strong>
+  </div>
+
+  <div class="supervisor-cell">
+    <small>
+      Frecuencia de revisión
+    </small>
+
+    <strong id="supervisorInterval">
+      —
+    </strong>
+  </div>
+
+  <div class="supervisor-cell">
+    <small>
+      Autorización de limpieza
+    </small>
+
+    <strong id="supervisorAuthorization">
+      —
+    </strong>
+  </div>
+</section>
 
     <section
       id="dashboard"
