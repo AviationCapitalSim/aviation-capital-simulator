@@ -1,342 +1,1006 @@
 <!-- ============================================================
-     🔒 ACS INTERNAL MONITOR — PRIVATE DEV PANEL
+     🛡️ ACS OCC — SYSTEM GUARDIAN
+     PRIVATE OPERATIONS CONTROL CENTER
      ------------------------------------------------------------
      Purpose:
-     - Monitor interno para auditar ACS en vivo (Time/HR/Finance/Ops)
-     - SOLO para el desarrollador (no público)
+     - Supervisar almacenamiento Railway y PostgreSQL.
+     - Monitorizar base de datos, WAL y tablas principales.
+     - Detectar datos históricos eliminables.
+     - Ejecutar limpiezas únicamente bajo confirmación manual.
+     - Registrar accesos y acciones administrativas.
+     - Sin ejecución destructiva automática.
+     - Panel privado; no disponible para jugadores.
      ------------------------------------------------------------
-     Version: v0.1 | Date: 04 FEB 2026
+     Authority: PostgreSQL / Railway
+     Version: v1.0 | Date: 16 AUG 2026
      ============================================================ -->
-<!DOCTYPE html>
-<html lang="en">
+
+<!doctype html>
+<html
+  lang="es"
+  data-api-root="https://api.aviationcapitalsim.com/v1"
+>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>ACS Internal Monitor</title>
+  <meta charset="utf-8">
 
-  <!-- Reusa tu estilo principal si existe (ajusta ruta si tu css está en otro lugar) -->
-  <link rel="stylesheet" href="../styles.css" />
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  >
 
-   <!-- ======== ACS Favicons (16 / 32 / 64) ======== -->
-  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
-  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+  <meta
+    name="robots"
+    content="noindex,nofollow,noarchive"
+  >
 
-  <!-- ======== Apple iPhone/iPad Home Screen Icon ======== -->
-  <link rel="apple-touch-icon" href="acs_logo_180.png">
-     
+  <meta
+    name="referrer"
+    content="no-referrer"
+  >
+
+  <title>
+    ACS OCC — System Guardian
+  </title>
+
   <style>
-    /* Minimal, readable, Qatar-Luxury compatible */
-    body{ background:#071018; color:#E7EEF8; }
-    .wrap{ max-width:1200px; margin:0 auto; padding:18px; }
-    .top{
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-      padding:14px 16px; border-radius:16px;
-      background:rgba(10,18,28,0.75);
-      border:1px solid rgba(242,201,76,0.22);
-      box-shadow:0 0 18px rgba(0,0,0,0.45);
-      backdrop-filter: blur(10px);
-    }
-    .brand{ display:flex; flex-direction:column; gap:4px; }
-    .brand h1{ margin:0; font-size:18px; letter-spacing:1.8px; color:#F2C94C; }
-    .brand p{ margin:0; font-size:12px; opacity:0.85; }
-    .chip{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:8px 12px; border-radius:999px;
-      border:1px solid rgba(255,255,255,0.12);
-      background:rgba(255,255,255,0.06);
-      font-size:12px;
-      user-select:none;
-    }
-    .grid{ display:grid; grid-template-columns:repeat(12,1fr); gap:14px; margin-top:14px; }
-    .card{
-      grid-column:span 6;
-      background:rgba(10,18,28,0.72);
-      border:1px solid rgba(255,255,255,0.10);
-      border-radius:18px;
-      padding:14px;
-      box-shadow:0 0 16px rgba(0,0,0,0.35);
-      backdrop-filter: blur(10px);
-    }
-    .card h2{
-      margin:0 0 10px 0;
-      font-size:13px;
-      letter-spacing:1.6px;
-      text-transform:uppercase;
-      color:#F2C94C;
-      display:flex; align-items:center; gap:8px;
-    }
-    pre{
-      margin:0;
-      padding:12px;
-      border-radius:14px;
-      background:rgba(0,0,0,0.28);
-      border:1px solid rgba(255,255,255,0.08);
-      overflow:auto;
-      font-size:12px;
-      line-height:1.35;
-      color:#DDE7F5;
-      min-height:120px;
-    }
-    .wide{ grid-column:span 12; }
-    .btn{
-      cursor:pointer;
-      border:1px solid rgba(242,201,76,0.35);
-      background:rgba(242,201,76,0.12);
-      color:#F2C94C;
-      border-radius:12px;
-      padding:10px 12px;
-      font-weight:700;
-      letter-spacing:1px;
-    }
-    .btn:active{ transform:translateY(1px); }
-    @media(max-width:900px){
-      .card{ grid-column:span 12; }
+    :root {
+      color-scheme: dark;
+
+      --bg: #061018;
+      --panel: #0c1923;
+      --panel2: #112532;
+      --line: #223b4b;
+      --gold: #d9ac55;
+      --cyan: #55cfee;
+      --green: #48cf8b;
+      --yellow: #f0bd4e;
+      --red: #ef6b72;
+      --text: #edf5fa;
+      --muted: #8fa5b5;
     }
 
-/* ============================================================
-   🟡 PHASE 3.3 — SYSTEM HEALTH VISUAL (BADGE + BORDER)
-   ------------------------------------------------------------
-   Purpose:
-   - Indicador claro de estado (GREEN / YELLOW / RED)
-   - Borde izquierdo + badge superior derecho
-   - Estilo ACS / Qatar Luxury
-   ============================================================ */
+    * {
+      box-sizing: border-box;
+    }
 
-#healthPanel{
-  position:relative;
-  border-left:4px solid rgba(255,255,255,0.08);
-}
+    body {
+      margin: 0;
+      min-height: 100vh;
 
-/* ---- Badge base ---- */
-.health-badge{
-  position:absolute;
-  top:14px;
-  right:16px;
-  padding:6px 14px;
-  border-radius:999px;
-  font-size:11px;
-  letter-spacing:2px;
-  font-weight:700;
-  text-transform:uppercase;
-  backdrop-filter: blur(6px);
-  border:1px solid rgba(255,255,255,0.18);
-  background:rgba(255,255,255,0.06);
-  color:#E7EEF8;
-  box-shadow:0 0 10px rgba(0,0,0,0.35);
-}
+      background:
+        radial-gradient(
+          circle at 85% 0,
+          #17364b 0,
+          transparent 32rem
+        ),
+        var(--bg);
 
-/* ---- GREEN ---- */
-#healthPanel.health-green{
-  border-left-color:#2ECC71;
-}
-#healthPanel.health-green .health-badge{
-  color:#2ECC71;
-  border-color:rgba(46,204,113,0.65);
-  box-shadow:0 0 14px rgba(46,204,113,0.35);
-}
+      color: var(--text);
 
-/* ---- YELLOW ---- */
-#healthPanel.health-yellow{
-  border-left-color:#F2C94C;
-}
-#healthPanel.health-yellow .health-badge{
-  color:#F2C94C;
-  border-color:rgba(242,201,76,0.65);
-  box-shadow:0 0 14px rgba(242,201,76,0.35);
-}
+      font:
+        15px Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+    }
 
-/* ---- RED ---- */
-#healthPanel.health-red{
-  border-left-color:#EB5757;
-}
-#healthPanel.health-red .health-badge{
-  color:#EB5757;
-  border-color:rgba(235,87,87,0.65);
-  box-shadow:0 0 14px rgba(235,87,87,0.35);
-}
-       
+    button,
+    input {
+      font: inherit;
+    }
+
+    .shell {
+      width: min(1440px, 100%);
+      margin: auto;
+      padding: 24px;
+    }
+
+    .topbar,
+    .panel,
+    .metric {
+      background:
+        linear-gradient(
+          145deg,
+          rgba(15, 31, 42, 0.96),
+          rgba(8, 19, 28, 0.96)
+        );
+
+      border:
+        1px solid var(--line);
+
+      box-shadow:
+        0 18px 45px rgba(0, 0, 0, 0.33);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+
+      padding: 20px 22px;
+      border-radius: 18px;
+    }
+
+    .eyebrow {
+      color: var(--gold);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+    }
+
+    .topbar h1 {
+      margin: 5px 0 0;
+
+      font-size:
+        clamp(
+          22px,
+          3vw,
+          31px
+        );
+
+      letter-spacing: 0.04em;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 9px;
+      flex-wrap: wrap;
+    }
+
+    .status,
+    .pill {
+      display: inline-flex;
+
+      padding: 7px 10px;
+
+      border:
+        1px solid var(--line);
+
+      border-radius: 999px;
+
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+    }
+
+    .STABLE,
+    .INFO {
+      color: var(--green);
+    }
+
+    .WARNING {
+      color: var(--yellow);
+    }
+
+    .CRITICAL {
+      color: var(--red);
+    }
+
+    button {
+      border:
+        1px solid var(--line);
+
+      border-radius: 10px;
+      padding: 10px 13px;
+
+      background: #142b39;
+      color: var(--text);
+
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    button:hover {
+      border-color: var(--gold);
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .gold {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: #161007;
+    }
+
+    .metrics {
+      display: grid;
+
+      grid-template-columns:
+        repeat(4, 1fr);
+
+      gap: 14px;
+      margin: 14px 0;
+    }
+
+    .metric {
+      border-radius: 15px;
+      padding: 17px;
+    }
+
+    .metric small {
+      display: block;
+
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .metric strong {
+      display: block;
+
+      margin: 8px 0 4px;
+
+      font-size:
+        clamp(
+          25px,
+          3vw,
+          38px
+        );
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 14px;
+    }
+
+    .panel {
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+
+    .panel h2 {
+      margin: 0;
+
+      color: var(--gold);
+      font-size: 13px;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .sub {
+      color: var(--muted);
+      font-size: 12px;
+      margin: 5px 0 0;
+    }
+
+    .bar {
+      height: 12px;
+
+      border:
+        1px solid var(--line);
+
+      border-radius: 999px;
+      overflow: hidden;
+
+      background: #050c12;
+      margin-top: 12px;
+    }
+
+    .bar i {
+      display: block;
+      width: 0;
+      height: 100%;
+      background: var(--green);
+      transition: 0.3s;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      max-height: 460px;
+
+      border:
+        1px solid var(--line);
+
+      border-radius: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    th,
+    td {
+      padding: 10px;
+
+      border-bottom:
+        1px solid #1b3341;
+
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+
+      background: #10232e;
+      color: #9db0bd;
+
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .policies,
+    .list {
+      display: grid;
+      gap: 9px;
+    }
+
+    .policy,
+    .item {
+      padding: 12px;
+      border-radius: 11px;
+      background: var(--panel2);
+
+      border-left:
+        3px solid var(--line);
+    }
+
+    .policy b,
+    .item b {
+      display: block;
+      font-size: 12px;
+    }
+
+    .policy span,
+    .item span {
+      display: block;
+
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    .policy.WARNING,
+    .item.WARNING {
+      border-left-color:
+        var(--yellow);
+    }
+
+    .item.CRITICAL {
+      border-left-color:
+        var(--red);
+    }
+
+    .empty {
+      color: var(--muted);
+      padding: 13px 2px;
+    }
+
+    .notice {
+      margin: 14px 0;
+      padding: 12px 15px;
+
+      border-left:
+        3px solid var(--gold);
+
+      background:
+        rgba(217, 172, 85, 0.07);
+
+      color: #d9cfba;
+      border-radius: 8px;
+    }
+
+    dialog {
+      width:
+        min(
+          540px,
+          calc(100% - 28px)
+        );
+
+      border:
+        1px solid var(--line);
+
+      border-radius: 17px;
+      background: #091720;
+      color: var(--text);
+      padding: 0;
+
+      box-shadow:
+        0 35px 100px #000;
+    }
+
+    dialog::backdrop {
+      background:
+        rgba(0, 0, 0, 0.8);
+
+      backdrop-filter:
+        blur(5px);
+    }
+
+    .modal {
+      padding: 22px;
+    }
+
+    .modal h2 {
+      margin: 0;
+      color: var(--gold);
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      margin-top: 13px;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 11px;
+
+      border:
+        1px solid var(--line);
+
+      border-radius: 9px;
+      background: #051018;
+      color: var(--text);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 9px;
+      margin-top: 18px;
+    }
+
+    .error {
+      display: none;
+
+      margin-top: 13px;
+      padding: 10px;
+
+      border:
+        1px solid #8c3039;
+
+      border-radius: 9px;
+      background: #3a171b;
+      color: #ffd5d8;
+    }
+
+    .setup-note {
+      padding: 10px;
+
+      border-radius: 9px;
+      background: #102735;
+      color: #b8cad5;
+      font-size: 12px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 950px) {
+      .metrics {
+        grid-template-columns:
+          1fr 1fr;
+      }
+
+      .grid {
+        grid-template-columns:
+          1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .shell {
+        padding: 12px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .top-actions {
+        justify-content: flex-start;
+      }
+
+      .metrics {
+        grid-template-columns:
+          1fr;
+      }
+    }
   </style>
 </head>
 
 <body>
-  <div class="wrap">
-    <div class="top">
-      <div class="brand">
-        <h1>ACS INTERNAL MONITOR</h1>
-        <p>Private Dev Panel — Time • HR • Finance • Ops • Integrity</p>
+  <main class="shell">
+
+    <header class="topbar">
+
+      <div>
+        <div class="eyebrow">
+          INTERNAL OPERATIONS CONTROL
+        </div>
+
+        <h1>
+          ACS OCC — SYSTEM GUARDIAN
+        </h1>
       </div>
-      <div style="display:flex; gap:10px; align-items:center;">
-        <div class="chip" id="devChip">DEV: —</div>
-        <button class="btn" id="btnRefresh">REFRESH SNAPSHOT</button>
+
+      <div class="top-actions">
+
+        <span
+          class="status"
+          id="accessStatus"
+        >
+          Acceso bloqueado
+        </span>
+
+        <span
+          class="status"
+          id="lastUpdate"
+        >
+          Sin lectura
+        </span>
+
+        <button
+          id="refreshButton"
+          disabled
+        >
+          Actualizar
+        </button>
+
+        <button
+          id="logoutButton"
+          class="hidden"
+        >
+          Cerrar sesión
+        </button>
+
       </div>
-    </div>
-       
-<div class="grid">
+    </header>
 
-  <section class="card" id="cardTime">
-    <h2>🕒 TIME ENGINE</h2>
-    <pre id="outTime">Waiting...</pre>
-  </section>
-
-  <section class="card" id="cardHR">
-    <h2>🧑‍✈️ HR LIVE STATE</h2>
-    <pre id="outHR">Waiting...</pre>
-  </section>
-
-  <section class="card" id="cardFinance">
-    <h2>💰 FINANCE LEDGER</h2>
-    <pre id="outFinance">Waiting...</pre>
-  </section>
-
-  <section class="card" id="cardOps">
-    <h2>🧭 OPS / ROUTES</h2>
-    <pre id="outOps">Waiting...</pre>
-  </section>
-
-  <section class="card wide" id="cardWarnings">
-    <h2>⚠️ INTEGRITY & WARNINGS</h2>
-    <pre id="outWarnings">Waiting...</pre>
-  </section>
-   
-  <section class="card wide" id="cardMyAircraft">
-  <h2>🛩 My Aircraft — Fleet Monitor</h2>
-
-  <div class="monitor-subtitle">
-    Source: ACS_MyAircraft (localStorage) · Read-Only
-  </div>
-
-  <!-- Fleet summary -->
-  <div id="fleetSummary" style="margin:10px 0; font-size:13px; opacity:.9;">
-    Loading fleet summary…
-  </div>
-
-  <!-- 🔴 ESTE ELEMENTO FALTABA -->
-  <pre id="monitorMyAircraft"
-       style="
-         max-height: 360px;
-         overflow: auto;
-         background: #0b1424;
-         border: 1px solid #1f3b63;
-         border-radius: 8px;
-         padding: 12px;
-         font-size: 12px;
-         color: #cfe3ff;
-       ">
-Loading fleet data…
-  </pre>
-</section>
-       
-  <!-- Grouped containers -->
-  <div id="fleetGroups" style="display:flex; flex-direction:column; gap:10px;">
-    <!-- Groups injected by JS -->
-  </div>
-</section>
-
-<section class="card wide">
-  <h2>🛡️ FULL SYSTEM SCAN</h2>
-  <button class="btn" id="btnFullScan">RUN FULL DIAGNOSTIC</button>
-  <pre id="outFullScan" style="margin-top:10px; min-height:200px;">Waiting...</pre>
-</section>
-     
-  <!-- ============================================================
-       🧨 ACS MASTER RESET (HARD WIPE)
-       ------------------------------------------------------------
-       Purpose:
-       - BORRA TODO (localStorage + sessionStorage + caches + SW + IDB)
-       - Deja ACS en cero para iniciar nuevo juego
-       ============================================================ -->
-     
-  <section class="card wide" id="cardMasterReset">
-    <h2>🧨 MASTER RESET — FULL WIPE</h2>
-
-    <div style="opacity:.9; font-size:13px; line-height:1.35; margin:6px 0 10px 0;">
-      ⚠️ Esto borrará <b>ABSOLUTAMENTE TODO</b> ACS del navegador (incluye usuarios, sesión, datos del juego, caches y Service Worker).<br>
-      Recomendado solo para: <b>nuevo juego desde cero</b>.
+    <div class="notice">
+      Guardian supervisa y recomienda.
+      Ninguna limpieza se ejecuta automáticamente.
     </div>
 
-    <button class="btn" id="btnMasterReset"
-      style="
-        border:1px solid rgba(235,87,87,0.65);
-        background:rgba(235,87,87,0.10);
-        color:#ffb4b4;
-      ">
-      🧨 RUN MASTER RESET (FULL WIPE)
-    </button>
+    <section
+      id="dashboard"
+      class="hidden"
+    >
 
-    <pre id="outResetLog" style="margin-top:10px; min-height:80px;">Ready.</pre>
-  </section>     
-  <!-- ============================================================
-       🩺 ACS HEALTH SCORE
-       ============================================================ -->
-  <section class="card wide" id="healthPanel">
-    <h2>🩺 SYSTEM HEALTH</h2>
-    <div class="health-badge" id="healthBadge">—</div>
-    <pre id="outHealth">Waiting...</pre>
-  </section>
+      <div class="metrics">
 
-  <section class="card wide" id="cardTimeControl">
-  <h2>🎛 TIME ENGINE CONTROL</h2>
+        <article class="metric">
 
-  <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
-    <button class="btn" id="btnStartTime">🟢 START</button>
-    <button class="btn" id="btnStopTime">🔴 STOP</button>
-    <button class="btn" id="btnResetCycle">♻ RESET CYCLE</button>
-  </div>
+          <small>
+            Volumen estimado
+          </small>
 
-  <pre id="outTimeControl" style="min-height:80px;">Waiting...</pre>
-</section>
-     
-</div>
-         
- <!-- ============================================================
-     🧠 ACS GAME RUNTIME — CORE (READ ONLY FOR MONITOR)
-     ============================================================ -->
+          <strong id="volumePercent">
+            —
+          </strong>
 
-<!-- 🌍 World / History -->
-<script src="../engine/acs_world_engine.js"></script>
-<script src="../engine/acs_country_history.js"></script>
+          <span id="volumeSource">
+            —
+          </span>
 
-<!-- 🏟 Airports -->
-<script src="../engine/airports_loader.js"></script>
-<script src="../engine/airports/world_airports_af.js"></script>
-<script src="../engine/airports/world_airports_as.js"></script>
-<script src="../engine/airports/world_airports_eu.js"></script>
-<script src="../engine/airports/world_airports_me.js"></script>
-<script src="../engine/airports/world_airports_na.js"></script>
-<script src="../engine/airports/world_airports_oc.js"></script>
-<script src="../engine/airports/world_airports_sa.js"></script>
+          <div class="bar">
+            <i id="volumeBar"></i>
+          </div>
 
-<!-- ⏱ Time -->
-<script src="acs_time_recovery.js"></script>
-<script src="time_engine.js"></script>
-<script src="../engine/acs_flight_observer.js"></script>
+        </article>
 
-<!-- ✈ Fleet / Aircraft / Maintenance -->
-<script src="../engine/acs_reg_manager.js"></script>
-<script src="../engine/fleet_engine.js"></script>
-<script src="../engine/acs_aircraft_db.js"></script>
-<script src="../engine/acs_aircraft_wear_engine.js"></script>
-<script src="../engine/my_aircraft.js"></script>
+        <article class="metric">
 
-<!-- 🧑‍✈️ HR / Ops / Finance -->
-<script src="../engine/acs_hr_engine.js"></script>
-<script src="../engine/acs_department_ops_engine.js"></script>
-<script src="../engine/acs_airport_costs_engine.js"></script>
-<script src="../engine/acs_flightops_engine.js"></script>
-<script src="../engine/acs_slots_engine.js"></script>
-<script src="../engine/acs_flight_economics.js"></script>
-<script src="../engine/acs_finance.js"></script>
-<script src="../engine/acs_company_value.js"></script>
+          <small>
+            Espacio usado
+          </small>
 
-<script src="../engine/acs_diagnostics_engine.js"></script> 
-       
-<!-- 🧨 MASTER RESET ENGINE (AL FINAL, ANTES DEL MONITOR) -->
-<script src="../engine/acs_master_reset.js"></script>
-       
-<!-- 🧪 INTERNAL MONITOR (AL FINAL) -->
-<script src="./acs_monitor.js"></script>
+          <strong id="usedMB">
+            —
+          </strong>
 
-     
+          <span>
+            PostgreSQL + WAL visible
+          </span>
+
+        </article>
+
+        <article class="metric">
+
+          <small>
+            Espacio disponible
+          </small>
+
+          <strong id="freeMB">
+            —
+          </strong>
+
+          <span>
+            Capacidad configurada: 500 MB
+          </span>
+
+        </article>
+
+        <article class="metric">
+
+          <small>
+            WAL
+          </small>
+
+          <strong id="walMB">
+            —
+          </strong>
+
+          <span id="storageSeverity">
+            —
+          </span>
+
+        </article>
+
+      </div>
+
+      <div class="grid">
+
+        <div>
+
+          <section class="panel">
+
+            <div class="head">
+
+              <div>
+                <h2>
+                  Tablas PostgreSQL
+                </h2>
+
+                <p class="sub">
+                  Datos e índices ordenados
+                  por tamaño total
+                </p>
+              </div>
+
+            </div>
+
+            <div class="table-wrap">
+
+              <table>
+
+                <thead>
+                  <tr>
+                    <th>Tabla</th>
+                    <th>Total</th>
+                    <th>Datos</th>
+                    <th>Índices</th>
+                    <th>Filas est.</th>
+                  </tr>
+                </thead>
+
+                <tbody id="tablesBody"></tbody>
+
+              </table>
+
+            </div>
+
+          </section>
+
+          <section class="panel">
+
+            <div class="head">
+
+              <div>
+                <h2>
+                  Auditoría Guardian
+                </h2>
+
+                <p class="sub">
+                  Accesos y futuras acciones
+                  supervisadas
+                </p>
+              </div>
+
+            </div>
+
+            <div class="table-wrap">
+
+              <table>
+
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Administrador</th>
+                    <th>Evento</th>
+                    <th>Detalle</th>
+                  </tr>
+                </thead>
+
+                <tbody id="auditBody"></tbody>
+
+              </table>
+
+            </div>
+
+          </section>
+
+        </div>
+
+        <aside>
+
+          <section class="panel">
+
+            <div class="head">
+
+              <div>
+                <h2>
+                  Políticas de limpieza
+                </h2>
+
+                <p class="sub">
+                  Los botones se habilitarán
+                  después de validar los detectores
+                </p>
+              </div>
+
+            </div>
+
+            <div
+              class="policies"
+              id="policies"
+            ></div>
+
+          </section>
+
+          <section class="panel">
+
+            <div class="head">
+
+              <div>
+                <h2>
+                  Alertas activas
+                </h2>
+
+                <p class="sub">
+                  Guardian informa;
+                  tú decides
+                </p>
+              </div>
+
+            </div>
+
+            <div
+              class="list"
+              id="alerts"
+            ></div>
+
+          </section>
+
+        </aside>
+
+      </div>
+    </section>
+
+  </main>
+
+  <dialog id="setupDialog">
+
+    <form
+      class="modal"
+      id="setupForm"
+    >
+
+      <h2>
+        Crear administrador Guardian
+      </h2>
+
+      <p class="sub">
+        Configuración inicial única.
+        Esta cuenta no pertenece a jugadores
+        ni compañías.
+      </p>
+
+      <div class="setup-note">
+        El correo será
+        <b>aviationcapitalsim@gmail.com</b>.
+        Elige aquí tu contraseña privada
+        de Guardian.
+      </div>
+
+      <div class="field">
+
+        <label>
+          Nombre del administrador
+        </label>
+
+        <input
+          id="setupName"
+          value="Francisco Perez"
+          maxlength="120"
+          required
+        >
+
+      </div>
+
+      <div class="field">
+
+        <label>
+          Correo
+        </label>
+
+        <input
+          id="setupEmail"
+          type="email"
+          value="aviationcapitalsim@gmail.com"
+          maxlength="320"
+          required
+        >
+
+      </div>
+
+      <div class="field">
+
+        <label>
+          Contraseña Guardian —
+          mínimo 12 caracteres
+        </label>
+
+        <input
+          id="setupPassword"
+          type="password"
+          autocomplete="new-password"
+          minlength="12"
+          maxlength="200"
+          required
+        >
+
+      </div>
+
+      <div class="field">
+
+        <label>
+          Repetir contraseña
+        </label>
+
+        <input
+          id="setupPasswordRepeat"
+          type="password"
+          autocomplete="new-password"
+          minlength="12"
+          maxlength="200"
+          required
+        >
+
+      </div>
+
+      <div class="field">
+
+        <label>
+          Clave temporal de configuración
+        </label>
+
+        <input
+          id="setupKey"
+          type="password"
+          autocomplete="off"
+          required
+        >
+
+      </div>
+
+      <div
+        class="error"
+        id="setupError"
+      ></div>
+
+      <div class="modal-actions">
+
+        <button
+          class="gold"
+          id="setupButton"
+          type="submit"
+        >
+          Crear administrador
+        </button>
+
+      </div>
+
+    </form>
+
+  </dialog>
+
+  <dialog id="loginDialog">
+
+    <form
+      class="modal"
+      id="loginForm"
+    >
+
+      <h2>
+        Acceso privado Guardian
+      </h2>
+
+      <p class="sub">
+        Introduce las credenciales
+        administrativas de Guardian.
+      </p>
+
+      <div class="field">
+
+        <label>
+          Correo
+        </label>
+
+        <input
+          id="loginEmail"
+          type="email"
+          value="aviationcapitalsim@gmail.com"
+          required
+        >
+
+      </div>
+
+      <div class="field">
+
+        <label>
+          Contraseña Guardian
+        </label>
+
+        <input
+          id="loginPassword"
+          type="password"
+          autocomplete="current-password"
+          required
+        >
+
+      </div>
+
+      <div
+        class="error"
+        id="loginError"
+      ></div>
+
+      <div class="modal-actions">
+
+        <button
+          class="gold"
+          id="loginButton"
+          type="submit"
+        >
+          Abrir Guardian
+        </button>
+
+      </div>
+
+    </form>
+
+  </dialog>
+
+  <script
+    src="acs_monitor.js"
+    defer
+  ></script>
+
 </body>
 </html>
