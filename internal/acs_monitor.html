@@ -690,7 +690,126 @@
     columns: 1;
   }
 }
-       
+
+.diagnostic-controls {
+  display: grid;
+  margin-top: 13px;
+}
+
+.preview-button {
+  width: 100%;
+}
+
+.preview-information {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.preview-summary {
+  display: grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap: 9px;
+}
+
+.preview-summary div {
+  padding: 10px;
+
+  border:
+    1px solid var(--line);
+
+  border-radius: 9px;
+
+  background: #07131b;
+}
+
+.preview-summary small {
+  display: block;
+  margin-bottom: 5px;
+
+  color: var(--muted);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.preview-summary strong {
+  color: var(--text);
+  font-size: 12px;
+}
+
+.confirmation-box {
+  padding: 12px;
+
+  border:
+    1px solid var(--gold);
+
+  border-radius: 10px;
+
+  background: #d9ac5510;
+}
+
+.confirmation-box small {
+  display: block;
+  margin-bottom: 7px;
+
+  color: var(--muted);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.confirmation-box code {
+  display: block;
+
+  color: var(--gold);
+
+  font-size: 13px;
+  font-weight: 800;
+
+  word-break: break-word;
+}
+
+.protected-list {
+  margin: 5px 0 0;
+  padding-left: 20px;
+
+  color: var(--muted);
+  font-size: 11px;
+
+  columns: 2;
+}
+
+.protected-list li {
+  margin-bottom: 5px;
+}
+
+.preview-warning {
+  padding: 11px;
+
+  border-left:
+    3px solid var(--green);
+
+  border-radius: 8px;
+
+  background: #48cf8b10;
+  color: #b9dac9;
+
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+  .preview-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .protected-list {
+    columns: 1;
+  }
+} 
+      
     dialog {
       width:
         min(540px, calc(100% - 28px));
@@ -1285,6 +1404,62 @@
       </div>
     </form>
   </dialog>
+
+<dialog id="previewDialog">
+  <div class="modal">
+    <h2 id="previewTitle">
+      Vista previa Guardian
+    </h2>
+
+    <p class="sub">
+      Propuesta temporal de limpieza.
+      Todavía no puede ejecutarse.
+    </p>
+
+    <div class="preview-information">
+      <div
+        class="preview-summary"
+        id="previewSummary"
+      ></div>
+
+      <div class="confirmation-box">
+        <small>
+          Frase reservada para una futura confirmación
+        </small>
+
+        <code id="previewConfirmationPhrase">
+          —
+        </code>
+      </div>
+
+      <div>
+        <small class="sub">
+          Recursos que esta acción no puede tocar:
+        </small>
+
+        <ul
+          class="protected-list"
+          id="previewProtectedResources"
+        ></ul>
+      </div>
+
+      <div class="preview-warning">
+        Esta pantalla es únicamente informativa.
+        No existe todavía ninguna función de ejecución.
+        Cerrar esta ventana no realiza cambios.
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button
+        id="closePreviewButton"
+        type="button"
+      >
+        Cerrar Vista previa
+      </button>
+    </div>
+  </div>
+</dialog>
 
 <dialog id="previewDialog">
   <div class="modal">
