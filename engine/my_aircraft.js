@@ -158,8 +158,27 @@ saleListing: null
   const maintenanceControl =
     normalizeStatus(aircraft.maintenance_control_status);
 
-  const maintenanceReason =
+    const maintenanceReason =
     normalizeStatus(aircraft.maintenance_control_reason);
+
+  /*
+    ACS ON SALE AUTHORITY
+
+    FOR_SALE is the dominant fleet state while the
+    aircraft remains owned and commercially listed.
+
+    Technical C/D fields continue rendering independently
+    in their existing table columns.
+  */
+
+  if (status === "FOR_SALE") {
+    return {
+      key: "FOR_SALE",
+      label: "ON SALE",
+      className: "status-pending",
+      sub: "MARKET LISTING"
+    };
+  }
 
   /*
     ACS / Airbus OCC priority:
@@ -277,15 +296,6 @@ saleListing: null
       label: "RETURNED",
       className: "status-maintenance-hold",
       sub: "LESSOR RETURN"
-    };
-  }
-
-  if (status === "FOR_SALE") {
-    return {
-      key: "FOR_SALE",
-      label: "FOR SALE",
-      className: "status-pending",
-      sub: "MARKET LISTING"
     };
   }
 
