@@ -24,7 +24,8 @@
     accessToken: null,
     expiresAt: null,
     administrator: null,
-    refreshTimer: null
+    refreshTimer: null,
+    pendingAction: null
   };
 
   const byId = (id) =>
@@ -83,6 +84,7 @@
   }
 
   const messages = {
+     
     GUARDIAN_SETUP_KEY_NOT_CONFIGURED:
       "La clave temporal no está configurada en Railway.",
 
@@ -102,7 +104,20 @@
       "Acceso bloqueado temporalmente por intentos fallidos.",
 
     GUARDIAN_ACCESS_TOKEN_INVALID:
-      "La sesión Guardian venció. Ingresa nuevamente."
+  "La sesión Guardian venció. Ingresa nuevamente.",
+
+GUARDIAN_ACTION_THRESHOLD_NOT_REACHED:
+  "La limpieza todavía no alcanzó el límite configurado.",
+
+GUARDIAN_CLEANUP_POLICY_DISABLED:
+  "Esta política de limpieza está desactivada.",
+
+GUARDIAN_ACTION_HAS_NO_ELIGIBLE_ROWS:
+  "No existen registros eliminables para esta acción.",
+
+GUARDIAN_ACTION_TYPE_NOT_ALLOWED:
+  "Guardian rechazó el tipo de acción solicitado."
+     
   };
 
   async function api(
@@ -834,6 +849,252 @@
         .join("");
   }
 
+  function openPreviewDialog(
+  action
+) {
+  state.pendingAction =
+    action;
+
+  const preview =
+    action.preview || {};
+
+  text(
+    "previewTitle",
+    preview.title ||
+    "Vista previa Guardian"
+  );
+
+  const details = [
+    {
+      label: "Tabla",
+      value: preview.table || "—"
+    },
+
+    {
+      label: "Filas eliminables",
+      value: formatNumber(
+        preview.eligibleRows
+      )
+    },
+
+    {
+      label: "Tamaño total",
+      value: formatMB(
+        number(
+          preview.totalBytes
+        ) / 1048576
+      )
+    },
+
+    {
+      label: "Primer registro",
+      value: formatDate(
+        preview.firstEligibleAt
+      )
+    },
+
+    {
+      label: "Último registro",
+      value: formatDate(
+        preview.lastEligibleAt
+      )
+    },
+
+    {
+      label: "Vista previa válida hasta",
+      value: formatDate(
+        action.expiresAt
+      )
+    }
+  ];
+
+  if (
+    preview.closedFlightSets !==
+    null &&
+    preview.closedFlightSets !==
+    undefined
+  ) {
+    details.push({
+      label: "Vuelos financieros",
+      value: formatNumber(
+        preview.closedFlightSets
+      )
+    });
+  }
+
+  if (
+    preview.affectedAirlines !==
+    null &&
+    preview.affectedAirlines !==
+    undefined
+  ) {
+    details.push({
+      label: "Compañías involucradas",
+      value: formatNumber(
+        preview.affectedAirlines
+      )
+    });
+  }
+
+  if (
+    preview.relatedPassengerRows !==
+    null &&
+    preview.relatedPassengerRows !==
+    undefined
+  ) {
+    details.push({
+      label: "Resultados de pasajeros",
+      value: formatNumber(
+        preview.relatedPassengerRows
+      )
+    });
+  }
+
+  byId(
+    "previewSummary"
+  ).innerHTML =
+    details
+      .map(
+        (detail) => `
+          <div>
+            <small>
+              ${safe(detail.label)}
+            </small>
+
+            <strong>
+              ${safe(detail.value)}
+            </strong>
+          </div>
+        `
+      )
+      .join("");
+
+  text(
+    "previewConfirmationPhrase",
+    action.confirmationPhrase
+  );
+
+  byId(
+    "previewProtectedResources"
+  ).innerHTML =
+    (
+      preview.protectedResources ||
+      []
+    )
+      .map(
+        (resource) => `
+          <li>
+            ${safe(resource)}
+          </li>
+        `
+      )
+      .join("");
+
+  byId(
+    "previewDialog"
+  ).showModal();
+}
+
+async function createActionPreview(
+  button,
+  actionType
+) {
+  button.disabled = true;
+  button.textContent =
+    "Preparando Vista previa…";
+
+  try {
+    const payload =
+      await api(
+        "/guardian/actions/preview",
+        {
+          method: "POST",
+
+          protectedRoute: true,
+
+          body: {
+            actionType
+          }
+        }
+      );
+
+    openPreviewDialog(
+      payload.action
+    );
+  } catch (error) {
+    handleSessionError(error);
+  } finally {
+    button.disabled = false;
+    button.textContent =
+      "Preparar Vista previa";
+  }
+}
+
+function renderPreviewControls(
+  diagnostics
+) {
+  const cards =
+    byId("diagnostics")
+      .querySelectorAll(
+        ".diagnostic"
+      );
+
+  diagnostics.forEach(
+    (diagnostic, index) => {
+      const card = cards[index];
+
+      if (!card) {
+        return;
+      }
+
+      const controls =
+        document.createElement(
+          "div"
+        );
+
+      controls.className =
+        "diagnostic-controls";
+
+      const button =
+        document.createElement(
+          "button"
+        );
+
+      button.type =
+        "button";
+
+      button.className =
+        "preview-button";
+
+      button.disabled =
+        !diagnostic.thresholdReached;
+
+      button.textContent =
+        diagnostic.thresholdReached
+          ? "Preparar Vista previa"
+          : "Disponible al alcanzar el límite";
+
+      button.addEventListener(
+        "click",
+        () => {
+          void createActionPreview(
+            button,
+            diagnostic.actionType
+          );
+        }
+      );
+
+      controls.appendChild(
+        button
+      );
+
+      card.appendChild(
+        controls
+      );
+    }
+  );
+}
+   
   function renderPolicies(policies) {
     const names = {
       FLIGHT_HISTORY_COMPACTION:
@@ -1003,11 +1264,16 @@
 
       renderSupervisor(
         dashboard.supervisor
-      );       
+      );      
+       
       renderDiagnostics(
         dashboard.diagnostics || []
       );
 
+      renderPreviewControls(
+        dashboard.diagnostics || []
+      );
+       
       renderPolicies(
         dashboard.policies
       );
@@ -1136,6 +1402,18 @@
       )
   );
 
+   byId(
+  "closePreviewButton"
+    ).addEventListener(
+  "click",
+  () => {
+     
+    byId(
+      "previewDialog"
+    ).close();
+  }
+);
+   
   byId(
     "logoutButton"
   ).addEventListener(
