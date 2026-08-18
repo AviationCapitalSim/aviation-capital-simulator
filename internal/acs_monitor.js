@@ -11,7 +11,7 @@
    - No utilizar localStorage.
    - No ejecutar limpiezas automáticamente.
    ------------------------------------------------------------
-   Version: v2.0 | Date: 16 AUG 2026
+   Version: v2.1 | Date: 18 AUG 2026
    ============================================================ */
 
 (() => {
@@ -25,7 +25,9 @@
     expiresAt: null,
     administrator: null,
     refreshTimer: null,
-    pendingAction: null
+    preview: null,
+    previewTimer: null,
+    actionBusy: false
   };
 
   const byId = (id) =>
@@ -40,12 +42,22 @@
       ? "—"
       : `${number(value).toFixed(1)} MB`;
 
+  const formatBytesAsMB = (value) =>
+    formatMB(
+      number(value) /
+      1048576
+    );
+
   const formatNumber = (value) =>
-    number(value).toLocaleString("es-ES");
+    number(value).toLocaleString(
+      "es-ES"
+    );
 
   const formatDate = (value) =>
     value
-      ? new Date(value).toLocaleString("es-ES")
+      ? new Date(value).toLocaleString(
+          "es-ES"
+        )
       : "—";
 
   const safe = (value) =>
@@ -60,31 +72,7 @@
       })[character]
     );
 
-  function text(id, value) {
-    const node = byId(id);
-
-    if (node) {
-      node.textContent =
-        value ?? "—";
-    }
-  }
-
-  function showError(id, message) {
-    const node = byId(id);
-
-    node.textContent = message;
-    node.style.display = "block";
-  }
-
-  function clearError(id) {
-    const node = byId(id);
-
-    node.textContent = "";
-    node.style.display = "none";
-  }
-
   const messages = {
-     
     GUARDIAN_SETUP_KEY_NOT_CONFIGURED:
       "La clave temporal no está configurada en Railway.",
 
@@ -104,21 +92,73 @@
       "Acceso bloqueado temporalmente por intentos fallidos.",
 
     GUARDIAN_ACCESS_TOKEN_INVALID:
-  "La sesión Guardian venció. Ingresa nuevamente.",
+      "La sesión Guardian venció. Ingresa nuevamente.",
 
-GUARDIAN_ACTION_THRESHOLD_NOT_REACHED:
-  "La limpieza todavía no alcanzó el límite configurado.",
+    GUARDIAN_ACTION_THRESHOLD_NOT_REACHED:
+      "La limpieza todavía no alcanzó el límite configurado.",
 
-GUARDIAN_CLEANUP_POLICY_DISABLED:
-  "Esta política de limpieza está desactivada.",
+    GUARDIAN_ACTION_HAS_NO_ELIGIBLE_ROWS:
+      "No existen registros elegibles para esta limpieza.",
 
-GUARDIAN_ACTION_HAS_NO_ELIGIBLE_ROWS:
-  "No existen registros eliminables para esta acción.",
+    GUARDIAN_ACTION_PREVIEW_EXPIRED:
+      "La propuesta venció. Prepara una nueva vista previa.",
 
-GUARDIAN_ACTION_TYPE_NOT_ALLOWED:
-  "Guardian rechazó el tipo de acción solicitado."
-     
+    GUARDIAN_ACTION_NOT_PREVIEWED:
+      "La propuesta ya no está disponible.",
+
+    GUARDIAN_ACTION_TOKEN_INVALID:
+      "El token temporal de la propuesta no es válido.",
+
+    GUARDIAN_CONFIRMATION_PHRASE_INVALID:
+      "La frase de autorización no coincide exactamente.",
+
+    GUARDIAN_PREVIEW_DATA_CHANGED:
+      "Los registros cambiaron desde la vista previa. Guardian canceló la ejecución; prepara una propuesta nueva.",
+
+    GUARDIAN_ANOTHER_ACTION_IS_RUNNING:
+      "Ya existe otra limpieza Guardian en ejecución.",
+
+    GUARDIAN_OPERATIONAL_TABLE_BUSY:
+      "La tabla está ocupada por ACS. No se modificó nada; inténtalo nuevamente más tarde.",
+
+    GUARDIAN_UNEXPECTED_FOREIGN_KEY:
+      "Guardian encontró una relación no prevista y canceló toda la operación.",
+
+    GUARDIAN_TARGET_HAS_USER_TRIGGER:
+      "Guardian encontró un trigger no previsto y canceló toda la operación.",
+
+    GUARDIAN_EXECUTION_RATE_LIMIT:
+      "Se alcanzó el límite de intentos. Espera 15 minutos."
   };
+
+  function text(
+    id,
+    value
+  ) {
+    const node = byId(id);
+
+    if (node) {
+      node.textContent =
+        value ?? "—";
+    }
+  }
+
+  function showError(
+    id,
+    message
+  ) {
+    const node = byId(id);
+
+    node.textContent = message;
+    node.style.display = "block";
+  }
+
+  function clearError(id) {
+    const node = byId(id);
+
+    node.textContent = "";
+    node.style.display = "none";
+  }
 
   async function api(
     path,
@@ -129,7 +169,8 @@ GUARDIAN_ACTION_TYPE_NOT_ALLOWED:
     } = {}
   ) {
     const headers = {
-      "Content-Type": "application/json"
+      "Content-Type":
+        "application/json"
     };
 
     if (
@@ -140,21 +181,22 @@ GUARDIAN_ACTION_TYPE_NOT_ALLOWED:
         `Bearer ${state.accessToken}`;
     }
 
-    const response = await fetch(
-      `${API_ROOT}${path}`,
-      {
-        method,
-        headers,
+    const response =
+      await fetch(
+        `${API_ROOT}${path}`,
+        {
+          method,
+          headers,
 
-        body:
-          body
-            ? JSON.stringify(body)
-            : undefined,
+          body:
+            body
+              ? JSON.stringify(body)
+              : undefined,
 
-        cache: "no-store",
-        credentials: "omit"
-      }
-    );
+          cache: "no-store",
+          credentials: "omit"
+        }
+      );
 
     const payload =
       await response
@@ -165,14 +207,19 @@ GUARDIAN_ACTION_TYPE_NOT_ALLOWED:
       !response.ok ||
       payload.ok === false
     ) {
-      const error = new Error(
-        messages[payload.error] ||
-        payload.error ||
-        `HTTP ${response.status}`
-      );
+      const errorCode =
+        payload.error;
 
-      error.code = payload.error;
-      error.status = response.status;
+      const error =
+        new Error(
+          messages[errorCode] ||
+          errorCode ||
+          `HTTP ${response.status}`
+        );
+
+      error.code = errorCode;
+      error.status =
+        response.status;
 
       throw error;
     }
@@ -181,13 +228,20 @@ GUARDIAN_ACTION_TYPE_NOT_ALLOWED:
   }
 
   function openLogin() {
-    if (byId("setupDialog").open) {
+    if (
+      byId("setupDialog").open
+    ) {
       byId("setupDialog").close();
     }
 
     clearError("loginError");
 
-    byId("loginDialog").showModal();
+    if (
+      !byId("loginDialog").open
+    ) {
+      byId("loginDialog")
+        .showModal();
+    }
   }
 
   async function initialize() {
@@ -198,9 +252,8 @@ GUARDIAN_ACTION_TYPE_NOT_ALLOWED:
         );
 
       if (status.setupRequired) {
-        byId(
-          "setupDialog"
-        ).showModal();
+        byId("setupDialog")
+          .showModal();
       } else {
         openLogin();
       }
@@ -228,7 +281,9 @@ GUARDIAN_ACTION_TYPE_NOT_ALLOWED:
 
     if (
       password !==
-      byId("setupPasswordRepeat").value
+      byId(
+        "setupPasswordRepeat"
+      ).value
     ) {
       showError(
         "setupError",
@@ -238,9 +293,8 @@ GUARDIAN_ACTION_TYPE_NOT_ALLOWED:
       return;
     }
 
-    byId(
-      "setupButton"
-    ).disabled = true;
+    byId("setupButton").disabled =
+      true;
 
     try {
       await api(
@@ -297,9 +351,8 @@ GUARDIAN_ACTION_TYPE_NOT_ALLOWED:
 
     clearError("loginError");
 
-    byId(
-      "loginButton"
-    ).disabled = true;
+    byId("loginButton").disabled =
+      true;
 
     try {
       const payload =
@@ -310,10 +363,14 @@ GUARDIAN_ACTION_TYPE_NOT_ALLOWED:
 
             body: {
               email:
-                byId("loginEmail").value,
+                byId(
+                  "loginEmail"
+                ).value,
 
               password:
-                byId("loginPassword").value
+                byId(
+                  "loginPassword"
+                ).value
             }
           }
         );
@@ -384,130 +441,80 @@ GUARDIAN_ACTION_TYPE_NOT_ALLOWED:
   }
 
   function renderSupervisor(
-  supervisor
-) {
-  const panel =
-    byId("supervisorPanel");
+    supervisor
+  ) {
+    if (!supervisor) {
+      text(
+        "supervisorStatus",
+        "SIN ESTADO"
+      );
 
-  panel.classList.remove(
-    "hidden"
-  );
+      byId(
+        "supervisorStatus"
+      ).className =
+        "pill WARNING";
 
-  if (!supervisor) {
+      text(
+        "supervisorLastSuccess",
+        "—"
+      );
+
+      text(
+        "supervisorInterval",
+        "—"
+      );
+
+      return;
+    }
+
+    const operational =
+      supervisor.enabled === true &&
+      supervisor.status !==
+        "FAILED";
+
     text(
       "supervisorStatus",
-      "NO DISPONIBLE"
+      operational
+        ? "OPERATIVO"
+        : "REVISAR"
     );
 
     byId(
       "supervisorStatus"
     ).className =
-      "pill CRITICAL";
+      `pill ${
+        operational
+          ? "STABLE"
+          : "CRITICAL"
+      }`;
 
     text(
       "supervisorLastSuccess",
-      "Sin revisión registrada"
-    );
-
-    text(
-      "supervisorInterval",
-      "—"
-    );
-
-    text(
-      "supervisorAuthorization",
-      "BLOQUEADA"
-    );
-
-    return;
-  }
-
-  const statusNames = {
-    STARTING:
-      "INICIANDO",
-
-    RUNNING:
-      "REVISANDO",
-
-    SUCCESS:
-      "OPERATIVO",
-
-    FAILED:
-      "FALLO",
-
-    STANDBY:
-      "EN ESPERA",
-
-    DISABLED:
-      "DESACTIVADO"
-  };
-
-  const statusClass =
-    supervisor.status === "SUCCESS"
-      ? "STABLE"
-      : (
-          supervisor.status === "FAILED" ||
-          supervisor.status === "DISABLED"
-        )
-        ? "CRITICAL"
-        : "WARNING";
-
-  text(
-    "supervisorStatus",
-
-    statusNames[
-      supervisor.status
-    ] ||
-    supervisor.status
-  );
-
-  byId(
-    "supervisorStatus"
-  ).className =
-    `pill ${statusClass}`;
-
-  text(
-    "supervisorLastSuccess",
-
-    formatDate(
-      supervisor.last_success_at
-    )
-  );
-
-  const intervalMinutes =
-    Math.max(
-      1,
-
-      Math.round(
-        number(
-          supervisor
-            .scan_interval_seconds
-        ) / 60
+      formatDate(
+        supervisor.last_success_at
       )
     );
 
-  text(
-    "supervisorInterval",
-    `Cada ${intervalMinutes} minutos`
-  );
+    const seconds =
+      number(
+        supervisor
+          .scan_interval_seconds
+      );
 
-  text(
-    "supervisorAuthorization",
+    text(
+      "supervisorInterval",
 
-    supervisor.automatic_cleanup
-      ? "ERROR: AUTOMÁTICA"
-      : "SOLO CON TU AUTORIZACIÓN"
-  );
+      seconds > 0
+        ? `Cada ${Math.round(
+            seconds / 60
+          )} minutos`
+        : "—"
+    );
+  }
 
-  byId(
-    "supervisorAuthorization"
-  ).className =
-    supervisor.automatic_cleanup
-      ? "CRITICAL"
-      : "STABLE";
-}
-   
-  function renderStorage(storage) {
+  function renderStorage(
+    storage
+  ) {
     const volume =
       storage.volume;
 
@@ -517,7 +524,8 @@ GUARDIAN_ACTION_TYPE_NOT_ALLOWED:
     text(
       "volumePercent",
 
-      volume.estimatedPercent === null
+      volume.estimatedPercent ===
+        null
         ? "—"
         : `${volume.estimatedPercent}%`
     );
@@ -587,33 +595,94 @@ GUARDIAN_ACTION_TYPE_NOT_ALLOWED:
       "tablesBody"
     ).innerHTML =
       storage.largestTables
-        .map(
-          (row) => `
-            <tr>
-              <td>
-                ${safe(row.table)}
-              </td>
+        .map((row) => `
+          <tr>
+            <td>
+              ${safe(row.table)}
+            </td>
 
-              <td>
-                ${formatMB(row.totalMB)}
-              </td>
+            <td>
+              ${formatMB(
+                row.totalMB
+              )}
+            </td>
 
-              <td>
-                ${formatMB(row.tableMB)}
-              </td>
+            <td>
+              ${formatMB(
+                row.tableMB
+              )}
+            </td>
 
-              <td>
-                ${formatMB(row.indexMB)}
-              </td>
+            <td>
+              ${formatMB(
+                row.indexMB
+              )}
+            </td>
 
-              <td>
-                ${formatNumber(
-                  row.estimatedRows
-                )}
-              </td>
-            </tr>
-          `
-        )
+            <td>
+              ${formatNumber(
+                row.estimatedRows
+              )}
+            </td>
+          </tr>
+        `)
+        .join("");
+  }
+
+  function renderPolicies(
+    policies
+  ) {
+    const names = {
+      FLIGHT_HISTORY_COMPACTION:
+        "Historial de vuelos cerrados",
+
+      FINANCE_CLOSED_DETAIL_COMPACTION:
+        "Detalle financiero cerrado",
+
+      OCC_DELETED_ALERTS_COMPACTION:
+        "Mensajes OCC borrados"
+    };
+
+    byId(
+      "policies"
+    ).innerHTML =
+      policies
+        .map((policy) => `
+          <div class="policy">
+            <b>
+              ${safe(
+                names[
+                  policy.action_type
+                ] ||
+                policy.action_type
+              )}
+            </b>
+
+            <span>
+              Alerta:
+              ${formatNumber(
+                policy
+                  .eligible_row_threshold
+              )}
+              filas o
+              ${formatBytesAsMB(
+                policy
+                  .table_byte_threshold
+              )}
+            </span>
+
+            <span>
+              Estado:
+              ${
+                policy.enabled
+                  ? "ACTIVA"
+                  : "DESACTIVADA"
+              }
+              · Ejecución automática:
+              NO
+            </span>
+          </div>
+        `)
         .join("");
   }
 
@@ -639,598 +708,381 @@ GUARDIAN_ACTION_TYPE_NOT_ALLOWED:
         "Hay registros eliminables, pero todavía no alcanzan el límite configurado.",
 
       ATTENTION:
-        "El límite configurado fue alcanzado. Guardian recomendará preparar una limpieza supervisada."
+        "El límite configurado fue alcanzado. Puedes preparar una limpieza supervisada."
     };
-
-    if (!diagnostics.length) {
-      byId(
-        "diagnostics"
-      ).innerHTML = `
-        <div class="empty">
-          No se recibieron diagnósticos.
-        </div>
-      `;
-
-      return;
-    }
 
     byId(
       "diagnostics"
     ).innerHTML =
-      diagnostics
-        .map((item) => {
-          const metrics =
-            item.metrics || {};
+      diagnostics.length
+        ? diagnostics
+            .map((item) => {
+              const metrics =
+                item.metrics || {};
 
-          const policy =
-            item.policy || {};
+              const policy =
+                item.policy || {};
 
-          const extras = [];
+              const extras = [];
 
-          if (
-            metrics.relatedPassengerRows !==
-            undefined
-          ) {
-            extras.push(`
-              <div>
-                <span>
-                  Resultados de pasajeros
-                </span>
+              if (
+                metrics
+                  .relatedPassengerRows !==
+                undefined
+              ) {
+                extras.push(`
+                  <div>
+                    <span>
+                      Resultados de pasajeros
+                    </span>
 
-                <strong>
-                  ${formatNumber(
-                    metrics.relatedPassengerRows
-                  )}
-                </strong>
-              </div>
-            `);
-          }
+                    <strong>
+                      ${formatNumber(
+                        metrics
+                          .relatedPassengerRows
+                      )}
+                    </strong>
+                  </div>
+                `);
+              }
 
-          if (
-            metrics.closedFlightSets !==
-            undefined
-          ) {
-            extras.push(`
-              <div>
-                <span>
-                  Vuelos financieros
-                </span>
+              if (
+                metrics
+                  .closedFlightSets !==
+                undefined
+              ) {
+                extras.push(`
+                  <div>
+                    <span>
+                      Vuelos financieros
+                    </span>
 
-                <strong>
-                  ${formatNumber(
-                    metrics.closedFlightSets
-                  )}
-                </strong>
-              </div>
-            `);
-          }
+                    <strong>
+                      ${formatNumber(
+                        metrics
+                          .closedFlightSets
+                      )}
+                    </strong>
+                  </div>
+                `);
+              }
 
-          if (
-  metrics.affectedAirlines !==
-  undefined
-) {
-  extras.push(`
-    <div>
-      <span>
-        Compañías involucradas
-      </span>
+              if (
+                metrics
+                  .affectedAirlines !==
+                undefined
+              ) {
+                extras.push(`
+                  <div>
+                    <span>
+                      Compañías involucradas
+                    </span>
 
-      <strong>
-        ${formatNumber(
-          metrics.affectedAirlines
-        )}
-      </strong>
-    </div>
-  `);
-}
-   
-          return `
-            <article
-              class="diagnostic ${safe(item.status)}"
-            >
-              <div class="diagnostic-title">
-                <b>
-                  ${safe(item.title)}
-                </b>
+                    <strong>
+                      ${formatNumber(
+                        metrics
+                          .affectedAirlines
+                      )}
+                    </strong>
+                  </div>
+                `);
+              }
 
-                <span
-                  class="pill ${safe(item.status)}"
-                >
-                  ${safe(
-                    statusNames[item.status] ||
-                    item.status
-                  )}
-                </span>
-              </div>
-
-              <strong class="diagnostic-value">
-                ${formatNumber(
+              const available =
+                item.thresholdReached ===
+                  true &&
+                number(
                   metrics.eligibleRows
-                )}
-              </strong>
+                ) > 0;
 
-              <span class="diagnostic-caption">
-                filas eliminables detectadas
-              </span>
-
-              <div class="diagnostic-details">
-                <div>
-                  <span>
-                    Tabla
-                  </span>
-
-                  <strong>
-                    ${safe(item.table)}
-                  </strong>
-                </div>
-
-                <div>
-                  <span>
-                    Tamaño total
-                  </span>
-
-                  <strong>
-                    ${formatMB(
-                      number(
-                        metrics.totalBytes
-                      ) / 1048576
-                    )}
-                  </strong>
-                </div>
-
-                ${extras.join("")}
-
-                <div>
-                  <span>
-                    Primer registro
-                  </span>
-
-                  <strong>
+              return `
+                <article
+                  class="
+                    diagnostic
                     ${safe(
-                      formatDate(
-                        metrics.firstEligibleAt
-                      )
+                      item.status
                     )}
-                  </strong>
-                </div>
+                  "
+                >
+                  <div
+                    class="
+                      diagnostic-title
+                    "
+                  >
+                    <b>
+                      ${safe(
+                        item.title
+                      )}
+                    </b>
 
-                <div>
-                  <span>
-                    Último registro
-                  </span>
+                    <span
+                      class="
+                        pill
+                        ${safe(
+                          item.status
+                        )}
+                      "
+                    >
+                      ${safe(
+                        statusNames[
+                          item.status
+                        ] ||
+                        item.status
+                      )}
+                    </span>
+                  </div>
 
-                  <strong>
-                    ${safe(
-                      formatDate(
-                        metrics.lastEligibleAt
-                      )
-                    )}
-                  </strong>
-                </div>
-
-                <div>
-                  <span>
-                    Límite de filas
-                  </span>
-
-                  <strong>
+                  <strong
+                    class="
+                      diagnostic-value
+                    "
+                  >
                     ${formatNumber(
-                      policy.eligibleRowThreshold
+                      metrics
+                        .eligibleRows
                     )}
                   </strong>
-                </div>
 
-                <div>
-                  <span>
-                    Límite de tabla
+                  <span
+                    class="
+                      diagnostic-caption
+                    "
+                  >
+                    filas eliminables
+                    detectadas
                   </span>
 
-                  <strong>
-                    ${formatMB(
-                      number(
-                        policy.tableByteThreshold
-                      ) / 1048576
+                  <div
+                    class="
+                      diagnostic-details
+                    "
+                  >
+                    <div>
+                      <span>
+                        Tabla
+                      </span>
+
+                      <strong>
+                        ${safe(
+                          item.table
+                        )}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>
+                        Tamaño total
+                      </span>
+
+                      <strong>
+                        ${formatBytesAsMB(
+                          metrics.totalBytes
+                        )}
+                      </strong>
+                    </div>
+
+                    ${extras.join("")}
+
+                    <div>
+                      <span>
+                        Primer registro
+                      </span>
+
+                      <strong>
+                        ${safe(
+                          formatDate(
+                            metrics
+                              .firstEligibleAt
+                          )
+                        )}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>
+                        Último registro
+                      </span>
+
+                      <strong>
+                        ${safe(
+                          formatDate(
+                            metrics
+                              .lastEligibleAt
+                          )
+                        )}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>
+                        Límite de filas
+                      </span>
+
+                      <strong>
+                        ${formatNumber(
+                          policy
+                            .eligibleRowThreshold
+                        )}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>
+                        Límite de tabla
+                      </span>
+
+                      <strong>
+                        ${formatBytesAsMB(
+                          policy
+                            .tableByteThreshold
+                        )}
+                      </strong>
+                    </div>
+                  </div>
+
+                  <div
+                    class="
+                      diagnostic-note
+                    "
+                  >
+                    ${safe(
+                      notes[
+                        item.status
+                      ] ||
+                      "Estado pendiente."
                     )}
-                  </strong>
-                </div>
-              </div>
 
-              <div class="diagnostic-note">
-                ${safe(
-                  notes[item.status] ||
-                  "Estado pendiente."
-                )}
+                    Ejecución automática:
+                    NO.
+                  </div>
 
-                Ejecución automática: NO.
-              </div>
-            </article>
-          `;
-        })
-        .join("");
-  }
+                  <button
+                    class="
+                      diagnostic-action
+                      ${
+                        available
+                          ? "danger"
+                          : ""
+                      }
+                    "
 
-  function openPreviewDialog(
-  action
-) {
-  state.pendingAction =
-    action;
+                    data-preview-action="
+                      ${safe(
+                        item.actionType
+                      )}
+                    "
 
-  const preview =
-    action.preview || {};
-
-  text(
-    "previewTitle",
-    preview.title ||
-    "Vista previa Guardian"
-  );
-
-  const details = [
-    {
-      label: "Tabla",
-      value: preview.table || "—"
-    },
-
-    {
-      label: "Filas eliminables",
-      value: formatNumber(
-        preview.eligibleRows
-      )
-    },
-
-    {
-      label: "Tamaño total",
-      value: formatMB(
-        number(
-          preview.totalBytes
-        ) / 1048576
-      )
-    },
-
-    {
-      label: "Primer registro",
-      value: formatDate(
-        preview.firstEligibleAt
-      )
-    },
-
-    {
-      label: "Último registro",
-      value: formatDate(
-        preview.lastEligibleAt
-      )
-    },
-
-    {
-      label: "Vista previa válida hasta",
-      value: formatDate(
-        action.expiresAt
-      )
-    }
-  ];
-
-  if (
-    preview.closedFlightSets !==
-    null &&
-    preview.closedFlightSets !==
-    undefined
-  ) {
-    details.push({
-      label: "Vuelos financieros",
-      value: formatNumber(
-        preview.closedFlightSets
-      )
-    });
-  }
-
-  if (
-    preview.affectedAirlines !==
-    null &&
-    preview.affectedAirlines !==
-    undefined
-  ) {
-    details.push({
-      label: "Compañías involucradas",
-      value: formatNumber(
-        preview.affectedAirlines
-      )
-    });
-  }
-
-  if (
-    preview.relatedPassengerRows !==
-    null &&
-    preview.relatedPassengerRows !==
-    undefined
-  ) {
-    details.push({
-      label: "Resultados de pasajeros",
-      value: formatNumber(
-        preview.relatedPassengerRows
-      )
-    });
-  }
-
-  byId(
-    "previewSummary"
-  ).innerHTML =
-    details
-      .map(
-        (detail) => `
-          <div>
-            <small>
-              ${safe(detail.label)}
-            </small>
-
-            <strong>
-              ${safe(detail.value)}
-            </strong>
+                    ${
+                      available
+                        ? ""
+                        : "disabled"
+                    }
+                  >
+                    ${
+                      available
+                        ? "Preparar limpieza supervisada"
+                        : "Disponible al alcanzar el límite"
+                    }
+                  </button>
+                </article>
+              `;
+            })
+            .join("")
+        : `
+          <div class="empty">
+            No se recibieron
+            diagnósticos.
           </div>
-        `
-      )
-      .join("");
-
-  text(
-    "previewConfirmationPhrase",
-    action.confirmationPhrase
-  );
-
-  byId(
-    "previewProtectedResources"
-  ).innerHTML =
-    (
-      preview.protectedResources ||
-      []
-    )
-      .map(
-        (resource) => `
-          <li>
-            ${safe(resource)}
-          </li>
-        `
-      )
-      .join("");
-
-  byId(
-    "previewDialog"
-  ).showModal();
-}
-
-async function createActionPreview(
-  button,
-  actionType
-) {
-  button.disabled = true;
-  button.textContent =
-    "Preparando Vista previa…";
-
-  try {
-    const payload =
-      await api(
-        "/guardian/actions/preview",
-        {
-          method: "POST",
-
-          protectedRoute: true,
-
-          body: {
-            actionType
-          }
-        }
-      );
-
-    openPreviewDialog(
-      payload.action
-    );
-  } catch (error) {
-    handleSessionError(error);
-  } finally {
-    button.disabled = false;
-    button.textContent =
-      "Preparar Vista previa";
-  }
-}
-
-function renderPreviewControls(
-  diagnostics
-) {
-  const cards =
-    byId("diagnostics")
-      .querySelectorAll(
-        ".diagnostic"
-      );
-
-  diagnostics.forEach(
-    (diagnostic, index) => {
-      const card = cards[index];
-
-      if (!card) {
-        return;
-      }
-
-      const controls =
-        document.createElement(
-          "div"
-        );
-
-      controls.className =
-        "diagnostic-controls";
-
-      const button =
-        document.createElement(
-          "button"
-        );
-
-      button.type =
-        "button";
-
-      button.className =
-        "preview-button";
-
-      button.disabled =
-        !diagnostic.thresholdReached;
-
-      button.textContent =
-        diagnostic.thresholdReached
-          ? "Preparar Vista previa"
-          : "Disponible al alcanzar el límite";
-
-      button.addEventListener(
-        "click",
-        () => {
-          void createActionPreview(
-            button,
-            diagnostic.actionType
-          );
-        }
-      );
-
-      controls.appendChild(
-        button
-      );
-
-      card.appendChild(
-        controls
-      );
-    }
-  );
-}
-   
-  function renderPolicies(policies) {
-    const names = {
-      FLIGHT_HISTORY_COMPACTION:
-        "Historial de vuelos cerrados",
-
-      FINANCE_CLOSED_DETAIL_COMPACTION:
-        "Detalle financiero cerrado",
-
-      OCC_DELETED_ALERTS_COMPACTION:
-        "Mensajes OCC borrados"
-    };
-
-    byId(
-      "policies"
-    ).innerHTML =
-      policies
-        .map(
-          (policy) => `
-            <div class="policy">
-              <b>
-                ${safe(
-                  names[
-                    policy.action_type
-                  ] ||
-                  policy.action_type
-                )}
-              </b>
-
-              <span>
-                Alerta:
-                ${formatNumber(
-                  policy.eligible_row_threshold
-                )}
-                filas o
-                ${formatMB(
-                  number(
-                    policy.table_byte_threshold
-                  ) / 1048576
-                )}
-              </span>
-
-              <span>
-                Estado:
-                ${
-                  policy.enabled
-                    ? "ACTIVA"
-                    : "DESACTIVADA"
-                }
-                · Ejecución automática: NO
-              </span>
-            </div>
-          `
-        )
-        .join("");
+        `;
   }
 
-  function renderAlerts(alerts) {
+  function renderAlerts(
+    alerts
+  ) {
     byId(
       "alerts"
     ).innerHTML =
       alerts.length
         ? alerts
-            .map(
-              (alert) => `
-                <div
-                  class="item ${safe(
+            .map((alert) => `
+              <div
+                class="
+                  item
+                  ${safe(
                     alert.severity
-                  )}"
-                >
-                  <b>
-                    ${safe(alert.title)}
-                  </b>
+                  )}
+                "
+              >
+                <b>
+                  ${safe(
+                    alert.title
+                  )}
+                </b>
 
-                  <span>
-                    ${safe(alert.message)}
-                  </span>
-                </div>
-              `
-            )
+                <span>
+                  ${safe(
+                    alert.message
+                  )}
+                </span>
+              </div>
+            `)
             .join("")
         : `
-            <div class="empty">
-              Sin alertas activas.
-            </div>
-          `;
+          <div class="empty">
+            Sin alertas activas.
+          </div>
+        `;
   }
 
-  function renderAudit(entries) {
+  function renderAudit(
+    entries
+  ) {
     byId(
       "auditBody"
     ).innerHTML =
       entries.length
         ? entries
-            .map(
-              (entry) => `
-                <tr>
-                  <td>
-                    ${safe(
-                      formatDate(
-                        entry.created_at
-                      )
-                    )}
-                  </td>
+            .map((entry) => `
+              <tr>
+                <td>
+                  ${safe(
+                    formatDate(
+                      entry.created_at
+                    )
+                  )}
+                </td>
 
-                  <td>
-                    ${safe(
-                      entry.display_name ||
-                      entry.email ||
-                      "Sistema"
-                    )}
-                  </td>
+                <td>
+                  ${safe(
+                    entry.display_name ||
+                    entry.email ||
+                    "Sistema"
+                  )}
+                </td>
 
-                  <td>
-                    ${safe(
-                      entry.event_type
-                    )}
-                  </td>
+                <td>
+                  ${safe(
+                    entry.event_type
+                  )}
+                </td>
 
-                  <td>
-                    ${safe(
-                      JSON.stringify(
-                        entry.details || {}
-                      )
-                    )}
-                  </td>
-                </tr>
-              `
-            )
+                <td>
+                  ${safe(
+                    JSON.stringify(
+                      entry.details || {}
+                    )
+                  )}
+                </td>
+              </tr>
+            `)
             .join("")
         : `
-            <tr>
-              <td colspan="4">
-                Sin registros.
-              </td>
-            </tr>
-          `;
+          <tr>
+            <td colspan="4">
+              Sin registros.
+            </td>
+          </tr>
+        `;
   }
 
   async function refresh() {
@@ -1246,52 +1098,55 @@ function renderPreviewControls(
         api(
           "/guardian/dashboard",
           {
-            protectedRoute: true
+            protectedRoute:
+              true
           }
         ),
 
         api(
           "/guardian/audit",
           {
-            protectedRoute: true
+            protectedRoute:
+              true
           }
         )
       ]);
+
+      renderSupervisor(
+        dashboard.supervisor
+      );
 
       renderStorage(
         dashboard.storage
       );
 
-      renderSupervisor(
-        dashboard.supervisor
-      );      
-       
       renderDiagnostics(
-        dashboard.diagnostics || []
+        dashboard.diagnostics ||
+        []
       );
 
-      renderPreviewControls(
-        dashboard.diagnostics || []
-      );
-       
       renderPolicies(
-        dashboard.policies
+        dashboard.policies ||
+        []
       );
 
       renderAlerts(
-        dashboard.alerts
+        dashboard.alerts ||
+        []
       );
 
       renderAudit(
-        audit.audit
+        audit.audit ||
+        []
       );
 
       text(
         "lastUpdate",
         `Actualizado ${
-          new Date().toLocaleTimeString(
-            "es-ES"
-          )
+          new Date()
+            .toLocaleTimeString(
+              "es-ES"
+            )
         }`
       );
     } finally {
@@ -1301,13 +1156,565 @@ function renderPreviewControls(
     }
   }
 
-  function handleSessionError(error) {
+  function clearPreviewState() {
+    window.clearInterval(
+      state.previewTimer
+    );
+
+    state.previewTimer = null;
+    state.preview = null;
+    state.actionBusy = false;
+
+    byId(
+      "confirmationPhraseInput"
+    ).value = "";
+
+    byId(
+      "executeActionButton"
+    ).disabled = true;
+
+    byId(
+      "executeActionButton"
+    ).textContent =
+      "Autorizar y limpiar";
+
+    byId(
+      "cancelActionButton"
+    ).disabled = false;
+  }
+
+  function updatePreviewExpiry() {
+    if (!state.preview) {
+      return;
+    }
+
+    const remainingMilliseconds =
+      new Date(
+        state.preview.expiresAt
+      ).getTime() -
+      Date.now();
+
+    if (
+      remainingMilliseconds <= 0
+    ) {
+      text(
+        "actionExpiry",
+        "Propuesta vencida"
+      );
+
+      byId(
+        "executeActionButton"
+      ).disabled = true;
+
+      return;
+    }
+
+    const remainingSeconds =
+      Math.ceil(
+        remainingMilliseconds /
+        1000
+      );
+
+    const minutes =
+      Math.floor(
+        remainingSeconds / 60
+      );
+
+    const seconds =
+      remainingSeconds % 60;
+
+    text(
+      "actionExpiry",
+
+      `Tiempo restante: ${
+        minutes
+      }:${
+        String(seconds)
+          .padStart(2, "0")
+      }`
+    );
+  }
+
+  function renderActionPreview(
+    action
+  ) {
+    const preview =
+      action.preview || {};
+
+    text(
+      "actionTitle",
+
+      preview.title ||
+      "Limpieza supervisada"
+    );
+
+    text(
+      "requiredConfirmationPhrase",
+      action.confirmationPhrase
+    );
+
+    byId(
+      "actionSummary"
+    ).innerHTML = `
+      <div>
+        <span>
+          Tabla autorizada
+        </span>
+
+        <strong>
+          ${safe(
+            preview.table
+          )}
+        </strong>
+      </div>
+
+      <div>
+        <span>
+          Filas elegibles
+        </span>
+
+        <strong>
+          ${formatNumber(
+            preview.eligibleRows
+          )}
+        </strong>
+      </div>
+
+      ${
+        preview
+          .relatedPassengerRows !==
+            null &&
+        preview
+          .relatedPassengerRows !==
+            undefined
+          ? `
+            <div>
+              <span>
+                Resultados de pasajeros
+                vinculados
+              </span>
+
+              <strong>
+                ${formatNumber(
+                  preview
+                    .relatedPassengerRows
+                )}
+              </strong>
+            </div>
+          `
+          : ""
+      }
+
+      <div>
+        <span>
+          Ejecución automática
+        </span>
+
+        <strong>
+          NO
+        </strong>
+      </div>
+    `;
+
+    clearError(
+      "actionError"
+    );
+
+    updatePreviewExpiry();
+
+    state.previewTimer =
+      window.setInterval(
+        updatePreviewExpiry,
+        1000
+      );
+
+    byId(
+      "actionDialog"
+    ).showModal();
+
+    byId(
+      "confirmationPhraseInput"
+    ).focus();
+  }
+
+  async function preparePreview(
+    actionType,
+    button
+  ) {
+    if (
+      state.actionBusy ||
+      state.preview
+    ) {
+      return;
+    }
+
+    state.actionBusy = true;
+    button.disabled = true;
+
+    const originalLabel =
+      button.textContent;
+
+    button.textContent =
+      "Preparando…";
+
+    try {
+      const payload =
+        await api(
+          "/guardian/actions/preview",
+          {
+            method: "POST",
+            protectedRoute: true,
+
+            body: {
+              actionType
+            }
+          }
+        );
+
+      state.preview =
+        payload.action;
+
+      state.actionBusy = false;
+
+      renderActionPreview(
+        payload.action
+      );
+    } catch (error) {
+      state.actionBusy = false;
+
+      handleSessionError(
+        error
+      );
+    } finally {
+      button.disabled = false;
+      button.textContent =
+        originalLabel;
+    }
+  }
+
+  async function cancelPreview() {
+    if (
+      !state.preview ||
+      state.actionBusy
+    ) {
+      return;
+    }
+
+    state.actionBusy = true;
+
+    clearError(
+      "actionError"
+    );
+
+    byId(
+      "cancelActionButton"
+    ).disabled = true;
+
+    byId(
+      "executeActionButton"
+    ).disabled = true;
+
+    try {
+      await api(
+        `/guardian/actions/${
+          encodeURIComponent(
+            state.preview.id
+          )
+        }/cancel`,
+
+        {
+          method: "POST",
+          protectedRoute: true
+        }
+      );
+
+      byId(
+        "actionDialog"
+      ).close();
+
+      clearPreviewState();
+
+      await refresh();
+    } catch (error) {
+      if (
+        error.code ===
+          "GUARDIAN_ACTION_PREVIEW_EXPIRED" ||
+        error.code ===
+          "GUARDIAN_ACTION_NOT_PREVIEWED"
+      ) {
+        byId(
+          "actionDialog"
+        ).close();
+
+        clearPreviewState();
+
+        await refresh().catch(
+          handleSessionError
+        );
+
+        return;
+      }
+
+      state.actionBusy = false;
+
+      byId(
+        "cancelActionButton"
+      ).disabled = false;
+
+      showError(
+        "actionError",
+        error.message
+      );
+    }
+  }
+
+  function renderActionResult(
+    action
+  ) {
+    const result =
+      action.result || {};
+
+    byId(
+      "resultSummary"
+    ).innerHTML = `
+      <div>
+        <span>
+          Acción
+        </span>
+
+        <strong>
+          ${safe(
+            action.actionType
+          )}
+        </strong>
+      </div>
+
+      <div>
+        <span>
+          Filas eliminadas
+        </span>
+
+        <strong>
+          ${formatNumber(
+            result.removedRows
+          )}
+        </strong>
+      </div>
+
+      <div>
+        <span>
+          Filas conservadas
+        </span>
+
+        <strong>
+          ${formatNumber(
+            result.preservedRows
+          )}
+        </strong>
+      </div>
+
+      ${
+        number(
+          result
+            .relatedPassengerRowsRemoved
+        ) > 0
+          ? `
+            <div>
+              <span>
+                Resultados de pasajeros
+                eliminados
+              </span>
+
+              <strong>
+                ${formatNumber(
+                  result
+                    .relatedPassengerRowsRemoved
+                )}
+              </strong>
+            </div>
+          `
+          : ""
+      }
+
+      <div>
+        <span>
+          Espacio recuperado
+          estimado
+        </span>
+
+        <strong>
+          ${formatBytesAsMB(
+            result
+              .releasedBytesEstimate
+          )}
+        </strong>
+      </div>
+
+      <div>
+        <span>
+          Estado PostgreSQL
+        </span>
+
+        <strong>
+          COMPLETED
+        </strong>
+      </div>
+    `;
+
+    byId(
+      "resultDialog"
+    ).showModal();
+  }
+
+  async function executePreview(
+    event
+  ) {
+    event.preventDefault();
+
+    if (
+      !state.preview ||
+      state.actionBusy
+    ) {
+      return;
+    }
+
+    const enteredPhrase =
+      byId(
+        "confirmationPhraseInput"
+      ).value;
+
+    if (
+      enteredPhrase !==
+      state.preview
+        .confirmationPhrase
+    ) {
+      showError(
+        "actionError",
+
+        messages
+          .GUARDIAN_CONFIRMATION_PHRASE_INVALID
+      );
+
+      return;
+    }
+
+    state.actionBusy = true;
+
+    clearError(
+      "actionError"
+    );
+
+    byId(
+      "cancelActionButton"
+    ).disabled = true;
+
+    byId(
+      "executeActionButton"
+    ).disabled = true;
+
+    byId(
+      "executeActionButton"
+    ).textContent =
+      "Verificando y ejecutando…";
+
+    try {
+      const payload =
+        await api(
+          `/guardian/actions/${
+            encodeURIComponent(
+              state.preview.id
+            )
+          }/execute`,
+
+          {
+            method: "POST",
+            protectedRoute: true,
+
+            body: {
+              actionToken:
+                state.preview
+                  .actionToken,
+
+              confirmationPhrase:
+                enteredPhrase
+            }
+          }
+        );
+
+      byId(
+        "actionDialog"
+      ).close();
+
+      clearPreviewState();
+
+      renderActionResult(
+        payload.action
+      );
+
+      refresh().catch(
+        handleSessionError
+      );
+    } catch (error) {
+      state.actionBusy = false;
+
+      byId(
+        "cancelActionButton"
+      ).disabled = false;
+
+      byId(
+        "executeActionButton"
+      ).textContent =
+        "Autorizar y limpiar";
+
+      validateConfirmationInput();
+
+      showError(
+        "actionError",
+        error.message
+      );
+    }
+  }
+
+  function validateConfirmationInput() {
+    const valid =
+      state.preview &&
+      !state.actionBusy &&
+      Date.now() <
+        new Date(
+          state.preview.expiresAt
+        ).getTime() &&
+      byId(
+        "confirmationPhraseInput"
+      ).value ===
+        state.preview
+          .confirmationPhrase;
+
+    byId(
+      "executeActionButton"
+    ).disabled = !valid;
+  }
+
+  function handleSessionError(
+    error
+  ) {
     if (error.status === 401) {
       state.accessToken = null;
 
       window.clearInterval(
         state.refreshTimer
       );
+
+      if (
+        byId(
+          "actionDialog"
+        ).open
+      ) {
+        byId(
+          "actionDialog"
+        ).close();
+      }
+
+      clearPreviewState();
 
       byId(
         "dashboard"
@@ -1343,9 +1750,8 @@ function renderPreviewControls(
           protectedRoute: true
         }
       );
-    } catch {
-      // The local session is closed even if
-      // the server is temporarily unavailable.
+    } catch (_) {
+      // El cierre local continúa aunque la sesión ya haya vencido.
     }
 
     state.accessToken = null;
@@ -1353,6 +1759,8 @@ function renderPreviewControls(
     window.clearInterval(
       state.refreshTimer
     );
+
+    clearPreviewState();
 
     byId(
       "dashboard"
@@ -1402,23 +1810,79 @@ function renderPreviewControls(
       )
   );
 
-   byId(
-  "closePreviewButton"
-    ).addEventListener(
-  "click",
-  () => {
-     
-    byId(
-      "previewDialog"
-    ).close();
-  }
-);
-   
   byId(
     "logoutButton"
   ).addEventListener(
     "click",
     logout
+  );
+
+  byId(
+    "diagnostics"
+  ).addEventListener(
+    "click",
+    (event) => {
+      const button =
+        event.target.closest(
+          "[data-preview-action]"
+        );
+
+      if (
+        !button ||
+        button.disabled
+      ) {
+        return;
+      }
+
+      preparePreview(
+        button.dataset
+          .previewAction,
+
+        button
+      );
+    }
+  );
+
+  byId(
+    "confirmationPhraseInput"
+  ).addEventListener(
+    "input",
+    validateConfirmationInput
+  );
+
+  byId(
+    "actionForm"
+  ).addEventListener(
+    "submit",
+    executePreview
+  );
+
+  byId(
+    "cancelActionButton"
+  ).addEventListener(
+    "click",
+    cancelPreview
+  );
+
+  byId(
+    "actionDialog"
+  ).addEventListener(
+    "cancel",
+    (event) => {
+      event.preventDefault();
+      cancelPreview();
+    }
+  );
+
+  byId(
+    "closeResultButton"
+  ).addEventListener(
+    "click",
+    () => {
+      byId(
+        "resultDialog"
+      ).close();
+    }
   );
 
   initialize();
