@@ -127,6 +127,12 @@
     GUARDIAN_TARGET_HAS_USER_TRIGGER:
       "Guardian encontró un trigger no previsto y canceló toda la operación.",
 
+    GUARDIAN_FINANCE_PROTECTED_REFERENCE_FOUND:
+      "Guardian encontró un asiento fiscal vinculado a los registros eliminables y canceló toda la operación.",
+
+    GUARDIAN_FINANCE_DELETE_COUNT_MISMATCH:
+      "El número de detalles financieros eliminados no coincidió con la propuesta. Guardian revirtió toda la operación.",
+
     GUARDIAN_EXECUTION_RATE_LIMIT:
       "Se alcanzó el límite de intentos. Espera 15 minutos."
   };
