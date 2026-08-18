@@ -4688,13 +4688,54 @@ async function ACS_confirmUsedPurchase() {
     return;
   }
 
+  const aircraft =
+    getUsedById(selectedUsedID);
+
+  if (!aircraft) {
+    ACS_renderUsedBuyError({
+      error: "USED_AIRCRAFT_NOT_FOUND"
+    });
+    return;
+  }
+
+  const isAirlineListing =
+    aircraft.is_player_listing === true;
+
+  const marketListingId =
+    Number(aircraft.market_listing_id);
+
+  if (
+    isAirlineListing &&
+    (
+      !Number.isInteger(marketListingId) ||
+      marketListingId <= 0
+    )
+  ) {
+    ACS_renderUsedBuyError({
+      error: "INVALID_MARKET_LISTING_ID"
+    });
+    return;
+  }
+
+  const purchaseEndpoint =
+    isAirlineListing
+      ? (
+          "https://api.aviationcapitalsim.com" +
+          `/v1/aircraft/market-listings/${marketListingId}/buy`
+        )
+      : (
+          `${ACS_USED_BUY_ENDPOINT_BASE}/` +
+          `${encodeURIComponent(selectedUsedID)}/buy`
+        );
+
   ACS_setUsedBuyBusy(true);
 
   try {
-    const simPayload = ACS_getUsedBuySimPayload();
+    const simPayload =
+      ACS_getUsedBuySimPayload();
 
     const response = await fetch(
-      `${ACS_USED_BUY_ENDPOINT_BASE}/${selectedUsedID}/buy`,
+      purchaseEndpoint,
       {
         method: "POST",
         credentials: "include",
@@ -4706,13 +4747,23 @@ async function ACS_confirmUsedPurchase() {
       }
     );
 
-    const data = await response.json().catch(() => null);
+    const data =
+      await response.json().catch(() => null);
 
-    if (!response.ok || !data || data.ok !== true) {
+    if (
+      !response.ok ||
+      !data ||
+      data.ok !== true
+    ) {
       ACS_setUsedBuyBusy(false);
-      ACS_renderUsedBuyError(data || {
-        error: `USED_BUY_HTTP_${response.status}`
-      });
+
+      ACS_renderUsedBuyError(
+        data || {
+          error:
+            `USED_BUY_HTTP_${response.status}`
+        }
+      );
+
       return;
     }
 
@@ -4721,19 +4772,22 @@ async function ACS_confirmUsedPurchase() {
     window.location.href =
       "my_aircraft.html";
 
-    return;
-
   } catch (error) {
-    console.error("❌ Used aircraft purchase failed:", error);
+    console.error(
+      "❌ Used aircraft purchase failed:",
+      error
+    );
 
     ACS_setUsedBuyBusy(false);
 
     ACS_renderUsedBuyError({
-      error: error.message || "USED_PURCHASE_EXCEPTION"
+      error:
+        error.message ||
+        "USED_PURCHASE_EXCEPTION"
     });
   }
 }
-
+     
 (function(){
   const buyBtn = document.getElementById("confirmBuyBtn");
 
