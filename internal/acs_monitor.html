@@ -12,7 +12,7 @@
      - Panel privado; no disponible para jugadores.
      ------------------------------------------------------------
      Authority: PostgreSQL / Railway
-     Version: v2.0 | Date: 16 AUG 2026
+     Version: v2.1 | Date: 18 AUG 2026
      ============================================================ -->
 
 <!doctype html>
@@ -572,124 +572,90 @@
   }
 }
 
-.diagnostic-controls {
-  display: grid;
-  margin-top: 13px;
-}
+    .diagnostic-action {
+      width: 100%;
+      margin-top: 12px;
+    }
 
-.preview-button {
-  width: 100%;
-}
+    .danger {
+      background: #7d2730;
+      border-color: #a83c47;
+      color: #ffffff;
+    }
 
-.preview-information {
-  display: grid;
-  gap: 12px;
-  margin-top: 16px;
-}
+    .danger:hover {
+      background: #96303b;
+      border-color: var(--red);
+    }
 
-.preview-summary {
-  display: grid;
+    .action-warning {
+      margin-top: 13px;
+      padding: 11px;
 
-  grid-template-columns:
-    1fr 1fr;
+      border-left:
+        3px solid var(--red);
 
-  gap: 9px;
-}
+      border-radius: 9px;
 
-.preview-summary div {
-  padding: 10px;
+      background: #3a171b;
+      color: #ffd5d8;
 
-  border:
-    1px solid var(--line);
+      font-size: 12px;
+      line-height: 1.5;
+    }
 
-  border-radius: 9px;
+    .action-summary,
+    .result-summary {
+      display: grid;
+      gap: 7px;
 
-  background: #07131b;
-}
+      margin-top: 14px;
+      padding: 10px;
 
-.preview-summary small {
-  display: block;
-  margin-bottom: 5px;
+      border-radius: 9px;
 
-  color: var(--muted);
-  font-size: 10px;
-  text-transform: uppercase;
-}
+      background: #102735;
+      color: #b8cad5;
 
-.preview-summary strong {
-  color: var(--text);
-  font-size: 12px;
-}
+      font-size: 12px;
+      line-height: 1.5;
+    }
 
-.confirmation-box {
-  padding: 12px;
+    .action-summary div,
+    .result-summary div {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+    }
 
-  border:
-    1px solid var(--gold);
+    .action-summary strong,
+    .result-summary strong {
+      color: var(--text);
+      text-align: right;
+    }
 
-  border-radius: 10px;
+    .confirmation-phrase {
+      display: block;
 
-  background: #d9ac5510;
-}
+      margin-top: 8px;
+      padding: 11px;
 
-.confirmation-box small {
-  display: block;
-  margin-bottom: 7px;
+      border:
+        1px solid var(--gold);
 
-  color: var(--muted);
-  font-size: 10px;
-  text-transform: uppercase;
-}
+      border-radius: 9px;
 
-.confirmation-box code {
-  display: block;
+      background: #211a0d;
+      color: #ffe2a6;
 
-  color: var(--gold);
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        monospace;
 
-  font-size: 13px;
-  font-weight: 800;
-
-  word-break: break-word;
-}
-
-.protected-list {
-  margin: 5px 0 0;
-  padding-left: 20px;
-
-  color: var(--muted);
-  font-size: 11px;
-
-  columns: 2;
-}
-
-.protected-list li {
-  margin-bottom: 5px;
-}
-
-.preview-warning {
-  padding: 11px;
-
-  border-left:
-    3px solid var(--green);
-
-  border-radius: 8px;
-
-  background: #48cf8b10;
-  color: #b9dac9;
-
-  font-size: 11px;
-  line-height: 1.5;
-}
-
-@media (max-width: 600px) {
-  .preview-summary {
-    grid-template-columns: 1fr;
-  }
-
-  .protected-list {
-    columns: 1;
-  }
-}
+      word-break: break-word;
+    }
        
     dialog {
       width:
@@ -1286,61 +1252,113 @@
     </form>
   </dialog>
 
-<dialog id="previewDialog">
-  <div class="modal">
-    <h2 id="previewTitle">
-      Vista previa Guardian
-    </h2>
+  <dialog id="actionDialog">
+    <form
+      class="modal"
+      id="actionForm"
+    >
+      <h2 id="actionTitle">
+        Autorizar limpieza supervisada
+      </h2>
 
-    <p class="sub">
-      Propuesta temporal de limpieza.
-      Todavía no puede ejecutarse.
-    </p>
+      <p class="sub">
+        La propuesta dura 10 minutos y solamente sirve
+        para los registros que Guardian acaba de comprobar.
+      </p>
 
-    <div class="preview-information">
+      <div class="action-warning">
+        Esta operación requiere tu autorización explícita.
+        Antes de ejecutar, Guardian volverá a comprobar
+        la cantidad de registros, la política y la huella
+        exacta de los datos. Si algo cambió, toda la operación
+        será cancelada.
+      </div>
+
       <div
-        class="preview-summary"
-        id="previewSummary"
+        class="action-summary"
+        id="actionSummary"
       ></div>
 
-      <div class="confirmation-box">
-        <small>
-          Frase reservada para una futura confirmación
-        </small>
+      <div class="field">
+        <label>
+          Escribe exactamente esta frase:
+        </label>
 
-        <code id="previewConfirmationPhrase">
+        <strong
+          class="confirmation-phrase"
+          id="requiredConfirmationPhrase"
+        >
           —
-        </code>
+        </strong>
+
+        <input
+          id="confirmationPhraseInput"
+          autocomplete="off"
+          autocapitalize="off"
+          spellcheck="false"
+          required
+        >
       </div>
 
-      <div>
-        <small class="sub">
-          Recursos que esta acción no puede tocar:
-        </small>
-
-        <ul
-          class="protected-list"
-          id="previewProtectedResources"
-        ></ul>
-      </div>
-
-      <div class="preview-warning">
-        Esta pantalla es únicamente informativa.
-        No existe todavía ninguna función de ejecución.
-        Cerrar esta ventana no realiza cambios.
-      </div>
-    </div>
-
-    <div class="modal-actions">
-      <button
-        id="closePreviewButton"
-        type="button"
+      <div
+        class="sub"
+        id="actionExpiry"
       >
-        Cerrar Vista previa
-      </button>
+        —
+      </div>
+
+      <div
+        class="error"
+        id="actionError"
+      ></div>
+
+      <div class="modal-actions">
+        <button
+          id="cancelActionButton"
+          type="button"
+        >
+          Cancelar propuesta
+        </button>
+
+        <button
+          class="danger"
+          id="executeActionButton"
+          type="submit"
+          disabled
+        >
+          Autorizar y limpiar
+        </button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="resultDialog">
+    <div class="modal">
+      <h2>
+        Limpieza supervisada completada
+      </h2>
+
+      <p class="sub">
+        PostgreSQL confirmó la transacción
+        y todas las verificaciones posteriores.
+      </p>
+
+      <div
+        class="result-summary"
+        id="resultSummary"
+      ></div>
+
+      <div class="modal-actions">
+        <button
+          class="gold"
+          id="closeResultButton"
+          type="button"
+        >
+          Cerrar
+        </button>
+      </div>
     </div>
-  </div>
-</dialog>
+  </dialog>
      
   <script
     src="acs_monitor.js"
