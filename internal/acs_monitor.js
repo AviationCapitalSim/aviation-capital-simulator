@@ -440,9 +440,17 @@
     }
   }
 
-  function renderSupervisor(
+ function renderSupervisor(
     supervisor
   ) {
+    
+    const supervisorPanel =
+      byId("supervisorPanel");
+
+    if (supervisorPanel) {
+      supervisorPanel.classList.remove("hidden");
+    }
+    
     if (!supervisor) {
       text(
         "supervisorStatus",
