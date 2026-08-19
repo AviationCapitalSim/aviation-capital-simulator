@@ -1799,6 +1799,121 @@ footer {
   line-height: 1.25;
   color: #dbe4ff;
 }
+
+/* ============================================================
+   ✈️ ACS OCC — 168H WEEKLY AIRCRAFT TIMELINE STYLE
+   Date: 19 AUG 2026
+   Purpose:
+   - Display each aircraft schedule on one continuous 168-hour axis
+   - Keep flights and A-Check on the same operational line
+   - Keep B-Check on the dedicated lower line
+   - Preserve seven-day / 24-hour visual alignment
+   ============================================================ */
+
+.acs-week-timeline-cell {
+  position: relative;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.acs-week-timeline {
+  position: relative;
+  width: 100%;
+  height: 78px;
+
+  background-image:
+    repeating-linear-gradient(
+      to right,
+      transparent 0,
+      transparent calc((100% / 28) - 1px),
+      rgba(138,180,255,.10) calc(100% / 28),
+      transparent calc((100% / 28) + 1px)
+    );
+}
+
+.acs-week-lane {
+  position: absolute;
+  left: 0;
+  width: 100%;
+}
+
+.acs-flight-lane {
+  top: 10px;
+  height: 28px;
+}
+
+.acs-bcheck-lane {
+  top: 45px;
+  height: 22px;
+}
+
+.acs-timeline-block {
+  position: absolute;
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  cursor: pointer;
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.acs-timeline-flight {
+  height: 24px;
+
+  color: #071426;
+  background: linear-gradient(
+    180deg,
+    #ffca3a,
+    #ffb300
+  );
+
+  border:
+    1px solid rgba(255,215,90,.85);
+
+  border-radius: 5px;
+}
+
+.acs-timeline-a {
+  height: 24px;
+
+  color: #fff;
+
+  background: linear-gradient(
+    180deg,
+    #347edb,
+    #1f5ca8
+  );
+
+  border:
+    1px solid rgba(138,180,255,.75);
+
+  border-radius: 5px;
+}
+
+.acs-timeline-b {
+  height: 20px;
+
+  color: #fff;
+
+  background: linear-gradient(
+    180deg,
+    #9ca3ad,
+    #747d89
+  );
+
+  border:
+    1px solid rgba(210,215,225,.55);
+
+  border-radius: 5px;
+}
        
 </style>
 
@@ -3951,104 +4066,201 @@ const displayModel = escapedManufacturer
 
   tr.appendChild(tdTail);
 
-  days.forEach(day => {
+  /* ============================================================
+   ✈️ ACS OCC — 168H WEEKLY AIRCRAFT TIMELINE RENDERER
+   Date: 19 AUG 2026
+   Purpose:
+   - Render the seven-day schedule as one continuous 168-hour line
+   - Position flights by real departure time and real rotation duration
+   - Include existing turnaround inside flight occupation
+   - Allow flights to continue naturally across midnight
+   - Place A-Check on the SAME operational line as flights
+   - Place B-Check on the dedicated lower maintenance line
+   - Preserve all existing flight / maintenance modal functions
+   - Visual rendering only — no operational state mutation
+   ============================================================ */
 
-    const td = document.createElement("td");
-    const aircraftId = String(ac.id || "").trim();
+const weekTd = document.createElement("td");
+weekTd.colSpan = 7;
+weekTd.className = "acs-week-timeline-cell";
 
-    const rawDayItems = (byAircraftId[aircraftId] || []).filter(x => {
-      if (!x) return false;
-      if (String(x.day || "").toLowerCase() !== day) return false;
-      if (x.__edited === true) return false;
+const weekTimeline = document.createElement("div");
+weekTimeline.className = "acs-week-timeline";
 
-      if (x.type === "service") return true;
+const flightLane = document.createElement("div");
+flightLane.className = "acs-week-lane acs-flight-lane";
 
-      if (x.type === "flight") {
-        if (x.assigned !== true) return false;
-        return ACS_isFlightCompatibleWithAircraft(x, ac);
-      }
+const bCheckLane = document.createElement("div");
+bCheckLane.className = "acs-week-lane acs-bcheck-lane";
 
-      return false;
-    });
-     
-    const dayItems = ACS_sortDayEvents(rawDayItems);
+weekTimeline.appendChild(flightLane);
+weekTimeline.appendChild(bCheckLane);
 
-    const nowMin = ACS_TABLE_TIME.minute;
+const aircraftItems = (byAircraftId[String(ac.id || "").trim()] || [])
+  .filter(it => {
+    if (!it || it.__edited === true) return false;
 
-    const hasActiveBCheck = dayItems.some(it => {
-      if (it.type !== "service" || it.serviceType !== "B") return false;
-      return nowMin >= it.startMinute && nowMin < it.endMinute;
-    });
+    const day = String(it.day || "").toLowerCase();
+    if (!days.includes(day)) return false;
 
-    if (hasActiveBCheck) td.classList.add("bcheck-day");
+    if (it.type === "service") {
+      return true;
+    }
 
-    dayItems.forEach(it => {
+    if (it.type === "flight") {
+      if (it.assigned !== true) return false;
+      return ACS_isFlightCompatibleWithAircraft(it, ac);
+    }
 
-      const depMin = toMin(it.departure) ?? -1;
-      const arrMin = toMin(it.arrival) ?? -1;
-
-      const isFlying =
-        depMin >= 0 &&
-        arrMin >= 0 &&
-        nowMin >= depMin &&
-        nowMin < arrMin;
-
-      if (it.type === "flight") {
-
-        const chip = document.createElement("span");
-        chip.className = "chip flight-chip";
-        chip.dataset.id = it.id;
-        chip.dataset.blockId = it.blockId || "";
-        chip.dataset.type = "flight";
-
-        const labelOut = it.labelOut || it.flightLabelOut || it.flightNumberOut || "—";
-        const labelIn  = it.labelIn  || it.flightLabelIn  || it.flightNumberIn  || "—";
-
-        chip.textContent = `${labelOut} / ${labelIn}`;
-
-        if (isFlying) {
-          chip.classList.add("flying-now");
-          chip.title = "✈️ Flight in progress";
-        }
-
-        chip.onclick = () => {
-          window.selectedFlight = {
-            data: it,
-            element: chip
-          };
-          openFlightModal(it, chip);
-        };
-
-        td.appendChild(chip);
-      }
-
-      if (it.type === "service") {
-
-        const chip = document.createElement("span");
-        chip.className = "service-chip";
-        chip.dataset.id = it.id;
-        chip.dataset.type = "service";
-
-        chip.textContent =
-          it.serviceType === "A"
-            ? "🔧 A-Check"
-            : "⚙️ B-Check";
-
-        chip.onclick = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          window.ACS_SELECTED_SERVICE = it;
-          openMaintenanceInfoModal(it, ac);
-        };
-
-        td.appendChild(chip);
-      }
-
-    });
-
-    tr.appendChild(td);
-
+    return false;
   });
+
+aircraftItems.forEach(it => {
+
+  const dayKey = String(it.day || "").toLowerCase();
+  const dayIndex = days.indexOf(dayKey);
+
+  if (dayIndex < 0) return;
+
+  const startMin = toMin(it.departure || it.start);
+
+  if (!Number.isFinite(startMin)) return;
+
+  const weekStartMin =
+    (dayIndex * 1440) + startMin;
+
+  let durationMin = 0;
+
+  if (it.type === "flight") {
+
+    const oneWayMin =
+      Number.isFinite(Number(it.blockTimeMin))
+        ? Number(it.blockTimeMin)
+        : 0;
+
+    const turnaroundMin =
+      Number.isFinite(Number(it.turnaroundMin))
+        ? Number(it.turnaroundMin)
+        : 0;
+
+    durationMin =
+      (oneWayMin * 2) +
+      turnaroundMin;
+  }
+
+  if (it.type === "service") {
+
+    durationMin =
+      it.serviceType === "A"
+        ? 300
+        : 1440;
+  }
+
+  if (!Number.isFinite(durationMin) || durationMin <= 0) {
+    return;
+  }
+
+  const leftPct =
+    (weekStartMin / 10080) * 100;
+
+  const widthPct =
+    (durationMin / 10080) * 100;
+
+  const chip = document.createElement("span");
+
+  chip.style.left = `${leftPct}%`;
+  chip.style.width = `${widthPct}%`;
+
+  if (it.type === "flight") {
+
+    chip.className =
+      "acs-timeline-block acs-timeline-flight";
+
+    chip.dataset.id = it.id;
+    chip.dataset.blockId = it.blockId || "";
+    chip.dataset.type = "flight";
+
+    const labelOut =
+      it.labelOut ||
+      it.flightLabelOut ||
+      it.flightNumberOut ||
+      "—";
+
+    const labelIn =
+      it.labelIn ||
+      it.flightLabelIn ||
+      it.flightNumberIn ||
+      "—";
+
+    chip.textContent =
+      `${labelOut} / ${labelIn}`;
+
+    chip.onclick = () => {
+      window.selectedFlight = {
+        data: it,
+        element: chip
+      };
+
+      openFlightModal(it, chip);
+    };
+
+    flightLane.appendChild(chip);
+  }
+
+  if (
+    it.type === "service" &&
+    it.serviceType === "A"
+  ) {
+
+    chip.className =
+      "acs-timeline-block acs-timeline-a";
+
+    chip.dataset.id = it.id;
+    chip.dataset.type = "service";
+
+    chip.textContent = "A";
+
+    chip.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      window.ACS_SELECTED_SERVICE = it;
+
+      openMaintenanceInfoModal(it, ac);
+    };
+
+    flightLane.appendChild(chip);
+  }
+
+  if (
+    it.type === "service" &&
+    it.serviceType === "B"
+  ) {
+
+    chip.className =
+      "acs-timeline-block acs-timeline-b";
+
+    chip.dataset.id = it.id;
+    chip.dataset.type = "service";
+
+    chip.textContent = "B-CHECK";
+
+    chip.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      window.ACS_SELECTED_SERVICE = it;
+
+      openMaintenanceInfoModal(it, ac);
+    };
+
+    bCheckLane.appendChild(chip);
+  }
+
+});
+
+weekTd.appendChild(weekTimeline);
+tr.appendChild(weekTd);
 
     // ============================================================
     // ACTION PLAN
