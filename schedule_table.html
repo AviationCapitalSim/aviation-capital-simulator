@@ -1483,6 +1483,486 @@ footer {
   }
 
 }
+
+/* ============================================================
+   📅 ACS SCHEDULE TABLE — 24H VISUAL TIMELINE STYLE
+   Date: 19 AUG 2026
+   Purpose:
+   - Apply approved ACS OCC Schedule Table visual model
+   - Give each day a true readable 24-hour visual width
+   - Display 00 / 06 / 12 / 18 / 24 on one horizontal line
+   - Preserve Aircraft and Action Plan columns
+   - Preserve all existing Schedule functions
+   - Prepare flight and maintenance proportional timeline lanes
+   - Provide horizontal scrolling instead of compressing the week
+   - Visual / presentation layer only
+   ============================================================ */
+
+
+/* ============================================================
+   MAIN TIMELINE CONTAINER
+   ============================================================ */
+
+.schedule-table-scroll {
+  width: 100%;
+  max-width: none;
+  margin: 0 auto;
+
+  overflow-x: auto;
+  overflow-y: visible;
+
+  border-radius: 16px;
+
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+
+/* ============================================================
+   TOP TOOLBAR
+   ============================================================ */
+
+.acs-schedule-toolbar {
+  width: 1880px;
+  min-width: 1880px;
+
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 42px;
+
+  padding: 12px 18px;
+  margin: 0 auto 10px;
+
+  background: rgba(4, 16, 35, 0.72);
+
+  border:
+    1px solid rgba(138, 180, 255, 0.14);
+
+  border-radius: 14px;
+}
+
+
+.acs-schedule-view,
+.acs-schedule-scale {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  white-space: nowrap;
+}
+
+
+.acs-schedule-view > span,
+.acs-schedule-scale > span {
+  margin-right: 5px;
+
+  color: #dbe4ff;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  letter-spacing: 0.8px;
+}
+
+
+/* ============================================================
+   VIEW / SCALE BUTTONS
+   ============================================================ */
+
+.acs-view-btn,
+.acs-scale-btn {
+  min-width: 76px;
+
+  padding: 7px 14px;
+
+  border-radius: 7px;
+
+  border:
+    1px solid rgba(138, 180, 255, 0.28);
+
+  background:
+    rgba(10, 28, 56, 0.78);
+
+  color: #dbe4ff;
+
+  font-family: inherit;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+
+.acs-view-btn.active,
+.acs-scale-btn.active {
+  color: #ffca3a;
+
+  border-color:
+    rgba(255, 179, 0, 0.82);
+
+  background:
+    rgba(255, 179, 0, 0.08);
+
+  box-shadow:
+    inset 0 0 10px rgba(255, 179, 0, 0.06);
+}
+
+
+/* ============================================================
+   LEGEND
+   ============================================================ */
+
+.acs-schedule-legend {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+
+  white-space: nowrap;
+}
+
+
+.acs-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  color: #e6ebf5;
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+
+.acs-legend-item i {
+  display: inline-block;
+
+  width: 14px;
+  height: 14px;
+
+  border-radius: 3px;
+}
+
+
+.acs-legend-flight {
+  background:
+    linear-gradient(
+      180deg,
+      #ffca3a,
+      #ffb300
+    );
+}
+
+
+.acs-legend-a {
+  background:
+    linear-gradient(
+      180deg,
+      #347edb,
+      #1f5ca8
+    );
+}
+
+
+.acs-legend-b {
+  background:
+    linear-gradient(
+      180deg,
+      #9ca3ad,
+      #747d89
+    );
+}
+
+
+.acs-legend-available {
+  background:
+    rgba(255, 255, 255, 0.02);
+
+  border:
+    1px solid rgba(180, 200, 225, 0.28);
+}
+
+
+/* ============================================================
+   TABLE — APPROVED TIMELINE DIMENSIONS
+   ============================================================ */
+
+#scheduleTable {
+  width: 1880px !important;
+  min-width: 1880px !important;
+  max-width: none !important;
+
+  table-layout: fixed;
+
+  margin: 0 auto;
+
+  border-collapse: collapse;
+
+  background:
+    rgba(4, 17, 36, 0.62);
+
+  border:
+    1px solid rgba(138, 180, 255, 0.16);
+
+  border-radius: 14px;
+
+  overflow: hidden;
+}
+
+
+/* Aircraft column */
+
+#scheduleTable th:first-child,
+#scheduleTable td:first-child {
+  width: 220px !important;
+  min-width: 220px !important;
+  max-width: 220px !important;
+}
+
+
+/* Monday → Sunday */
+
+#scheduleTable th:nth-child(n+2):nth-child(-n+8),
+#scheduleTable td:nth-child(n+2):nth-child(-n+8) {
+  width: 210px !important;
+  min-width: 210px !important;
+  max-width: 210px !important;
+}
+
+
+/* Action Plan */
+
+#scheduleTable th:last-child,
+#scheduleTable td:last-child {
+  width: 190px !important;
+  min-width: 190px !important;
+  max-width: 190px !important;
+}
+
+
+/* ============================================================
+   DAY HEADER
+   ============================================================ */
+
+#scheduleTable thead .acs-day-header th {
+  height: 42px;
+
+  box-sizing: border-box;
+
+  padding: 9px 8px;
+
+  vertical-align: middle;
+
+  background:
+    rgba(13, 39, 72, 0.94);
+
+  color: #f4f7ff;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  letter-spacing: 0.4px;
+
+  text-shadow: none;
+
+  border:
+    1px solid rgba(138, 180, 255, 0.14);
+}
+
+
+/* ============================================================
+   24-HOUR HEADER
+   ============================================================ */
+
+#scheduleTable thead .acs-hour-header th {
+  height: 38px;
+
+  padding: 0;
+
+  background:
+    rgba(8, 29, 57, 0.96);
+
+  border:
+    1px solid rgba(138, 180, 255, 0.12);
+}
+
+
+.acs-hour-scale {
+  width: 100%;
+  height: 100%;
+
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 10px;
+
+  color: #f0f4fb;
+
+  font-size: 10px;
+  font-weight: 600;
+
+  font-variant-numeric:
+    tabular-nums;
+
+  white-space: nowrap;
+}
+
+
+.acs-hour-scale span {
+  display: block;
+
+  min-width: 18px;
+
+  text-align: center;
+
+  line-height: 1;
+}
+
+
+/* ============================================================
+   BODY ROWS — TIMELINE FOUNDATION
+   ============================================================ */
+
+#scheduleTable tbody td {
+  height: 96px;
+
+  box-sizing: border-box;
+
+  vertical-align: middle;
+
+  border:
+    1px solid rgba(138, 180, 255, 0.10);
+
+  background:
+    rgba(5, 20, 42, 0.52);
+}
+
+
+/* Day cells */
+
+#scheduleTable tbody td:nth-child(n+2):nth-child(-n+8) {
+  position: relative;
+
+  padding: 8px 6px;
+
+  vertical-align: top;
+
+  background-color:
+    rgba(5, 20, 42, 0.48);
+
+  background-image:
+    linear-gradient(
+      to right,
+      transparent 24.7%,
+      rgba(138, 180, 255, 0.12) 25%,
+      transparent 25.3%,
+
+      transparent 49.7%,
+      rgba(138, 180, 255, 0.12) 50%,
+      transparent 50.3%,
+
+      transparent 74.7%,
+      rgba(138, 180, 255, 0.12) 75%,
+      transparent 75.3%
+    );
+}
+
+
+/* ============================================================
+   AIRCRAFT COLUMN
+   ============================================================ */
+
+#scheduleTable tbody td:first-child {
+  padding: 12px 14px;
+
+  vertical-align: middle;
+
+  background:
+    rgba(7, 25, 48, 0.90);
+
+  text-align: left;
+}
+
+
+/* ============================================================
+   ACTION PLAN
+   ============================================================ */
+
+#scheduleTable tbody td:last-child {
+  padding: 8px;
+
+  vertical-align: middle;
+
+  background:
+    rgba(7, 25, 48, 0.72);
+}
+
+
+/* ============================================================
+   TEMPORARY LEGACY CHIP PRESENTATION
+   ------------------------------------------------------------
+   Existing chips remain functional during visual migration.
+   Their timeline positioning comes in the next ACS OCC step.
+   ============================================================ */
+
+#scheduleTable .flight-chip,
+#scheduleTable .service-chip {
+  position: relative;
+
+  max-width: calc(100% - 8px);
+
+  box-sizing: border-box;
+
+  margin: 3px auto;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+}
+
+
+/* ============================================================
+   HORIZONTAL SCROLLBAR
+   ============================================================ */
+
+.schedule-table-scroll::-webkit-scrollbar {
+  height: 10px;
+}
+
+
+.schedule-table-scroll::-webkit-scrollbar-track {
+  background:
+    rgba(4, 16, 35, 0.80);
+
+  border-radius: 10px;
+}
+
+
+.schedule-table-scroll::-webkit-scrollbar-thumb {
+  background:
+    rgba(138, 180, 255, 0.32);
+
+  border-radius: 10px;
+
+  border:
+    2px solid rgba(4, 16, 35, 0.80);
+}
+
+
+.schedule-table-scroll::-webkit-scrollbar-thumb:hover {
+  background:
+    rgba(255, 179, 0, 0.52);
+}
        
 </style>
 
