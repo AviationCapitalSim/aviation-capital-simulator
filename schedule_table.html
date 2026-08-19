@@ -1801,13 +1801,15 @@ footer {
 }
 
 /* ============================================================
-   ✈️ ACS OCC — 168H WEEKLY AIRCRAFT TIMELINE STYLE
+   ✈️ ACS OCC — 168H WEEKLY AIRCRAFT TIMELINE STRUCTURE
    Date: 19 AUG 2026
    Purpose:
    - Display each aircraft schedule on one continuous 168-hour axis
    - Keep flights and A-Check on the same operational line
    - Keep B-Check on the dedicated lower line
    - Preserve seven-day / 24-hour visual alignment
+   - Structural geometry only
+   - Flight / A-Check / B-Check appearance is controlled separately
    ============================================================ */
 
 .acs-week-timeline-cell {
@@ -1846,75 +1848,7 @@ footer {
   top: 45px;
   height: 22px;
 }
-
-.acs-timeline-block {
-  position: absolute;
-  box-sizing: border-box;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-
-  cursor: pointer;
-
-  font-size: 9px;
-  font-weight: 700;
-}
-
-.acs-timeline-flight {
-  height: 24px;
-
-  color: #071426;
-  background: linear-gradient(
-    180deg,
-    #ffca3a,
-    #ffb300
-  );
-
- border:
-  1px solid rgba(255,220,115,.70);
-
-  border-radius: 5px;
-}
-
-.acs-timeline-a {
-  height: 24px;
-
-  color: #fff;
-
-  background: linear-gradient(
-    180deg,
-    #347edb,
-    #1f5ca8
-  );
-
- border:
-  1px solid rgba(150,195,255,.65);
-
-  border-radius: 5px;
-}
-
-.acs-timeline-b {
-  height: 20px;
-
-  color: #fff;
-
-  background: linear-gradient(
-    180deg,
-    #9ca3ad,
-    #747d89
-  );
-
-  border:
-    1px solid rgba(210,215,225,.55);
-
-  border-radius: 5px;
-}
-
+       
 /* ============================================================
    ✨ ACS OCC — TIMELINE VISUAL POLISH
    Date: 19 AUG 2026
