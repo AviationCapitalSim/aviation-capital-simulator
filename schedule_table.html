@@ -4292,21 +4292,30 @@ aircraftItems.forEach(it => {
 
   if (it.type === "flight") {
 
-    const oneWayMin =
-      Number.isFinite(Number(it.blockTimeMin))
-        ? Number(it.blockTimeMin)
-        : 0;
+  const oneWayMin =
+    Number.isFinite(Number(it.blockTimeMin))
+      ? Number(it.blockTimeMin)
+      : 0;
 
-    const turnaroundMin =
-      Number.isFinite(Number(it.turnaroundMin))
-        ? Number(it.turnaroundMin)
-        : 0;
+  const turnaroundMin =
+    Number.isFinite(Number(it.turnaroundMin))
+      ? Number(it.turnaroundMin)
+      : 0;
 
-   durationMin =
-  Number.isFinite(Number(it.totalRotationMin))
-    ? Number(it.totalRotationMin)
-    : ((oneWayMin * 2) + turnaroundMin);
-  }
+  /* ----------------------------------------------------------
+     ACS OCC — REAL AIRCRAFT OCCUPATION
+     DEP
+     + outbound block
+     + destination turnaround
+     + inbound block
+     + final turnaround
+     = aircraft NEXT FLIGHT availability
+     ---------------------------------------------------------- */
+
+  durationMin =
+    (oneWayMin * 2) +
+    (turnaroundMin * 2);
+}
 
   if (it.type === "service") {
 
