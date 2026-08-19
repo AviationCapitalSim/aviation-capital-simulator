@@ -1764,6 +1764,28 @@ footer {
   background:
     rgba(255, 179, 0, 0.52);
 }
+
+/* ============================================================
+   ✈️ ACS SCHEDULE — COMPACT AIRCRAFT MODEL LABEL
+   Date: 19 AUG 2026
+   Purpose:
+   - Keep Aircraft column compact
+   - Prevent long model names from widening Schedule Table
+   - Preserve full model through native title hover
+   ============================================================ */
+
+.acs-aircraft-model {
+  display: block;
+  width: 100%;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  font-size: 11px;
+  line-height: 1.25;
+  color: #dbe4ff;
+}
        
 </style>
 
@@ -3875,7 +3897,26 @@ fleet.forEach(ac => {
     : "—";
 
   const manu = ac.manufacturer || "—";
-  const status = ACS_getAircraftStatusBadge(ac);
+  
+/* ============================================================
+   ✈️ ACS SCHEDULE — UNIVERSAL COMPACT AIRCRAFT DISPLAY MODEL
+   Date: 19 AUG 2026
+   Purpose:
+   - Works with the entire ACS aircraft catalog
+   - Remove manufacturer dynamically from displayed model
+   - Preserve realModel and modelKey authority unchanged
+   ============================================================ */
+
+const escapedManufacturer = String(manu || "")
+  .replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const displayModel = escapedManufacturer
+  ? String(realModel || "—")
+      .replace(new RegExp(`^${escapedManufacturer}\\s+`, "i"), "")
+      .trim()
+  : String(realModel || "—").trim();
+     
+     const status = ACS_getAircraftStatusBadge(ac);
 
   const wrapInfo = document.createElement("div");
   wrapInfo.style.lineHeight = "1.25";
@@ -3883,7 +3924,9 @@ fleet.forEach(ac => {
 
   wrapInfo.innerHTML = `
     <strong>${reg}</strong><br>
-    <span>${realModel}</span><br>
+    <span class="acs-aircraft-model" title="${realModel}">
+     ${displayModel}
+    </span><br>
     <span style="color:#ffca3a;font-weight:600;">
       ${manu.toUpperCase()}
     </span>
