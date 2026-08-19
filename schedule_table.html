@@ -2333,11 +2333,42 @@ footer {
       <!-- contenido dinámico por JS -->
     </div>
 
-    <div class="acs-modal-footer">
-     <button class="btn-modal gold" onclick="editSelectedFlight()">✏️ EDIT</button>
-     <button class="btn-modal red" onclick="ACS_openDeleteFlightsModal()">🗑 DELETE FLIGHT</button>
-     <button class="btn-modal ghost" onclick="closeFlightModal()">Close</button>
-  </div>
+    <div id="assignFlightsWarning"
+     class="acs-assign-warning hidden">
+</div>
+
+<div class="acs-modal-footer acs-assign-footer">
+
+  <button
+    id="assignFlightsConfirmButton"
+    class="acs-assign-action acs-assign-action-gold"
+    type="button"
+    onclick="ACS_confirmAssignFlights()">
+    ✓ ASSIGN
+  </button>
+
+  <button
+    class="acs-assign-action acs-assign-action-blue"
+    type="button"
+    onclick="ACS_editFromAssignModal()">
+    ✎ EDIT
+  </button>
+
+  <button
+    class="acs-assign-action acs-assign-action-red"
+    type="button"
+    onclick="ACS_deleteFromAssignModal()">
+    🗑 DELETE
+  </button>
+
+  <button
+    class="acs-assign-action acs-assign-action-gray"
+    type="button"
+    onclick="ACS_closeAssignFlightsModal()">
+    CANCEL
+  </button>
+
+</div>
 
   </div>
 </div>
