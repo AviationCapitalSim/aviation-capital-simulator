@@ -5188,11 +5188,17 @@ function ACS_editFromAssignModal() {
     flight;
 
   window.selectedFlight = {
-    data: flight,
-    element: null
-  };
+  data: flight,
+  element: null
+};
 
-  editSelectedFlight();
+/* Cerrar ASSIGN antes de abrir EDIT */
+const assignModal = document.getElementById("assignFlightsModal");
+if (assignModal) {
+  assignModal.classList.add("hidden");
+}
+
+editSelectedFlight();
 }
 
 
@@ -5246,11 +5252,17 @@ function ACS_deleteFromAssignModal() {
     flight;
 
   window.selectedFlight = {
-    data: flight,
-    element: null
-  };
+  data: flight,
+  element: null
+};
 
-  ACS_openDeleteFlightsModal();
+/* Cerrar ASSIGN antes de abrir DELETE */
+const assignModal = document.getElementById("assignFlightsModal");
+if (assignModal) {
+  assignModal.classList.add("hidden");
+}
+
+ACS_openDeleteFlightsModal();
 }
 
 /* ============================================================
