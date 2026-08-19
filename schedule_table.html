@@ -1537,19 +1537,92 @@ footer {
 </section>
      
   <!-- ============================================================
-     📅 ACS SCHEDULE TABLE — RESPONSIVE OCC CONTAINER
-     Date: 06 JUN 2026
+     📅 ACS SCHEDULE TABLE — 24H VISUAL TIMELINE STRUCTURE
+     Date: 19 AUG 2026
      Purpose:
-     - Preserve desktop proportions
-     - Provide horizontal scrolling on compact devices
-     - Prevent Aircraft column from consuming excessive width
+     - Upgrade Schedule Table to ACS OCC visual timeline format
+     - Preserve existing Schedule functions and backend authority
+     - Display each operating day on a proportional 24-hour scale
+     - Prepare flight blocks for real time-position representation
+     - Keep A-Check on the same operational line as flights
+     - Keep B-Check on a dedicated lower line with 24-hour occupancy
+     - Preserve Aircraft and Action Plan columns
+     - Visual / presentation layer only — no operational logic changes
      ============================================================ -->
 
 <div class="schedule-table-scroll">
+
+  <div class="acs-schedule-toolbar">
+
+    <div class="acs-schedule-view">
+      <span>VIEW</span>
+
+      <button
+        type="button"
+        class="acs-view-btn active"
+        data-view="timeline">
+        TIMELINE
+      </button>
+
+      <button
+        type="button"
+        class="acs-view-btn"
+        data-view="compact">
+        COMPACT
+      </button>
+    </div>
+
+    <div class="acs-schedule-scale">
+      <span>SCALE</span>
+
+      <button
+        type="button"
+        class="acs-scale-btn active"
+        data-scale="24h">
+        24H
+      </button>
+
+      <button
+        type="button"
+        class="acs-scale-btn"
+        data-scale="5h">
+        5H
+      </button>
+    </div>
+
+    <div class="acs-schedule-legend">
+
+      <span class="acs-legend-item">
+        <i class="acs-legend-flight"></i>
+        FLIGHT
+      </span>
+
+      <span class="acs-legend-item">
+        <i class="acs-legend-a"></i>
+        A-CHECK (5H)
+      </span>
+
+      <span class="acs-legend-item">
+        <i class="acs-legend-b"></i>
+        B-CHECK (24H+)
+      </span>
+
+      <span class="acs-legend-item">
+        <i class="acs-legend-available"></i>
+        AVAILABLE
+      </span>
+
+    </div>
+
+  </div>
+
   <table id="scheduleTable">
+
     <thead>
-      <tr>
-        <th>Aircraft</th>
+
+      <tr class="acs-day-header">
+        <th rowspan="2">Aircraft</th>
+
         <th>Mon</th>
         <th>Tue</th>
         <th>Wed</th>
@@ -1557,13 +1630,90 @@ footer {
         <th>Fri</th>
         <th>Sat</th>
         <th>Sun</th>
-        <th>Action Plan</th>
+
+        <th rowspan="2">Action Plan</th>
       </tr>
+
+      <tr class="acs-hour-header">
+
+        <th>
+          <div class="acs-hour-scale">
+            <span>00</span>
+            <span>06</span>
+            <span>12</span>
+            <span>18</span>
+            <span>24</span>
+          </div>
+        </th>
+
+        <th>
+          <div class="acs-hour-scale">
+            <span>00</span>
+            <span>06</span>
+            <span>12</span>
+            <span>18</span>
+            <span>24</span>
+          </div>
+        </th>
+
+        <th>
+          <div class="acs-hour-scale">
+            <span>00</span>
+            <span>06</span>
+            <span>12</span>
+            <span>18</span>
+            <span>24</span>
+          </div>
+        </th>
+
+        <th>
+          <div class="acs-hour-scale">
+            <span>00</span>
+            <span>06</span>
+            <span>12</span>
+            <span>18</span>
+            <span>24</span>
+          </div>
+        </th>
+
+        <th>
+          <div class="acs-hour-scale">
+            <span>00</span>
+            <span>06</span>
+            <span>12</span>
+            <span>18</span>
+            <span>24</span>
+          </div>
+        </th>
+
+        <th>
+          <div class="acs-hour-scale">
+            <span>00</span>
+            <span>06</span>
+            <span>12</span>
+            <span>18</span>
+            <span>24</span>
+          </div>
+        </th>
+
+        <th>
+          <div class="acs-hour-scale">
+            <span>00</span>
+            <span>06</span>
+            <span>12</span>
+            <span>18</span>
+            <span>24</span>
+          </div>
+        </th>
+
+      </tr>
+
     </thead>
 
     <tbody id="scheduleBody"></tbody>
+
   </table>
-</div>
+
 </div>
 
   <div class="summary">
