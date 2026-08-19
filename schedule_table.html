@@ -1914,6 +1914,180 @@ footer {
 
   border-radius: 5px;
 }
+
+/* ============================================================
+   ✨ ACS OCC — TIMELINE VISUAL POLISH
+   Date: 19 AUG 2026
+   Purpose:
+   - Refine flight / A-Check / B-Check presentation
+   - Preserve exact time geometry and event positions
+   - Improve readability without changing operational meaning
+   - Keep touching events visually exact when times match
+   ============================================================ */
+
+
+/* ============================================================
+   WEEK TIMELINE — MORE AIR / CLEANER LANES
+   ============================================================ */
+
+.acs-week-timeline {
+  height: 82px;
+}
+
+.acs-flight-lane {
+  top: 9px;
+  height: 30px;
+}
+
+.acs-bcheck-lane {
+  top: 50px;
+  height: 20px;
+}
+
+
+/* ============================================================
+   BASE BLOCK
+   ============================================================ */
+
+.acs-timeline-block {
+  min-width: 0;
+
+  padding: 0 4px;
+
+  border-radius: 6px;
+
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+
+  letter-spacing: 0.1px;
+
+  box-shadow:
+    0 2px 5px rgba(0,0,0,0.22);
+
+  transition:
+    filter .15s ease,
+    box-shadow .15s ease;
+}
+
+.acs-timeline-block:hover {
+  filter: brightness(1.08);
+
+  box-shadow:
+    0 3px 9px rgba(0,0,0,0.30);
+}
+
+
+/* ============================================================
+   FLIGHT
+   ============================================================ */
+
+.acs-timeline-flight {
+  height: 25px;
+
+  color: #071426;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffd24a 0%,
+      #ffb300 100%
+    );
+
+  border:
+    1px solid rgba(255,220,115,.90);
+
+  text-shadow:
+    0 1px 0 rgba(255,255,255,.22);
+}
+
+
+/* ============================================================
+   A-CHECK — SAME OPERATIONAL LINE
+   ============================================================ */
+
+.acs-timeline-a {
+  height: 25px;
+
+  padding: 0 3px;
+
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      180deg,
+      #4289df 0%,
+      #1f5ca8 100%
+    );
+
+  border:
+    1px solid rgba(150,195,255,.82);
+
+  box-shadow:
+    0 2px 5px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.10);
+}
+
+
+/* ============================================================
+   B-CHECK — DEDICATED LOWER LANE
+   ============================================================ */
+
+.acs-timeline-b {
+  height: 18px;
+
+  padding: 0 5px;
+
+  color: #f7f9fc;
+
+  background:
+    linear-gradient(
+      180deg,
+      #a7adb6 0%,
+      #747d89 100%
+    );
+
+  border:
+    1px solid rgba(215,220,230,.45);
+
+  border-radius: 5px;
+
+  font-size: 8px;
+  font-weight: 700;
+
+  letter-spacing: .2px;
+
+  box-shadow:
+    0 2px 4px rgba(0,0,0,.20);
+}
+
+
+/* ============================================================
+   TEXT PROTECTION — NEVER DISTORT TIME GEOMETRY
+   ============================================================ */
+
+.acs-timeline-flight,
+.acs-timeline-a,
+.acs-timeline-b {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: clip;
+}
+
+
+/* ============================================================
+   VERY SHORT EVENTS
+   ------------------------------------------------------------
+   Keep the exact calculated width.
+   Text may disappear; geometry never changes.
+   ============================================================ */
+
+.acs-timeline-flight:empty,
+.acs-timeline-a:empty,
+.acs-timeline-b:empty {
+  padding-left: 0;
+  padding-right: 0;
+}
        
 </style>
 
