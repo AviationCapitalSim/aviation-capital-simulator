@@ -1945,131 +1945,214 @@ footer {
 }
 
 /* ============================================================
-   ✈️ ACS OCC — EXACT TIMELINE BLOCK GEOMETRY
+   ✨ ACS OCC — CRYSTAL TIMELINE VISUAL SYSTEM
    Date: 19 AUG 2026
    Purpose:
-   - Preserve exact real-time spacing between consecutive events
-   - Prevent padding / border from exaggerating small time gaps
-   - Keep blocks visually attached when only a few minutes apart
-   - Never alter calculated timeline position or duration
+   - Give Flight / A-Check / B-Check a unique ACS OCC identity
+   - Gold crystal for flights
+   - Blue crystal for A-Check
+   - Titanium crystal for B-Check
+   - White high-contrast typography
+   - Premium hover glow without changing timeline geometry
+   - Visual layer only
+   ============================================================ */
+
+
+/* ============================================================
+   BASE TIMELINE BLOCK
    ============================================================ */
 
 .acs-timeline-block {
   min-width: 0;
 
   padding: 0 2px;
+  margin: 0;
 
-  border-radius: 4px;
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: clip;
+
+  border-radius: 5px;
+
+  color: #ffffff;
 
   font-size: 9px;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1;
 
   letter-spacing: 0;
 
-  box-sizing: border-box;
-
-  margin: 0;
-
-  box-shadow:
-    0 1px 3px rgba(0,0,0,0.18);
+  cursor: pointer;
 
   transition:
-    filter .15s ease,
-    box-shadow .15s ease;
-}
-
-.acs-timeline-block:hover {
-  filter: brightness(1.08);
-
-  box-shadow:
-    0 3px 9px rgba(0,0,0,0.30);
+    filter .18s ease,
+    box-shadow .18s ease,
+    border-color .18s ease,
+    transform .18s ease;
 }
 
 
 /* ============================================================
-   FLIGHT
+   FLIGHT — ACS GOLD CRYSTAL
    ============================================================ */
 
 .acs-timeline-flight {
   height: 25px;
-
-  color: #071426;
-
-  background:
-    linear-gradient(
-      180deg,
-      #ffd24a 0%,
-      #ffb300 100%
-    );
-
-  border:
-    1px solid rgba(255,220,115,.90);
-
-  text-shadow:
-    0 1px 0 rgba(255,255,255,.22);
-}
-
-
-/* ============================================================
-   A-CHECK — SAME OPERATIONAL LINE
-   ============================================================ */
-
-.acs-timeline-a {
-  height: 25px;
-
-  padding: 0 3px;
 
   color: #ffffff;
 
   background:
     linear-gradient(
       180deg,
-      #4289df 0%,
-      #1f5ca8 100%
+      rgba(255, 215, 95, .95) 0%,
+      rgba(255, 179, 0, .88) 48%,
+      rgba(185, 112, 0, .92) 100%
     );
 
   border:
-    1px solid rgba(150,195,255,.82);
+    1px solid rgba(255, 221, 128, .86);
 
   box-shadow:
-    0 2px 5px rgba(0,0,0,.22),
-    inset 0 1px 0 rgba(255,255,255,.10);
+    inset 0 1px 0 rgba(255,255,255,.40),
+    inset 0 -1px 0 rgba(110,65,0,.28),
+    0 2px 5px rgba(0,0,0,.28),
+    0 0 5px rgba(255,179,0,.12);
+
+  text-shadow:
+    0 1px 2px rgba(0,0,0,.72);
 }
 
 
 /* ============================================================
-   B-CHECK — DEDICATED LOWER LANE
+   A-CHECK — ACS BLUE CRYSTAL
+   SAME OPERATIONAL LINE AS FLIGHTS
+   ============================================================ */
+
+.acs-timeline-a {
+  height: 25px;
+
+  padding: 0 2px;
+
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(92, 166, 255, .96) 0%,
+      rgba(37, 105, 190, .90) 50%,
+      rgba(21, 67, 130, .94) 100%
+    );
+
+  border:
+    1px solid rgba(155, 205, 255, .82);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.34),
+    inset 0 -1px 0 rgba(0,35,90,.30),
+    0 2px 5px rgba(0,0,0,.28),
+    0 0 5px rgba(55,130,225,.14);
+
+  text-shadow:
+    0 1px 2px rgba(0,0,0,.72);
+}
+
+
+/* ============================================================
+   B-CHECK — ACS TITANIUM CRYSTAL
+   DEDICATED LOWER LANE
    ============================================================ */
 
 .acs-timeline-b {
   height: 18px;
 
-  padding: 0 5px;
+  padding: 0 4px;
 
-  color: #f7f9fc;
+  color: #ffffff;
 
   background:
     linear-gradient(
       180deg,
-      #a7adb6 0%,
-      #747d89 100%
+      rgba(202, 211, 222, .94) 0%,
+      rgba(128, 141, 158, .90) 50%,
+      rgba(74, 86, 102, .94) 100%
     );
 
   border:
-    1px solid rgba(215,220,230,.45);
+    1px solid rgba(225, 231, 239, .68);
 
   border-radius: 5px;
 
   font-size: 8px;
-  font-weight: 700;
+  font-weight: 800;
 
-  letter-spacing: .2px;
+  letter-spacing: .15px;
 
   box-shadow:
-    0 2px 4px rgba(0,0,0,.20);
+    inset 0 1px 0 rgba(255,255,255,.34),
+    inset 0 -1px 0 rgba(20,28,38,.30),
+    0 2px 4px rgba(0,0,0,.26);
+
+  text-shadow:
+    0 1px 2px rgba(0,0,0,.75);
 }
 
+
+/* ============================================================
+   ACS OCC — PREMIUM HOVER GLOW
+   ============================================================ */
+
+.acs-timeline-flight:hover {
+  filter: brightness(1.16);
+
+  border-color:
+    rgba(255,235,165,.98);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.55),
+    0 0 0 1px rgba(255,195,40,.30),
+    0 0 12px rgba(255,179,0,.72),
+    0 0 22px rgba(255,179,0,.30);
+
+  transform: translateY(-1px);
+}
+
+
+.acs-timeline-a:hover {
+  filter: brightness(1.17);
+
+  border-color:
+    rgba(190,225,255,.98);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.52),
+    0 0 0 1px rgba(75,155,255,.28),
+    0 0 12px rgba(55,135,235,.72),
+    0 0 22px rgba(55,135,235,.30);
+
+  transform: translateY(-1px);
+}
+
+
+.acs-timeline-b:hover {
+  filter: brightness(1.18);
+
+  border-color:
+    rgba(245,248,252,.94);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.52),
+    0 0 0 1px rgba(195,205,220,.24),
+    0 0 10px rgba(190,205,225,.62),
+    0 0 18px rgba(190,205,225,.24);
+
+  transform: translateY(-1px);
+}
 
 /* ============================================================
    TEXT PROTECTION — NEVER DISTORT TIME GEOMETRY
