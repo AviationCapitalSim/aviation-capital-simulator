@@ -2560,7 +2560,7 @@ footer {
      REEMPLAZA COMPLETO el bloque #flightModal anterior
      ============================================================ -->
 
-<div id="flightModal" class="acs-modal hidden">
+     <div id="flightModal" class="acs-modal hidden">
   <div class="acs-modal-card qatar">
 
     <div class="acs-modal-header">
@@ -2572,42 +2572,28 @@ footer {
       <!-- contenido dinámico por JS -->
     </div>
 
-    <div id="assignFlightsWarning"
-     class="acs-assign-warning hidden">
-</div>
+    <div class="acs-modal-footer">
+      <button
+        class="btn-modal gold"
+        type="button"
+        onclick="editSelectedFlight()">
+        ✏️ EDIT
+      </button>
 
-<div class="acs-modal-footer acs-assign-footer">
+      <button
+        class="btn-modal red"
+        type="button"
+        onclick="ACS_openDeleteFlightsModal()">
+        🗑 DELETE FLIGHT
+      </button>
 
-  <button
-    id="assignFlightsConfirmButton"
-    class="acs-assign-action acs-assign-action-gold"
-    type="button"
-    onclick="ACS_confirmAssignFlights()">
-    ✓ ASSIGN
-  </button>
-
-  <button
-    class="acs-assign-action acs-assign-action-blue"
-    type="button"
-    onclick="ACS_editFromAssignModal()">
-    ✎ EDIT
-  </button>
-
-  <button
-    class="acs-assign-action acs-assign-action-red"
-    type="button"
-    onclick="ACS_deleteFromAssignModal()">
-    🗑 DELETE
-  </button>
-
-  <button
-    class="acs-assign-action acs-assign-action-gray"
-    type="button"
-    onclick="ACS_closeAssignFlightsModal()">
-    CANCEL
-  </button>
-
-</div>
+      <button
+        class="btn-modal ghost"
+        type="button"
+        onclick="closeFlightModal()">
+        Close
+      </button>
+    </div>
 
   </div>
 </div>
@@ -2698,6 +2684,7 @@ footer {
      ============================================================ -->
      
 <!-- === MODAL ERROR — MAINTENANCE A (Qatar Luxury) === -->
+     
 <div id="maintenanceErrorModal" class="modal-overlay">
   <div class="modal-content error-modal">
     <h2 class="modal-title">❌ Invalid Maintenance Time</h2>
@@ -2717,16 +2704,55 @@ footer {
 
     <div class="acs-modal-header">
       <h3 id="assignFlightsTitle">✈️ Assign Flights</h3>
-      <button class="btn-close" onclick="ACS_closeAssignFlightsModal()">✕</button>
+
+      <button
+        class="btn-close"
+        type="button"
+        onclick="ACS_closeAssignFlightsModal()">
+        ✕
+      </button>
     </div>
 
     <div id="assignFlightsBody" class="acs-modal-body">
       <!-- contenido dinámico -->
     </div>
 
-    <div class="acs-modal-footer">
-      <button class="btn-modal gold" onclick="ACS_confirmAssignFlights()">✅ Assign Selected</button>
-      <button class="btn-modal ghost" onclick="ACS_closeAssignFlightsModal()">Cancel</button>
+    <div
+      id="assignFlightsWarning"
+      class="acs-assign-warning hidden">
+    </div>
+
+    <div class="acs-modal-footer acs-assign-footer">
+
+      <button
+        id="assignFlightsConfirmButton"
+        class="acs-assign-action acs-assign-action-gold"
+        type="button"
+        onclick="ACS_confirmAssignFlights()">
+        ✓ ASSIGN
+      </button>
+
+      <button
+        class="acs-assign-action acs-assign-action-blue"
+        type="button"
+        onclick="ACS_editFromAssignModal()">
+        ✎ EDIT
+      </button>
+
+      <button
+        class="acs-assign-action acs-assign-action-red"
+        type="button"
+        onclick="ACS_deleteFromAssignModal()">
+        🗑 DELETE
+      </button>
+
+      <button
+        class="acs-assign-action acs-assign-action-gray"
+        type="button"
+        onclick="ACS_closeAssignFlightsModal()">
+        CANCEL
+      </button>
+
     </div>
 
   </div>
