@@ -1944,26 +1944,35 @@ footer {
   height: 20px;
 }
 
-
 /* ============================================================
-   BASE BLOCK
+   ✈️ ACS OCC — EXACT TIMELINE BLOCK GEOMETRY
+   Date: 19 AUG 2026
+   Purpose:
+   - Preserve exact real-time spacing between consecutive events
+   - Prevent padding / border from exaggerating small time gaps
+   - Keep blocks visually attached when only a few minutes apart
+   - Never alter calculated timeline position or duration
    ============================================================ */
 
 .acs-timeline-block {
   min-width: 0;
 
-  padding: 0 4px;
+  padding: 0 2px;
 
-  border-radius: 6px;
+  border-radius: 4px;
 
   font-size: 9px;
   font-weight: 700;
   line-height: 1;
 
-  letter-spacing: 0.1px;
+  letter-spacing: 0;
+
+  box-sizing: border-box;
+
+  margin: 0;
 
   box-shadow:
-    0 2px 5px rgba(0,0,0,0.22);
+    0 1px 3px rgba(0,0,0,0.18);
 
   transition:
     filter .15s ease,
