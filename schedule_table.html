@@ -1848,6 +1848,31 @@ footer {
   top: 45px;
   height: 22px;
 }
+
+/* ============================================================
+   ✈️ ACS OCC — TIMELINE BLOCK POSITIONING
+   Date: 19 AUG 2026
+   Purpose:
+   - Preserve real calculated left / width positions
+   - Keep all timeline events on the 168-hour axis
+   - Structural positioning only
+   - Visual colors remain controlled by Crystal system
+   ============================================================ */
+
+.acs-timeline-block {
+  position: absolute;
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: clip;
+
+  cursor: pointer;
+}
        
 /* ============================================================
    ✨ ACS OCC — TIMELINE VISUAL POLISH
