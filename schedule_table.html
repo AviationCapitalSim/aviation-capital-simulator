@@ -4411,9 +4411,10 @@ aircraftItems.forEach(it => {
         ? Number(it.turnaroundMin)
         : 0;
 
-    durationMin =
-      (oneWayMin * 2) +
-      turnaroundMin;
+   durationMin =
+  Number.isFinite(Number(it.totalRotationMin))
+    ? Number(it.totalRotationMin)
+    : ((oneWayMin * 2) + turnaroundMin);
   }
 
   if (it.type === "service") {
