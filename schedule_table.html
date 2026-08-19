@@ -5090,6 +5090,144 @@ function ACS_closeAssignFlightsModal(){
 }
 
 /* ============================================================
+   ACS OCC — ASSIGN MODAL ACTION BRIDGE
+   ------------------------------------------------------------
+   Connects Assign Modal selections to the EXISTING:
+   - editSelectedFlight()
+   - ACS_openDeleteFlightsModal()
+
+   No duplicate edit/delete systems.
+   No persistence.
+   ============================================================ */
+
+function ACS_getAssignModalSelectedFlights() {
+
+  const modal =
+    document.getElementById("assignFlightsModal");
+
+  if (!modal) {
+    return [];
+  }
+
+  const selectedIds = [
+    ...modal.querySelectorAll(
+      "input.acs-assign-check:checked"
+    )
+  ]
+    .map(input =>
+      String(
+        input.dataset.flightId || ""
+      ).trim()
+    )
+    .filter(Boolean);
+
+  if (!selectedIds.length) {
+    return [];
+  }
+
+  const selectedSet =
+    new Set(selectedIds);
+
+  return getItems().filter(item =>
+    item &&
+    item.type === "flight" &&
+    selectedSet.has(String(item.id))
+  );
+}
+
+
+/* ============================================================
+   EDIT — USE EXISTING TABLE EDIT SYSTEM
+   ============================================================ */
+
+function ACS_editFromAssignModal() {
+
+  const selectedFlights =
+    ACS_getAssignModalSelectedFlights();
+
+  if (!selectedFlights.length) {
+    alert("⚠ Select one flight to edit.");
+    return;
+  }
+
+  if (selectedFlights.length !== 1) {
+    alert("⚠ Select only one flight to edit.");
+    return;
+  }
+
+  const flight =
+    selectedFlights[0];
+
+  window.ACS_selectedFlightItem =
+    flight;
+
+  window.selectedFlight = {
+    data: flight,
+    element: null
+  };
+
+  editSelectedFlight();
+}
+
+
+/* ============================================================
+   DELETE — USE EXISTING TABLE DELETE SYSTEM
+   ============================================================ */
+
+function ACS_deleteFromAssignModal() {
+
+  const selectedFlights =
+    ACS_getAssignModalSelectedFlights();
+
+  if (!selectedFlights.length) {
+    alert("⚠ Select at least one flight.");
+    return;
+  }
+
+  const routePlanIds = [
+    ...new Set(
+      selectedFlights
+        .map(f =>
+          String(
+            f.routePlanId ||
+            f.route_plan_id ||
+            ""
+          ).trim()
+        )
+        .filter(Boolean)
+    )
+  ];
+
+  if (routePlanIds.length !== 1) {
+    alert(
+      "⚠ Select flights from one route before opening DELETE."
+    );
+    return;
+  }
+
+  /*
+    Existing DELETE system only needs one selected flight
+    as the route entry point.
+
+    It then opens the existing batch-delete modal where
+    one / several / all flights of that route can be selected.
+  */
+
+  const flight =
+    selectedFlights[0];
+
+  window.ACS_selectedFlightItem =
+    flight;
+
+  window.selectedFlight = {
+    data: flight,
+    element: null
+  };
+
+  ACS_openDeleteFlightsModal();
+}
+
+/* ============================================================
    🟦 ASSIGN FLIGHTS — POSTGRESQL AUTHORITY
    ------------------------------------------------------------
    Date: 24 JUN 2026
@@ -5207,7 +5345,8 @@ async function ACS_confirmAssignFlights() {
     const assignButton = modal.querySelector(".btn-modal.gold");
     if (assignButton) {
       assignButton.disabled = false;
-      assignButton.textContent = "✅ Assign Selected";
+      assignButton.textContent = 
+     "✓ ASSIGN";
     }
 
   }
