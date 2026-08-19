@@ -5290,7 +5290,10 @@ async function ACS_confirmAssignFlights() {
 
   try {
 
-    const assignButton = modal.querySelector(".btn-modal.gold");
+    const assignButton =
+  document.getElementById(
+    "assignFlightsConfirmButton"
+  );
     if (assignButton) {
       assignButton.disabled = true;
       assignButton.textContent = "ASSIGNING...";
@@ -5342,7 +5345,10 @@ async function ACS_confirmAssignFlights() {
 
   } finally {
 
-    const assignButton = modal.querySelector(".btn-modal.gold");
+    const assignButton =
+  document.getElementById(
+    "assignFlightsConfirmButton"
+  );
     if (assignButton) {
       assignButton.disabled = false;
       assignButton.textContent = 
