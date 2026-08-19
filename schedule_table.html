@@ -1488,16 +1488,29 @@ footer {
   overflow: hidden;
 }
 
-
-/* Aircraft column */
+/* ============================================================
+   ✈️ ACS SCHEDULE — COMPACT AIRCRAFT COLUMN
+   Date: 19 AUG 2026
+   Purpose:
+   - Reduce Aircraft column footprint
+   - Recover horizontal space for weekly timeline
+   - Preserve registration, model and status visibility
+   ============================================================ */
 
 #scheduleTable th:first-child,
 #scheduleTable td:first-child {
-  width: 135px !important;
-  min-width: 135px !important;
-  max-width: 135px !important;
+  width: 120px !important;
+  min-width: 120px !important;
+  max-width: 120px !important;
+  padding-left: 14px !important;
+  padding-right: 8px !important;
 }
 
+#scheduleTable .col-aircraft {
+  width: 120px !important;
+  min-width: 120px !important;
+  max-width: 120px !important;
+}
 
 /* Monday → Sunday */
 
