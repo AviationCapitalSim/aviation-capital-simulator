@@ -676,13 +676,50 @@ const RP_API_BASE =
         )
       );
 
-    RP_updatePassengersDisplay();
+        RP_calculateRouteStudy();
+        RP_updatePassengersDisplay();
   }
-   
+
+
+  /* ============================================================
+     AIRCRAFT LOAD SCENARIO — PASSENGERS
+     ============================================================ */
+
+  function RP_updatePassengersDisplay() {
+    const aircraft = RP_STATE.selectedAircraft;
+
+    if (!aircraft) {
+      RP_setText("rpPassengersValue", "--");
+      return;
+    }
+
+    const maxPassengers =
+      Number(aircraft.seats);
+
+    if (!Number.isFinite(maxPassengers)) {
+      RP_setText("rpPassengersValue", "--");
+      return;
+    }
+
+    RP_STATE.passengers =
+      Math.max(
+        0,
+        Math.min(
+          Number(RP_STATE.passengers) || 0,
+          maxPassengers
+        )
+      );
+
+    RP_setText(
+      "rpPassengersValue",
+      `${RP_STATE.passengers} / ${maxPassengers}`
+    );
+  }
+
+
   /* ============================================================
      WORLD ROUTE STUDY — TECHNICAL CALCULATION
      ============================================================ */
-
   function RP_toRadians(value) {
     return Number(value) * Math.PI / 180;
   }
