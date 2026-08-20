@@ -787,7 +787,7 @@ const RP_API_BASE =
       false
     );
 
-    RP_STATE.countries.forEach(
+        RP_STATE.countries.forEach(
       country => {
         const option =
           document.createElement("option");
@@ -795,8 +795,22 @@ const RP_API_BASE =
         option.value =
           country;
 
+        const countryAirport =
+          RP_STATE.airports.find(
+            airport =>
+              String(
+                airport.country || ""
+              ).trim() === country
+          );
+
+        const countryName =
+          String(
+            countryAirport?.region ||
+            country
+          ).trim();
+
         option.textContent =
-          country;
+          countryName;
 
         countrySelect.appendChild(
           option
