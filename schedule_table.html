@@ -2461,18 +2461,20 @@ footer {
       <span>VIEW</span>
 
       <button
-        type="button"
-        class="acs-view-btn active"
-        data-view="timeline">
-        TIMELINE
-      </button>
+  type="button"
+  class="acs-view-btn active"
+  data-view="timeline"
+  onclick="ACS_setScheduleView('timeline')">
+  TIMELINE
+</button>
 
-      <button
-        type="button"
-        class="acs-view-btn"
-        data-view="compact">
-        COMPACT
-      </button>
+<button
+  type="button"
+  class="acs-view-btn"
+  data-view="compact"
+  onclick="ACS_setScheduleView('compact')">
+  COMPACT
+</button>
     </div>
 
     <div class="acs-schedule-scale">
@@ -4426,6 +4428,49 @@ function ACS_applyDominantMaintenanceFromMyAircraft(fleetAircraft, myAircraft){
   return fleetAircraft;
 }     
 
+/* ============================================================
+   🟦 ACS OCC — SCHEDULE VIEW AUTHORITY
+   Date: 20 AUG 2026
+   ------------------------------------------------------------
+   Purpose:
+   - TIMELINE = approved 168H proportional operational view
+   - COMPACT  = seven-day operational summary view
+   - Presentation authority only
+   - No PostgreSQL writes
+   - No operational state mutation
+   - No localStorage authority
+   ============================================================ */
+
+let ACS_SCHEDULE_VIEW = "timeline";
+
+function ACS_setScheduleView(view) {
+
+  const normalizedView =
+    String(view || "").trim().toLowerCase();
+
+  if (
+    normalizedView !== "timeline" &&
+    normalizedView !== "compact"
+  ) {
+    return;
+  }
+
+  ACS_SCHEDULE_VIEW = normalizedView;
+
+  document
+    .querySelectorAll(".acs-view-btn")
+    .forEach(btn => {
+
+      const isActive =
+        String(btn.dataset.view || "").toLowerCase() ===
+        normalizedView;
+
+      btn.classList.toggle("active", isActive);
+    });
+
+  renderSchedule();
+}
+     
 // ============================================================
 // === RENDER PRINCIPAL DEL SCHEDULE ==========================
 // ============================================================
