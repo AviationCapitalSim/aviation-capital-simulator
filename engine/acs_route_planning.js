@@ -1410,14 +1410,6 @@ if (airportSelect) {
   );
 }
 
-
-const passengersMinus =
-  RP_get("rpPassengersMinus");
-
-const passengersPlus =
-  RP_get("rpPassengersPlus");
-
-
 if (passengersMinus) {
   passengersMinus.addEventListener(
     "click",
