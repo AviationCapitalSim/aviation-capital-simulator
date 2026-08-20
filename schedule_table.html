@@ -1975,6 +1975,35 @@ footer {
 
   pointer-events: none;
 }
+
+/* ============================================================
+   ACS OCC — 5H INSTRUMENT SCALE
+   ------------------------------------------------------------
+   20 minor divisions = 15-minute marks across 5 hours.
+   Visual only.
+   ============================================================ */
+
+.acs-hour-scale.acs-hour-scale-5h::after {
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(112, 174, 226, 0.88) 0,
+      rgba(112, 174, 226, 0.88) 1px,
+      transparent 1px,
+      transparent calc(100% / 20)
+    );
+}
+
+
+/* ============================================================
+   ACS OCC — SCALE DISABLED IN COMPACT
+   ============================================================ */
+
+.acs-scale-btn.acs-scale-disabled {
+  opacity: 0.38;
+  cursor: default;
+  filter: none;
+}
        
 /* ============================================================
    BODY ROWS — TIMELINE FOUNDATION
@@ -4743,6 +4772,156 @@ function ACS_getSchedule5HWindow() {
   };
 }
 
+/* ============================================================
+   🟦 ACS OCC — DYNAMIC TIME HEADER
+   Date: 20 AUG 2026
+   ------------------------------------------------------------
+   Purpose:
+   - 24H shows 00 / 06 / 12 / 18 / 24
+   - 5H shows the real ACS focused window
+   - COMPACT keeps standard 24H header presentation
+   - Presentation only
+   - No PostgreSQL writes
+   - No SkyTrack mutation
+   - No schedule mutation
+   ============================================================ */
+
+function ACS_updateScheduleHourHeaders() {
+
+  const hourScales =
+    document.querySelectorAll(".acs-hour-scale");
+
+  if (!hourScales.length) {
+    return;
+  }
+
+
+  /* ----------------------------------------------------------
+     COMPACT
+     Scale is not operationally relevant in this view.
+     Keep standard header and disable scale buttons visually.
+     ---------------------------------------------------------- */
+
+  const compactMode =
+    ACS_SCHEDULE_VIEW === "compact";
+
+
+  document
+    .querySelectorAll(".acs-scale-btn")
+    .forEach(btn => {
+
+      btn.disabled =
+        compactMode;
+
+      btn.classList.toggle(
+        "acs-scale-disabled",
+        compactMode
+      );
+    });
+
+
+  /* ----------------------------------------------------------
+     STANDARD 24H HEADER
+     ---------------------------------------------------------- */
+
+  if (
+    compactMode ||
+    ACS_SCHEDULE_SCALE !== "5h"
+  ) {
+
+    const standardLabels = [
+      "00",
+      "06",
+      "12",
+      "18",
+      "24"
+    ];
+
+
+    hourScales.forEach(scale => {
+
+      scale.classList.remove(
+        "acs-hour-scale-5h"
+      );
+
+      scale.replaceChildren(
+        ...standardLabels.map(label => {
+
+          const span =
+            document.createElement("span");
+
+          span.textContent =
+            label;
+
+          return span;
+        })
+      );
+
+    });
+
+    return;
+  }
+
+
+  /* ----------------------------------------------------------
+     5H FOCUSED HEADER
+     ---------------------------------------------------------- */
+
+  const window5h =
+    ACS_getSchedule5HWindow();
+
+  const startMin =
+    window5h.startMin;
+
+
+  const labels = [];
+
+  for (let i = 0; i <= 5; i++) {
+
+    const absoluteMin =
+      startMin + (i * 60);
+
+    const normalizedMin =
+      ((absoluteMin % 1440) + 1440) % 1440;
+
+    const hour =
+      Math.floor(
+        normalizedMin / 60
+      );
+
+    const minute =
+      normalizedMin % 60;
+
+
+    labels.push(
+      `${String(hour).padStart(2, "0")}:` +
+      `${String(minute).padStart(2, "0")}`
+    );
+  }
+
+
+  hourScales.forEach(scale => {
+
+    scale.classList.add(
+      "acs-hour-scale-5h"
+    );
+
+    scale.replaceChildren(
+      ...labels.map(label => {
+
+        const span =
+          document.createElement("span");
+
+        span.textContent =
+          label;
+
+        return span;
+      })
+    );
+
+  });
+
+}     
 
 /* ============================================================
    ACS OCC — SCALE SELECTOR
@@ -4845,6 +5024,8 @@ function ACS_setScheduleView(view) {
 // ============================================================
      
 function renderSchedule() {
+
+  ACS_updateScheduleHourHeaders();
 
   const tbody = document.getElementById("scheduleBody");
   tbody.innerHTML = "";
