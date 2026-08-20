@@ -42,8 +42,9 @@
        https://api.aviationcapitalsim.com
      ============================================================ */
 
-  const RP_API_BASE =
-    "https://api.aviationcapitalsim.com";
+const RP_API_BASE =
+  window.ACS_API_BASE ||
+  "https://api.aviationcapitalsim.com";
 
 
   /* ============================================================
