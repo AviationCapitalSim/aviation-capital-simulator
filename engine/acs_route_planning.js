@@ -588,26 +588,7 @@ const RP_API_BASE =
       label
     );
 
-    /*
-     * Technical calculations are deliberately NOT
-     * activated in this stage.
-     *
-     * We have selected the real aircraft record,
-     * but Route Planning will not display invented
-     * passenger, fuel, range or TOW scenarios.
-     */
-
-    RP_setText(
-      "rpCalculatedRange",
-      "-- NM"
-    );
-
-    RP_setText(
-      "rpRangeDifference",
-      "-- NM"
-    );
-
-    RP_setText(
+        RP_setText(
       "rpPassengersValue",
       "--"
     );
@@ -627,10 +608,241 @@ const RP_API_BASE =
       "-- % MTOW"
     );
 
-    RP_updatePlanningStatus();
+    RP_calculateRouteStudy();
+     
+    /* ============================================================
+     WORLD ROUTE STUDY — TECHNICAL CALCULATION
+     ============================================================ */
+
+  function RP_toRadians(value) {
+    return Number(value) * Math.PI / 180;
   }
 
 
+  function RP_calculateGreatCircleNm(
+    lat1,
+    lon1,
+    lat2,
+    lon2
+  ) {
+    const φ1 = RP_toRadians(lat1);
+    const φ2 = RP_toRadians(lat2);
+
+    const Δφ =
+      RP_toRadians(
+        Number(lat2) - Number(lat1)
+      );
+
+    const Δλ =
+      RP_toRadians(
+        Number(lon2) - Number(lon1)
+      );
+
+    const a =
+      Math.sin(Δφ / 2) ** 2 +
+      Math.cos(φ1) *
+      Math.cos(φ2) *
+      Math.sin(Δλ / 2) ** 2;
+
+    const c =
+      2 * Math.atan2(
+        Math.sqrt(a),
+        Math.sqrt(1 - a)
+      );
+
+    /*
+     * Mean Earth radius in nautical miles.
+     */
+    const EARTH_RADIUS_NM = 3440.065;
+
+    return EARTH_RADIUS_NM * c;
+  }
+
+
+  function RP_calculateRouteStudy() {
+    const originIcao =
+      String(
+        RP_STATE.origin?.icao || ""
+      )
+        .trim()
+        .toUpperCase();
+
+    const destination =
+      RP_STATE.destination;
+
+    const aircraft =
+      RP_STATE.selectedAircraft;
+
+
+    const originAirport =
+      RP_STATE.airports.find(
+        airport =>
+          String(
+            airport.icao || ""
+          )
+            .trim()
+            .toUpperCase() === originIcao
+      ) || null;
+
+
+    if (
+      !originAirport ||
+      !destination
+    ) {
+      RP_setText(
+        "rpGreatCircleDistance",
+        "-- NM"
+      );
+
+      RP_setText(
+        "rpRangeDifference",
+        "-- NM"
+      );
+
+      if (!aircraft) {
+        RP_setText(
+          "rpCalculatedRange",
+          "-- NM"
+        );
+      }
+
+      RP_updatePlanningStatus();
+      return;
+    }
+
+
+    const originLat =
+      Number(originAirport.latitude);
+
+    const originLon =
+      Number(originAirport.longitude);
+
+    const destinationLat =
+      Number(destination.latitude);
+
+    const destinationLon =
+      Number(destination.longitude);
+
+
+    if (
+      !Number.isFinite(originLat) ||
+      !Number.isFinite(originLon) ||
+      !Number.isFinite(destinationLat) ||
+      !Number.isFinite(destinationLon)
+    ) {
+      RP_setText(
+        "rpGreatCircleDistance",
+        "-- NM"
+      );
+
+      RP_setMapStatus(
+        "Airport coordinates unavailable"
+      );
+
+      return;
+    }
+
+
+    const distanceNm =
+      RP_calculateGreatCircleNm(
+        originLat,
+        originLon,
+        destinationLat,
+        destinationLon
+      );
+
+
+    RP_setText(
+      "rpGreatCircleDistance",
+      `${Math.round(distanceNm).toLocaleString()} NM`
+    );
+
+
+    if (!aircraft) {
+      RP_setText(
+        "rpCalculatedRange",
+        "-- NM"
+      );
+
+      RP_setText(
+        "rpRangeDifference",
+        "-- NM"
+      );
+
+      RP_updatePlanningStatus();
+      return;
+    }
+
+
+    const rangeNm =
+      Number(aircraft.range_nm);
+
+
+    if (
+      !Number.isFinite(rangeNm) ||
+      rangeNm <= 0
+    ) {
+      RP_setText(
+        "rpCalculatedRange",
+        "-- NM"
+      );
+
+      RP_setText(
+        "rpRangeDifference",
+        "-- NM"
+      );
+
+      RP_setMapStatus(
+        "Aircraft range data unavailable"
+      );
+
+      return;
+    }
+
+
+    const differenceNm =
+      rangeNm - distanceNm;
+
+
+    RP_setText(
+      "rpCalculatedRange",
+      `${Math.round(rangeNm).toLocaleString()} NM`
+    );
+
+
+    RP_setText(
+      "rpRangeDifference",
+      `${differenceNm >= 0 ? "+" : ""}${Math.round(
+        differenceNm
+      ).toLocaleString()} NM`
+    );
+
+
+    RP_setMapStatus(
+      differenceNm >= 0
+        ? "WITHIN RANGE"
+        : "OUT OF RANGE"
+    );
+
+
+    console.log(
+      "🟦 ROUTE PLANNING TECHNICAL STUDY:",
+      {
+        origin: originAirport.icao,
+        destination: destination.icao,
+        aircraft:
+          aircraft.aircraft_name ||
+          aircraft.model,
+        distance_nm:
+          Math.round(distanceNm),
+        aircraft_range_nm:
+          Math.round(rangeNm),
+        range_difference_nm:
+          Math.round(differenceNm)
+      }
+    );
+  }
+   
     /* ============================================================
      DESTINATION CASCADE — ACS AIRPORT AUTHORITY
      ------------------------------------------------------------
@@ -935,7 +1147,7 @@ const RP_API_BASE =
         "--"
       );
 
-      RP_updatePlanningStatus();
+      RP_calculateRouteStudy();
       return;
     }
 
@@ -954,7 +1166,7 @@ const RP_API_BASE =
       RP_STATE.destination?.icao || "--"
     );
 
-    RP_updatePlanningStatus();
+    RP_calculateRouteStudy();
   }
 
 
