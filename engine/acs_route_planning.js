@@ -470,484 +470,522 @@ const RP_API_BASE =
     return aircraft;
   }
 
+/* ============================================================
+   AIRCRAFT SELECTION + LOAD SCENARIO
+   ============================================================ */
 
-  /* ============================================================
-     AIRCRAFT SELECTION
-     ------------------------------------------------------------
-     Selection only.
-     No calculations yet.
-     ============================================================ */
+function RP_handleAircraftChange() {
+  const select =
+    RP_get("rpAircraftSelect");
 
-  function RP_handleAircraftChange() {
-    const select =
-      RP_get("rpAircraftSelect");
+  if (!select) {
+    return;
+  }
 
-    if (!select) {
-      return;
-    }
+  const modelKey =
+    String(select.value || "").trim();
 
-    const modelKey =
-      String(select.value || "").trim();
+  if (!modelKey) {
+    RP_STATE.selectedAircraft = null;
+    RP_STATE.passengers = 0;
 
-    if (!modelKey) {
-      RP_STATE.selectedAircraft = null;
+    RP_setText("rpRouteAircraft", "--");
+    RP_setText("rpCalculatedRange", "-- NM");
+    RP_setText("rpRangeDifference", "-- NM");
+    RP_setText("rpPassengersValue", "--");
+    RP_setText("rpBaggageValue", "-- KG");
+    RP_setText("rpFuelValue", "-- KG");
+    RP_setText("rpTowValue", "-- KG");
 
-      RP_setText(
-        "rpRouteAircraft",
-        "--"
-      );
+    RP_updatePlanningStatus();
+    return;
+  }
 
-      RP_setText(
-        "rpCalculatedRange",
-        "-- NM"
-      );
+  const aircraft =
+    RP_STATE.aircraftCatalog.find(
+      ac =>
+        String(ac.model_key || "").trim() ===
+        modelKey
+    );
 
-      RP_setText(
-        "rpRangeDifference",
-        "-- NM"
-      );
+  RP_STATE.selectedAircraft =
+    aircraft || null;
 
-          RP_STATE.passengers = 0;
-      RP_updatePassengersDisplay();
+  if (!aircraft) {
+    RP_STATE.passengers = 0;
 
-      RP_setText(
-        "rpCargoValue",
-        "-- KG"
-      );
+    RP_setText("rpRouteAircraft", "--");
+    RP_setText("rpPassengersValue", "--");
+    RP_setText("rpBaggageValue", "-- KG");
+    RP_setText("rpFuelValue", "-- KG");
+    RP_setText("rpTowValue", "-- KG");
 
-      RP_setText(
-        "rpFuelValue",
-        "-- KG"
-      );
+    RP_updatePlanningStatus();
+    return;
+  }
 
-      RP_setText(
-        "rpTowValue",
-        "-- % MTOW"
-      );
+  const manufacturer =
+    String(
+      aircraft.manufacturer || ""
+    ).trim();
 
-      const meter =
-        RP_get("rpTowMeter");
+  const model =
+    String(
+      aircraft.model ||
+      aircraft.aircraft_name ||
+      aircraft.model_key ||
+      ""
+    ).trim();
 
-      if (meter) {
-        meter.style.width = "0%";
-      }
+  const label =
+    manufacturer &&
+    !model
+      .toUpperCase()
+      .startsWith(
+        manufacturer.toUpperCase()
+      )
+      ? `${manufacturer} ${model}`
+      : model;
 
-      RP_updatePlanningStatus();
+  RP_setText(
+    "rpRouteAircraft",
+    label
+  );
 
-      return;
-    }
+  const seats =
+    Number(aircraft.seats);
 
-    const aircraft =
-      RP_STATE.aircraftCatalog.find(
-        ac =>
-          String(ac.model_key || "").trim() ===
-          modelKey
-      );
+  RP_STATE.passengers =
+    Number.isFinite(seats) && seats > 0
+      ? Math.round(seats)
+      : 0;
 
-    RP_STATE.selectedAircraft =
-      aircraft || null;
+  RP_calculateRouteStudy();
+}
 
-    if (!aircraft) {
-      RP_setText(
-        "rpRouteAircraft",
-        "--"
-      );
 
-      RP_updatePlanningStatus();
+/* ============================================================
+   AIRCRAFT LOAD SCENARIO
+   ============================================================ */
 
-      return;
-    }
+function RP_updateLoadScenario(
+  distanceNm = null
+) {
+  const aircraft =
+    RP_STATE.selectedAircraft;
 
-    const manufacturer =
-      String(
-        aircraft.manufacturer ||
-        ""
-      ).trim();
+  if (!aircraft) {
+    RP_setText("rpPassengersValue", "--");
+    RP_setText("rpBaggageValue", "-- KG");
+    RP_setText("rpFuelValue", "-- KG");
+    RP_setText("rpTowValue", "-- KG");
+    return;
+  }
 
-    const model =
-      String(
-        aircraft.model ||
-        aircraft.aircraft_name ||
-        aircraft.model_key ||
-        ""
-      ).trim();
+  const seats =
+    Number(aircraft.seats);
 
-    const label =
-      manufacturer &&
-      !model
-        .toUpperCase()
-        .startsWith(
-          manufacturer.toUpperCase()
-        )
-        ? `${manufacturer} ${model}`
-        : model;
+  const maxPassengers =
+    Number.isFinite(seats) && seats > 0
+      ? Math.round(seats)
+      : 0;
+
+  RP_STATE.passengers =
+    Math.max(
+      0,
+      Math.min(
+        Number(RP_STATE.passengers) || 0,
+        maxPassengers
+      )
+    );
+
+  RP_setText(
+    "rpPassengersValue",
+    `${RP_STATE.passengers} / ${maxPassengers}`
+  );
+
+
+  /* BAGGAGE
+     2 bags per passenger
+     25 KG per bag
+  */
+
+  const bags =
+    RP_STATE.passengers * 2;
+
+  const baggageKg =
+    bags * 25;
+
+  RP_setText(
+    "rpBaggageValue",
+    `${Math.round(
+      baggageKg
+    ).toLocaleString()} KG`
+  );
+
+
+  /* ROUTE FUEL */
+
+  const speedKts =
+    Number(aircraft.speed_kts);
+
+  const fuelBurnKgph =
+    Number(aircraft.fuel_burn_kgph);
+
+  if (
+    Number.isFinite(distanceNm) &&
+    distanceNm > 0 &&
+    Number.isFinite(speedKts) &&
+    speedKts > 0 &&
+    Number.isFinite(fuelBurnKgph) &&
+    fuelBurnKgph > 0
+  ) {
+    const flightHours =
+      distanceNm / speedKts;
+
+    const routeFuelKg =
+      flightHours * fuelBurnKgph;
 
     RP_setText(
-      "rpRouteAircraft",
-      label
+      "rpFuelValue",
+      `${Math.round(
+        routeFuelKg
+      ).toLocaleString()} KG`
     );
-
-        RP_setText(
-      "rpPassengersValue",
-      "--"
-    );
-
-    RP_setText(
-      "rpCargoValue",
-      "-- KG"
-    );
-
+  } else {
     RP_setText(
       "rpFuelValue",
       "-- KG"
     );
-
-    RP_setText(
-      "rpTowValue",
-      "-- % MTOW"
-    );
-
-        RP_calculateRouteStudy();
-  }
-
-    /* ============================================================
-     AIRCRAFT LOAD SCENARIO — PASSENGERS
-     ============================================================ */
-
-  function RP_updatePassengersDisplay() {
-    const aircraft =
-      RP_STATE.selectedAircraft;
-
-    const maxPassengers =
-      Number(aircraft?.seats);
-
-    if (
-      !aircraft ||
-      !Number.isFinite(maxPassengers) ||
-      maxPassengers < 0
-    ) {
-      RP_STATE.passengers = 0;
-
-      RP_setText(
-        "rpPassengersValue",
-        "--"
-      );
-
-      return;
-    }
-
-    RP_STATE.passengers =
-      Math.max(
-        0,
-        Math.min(
-          RP_STATE.passengers,
-          maxPassengers
-        )
-      );
-
-    RP_setText(
-      "rpPassengersValue",
-      `${RP_STATE.passengers} / ${maxPassengers}`
-    );
   }
 
 
-  function RP_changePassengers(delta) {
-    const aircraft =
-      RP_STATE.selectedAircraft;
+  /* MTOW — CATALOG STRUCTURAL LIMIT */
 
-    const maxPassengers =
-      Number(aircraft?.seats);
+  const mtowKg =
+    Number(aircraft.mtow_kg);
 
-    if (
-      !aircraft ||
-      !Number.isFinite(maxPassengers) ||
-      maxPassengers < 0
-    ) {
-      return;
-    }
+  RP_setText(
+    "rpTowValue",
+    Number.isFinite(mtowKg) &&
+    mtowKg > 0
+      ? `${Math.round(
+          mtowKg
+        ).toLocaleString()} KG`
+      : "-- KG"
+  );
+}
 
-    RP_STATE.passengers =
-      Math.max(
-        0,
-        Math.min(
-          RP_STATE.passengers + delta,
-          maxPassengers
-        )
-      );
 
-        RP_calculateRouteStudy();
-        RP_updatePassengersDisplay();
+function RP_changePassengers(delta) {
+  const aircraft =
+    RP_STATE.selectedAircraft;
+
+  if (!aircraft) {
+    return;
   }
 
+  const maxPassengers =
+    Number(aircraft.seats);
 
-  /* ============================================================
-     AIRCRAFT LOAD SCENARIO — PASSENGERS
-     ============================================================ */
-
-  function RP_updatePassengersDisplay() {
-    const aircraft = RP_STATE.selectedAircraft;
-
-    if (!aircraft) {
-      RP_setText("rpPassengersValue", "--");
-      return;
-    }
-
-    const maxPassengers =
-      Number(aircraft.seats);
-
-    if (!Number.isFinite(maxPassengers)) {
-      RP_setText("rpPassengersValue", "--");
-      return;
-    }
-
-    RP_STATE.passengers =
-      Math.max(
-        0,
-        Math.min(
-          Number(RP_STATE.passengers) || 0,
-          maxPassengers
-        )
-      );
-
-    RP_setText(
-      "rpPassengersValue",
-      `${RP_STATE.passengers} / ${maxPassengers}`
-    );
-  }
-
-
-  /* ============================================================
-     WORLD ROUTE STUDY — TECHNICAL CALCULATION
-     ============================================================ */
-  function RP_toRadians(value) {
-    return Number(value) * Math.PI / 180;
-  }
-
-
-  function RP_calculateGreatCircleNm(
-    lat1,
-    lon1,
-    lat2,
-    lon2
+  if (
+    !Number.isFinite(maxPassengers) ||
+    maxPassengers <= 0
   ) {
-    const φ1 = RP_toRadians(lat1);
-    const φ2 = RP_toRadians(lat2);
-
-    const Δφ =
-      RP_toRadians(
-        Number(lat2) - Number(lat1)
-      );
-
-    const Δλ =
-      RP_toRadians(
-        Number(lon2) - Number(lon1)
-      );
-
-    const a =
-      Math.sin(Δφ / 2) ** 2 +
-      Math.cos(φ1) *
-      Math.cos(φ2) *
-      Math.sin(Δλ / 2) ** 2;
-
-    const c =
-      2 * Math.atan2(
-        Math.sqrt(a),
-        Math.sqrt(1 - a)
-      );
-
-    /*
-     * Mean Earth radius in nautical miles.
-     */
-    const EARTH_RADIUS_NM = 3440.065;
-
-    return EARTH_RADIUS_NM * c;
+    return;
   }
 
-
-  function RP_calculateRouteStudy() {
-    const originIcao =
-      String(
-        RP_STATE.origin?.icao || ""
+  RP_STATE.passengers =
+    Math.max(
+      0,
+      Math.min(
+        RP_STATE.passengers + delta,
+        maxPassengers
       )
-        .trim()
-        .toUpperCase();
+    );
 
-    const destination =
-      RP_STATE.destination;
-
-    const aircraft =
-      RP_STATE.selectedAircraft;
+  RP_calculateRouteStudy();
+}
 
 
-    const originAirport =
-      RP_STATE.airports.find(
-        airport =>
-          String(
-            airport.icao || ""
-          )
-            .trim()
-            .toUpperCase() === originIcao
-      ) || null;
+/* ============================================================
+   WORLD ROUTE STUDY — TECHNICAL CALCULATION
+   ============================================================ */
+
+function RP_toRadians(value) {
+  return Number(value) * Math.PI / 180;
+}
 
 
-    if (
-      !originAirport ||
-      !destination
-    ) {
-      RP_setText(
-        "rpGreatCircleDistance",
-        "-- NM"
-      );
+function RP_calculateGreatCircleNm(
+  lat1,
+  lon1,
+  lat2,
+  lon2
+) {
+  const φ1 = RP_toRadians(lat1);
+  const φ2 = RP_toRadians(lat2);
 
-      RP_setText(
-        "rpRangeDifference",
-        "-- NM"
-      );
+  const Δφ =
+    RP_toRadians(
+      Number(lat2) - Number(lat1)
+    );
 
-      if (!aircraft) {
-        RP_setText(
-          "rpCalculatedRange",
-          "-- NM"
-        );
-      }
+  const Δλ =
+    RP_toRadians(
+      Number(lon2) - Number(lon1)
+    );
 
-      RP_updatePlanningStatus();
-      return;
-    }
+  const a =
+    Math.sin(Δφ / 2) ** 2 +
+    Math.cos(φ1) *
+    Math.cos(φ2) *
+    Math.sin(Δλ / 2) ** 2;
 
+  const c =
+    2 * Math.atan2(
+      Math.sqrt(a),
+      Math.sqrt(1 - a)
+    );
 
-    const originLat =
-      Number(originAirport.latitude);
+  const EARTH_RADIUS_NM =
+    3440.065;
 
-    const originLon =
-      Number(originAirport.longitude);
-
-    const destinationLat =
-      Number(destination.latitude);
-
-    const destinationLon =
-      Number(destination.longitude);
-
-
-    if (
-      !Number.isFinite(originLat) ||
-      !Number.isFinite(originLon) ||
-      !Number.isFinite(destinationLat) ||
-      !Number.isFinite(destinationLon)
-    ) {
-      RP_setText(
-        "rpGreatCircleDistance",
-        "-- NM"
-      );
-
-      RP_setMapStatus(
-        "Airport coordinates unavailable"
-      );
-
-      return;
-    }
+  return EARTH_RADIUS_NM * c;
+}
 
 
-    const distanceNm =
-      RP_calculateGreatCircleNm(
-        originLat,
-        originLon,
-        destinationLat,
-        destinationLon
-      );
+function RP_calculateRouteStudy() {
+  const originIcao =
+    String(
+      RP_STATE.origin?.icao || ""
+    )
+      .trim()
+      .toUpperCase();
+
+  const destination =
+    RP_STATE.destination;
+
+  const aircraft =
+    RP_STATE.selectedAircraft;
+
+  const originAirport =
+    RP_STATE.airports.find(
+      airport =>
+        String(
+          airport.icao || ""
+        )
+          .trim()
+          .toUpperCase() ===
+        originIcao
+    ) || null;
 
 
+  if (
+    !originAirport ||
+    !destination
+  ) {
     RP_setText(
       "rpGreatCircleDistance",
-      `${Math.round(distanceNm).toLocaleString()} NM`
+      "-- NM"
     );
-
-
-    if (!aircraft) {
-      RP_setText(
-        "rpCalculatedRange",
-        "-- NM"
-      );
-
-      RP_setText(
-        "rpRangeDifference",
-        "-- NM"
-      );
-
-      RP_updatePlanningStatus();
-      return;
-    }
-
-
-    const rangeNm =
-      Number(aircraft.range_nm);
-
-
-    if (
-      !Number.isFinite(rangeNm) ||
-      rangeNm <= 0
-    ) {
-      RP_setText(
-        "rpCalculatedRange",
-        "-- NM"
-      );
-
-      RP_setText(
-        "rpRangeDifference",
-        "-- NM"
-      );
-
-      RP_setMapStatus(
-        "Aircraft range data unavailable"
-      );
-
-      return;
-    }
-
-
-    const differenceNm =
-      rangeNm - distanceNm;
-
-
-    RP_setText(
-      "rpCalculatedRange",
-      `${Math.round(rangeNm).toLocaleString()} NM`
-    );
-
 
     RP_setText(
       "rpRangeDifference",
-      `${differenceNm >= 0 ? "+" : ""}${Math.round(
-        differenceNm
-      ).toLocaleString()} NM`
+      "-- NM"
     );
 
+    if (!aircraft) {
+      RP_setText(
+        "rpCalculatedRange",
+        "-- NM"
+      );
+    }
+
+    RP_updateLoadScenario(null);
+    RP_updatePlanningStatus();
+    return;
+  }
+
+
+  const originLat =
+    Number(originAirport.latitude);
+
+  const originLon =
+    Number(originAirport.longitude);
+
+  const destinationLat =
+    Number(destination.latitude);
+
+  const destinationLon =
+    Number(destination.longitude);
+
+
+  if (
+    !Number.isFinite(originLat) ||
+    !Number.isFinite(originLon) ||
+    !Number.isFinite(destinationLat) ||
+    !Number.isFinite(destinationLon)
+  ) {
+    RP_setText(
+      "rpGreatCircleDistance",
+      "-- NM"
+    );
+
+    RP_updateLoadScenario(null);
 
     RP_setMapStatus(
-      differenceNm >= 0
-        ? "WITHIN RANGE"
-        : "OUT OF RANGE"
+      "Airport coordinates unavailable"
     );
 
-
-    console.log(
-      "🟦 ROUTE PLANNING TECHNICAL STUDY:",
-      {
-        origin: originAirport.icao,
-        destination: destination.icao,
-        aircraft:
-          aircraft.aircraft_name ||
-          aircraft.model,
-        distance_nm:
-          Math.round(distanceNm),
-        aircraft_range_nm:
-          Math.round(rangeNm),
-        range_difference_nm:
-          Math.round(differenceNm)
-      }
-    );
+    return;
   }
+
+
+  const distanceNm =
+    RP_calculateGreatCircleNm(
+      originLat,
+      originLon,
+      destinationLat,
+      destinationLon
+    );
+
+
+  RP_setText(
+    "rpGreatCircleDistance",
+    `${Math.round(
+      distanceNm
+    ).toLocaleString()} NM`
+  );
+
+
+  RP_updateLoadScenario(
+    distanceNm
+  );
+
+
+  if (!aircraft) {
+    RP_setText(
+      "rpCalculatedRange",
+      "-- NM"
+    );
+
+    RP_setText(
+      "rpRangeDifference",
+      "-- NM"
+    );
+
+    RP_updatePlanningStatus();
+    return;
+  }
+
+
+  const rangeNm =
+    Number(aircraft.range_nm);
+
+
+  if (
+    !Number.isFinite(rangeNm) ||
+    rangeNm <= 0
+  ) {
+    RP_setText(
+      "rpCalculatedRange",
+      "-- NM"
+    );
+
+    RP_setText(
+      "rpRangeDifference",
+      "-- NM"
+    );
+
+    RP_setMapStatus(
+      "Aircraft range data unavailable"
+    );
+
+    return;
+  }
+
+
+  const differenceNm =
+    rangeNm - distanceNm;
+
+
+  RP_setText(
+    "rpCalculatedRange",
+    `${Math.round(
+      rangeNm
+    ).toLocaleString()} NM`
+  );
+
+
+  RP_setText(
+    "rpRangeDifference",
+    `${differenceNm >= 0 ? "+" : ""}${Math.round(
+      differenceNm
+    ).toLocaleString()} NM`
+  );
+
+
+  RP_setMapStatus(
+    differenceNm >= 0
+      ? "WITHIN RANGE"
+      : "OUT OF RANGE"
+  );
+
+
+  console.log(
+    "🟦 ROUTE PLANNING TECHNICAL STUDY:",
+    {
+      origin:
+        originAirport.icao,
+
+      destination:
+        destination.icao,
+
+      aircraft:
+        aircraft.aircraft_name ||
+        aircraft.model,
+
+      distance_nm:
+        Math.round(distanceNm),
+
+      aircraft_range_nm:
+        Math.round(rangeNm),
+
+      range_difference_nm:
+        Math.round(differenceNm),
+
+      passengers:
+        RP_STATE.passengers,
+
+      baggage_kg:
+        RP_STATE.passengers * 2 * 25,
+
+      flight_hours:
+        Number(aircraft.speed_kts) > 0
+          ? distanceNm /
+            Number(aircraft.speed_kts)
+          : null,
+
+      estimated_route_fuel_kg:
+        Number(aircraft.speed_kts) > 0 &&
+        Number(aircraft.fuel_burn_kgph) > 0
+          ? Math.round(
+              (
+                distanceNm /
+                Number(aircraft.speed_kts)
+              ) *
+              Number(
+                aircraft.fuel_burn_kgph
+              )
+            )
+          : null,
+
+      mtow_kg:
+        Number(aircraft.mtow_kg) || null
+    }
+  );
+}
    
     /* ============================================================
      DESTINATION CASCADE — ACS AIRPORT AUTHORITY
