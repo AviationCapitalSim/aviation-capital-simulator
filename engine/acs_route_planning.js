@@ -381,7 +381,7 @@
 
     const data =
       await RP_fetchJson(
-        `${RP_API_BASE}/v1/aircraft/factory/planning-catalog?year=${encodeURIComponent(year)}`
+        `${RP_API_BASE}/v1/route-planning/aircraft?year=${encodeURIComponent(year)}`
       );
 
     const aircraft =
