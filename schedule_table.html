@@ -2693,18 +2693,20 @@ footer {
       <span>SCALE</span>
 
       <button
-        type="button"
-        class="acs-scale-btn active"
-        data-scale="24h">
-        24H
-      </button>
+  type="button"
+  class="acs-scale-btn active"
+  data-scale="24h"
+  onclick="ACS_setScheduleScale('24h')">
+  24H
+</button>
 
-      <button
-        type="button"
-        class="acs-scale-btn"
-        data-scale="5h">
-        5H
-      </button>
+<button
+  type="button"
+  class="acs-scale-btn"
+  data-scale="5h"
+  onclick="ACS_setScheduleScale('5h')">
+  5H
+</button>
     </div>
 
     <div class="acs-schedule-legend">
@@ -4640,6 +4642,50 @@ function ACS_applyDominantMaintenanceFromMyAircraft(fleetAircraft, myAircraft){
   return fleetAircraft;
 }     
 
+/* ============================================================
+   🟦 ACS OCC — SCHEDULE SCALE AUTHORITY
+   Date: 20 AUG 2026
+   ------------------------------------------------------------
+   Purpose:
+   - 24H = approved full weekly operational timeline
+   - 5H  = focused operational time window
+   - Presentation authority only
+   - No PostgreSQL writes
+   - No SkyTrack mutation
+   - No operational state mutation
+   - No localStorage authority
+   ============================================================ */
+
+let ACS_SCHEDULE_SCALE = "24h";
+
+function ACS_setScheduleScale(scale) {
+
+  const normalizedScale =
+    String(scale || "").trim().toLowerCase();
+
+  if (
+    normalizedScale !== "24h" &&
+    normalizedScale !== "5h"
+  ) {
+    return;
+  }
+
+  ACS_SCHEDULE_SCALE = normalizedScale;
+
+  document
+    .querySelectorAll(".acs-scale-btn")
+    .forEach(btn => {
+
+      const isActive =
+        String(btn.dataset.scale || "").toLowerCase() ===
+        normalizedScale;
+
+      btn.classList.toggle("active", isActive);
+    });
+
+  renderSchedule();
+}     
+     
 /* ============================================================
    🟦 ACS OCC — SCHEDULE VIEW AUTHORITY
    Date: 20 AUG 2026
