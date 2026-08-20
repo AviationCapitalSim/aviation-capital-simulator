@@ -1776,118 +1776,100 @@
           </div>
 
 
-          <!-- CARGO -->
+          <!-- BAGGAGE -->
 
-          <div class="rp-load-control">
+<div class="rp-load-control">
 
-            <div class="rp-load-label">
+  <div class="rp-load-label">
 
-              <strong>
-                Cargo
-              </strong>
+    <strong>
+      Baggage
+    </strong>
 
-              <span>
-                Derived from passenger scenario
-              </span>
+    <span>
+      2 bags per passenger · 25 KG each
+    </span>
 
-            </div>
-
-
-            <div class="rp-locked-value">
-
-              <strong id="rpCargoValue">
-                -- KG
-              </strong>
-
-              <span>
-                AUTO / PAX LOAD · LOCKED
-              </span>
-
-            </div>
-
-          </div>
+  </div>
 
 
-          <!-- FUEL -->
+  <div class="rp-locked-value">
 
-          <div class="rp-load-control">
+    <strong id="rpBaggageValue">
+      -- KG
+    </strong>
 
-            <div class="rp-load-label">
+    <span>
+      AUTO / PASSENGER LOAD
+    </span>
 
-              <strong>
-                Fuel
-              </strong>
+  </div>
 
-              <span>
-                Aircraft fuel scenario
-              </span>
-
-            </div>
+</div>
 
 
-            <div class="rp-stepper">
+<!-- FUEL -->
 
-              <button
-                type="button"
-                id="rpFuelMinus"
-                aria-label="Decrease fuel"
-              >
-                −
-              </button>
+<div class="rp-load-control">
 
-              <div
-                class="rp-stepper-output"
-                id="rpFuelValue"
-              >
-                -- KG
-              </div>
+  <div class="rp-load-label">
 
-              <button
-                type="button"
-                id="rpFuelPlus"
-                aria-label="Increase fuel"
-              >
-                +
-              </button>
+    <strong>
+      Estimated Route Fuel
+    </strong>
 
-            </div>
+    <span>
+      Distance · speed · fuel burn
+    </span>
 
-          </div>
+  </div>
 
 
-          <!-- TOW -->
+  <div class="rp-locked-value">
 
-          <div class="rp-tow">
+    <strong id="rpFuelValue">
+      -- KG
+    </strong>
 
-            <div class="rp-tow-heading">
+    <span>
+      ROUTE ESTIMATE
+    </span>
 
-              <span>
-                Estimated TOW
-              </span>
+  </div>
 
-              <strong id="rpTowValue">
-                -- % MTOW
-              </strong>
-
-            </div>
-
-            <div
-              class="rp-meter"
-              aria-label="Estimated takeoff weight"
-            >
-
-              <div
-                class="rp-meter-fill"
-                id="rpTowMeter"
-              ></div>
-
-            </div>
-
-          </div>
+</div>
 
 
-        </div>
+<!-- MTOW -->
 
+<div class="rp-load-control">
+
+  <div class="rp-load-label">
+
+    <strong>
+      MTOW
+    </strong>
+
+    <span>
+      Maximum takeoff weight
+    </span>
+
+  </div>
+
+
+  <div class="rp-locked-value">
+
+    <strong id="rpTowValue">
+      -- KG
+    </strong>
+
+    <span>
+      STRUCTURAL LIMIT
+    </span>
+
+  </div>
+
+</div>
       </article>
 
     </section>
