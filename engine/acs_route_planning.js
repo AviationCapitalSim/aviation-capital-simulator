@@ -1399,72 +1399,73 @@ function RP_calculateRouteStudy() {
     /* ============================================================
      EVENTS
      ============================================================ */
+   
+function RP_bindEvents() {
+  const aircraftSelect =
+    RP_get("rpAircraftSelect");
 
-  function RP_bindEvents() {
-    const aircraftSelect =
-      RP_get("rpAircraftSelect");
+  const continentSelect =
+    RP_get("rpContinentSelect");
 
-    const continentSelect =
-      RP_get("rpContinentSelect");
+  const countrySelect =
+    RP_get("rpCountrySelect");
 
-        const countrySelect =
-      RP_get("rpCountrySelect");
+  const airportSelect =
+    RP_get("rpAirportSelect");
 
-    const airportSelect =
-      RP_get("rpAirportSelect");
+  const passengersMinus =
+    RP_get("rpPassengersMinus");
 
-    const passengersMinus =
-      RP_get("rpPassengersMinus");
-
-    const passengersPlus =
-      RP_get("rpPassengersPlus");
-
-
-    if (aircraftSelect) {
-      aircraftSelect.addEventListener(
-        "change",
-        RP_handleAircraftChange
-      );
-    }
+  const passengersPlus =
+    RP_get("rpPassengersPlus");
 
 
-    if (continentSelect) {
-      continentSelect.addEventListener(
-        "change",
-        RP_handleContinentChange
-      );
-    }
+  if (aircraftSelect) {
+    aircraftSelect.addEventListener(
+      "change",
+      RP_handleAircraftChange
+    );
+  }
 
 
-    if (countrySelect) {
-  countrySelect.addEventListener(
-    "change",
-    RP_handleCountryChange
-  );
-}
+  if (continentSelect) {
+    continentSelect.addEventListener(
+      "change",
+      RP_handleContinentChange
+    );
+  }
 
 
-if (airportSelect) {
-  airportSelect.addEventListener(
-    "change",
-    RP_handleAirportChange
-  );
-}
-
-if (passengersMinus) {
-  passengersMinus.addEventListener(
-    "click",
-    () => RP_changePassengers(-1)
-  );
-}
+  if (countrySelect) {
+    countrySelect.addEventListener(
+      "change",
+      RP_handleCountryChange
+    );
+  }
 
 
-if (passengersPlus) {
-  passengersPlus.addEventListener(
-    "click",
-    () => RP_changePassengers(1)
-  );
- }
+  if (airportSelect) {
+    airportSelect.addEventListener(
+      "change",
+      RP_handleAirportChange
+    );
+  }
+
+
+  if (passengersMinus) {
+    passengersMinus.addEventListener(
+      "click",
+      () => RP_changePassengers(-1)
+    );
+  }
+
+
+  if (passengersPlus) {
+    passengersPlus.addEventListener(
+      "click",
+      () => RP_changePassengers(1)
+    );
+  }
 }
 
 /* ============================================================
