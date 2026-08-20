@@ -1372,8 +1372,11 @@ const RP_API_BASE =
     const countrySelect =
       RP_get("rpCountrySelect");
 
-    const airportSelect =
-      RP_get("rpAirportSelect");
+    const passengersMinus =
+  RP_get("rpPassengersMinus");
+
+const passengersPlus =
+  RP_get("rpPassengersPlus");
 
 
     if (aircraftSelect) {
@@ -1393,24 +1396,47 @@ const RP_API_BASE =
 
 
     if (countrySelect) {
-      countrySelect.addEventListener(
-        "change",
-        RP_handleCountryChange
-      );
-    }
+  countrySelect.addEventListener(
+    "change",
+    RP_handleCountryChange
+  );
+}
 
 
-    if (airportSelect) {
-      airportSelect.addEventListener(
-        "change",
-        RP_handleAirportChange
-      );
-    }
-  }
+if (airportSelect) {
+  airportSelect.addEventListener(
+    "change",
+    RP_handleAirportChange
+  );
+}
 
-  /* ============================================================
-     INITIALIZATION
-     ============================================================ */
+
+const passengersMinus =
+  RP_get("rpPassengersMinus");
+
+const passengersPlus =
+  RP_get("rpPassengersPlus");
+
+
+if (passengersMinus) {
+  passengersMinus.addEventListener(
+    "click",
+    () => RP_changePassengers(-1)
+  );
+}
+
+
+if (passengersPlus) {
+  passengersPlus.addEventListener(
+    "click",
+    () => RP_changePassengers(1)
+  );
+ }
+}
+
+/* ============================================================
+   INITIALIZATION
+   ============================================================ */
 
   async function RP_initialize() {
     try {
