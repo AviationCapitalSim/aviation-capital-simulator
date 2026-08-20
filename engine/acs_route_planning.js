@@ -631,19 +631,323 @@ const RP_API_BASE =
   }
 
 
-  /* ============================================================
-     DESTINATION CASCADE — STAGE 1
+    /* ============================================================
+     DESTINATION CASCADE — ACS AIRPORT AUTHORITY
      ------------------------------------------------------------
-     Destination authority will be connected to the existing
-     ACS historical airport authority.
+     Authority:
+     GET /v1/airports/catalog
 
-     No hardcoded continents, countries or airports are used.
+     Flow:
+     CONTINENT → COUNTRY → AIRPORT
+
+     READ ONLY.
      ============================================================ */
+
+  async function RP_loadAirportCatalog() {
+    const data =
+      await RP_fetchJson(
+        `${RP_API_BASE}/v1/airports/catalog?limit=5000`
+      );
+
+    if (!Array.isArray(data.airports)) {
+      throw new Error(
+        "ROUTE_PLANNING_AIRPORT_CATALOG_INVALID"
+      );
+    }
+
+    RP_STATE.airports =
+      data.airports;
+
+    /*
+     * Airport authority also returns the official
+     * PostgreSQL ACS simulation time.
+     */
+    if (data.current_sim_time) {
+      RP_STATE.simTime =
+        data.current_sim_time;
+    }
+
+    if (Number.isInteger(Number(data.sim_year))) {
+      RP_STATE.simYear =
+        Number(data.sim_year);
+    }
+
+    RP_STATE.continents =
+      [
+        ...new Set(
+          RP_STATE.airports
+            .map(airport =>
+              String(
+                airport.continent ||
+                airport.geographic_continent ||
+                ""
+              ).trim()
+            )
+            .filter(Boolean)
+        )
+      ].sort((a, b) =>
+        a.localeCompare(b)
+      );
+
+    const continentSelect =
+      RP_get("rpContinentSelect");
+
+    RP_resetSelect(
+      continentSelect,
+      "Select continent",
+      false
+    );
+
+    RP_STATE.continents.forEach(
+      continent => {
+        const option =
+          document.createElement("option");
+
+        option.value =
+          continent;
+
+        option.textContent =
+          continent;
+
+        continentSelect.appendChild(
+          option
+        );
+      }
+    );
+
+    console.log(
+      "🟦 ROUTE PLANNING AIRPORT CATALOG:",
+      {
+        year: RP_STATE.simYear,
+        count: RP_STATE.airports.length,
+        continents:
+          RP_STATE.continents.length
+      }
+    );
+  }
+
+
+  function RP_handleContinentChange() {
+    const continentSelect =
+      RP_get("rpContinentSelect");
+
+    const continent =
+      String(
+        continentSelect?.value || ""
+      ).trim();
+
+    RP_STATE.destination = null;
+
+    RP_resetSelect(
+      RP_get("rpCountrySelect"),
+      "Select country",
+      true
+    );
+
+    RP_resetSelect(
+      RP_get("rpAirportSelect"),
+      "Select airport",
+      true
+    );
+
+    if (!continent) {
+      RP_STATE.countries = [];
+      RP_updatePlanningStatus();
+      return;
+    }
+
+    RP_STATE.countries =
+      [
+        ...new Set(
+          RP_STATE.airports
+            .filter(airport =>
+              String(
+                airport.continent ||
+                airport.geographic_continent ||
+                ""
+              ).trim() === continent
+            )
+            .map(airport =>
+              String(
+                airport.country || ""
+              ).trim()
+            )
+            .filter(Boolean)
+        )
+      ].sort((a, b) =>
+        a.localeCompare(b)
+      );
+
+    const countrySelect =
+      RP_get("rpCountrySelect");
+
+    RP_resetSelect(
+      countrySelect,
+      "Select country",
+      false
+    );
+
+    RP_STATE.countries.forEach(
+      country => {
+        const option =
+          document.createElement("option");
+
+        option.value =
+          country;
+
+        option.textContent =
+          country;
+
+        countrySelect.appendChild(
+          option
+        );
+      }
+    );
+
+    RP_updatePlanningStatus();
+  }
+
+
+  function RP_handleCountryChange() {
+    const continent =
+      String(
+        RP_get("rpContinentSelect")
+          ?.value || ""
+      ).trim();
+
+    const country =
+      String(
+        RP_get("rpCountrySelect")
+          ?.value || ""
+      ).trim();
+
+    RP_STATE.destination = null;
+
+    RP_resetSelect(
+      RP_get("rpAirportSelect"),
+      "Select airport",
+      true
+    );
+
+    if (!continent || !country) {
+      RP_updatePlanningStatus();
+      return;
+    }
+
+    const airports =
+      RP_STATE.airports
+        .filter(airport => {
+          const airportContinent =
+            String(
+              airport.continent ||
+              airport.geographic_continent ||
+              ""
+            ).trim();
+
+          const airportCountry =
+            String(
+              airport.country || ""
+            ).trim();
+
+          return (
+            airportContinent === continent &&
+            airportCountry === country
+          );
+        })
+        .sort((a, b) =>
+          String(a.city || "")
+            .localeCompare(
+              String(b.city || "")
+            )
+        );
+
+    const airportSelect =
+      RP_get("rpAirportSelect");
+
+    RP_resetSelect(
+      airportSelect,
+      "Select airport",
+      false
+    );
+
+    airports.forEach(airport => {
+      const option =
+        document.createElement("option");
+
+      const icao =
+        String(airport.icao || "")
+          .trim()
+          .toUpperCase();
+
+      const iata =
+        String(airport.iata || "")
+          .trim()
+          .toUpperCase();
+
+      const city =
+        String(airport.city || "")
+          .trim();
+
+      option.value = icao;
+
+      option.textContent =
+        `${icao}` +
+        (iata ? ` / ${iata}` : "") +
+        (city ? ` — ${city}` : "");
+
+      airportSelect.appendChild(
+        option
+      );
+    });
+
+    RP_updatePlanningStatus();
+  }
+
+
+  function RP_handleAirportChange() {
+    const icao =
+      String(
+        RP_get("rpAirportSelect")
+          ?.value || ""
+      )
+        .trim()
+        .toUpperCase();
+
+    if (!icao) {
+      RP_STATE.destination = null;
+
+      RP_setText(
+        "rpRouteDestination",
+        "--"
+      );
+
+      RP_updatePlanningStatus();
+      return;
+    }
+
+    RP_STATE.destination =
+      RP_STATE.airports.find(
+        airport =>
+          String(
+            airport.icao || ""
+          )
+            .trim()
+            .toUpperCase() === icao
+      ) || null;
+
+    RP_setText(
+      "rpRouteDestination",
+      RP_STATE.destination?.icao || "--"
+    );
+
+    RP_updatePlanningStatus();
+  }
+
 
   function RP_prepareDestinationSelectors() {
     RP_resetSelect(
       RP_get("rpContinentSelect"),
-      "Select continent",
+      "Loading continents...",
       true
     );
 
@@ -659,7 +963,6 @@ const RP_API_BASE =
       true
     );
   }
-
 
   /* ============================================================
      STUDY STATUS
@@ -723,7 +1026,7 @@ const RP_API_BASE =
   }
 
 
-  /* ============================================================
+    /* ============================================================
      EVENTS
      ============================================================ */
 
@@ -731,14 +1034,47 @@ const RP_API_BASE =
     const aircraftSelect =
       RP_get("rpAircraftSelect");
 
+    const continentSelect =
+      RP_get("rpContinentSelect");
+
+    const countrySelect =
+      RP_get("rpCountrySelect");
+
+    const airportSelect =
+      RP_get("rpAirportSelect");
+
+
     if (aircraftSelect) {
       aircraftSelect.addEventListener(
         "change",
         RP_handleAircraftChange
       );
     }
-  }
 
+
+    if (continentSelect) {
+      continentSelect.addEventListener(
+        "change",
+        RP_handleContinentChange
+      );
+    }
+
+
+    if (countrySelect) {
+      countrySelect.addEventListener(
+        "change",
+        RP_handleCountryChange
+      );
+    }
+
+
+    if (airportSelect) {
+      airportSelect.addEventListener(
+        "change",
+        RP_handleAirportChange
+      );
+    }
+  }
 
   /* ============================================================
      INITIALIZATION
@@ -780,6 +1116,8 @@ const RP_API_BASE =
         "🟦 ROUTE PLANNING COMPANY BASE:",
         RP_STATE.origin
       );
+
+      await RP_loadAirportCatalog();
 
       await RP_loadAircraftCatalog();
 
