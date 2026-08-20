@@ -4649,6 +4649,7 @@ function ACS_applyDominantMaintenanceFromMyAircraft(fleetAircraft, myAircraft){
    Purpose:
    - 24H = approved full weekly operational timeline
    - 5H  = focused operational time window
+   - 5H follows official ACS simulation time
    - Presentation authority only
    - No PostgreSQL writes
    - No SkyTrack mutation
@@ -4657,6 +4658,49 @@ function ACS_applyDominantMaintenanceFromMyAircraft(fleetAircraft, myAircraft){
    ============================================================ */
 
 let ACS_SCHEDULE_SCALE = "24h";
+
+const ACS_SCHEDULE_5H_DURATION_MIN = 300;
+
+
+/* ============================================================
+   ACS OCC — 5H WINDOW RESOLVER
+   ------------------------------------------------------------
+   Returns the current visual window using ACS simulation time.
+
+   Example:
+   ACS time 14:37
+   start = 14:37
+   end   = 19:37
+
+   The result is presentation data only.
+   ============================================================ */
+
+function ACS_getSchedule5HWindow() {
+
+  const nowMin =
+    Number(ACS_TABLE_TIME?.minute);
+
+  const safeNowMin =
+    Number.isFinite(nowMin)
+      ? Math.max(0, Math.min(1439, nowMin))
+      : 0;
+
+  return {
+    startMin: safeNowMin,
+
+    endMin:
+      safeNowMin +
+      ACS_SCHEDULE_5H_DURATION_MIN,
+
+    durationMin:
+      ACS_SCHEDULE_5H_DURATION_MIN
+  };
+}
+
+
+/* ============================================================
+   ACS OCC — SCALE SELECTOR
+   ============================================================ */
 
 function ACS_setScheduleScale(scale) {
 
@@ -4670,21 +4714,42 @@ function ACS_setScheduleScale(scale) {
     return;
   }
 
-  ACS_SCHEDULE_SCALE = normalizedScale;
+
+  /*
+   * COMPACT has no proportional time geometry.
+   * SCALE controls therefore belong only to TIMELINE.
+   */
+  if (
+    ACS_SCHEDULE_VIEW === "compact" &&
+    normalizedScale === "5h"
+  ) {
+    return;
+  }
+
+
+  ACS_SCHEDULE_SCALE =
+    normalizedScale;
+
 
   document
     .querySelectorAll(".acs-scale-btn")
     .forEach(btn => {
 
       const isActive =
-        String(btn.dataset.scale || "").toLowerCase() ===
+        String(
+          btn.dataset.scale || ""
+        ).toLowerCase() ===
         normalizedScale;
 
-      btn.classList.toggle("active", isActive);
+      btn.classList.toggle(
+        "active",
+        isActive
+      );
     });
 
+
   renderSchedule();
-}     
+}
      
 /* ============================================================
    🟦 ACS OCC — SCHEDULE VIEW AUTHORITY
