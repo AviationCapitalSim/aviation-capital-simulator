@@ -277,7 +277,7 @@
   async function RP_loadCompanyBase() {
   const data =
     await RP_fetchJson(
-      "/v1/company/context"
+      `${RP_API_BASE}/v1/company/context`
     );
 
     if (!data || data.ok !== true) {
