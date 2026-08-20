@@ -624,7 +624,7 @@ function RP_updateLoadScenario(
   );
 
 
-  /* ROUTE FUEL */
+    /* FLIGHT TIME + ROUTE FUEL */
 
   const speedKts =
     Number(aircraft.speed_kts);
@@ -636,29 +636,62 @@ function RP_updateLoadScenario(
     Number.isFinite(distanceNm) &&
     distanceNm > 0 &&
     Number.isFinite(speedKts) &&
-    speedKts > 0 &&
-    Number.isFinite(fuelBurnKgph) &&
-    fuelBurnKgph > 0
+    speedKts > 0
   ) {
     const flightHours =
       distanceNm / speedKts;
 
-    const routeFuelKg =
-      flightHours * fuelBurnKgph;
+    const totalMinutes =
+      Math.round(flightHours * 60);
+
+    const hours =
+      Math.floor(totalMinutes / 60);
+
+    const minutes =
+      totalMinutes % 60;
+
+    RP_STATE.flightTimeMinutes =
+      totalMinutes;
 
     RP_setText(
-      "rpFuelValue",
-      `${Math.round(
-        routeFuelKg
-      ).toLocaleString()} KG`
+      "rpTimeValue",
+      `${hours}H ${String(minutes).padStart(2, "0")}M`
     );
+
+    if (
+      Number.isFinite(fuelBurnKgph) &&
+      fuelBurnKgph > 0
+    ) {
+      const routeFuelKg =
+        flightHours * fuelBurnKgph;
+
+      RP_setText(
+        "rpFuelValue",
+        `${Math.round(
+          routeFuelKg
+        ).toLocaleString()} KG`
+      );
+    } else {
+      RP_setText(
+        "rpFuelValue",
+        "-- KG"
+      );
+    }
+
   } else {
+
+    RP_STATE.flightTimeMinutes = null;
+
+    RP_setText(
+      "rpTimeValue",
+      "--"
+    );
+
     RP_setText(
       "rpFuelValue",
       "-- KG"
     );
   }
-
 
   /* MTOW — CATALOG STRUCTURAL LIMIT */
 
