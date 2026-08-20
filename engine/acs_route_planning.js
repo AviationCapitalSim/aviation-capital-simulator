@@ -638,11 +638,20 @@ function RP_updateLoadScenario(
     Number.isFinite(speedKts) &&
     speedKts > 0
   ) {
-    const flightHours =
-      distanceNm / speedKts;
+     
+    const ROUTE_TIME_ADDITIVE_MINUTES = 30;
 
-    const totalMinutes =
-      Math.round(flightHours * 60);
+const cruiseMinutes =
+  (distanceNm / speedKts) * 60;
+
+const totalMinutes =
+  Math.round(
+    cruiseMinutes +
+    ROUTE_TIME_ADDITIVE_MINUTES
+  );
+
+const flightHours =
+  totalMinutes / 60;
 
     const hours =
       Math.floor(totalMinutes / 60);
