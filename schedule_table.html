@@ -2598,6 +2598,52 @@ footer {
 
   border-radius: 6px;
 }
+
+/* ============================================================
+   🟦 ACS OCC — 5H FOCUSED TIMELINE
+   ------------------------------------------------------------
+   Visual geometry only.
+   ============================================================ */
+
+.acs-5h-day-cell {
+  position: relative;
+
+  width: 155px !important;
+  min-width: 155px !important;
+  max-width: 155px !important;
+
+  padding: 0 !important;
+
+  overflow: hidden;
+
+  background:
+    rgba(3, 17, 35, 0.26);
+
+  border-left:
+    1px solid rgba(138, 180, 255, 0.10);
+
+  border-right:
+    1px solid rgba(138, 180, 255, 0.10);
+}
+
+
+.acs-5h-timeline {
+  position: relative;
+
+  width: 100%;
+  height: 82px;
+
+  overflow: hidden;
+
+  background-image:
+    repeating-linear-gradient(
+      to right,
+      transparent 0,
+      transparent calc((100% / 5) - 1px),
+      rgba(112, 174, 226, 0.18) calc(100% / 5),
+      transparent calc((100% / 5) + 1px)
+    );
+}
        
 </style>
 
@@ -5277,10 +5323,415 @@ if (ACS_SCHEDULE_VIEW === "compact") {
 
 /* ============================================================
    ACS OCC — TIMELINE VIEW
-   Approved 168H renderer preserved
+   ------------------------------------------------------------
+   24H = approved 168H weekly renderer
+   5H  = seven-day focused operational window
+
+   Presentation only.
+   Same aircraftItems authority.
+   Same Flight / Maintenance modals.
+   No PostgreSQL writes.
+   No SkyTrack mutation.
    ============================================================ */
 
 else {
+
+  /* ==========================================================
+     ACS OCC — 5H FOCUSED VIEW
+     ========================================================== */
+
+  if (ACS_SCHEDULE_SCALE === "5h") {
+
+    const window5h =
+      ACS_getSchedule5HWindow();
+
+    const windowStart =
+      window5h.startMin;
+
+    const windowEnd =
+      window5h.endMin;
+
+    const windowDuration =
+      window5h.durationMin;
+
+
+    days.forEach((dayKey, dayIndex) => {
+
+      const focusTd =
+        document.createElement("td");
+
+      focusTd.className =
+        "acs-5h-day-cell";
+
+
+      const focusTimeline =
+        document.createElement("div");
+
+      focusTimeline.className =
+        "acs-5h-timeline";
+
+
+      const flightLane =
+        document.createElement("div");
+
+      flightLane.className =
+        "acs-week-lane acs-flight-lane";
+
+
+      const bCheckLane =
+        document.createElement("div");
+
+      bCheckLane.className =
+        "acs-week-lane acs-bcheck-lane";
+
+
+      focusTimeline.appendChild(
+        flightLane
+      );
+
+      focusTimeline.appendChild(
+        bCheckLane
+      );
+
+
+      aircraftItems.forEach(it => {
+
+        const itemDayKey =
+          String(it.day || "").toLowerCase();
+
+        const itemDayIndex =
+          days.indexOf(itemDayKey);
+
+        if (itemDayIndex < 0) {
+          return;
+        }
+
+
+        const startMin =
+          toMin(
+            it.departure ||
+            it.start
+          );
+
+        if (!Number.isFinite(startMin)) {
+          return;
+        }
+
+
+        let durationMin = 0;
+
+
+        if (it.type === "flight") {
+
+          const oneWayMin =
+            Number.isFinite(
+              Number(it.blockTimeMin)
+            )
+              ? Number(it.blockTimeMin)
+              : 0;
+
+
+          const turnaroundMin =
+            Number.isFinite(
+              Number(it.turnaroundMin)
+            )
+              ? Number(it.turnaroundMin)
+              : 0;
+
+
+          durationMin =
+            (oneWayMin * 2) +
+            (turnaroundMin * 2);
+        }
+
+
+        if (it.type === "service") {
+
+          durationMin =
+            it.serviceType === "A"
+              ? 300
+              : 1440;
+        }
+
+
+        if (
+          !Number.isFinite(durationMin) ||
+          durationMin <= 0
+        ) {
+          return;
+        }
+
+
+        /*
+         * Convert the item to an absolute weekly minute.
+         *
+         * The focused window also uses absolute weekly minutes.
+         * This allows a 5H window to cross midnight correctly.
+         */
+
+        const itemStartAbs =
+          (itemDayIndex * 1440) +
+          startMin;
+
+        const itemEndAbs =
+          itemStartAbs +
+          durationMin;
+
+
+        const focusDayStartAbs =
+          (dayIndex * 1440) +
+          windowStart;
+
+        const focusDayEndAbs =
+          focusDayStartAbs +
+          windowDuration;
+
+
+        /*
+         * Weekly wrap support:
+         * Sunday 22:00 → Monday 03:00
+         */
+
+        const candidates = [
+          {
+            start: itemStartAbs,
+            end: itemEndAbs
+          },
+          {
+            start: itemStartAbs + 10080,
+            end: itemEndAbs + 10080
+          }
+        ];
+
+
+        const visibleCandidate =
+          candidates.find(candidate =>
+            candidate.end > focusDayStartAbs &&
+            candidate.start < focusDayEndAbs
+          );
+
+
+        if (!visibleCandidate) {
+          return;
+        }
+
+
+        const visibleStart =
+          Math.max(
+            visibleCandidate.start,
+            focusDayStartAbs
+          );
+
+
+        const visibleEnd =
+          Math.min(
+            visibleCandidate.end,
+            focusDayEndAbs
+          );
+
+
+        const visibleDuration =
+          visibleEnd -
+          visibleStart;
+
+
+        if (visibleDuration <= 0) {
+          return;
+        }
+
+
+        const leftPct =
+          (
+            (
+              visibleStart -
+              focusDayStartAbs
+            ) /
+            windowDuration
+          ) * 100;
+
+
+        const widthPct =
+          (
+            visibleDuration /
+            windowDuration
+          ) * 100;
+
+
+        const chip =
+          document.createElement("span");
+
+
+        chip.style.left =
+          `${leftPct}%`;
+
+        chip.style.width =
+          `${widthPct}%`;
+
+
+        /* ------------------------------------------------------
+           FLIGHT
+           ------------------------------------------------------ */
+
+        if (it.type === "flight") {
+
+          chip.className =
+            "acs-timeline-block acs-timeline-flight";
+
+          chip.dataset.id =
+            it.id;
+
+          chip.dataset.blockId =
+            it.blockId || "";
+
+          chip.dataset.type =
+            "flight";
+
+
+          const labelOut =
+            it.labelOut ||
+            it.flightLabelOut ||
+            it.flightNumberOut ||
+            "—";
+
+
+          const labelIn =
+            it.labelIn ||
+            it.flightLabelIn ||
+            it.flightNumberIn ||
+            "—";
+
+
+          chip.textContent =
+            `${labelOut} / ${labelIn}`;
+
+
+          chip.onclick = () => {
+
+            window.selectedFlight = {
+              data: it,
+              element: chip
+            };
+
+            openFlightModal(
+              it,
+              chip
+            );
+          };
+
+
+          flightLane.appendChild(
+            chip
+          );
+        }
+
+
+        /* ------------------------------------------------------
+           A-CHECK
+           ------------------------------------------------------ */
+
+        if (
+          it.type === "service" &&
+          it.serviceType === "A"
+        ) {
+
+          chip.className =
+            "acs-timeline-block acs-timeline-a";
+
+          chip.dataset.id =
+            it.id;
+
+          chip.dataset.type =
+            "service";
+
+          chip.textContent =
+            "A";
+
+
+          chip.onclick = (e) => {
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.ACS_SELECTED_SERVICE =
+              it;
+
+            openMaintenanceInfoModal(
+              it,
+              ac
+            );
+          };
+
+
+          flightLane.appendChild(
+            chip
+          );
+        }
+
+
+        /* ------------------------------------------------------
+           B-CHECK
+           ------------------------------------------------------ */
+
+        if (
+          it.type === "service" &&
+          it.serviceType === "B"
+        ) {
+
+          chip.className =
+            "acs-timeline-block acs-timeline-b";
+
+          chip.dataset.id =
+            it.id;
+
+          chip.dataset.type =
+            "service";
+
+          chip.textContent =
+            "B-CHECK";
+
+
+          chip.onclick = (e) => {
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.ACS_SELECTED_SERVICE =
+              it;
+
+            openMaintenanceInfoModal(
+              it,
+              ac
+            );
+          };
+
+
+          bCheckLane.appendChild(
+            chip
+          );
+        }
+
+      });
+
+
+      focusTd.appendChild(
+        focusTimeline
+      );
+
+      tr.appendChild(
+        focusTd
+      );
+
+    });
+
+  }
+
+
+  /* ==========================================================
+     ACS OCC — 24H / 168H APPROVED VIEW
+     Existing renderer continues unchanged below.
+     ========================================================== */
+
+  else {
 
   const weekTd =
     document.createElement("td");
@@ -5568,7 +6019,7 @@ else {
   });
 
 
-  weekTd.appendChild(
+    weekTd.appendChild(
     weekTimeline
   );
 
@@ -5576,11 +6027,14 @@ else {
     weekTd
   );
 
-}
+  } // END 24H / 168H VIEW
 
-    // ============================================================
-    // ACTION PLAN
-    // ============================================================
+} // END TIMELINE VIEW
+
+// ============================================================
+// ACTION PLAN
+// ============================================================
+     
     const planTd = document.createElement("td");
     const wrap = document.createElement("div");
     wrap.className = "plan-actions";
