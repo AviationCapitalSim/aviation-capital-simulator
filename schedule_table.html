@@ -1779,27 +1779,28 @@ footer {
 }
 
 /* ============================================================
-   ✈️ ACS SCHEDULE — COMPACT AIRCRAFT COLUMN
-   Date: 19 AUG 2026
+   ✈️ ACS SCHEDULE — COMPACT AIRCRAFT / ACTION COLUMNS
+   Date: 20 AUG 2026
    Purpose:
    - Reduce Aircraft column footprint
-   - Recover horizontal space for weekly timeline
+   - Recover space for Action controls
+   - Preserve the approved 168H timeline geometry
    - Preserve registration, model and status visibility
    ============================================================ */
 
 #scheduleTable th:first-child,
 #scheduleTable td:first-child {
-  width: 120px !important;
-  min-width: 120px !important;
-  max-width: 120px !important;
-  padding-left: 14px !important;
-  padding-right: 8px !important;
+  width: 100px !important;
+  min-width: 100px !important;
+  max-width: 100px !important;
+  padding-left: 10px !important;
+  padding-right: 6px !important;
 }
 
 #scheduleTable .col-aircraft {
-  width: 120px !important;
-  min-width: 120px !important;
-  max-width: 120px !important;
+  width: 100px !important;
+  min-width: 100px !important;
+  max-width: 100px !important;
 }
 
 /* Monday → Sunday */
@@ -1816,11 +1817,11 @@ footer {
 
 #scheduleTable th:last-child,
 #scheduleTable td:last-child {
-  width: 175px !important;
-  min-width: 175px !important;
-  max-width: 175px !important;
+  width: 195px !important;
+  min-width: 195px !important;
+  max-width: 195px !important;
 }
-
+       
 /* ============================================================
    🟦 ACS SCHEDULE — ACTION PLAN COMPACT STACK
    Date: 19 AUG 2026
