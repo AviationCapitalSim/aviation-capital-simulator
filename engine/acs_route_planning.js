@@ -67,10 +67,11 @@ const RP_API_BASE =
     countries: [],
     airports: [],
 
-    aircraftCatalog: [],
-    selectedAircraft: null
-  };
+     aircraftCatalog: [],
+  selectedAircraft: null,
 
+  passengers: 0
+};
 
   /* ============================================================
      DOM HELPERS
@@ -506,10 +507,8 @@ const RP_API_BASE =
         "-- NM"
       );
 
-      RP_setText(
-        "rpPassengersValue",
-        "--"
-      );
+          RP_STATE.passengers = 0;
+      RP_updatePassengersDisplay();
 
       RP_setText(
         "rpCargoValue",
@@ -611,7 +610,75 @@ const RP_API_BASE =
         RP_calculateRouteStudy();
   }
 
+    /* ============================================================
+     AIRCRAFT LOAD SCENARIO — PASSENGERS
+     ============================================================ */
 
+  function RP_updatePassengersDisplay() {
+    const aircraft =
+      RP_STATE.selectedAircraft;
+
+    const maxPassengers =
+      Number(aircraft?.seats);
+
+    if (
+      !aircraft ||
+      !Number.isFinite(maxPassengers) ||
+      maxPassengers < 0
+    ) {
+      RP_STATE.passengers = 0;
+
+      RP_setText(
+        "rpPassengersValue",
+        "--"
+      );
+
+      return;
+    }
+
+    RP_STATE.passengers =
+      Math.max(
+        0,
+        Math.min(
+          RP_STATE.passengers,
+          maxPassengers
+        )
+      );
+
+    RP_setText(
+      "rpPassengersValue",
+      `${RP_STATE.passengers} / ${maxPassengers}`
+    );
+  }
+
+
+  function RP_changePassengers(delta) {
+    const aircraft =
+      RP_STATE.selectedAircraft;
+
+    const maxPassengers =
+      Number(aircraft?.seats);
+
+    if (
+      !aircraft ||
+      !Number.isFinite(maxPassengers) ||
+      maxPassengers < 0
+    ) {
+      return;
+    }
+
+    RP_STATE.passengers =
+      Math.max(
+        0,
+        Math.min(
+          RP_STATE.passengers + delta,
+          maxPassengers
+        )
+      );
+
+    RP_updatePassengersDisplay();
+  }
+   
   /* ============================================================
      WORLD ROUTE STUDY — TECHNICAL CALCULATION
      ============================================================ */
