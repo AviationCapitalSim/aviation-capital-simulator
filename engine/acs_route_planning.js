@@ -33,6 +33,20 @@
 
 
   /* ============================================================
+     ACS ROUTE PLANNING — RAILWAY API AUTHORITY
+     ------------------------------------------------------------
+     Frontend:
+       https://aviationcapitalsim.com
+
+     Backend / PostgreSQL authority:
+       https://api.aviationcapitalsim.com
+     ============================================================ */
+
+  const RP_API_BASE =
+    "https://api.aviationcapitalsim.com";
+
+
+  /* ============================================================
      ROUTE PLANNING STATE
      ------------------------------------------------------------
      Frontend working state only.
@@ -254,25 +268,38 @@
   /* ============================================================
      COMPANY BASE AUTHORITY
      ------------------------------------------------------------
-     GET /v1/company/context
+     GET https://api.aviationcapitalsim.com/v1/company/context
+
+     Canonical authority:
+       data.user.base_icao
      ============================================================ */
 
   async function RP_loadCompanyBase() {
     const data =
       await RP_fetchJson(
-        "/v1/company/context"
+        `${RP_API_BASE}/v1/company/context`
       );
 
-    const company =
-      data?.company ||
-      data?.context ||
-      data;
+    if (!data || data.ok !== true) {
+      throw new Error(
+        "COMPANY_CONTEXT_UNAVAILABLE"
+      );
+    }
+
+    /*
+     * Canonical company context authority:
+     * data.user.base_icao
+     */
+
+    const user =
+      data.user || null;
+
+    const airline =
+      data.airline || null;
 
     const baseIcao =
       String(
-        company?.base_icao ||
-        data?.base_icao ||
-        ""
+        user?.base_icao || ""
       )
         .trim()
         .toUpperCase();
@@ -283,22 +310,24 @@
       );
     }
 
-    const baseName =
-      String(
-        company?.base_name ||
-        company?.base_airport_name ||
-        company?.base_city ||
-        data?.base_name ||
-        data?.base_airport_name ||
-        data?.base_city ||
-        ""
-      ).trim();
+    /*
+     * Do not invent airport metadata here.
+     *
+     * Company Context supplies the authoritative ICAO.
+     * Airport name/city will later come from the
+     * historical airport authority.
+     */
 
-    RP_STATE.company = company;
+    RP_STATE.company = {
+      user,
+      airline,
+      authority:
+        data.authority || null
+    };
 
     RP_STATE.origin = {
       icao: baseIcao,
-      name: baseName
+      name: null
     };
 
     RP_setText(
@@ -308,7 +337,7 @@
 
     RP_setText(
       "rpOriginName",
-      baseName || "Company Base"
+      "Company Base"
     );
 
     RP_setText(
@@ -352,7 +381,7 @@
 
     const data =
       await RP_fetchJson(
-        `/v1/aircraft/factory/planning-catalog?year=${encodeURIComponent(year)}`
+        `${RP_API_BASE}/v1/aircraft/factory/planning-catalog?year=${encodeURIComponent(year)}`
       );
 
     const aircraft =
@@ -732,7 +761,7 @@
       RP_bindEvents();
 
       /*
-       * Company context and ACS simulation time
+       * Company Context and ACS simulation time
        * are independent read authorities.
        */
 
