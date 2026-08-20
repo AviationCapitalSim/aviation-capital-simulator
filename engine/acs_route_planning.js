@@ -1369,14 +1369,17 @@ const RP_API_BASE =
     const continentSelect =
       RP_get("rpContinentSelect");
 
-    const countrySelect =
+        const countrySelect =
       RP_get("rpCountrySelect");
 
-    const passengersMinus =
-  RP_get("rpPassengersMinus");
+    const airportSelect =
+      RP_get("rpAirportSelect");
 
-const passengersPlus =
-  RP_get("rpPassengersPlus");
+    const passengersMinus =
+      RP_get("rpPassengersMinus");
+
+    const passengersPlus =
+      RP_get("rpPassengersPlus");
 
 
     if (aircraftSelect) {
