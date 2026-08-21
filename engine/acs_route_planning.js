@@ -628,13 +628,28 @@ function RP_updateLoadScenario(
   );
 
 
-    /* FLIGHT TIME + ROUTE FUEL */
+    /* ============================================================
+     ACS OCC — OPERATIONAL FUEL CALCULATION
+     ------------------------------------------------------------
+     Global Route Planning fuel model.
+
+     Operational time:
+     - Great-circle cruise time
+     - +30 minutes operational additive
+
+     Estimated fuel:
+     - Total operational time × aircraft fuel burn KG/H
+
+     No additional reserve is added.
+     ============================================================ */
 
   const speedKts =
     Number(aircraft.speed_kts);
 
   const fuelBurnKgph =
     Number(aircraft.fuel_burn_kgph);
+
+  const ROUTE_TIME_ADDITIVE_MINUTES = 30;
 
   let routeFuelKg = 0;
 
@@ -645,33 +660,38 @@ function RP_updateLoadScenario(
     speedKts > 0
   ) {
 
-    const ROUTE_TIME_ADDITIVE_MINUTES = 30;
-
     const cruiseMinutes =
       (distanceNm / speedKts) * 60;
 
-    const totalMinutes =
+    const operationalMinutes =
       Math.round(
         cruiseMinutes +
         ROUTE_TIME_ADDITIVE_MINUTES
       );
 
-    const flightHours =
-      totalMinutes / 60;
+    const operationalHours =
+      operationalMinutes / 60;
 
     const hours =
-      Math.floor(totalMinutes / 60);
+      Math.floor(
+        operationalMinutes / 60
+      );
 
     const minutes =
-      totalMinutes % 60;
+      operationalMinutes % 60;
 
     RP_STATE.flightTimeMinutes =
-      totalMinutes;
+      operationalMinutes;
 
     RP_setText(
       "rpTimeValue",
-      `${hours}H ${String(minutes).padStart(2, "0")}M`
+      `${hours}H ${String(
+        minutes
+      ).padStart(2, "0")}M`
     );
+
+
+    /* ESTIMATED OPERATIONAL FUEL */
 
     if (
       Number.isFinite(fuelBurnKgph) &&
@@ -679,7 +699,8 @@ function RP_updateLoadScenario(
     ) {
 
       routeFuelKg =
-        flightHours * fuelBurnKgph;
+        operationalHours *
+        fuelBurnKgph;
 
       RP_setText(
         "rpFuelValue",
@@ -690,6 +711,8 @@ function RP_updateLoadScenario(
 
     } else {
 
+      routeFuelKg = 0;
+
       RP_setText(
         "rpFuelValue",
         "-- KG"
@@ -698,7 +721,10 @@ function RP_updateLoadScenario(
 
   } else {
 
-    RP_STATE.flightTimeMinutes = null;
+    routeFuelKg = 0;
+
+    RP_STATE.flightTimeMinutes =
+      null;
 
     RP_setText(
       "rpTimeValue",
@@ -710,7 +736,6 @@ function RP_updateLoadScenario(
       "-- KG"
     );
   }
-
 
   /* ESTIMATED TAKEOFF WEIGHT */
 
