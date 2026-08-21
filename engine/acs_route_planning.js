@@ -188,6 +188,74 @@ const RP_API_BASE =
     return RP_MAP;
   }
 
+    function RP_centerMapOnOrigin() {
+    if (!RP_MAP) {
+      return false;
+    }
+
+    const originIcao =
+      String(
+        RP_STATE.origin?.icao || ""
+      )
+        .trim()
+        .toUpperCase();
+
+    if (!originIcao) {
+      return false;
+    }
+
+    const originAirport =
+      RP_STATE.airports.find(
+        airport =>
+          String(
+            airport.icao || ""
+          )
+            .trim()
+            .toUpperCase() === originIcao
+      ) || null;
+
+    if (!originAirport) {
+      RP_setMapStatus(
+        "Company base coordinates unavailable"
+      );
+
+      return false;
+    }
+
+    const latitude =
+      Number(originAirport.latitude);
+
+    const longitude =
+      Number(originAirport.longitude);
+
+    if (
+      !Number.isFinite(latitude) ||
+      !Number.isFinite(longitude)
+    ) {
+      RP_setMapStatus(
+        "Company base coordinates unavailable"
+      );
+
+      return false;
+    }
+
+    RP_MAP.setView(
+      [latitude, longitude],
+      6,
+      {
+        animate: false
+      }
+    );
+
+    RP_MAP.invalidateSize();
+
+    RP_setMapStatus(
+      "Company base ready — awaiting destination"
+    );
+
+    return true;
+  }
+   
   /* ============================================================
      FETCH AUTHORITY
      ============================================================ */
@@ -2043,6 +2111,8 @@ function RP_bindEvents() {
       );
 
       await RP_loadAirportCatalog();
+
+      RP_centerMapOnOrigin();
 
       await RP_loadAircraftCatalog();
 
