@@ -75,6 +75,7 @@ const RP_API_BASE =
 
   let RP_MAP = null;
   let RP_ORIGIN_MARKER = null;
+  let RP_DESTINATION_MARKER = null;
 
   /* ============================================================
      DOM HELPERS
@@ -294,6 +295,135 @@ const RP_API_BASE =
 
     return true;
   }
+
+    function RP_updateDestinationMarker() {
+    if (!RP_MAP) {
+      return false;
+    }
+
+    const destination =
+      RP_STATE.destination;
+
+    if (!destination) {
+      if (RP_DESTINATION_MARKER) {
+        RP_MAP.removeLayer(
+          RP_DESTINATION_MARKER
+        );
+
+        RP_DESTINATION_MARKER = null;
+      }
+
+      if (RP_ORIGIN_MARKER) {
+        RP_MAP.setView(
+          RP_ORIGIN_MARKER.getLatLng(),
+          6,
+          {
+            animate: false
+          }
+        );
+      }
+
+      return false;
+    }
+
+    const destinationIcao =
+      String(
+        destination.icao || ""
+      )
+        .trim()
+        .toUpperCase();
+
+    const latitude =
+      Number(destination.latitude);
+
+    const longitude =
+      Number(destination.longitude);
+
+    if (
+      !destinationIcao ||
+      !Number.isFinite(latitude) ||
+      !Number.isFinite(longitude)
+    ) {
+      if (RP_DESTINATION_MARKER) {
+        RP_MAP.removeLayer(
+          RP_DESTINATION_MARKER
+        );
+
+        RP_DESTINATION_MARKER = null;
+      }
+
+      RP_setMapStatus(
+        "Destination coordinates unavailable"
+      );
+
+      return false;
+    }
+
+    const destinationPosition =
+      [latitude, longitude];
+
+    if (!RP_DESTINATION_MARKER) {
+      RP_DESTINATION_MARKER =
+        window.L.circleMarker(
+          destinationPosition,
+          {
+            radius: 7,
+            color: "#ffffff",
+            weight: 2,
+            opacity: 1,
+            fillColor: "#238cff",
+            fillOpacity: 1,
+            interactive: false
+          }
+        )
+          .addTo(RP_MAP)
+          .bindTooltip(
+            destinationIcao,
+            {
+              permanent: true,
+              direction: "right",
+              offset: [10, 0],
+              className:
+                "rp-map-icao-label"
+            }
+          );
+    } else {
+      RP_DESTINATION_MARKER.setLatLng(
+        destinationPosition
+      );
+
+      RP_DESTINATION_MARKER.setTooltipContent(
+        destinationIcao
+      );
+    }
+
+    if (RP_ORIGIN_MARKER) {
+      RP_MAP.fitBounds(
+        window.L.latLngBounds(
+          [
+            RP_ORIGIN_MARKER.getLatLng(),
+            RP_DESTINATION_MARKER.getLatLng()
+          ]
+        ),
+        {
+          paddingTopLeft: [70, 90],
+          paddingBottomRight: [70, 55],
+          maxZoom: 6,
+          animate: true
+        }
+      );
+    } else {
+      RP_MAP.setView(
+        destinationPosition,
+        6,
+        {
+          animate: true
+        }
+      );
+    }
+
+    return true;
+  }
    
   /* ============================================================
      FETCH AUTHORITY
@@ -420,6 +550,7 @@ const RP_API_BASE =
 
 
   async function RP_resolveSimulationYear() {
+     
     /*
      * The visible ACS clock is populated by the existing
      * ACS time authority loaded before this controller.
@@ -1396,6 +1527,7 @@ function RP_calculateRouteStudy() {
   RP_STATE.selectedAircraft;
 
   RP_updateAirportData();
+  RP_updateDestinationMarker();
 
   const originAirport =
     RP_STATE.airports.find(
@@ -1730,7 +1862,8 @@ function RP_calculateRouteStudy() {
         continentSelect?.value || ""
       ).trim();
 
-    RP_STATE.destination = null;
+        RP_STATE.destination = null;
+    RP_updateDestinationMarker();
 
     RP_resetSelect(
       RP_get("rpCountrySelect"),
@@ -1829,7 +1962,8 @@ function RP_calculateRouteStudy() {
           ?.value || ""
       ).trim();
 
-    RP_STATE.destination = null;
+        RP_STATE.destination = null;
+    RP_updateDestinationMarker();
 
     RP_resetSelect(
       RP_get("rpAirportSelect"),
