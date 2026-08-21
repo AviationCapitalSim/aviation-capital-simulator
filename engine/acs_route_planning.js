@@ -308,7 +308,9 @@ const RP_API_BASE =
     const destination =
       RP_STATE.destination;
 
-    if (!destination) {
+        if (!destination) {
+      RP_clearRouteTrace();
+
       if (RP_DESTINATION_MARKER) {
         RP_MAP.removeLayer(
           RP_DESTINATION_MARKER
@@ -1027,9 +1029,11 @@ function RP_handleAircraftChange() {
   const modelKey =
     String(select.value || "").trim();
 
-  if (!modelKey) {
+    if (!modelKey) {
     RP_STATE.selectedAircraft = null;
     RP_STATE.passengers = 0;
+
+    RP_clearRouteTrace();
 
     RP_setText("rpRouteAircraft", "--");
     RP_setText("rpCalculatedRange", "-- NM");
@@ -1053,8 +1057,10 @@ function RP_handleAircraftChange() {
   RP_STATE.selectedAircraft =
     aircraft || null;
 
-  if (!aircraft) {
+    if (!aircraft) {
     RP_STATE.passengers = 0;
+
+    RP_clearRouteTrace();
 
     RP_setText("rpRouteAircraft", "--");
     RP_setText("rpPassengersValue", "--");
@@ -1767,10 +1773,12 @@ function RP_calculateRouteStudy() {
     ) || null;
 
 
-  if (
+    if (
     !originAirport ||
     !destination
   ) {
+    RP_clearRouteTrace();
+
     RP_setText(
       "rpGreatCircleDistance",
       "-- NM"
@@ -1807,12 +1815,14 @@ function RP_calculateRouteStudy() {
     Number(destination.longitude);
 
 
-  if (
+    if (
     !Number.isFinite(originLat) ||
     !Number.isFinite(originLon) ||
     !Number.isFinite(destinationLat) ||
     !Number.isFinite(destinationLon)
   ) {
+    RP_clearRouteTrace();
+
     RP_setText(
       "rpGreatCircleDistance",
       "-- NM"
@@ -1850,7 +1860,9 @@ function RP_calculateRouteStudy() {
   );
 
 
-  if (!aircraft) {
+    if (!aircraft) {
+    RP_clearRouteTrace();
+
     RP_setText(
       "rpCalculatedRange",
       "-- NM"
@@ -1870,10 +1882,12 @@ function RP_calculateRouteStudy() {
     Number(aircraft.range_nm);
 
 
-  if (
+    if (
     !Number.isFinite(rangeNm) ||
     rangeNm <= 0
   ) {
+    RP_clearRouteTrace();
+
     RP_setText(
       "rpCalculatedRange",
       "-- NM"
@@ -1892,11 +1906,21 @@ function RP_calculateRouteStudy() {
   }
 
 
-  const differenceNm =
+    const differenceNm =
     rangeNm - distanceNm;
 
 
+  RP_renderLinearRouteTrace(
+    originAirport,
+    destination,
+    distanceNm,
+    aircraft,
+    rangeNm
+  );
+
+
   RP_setText(
+    "rpCalculatedRange",
     "rpCalculatedRange",
     `${Math.round(
       rangeNm
