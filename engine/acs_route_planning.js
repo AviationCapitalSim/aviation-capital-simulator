@@ -582,6 +582,7 @@ function RP_updateLoadScenario(
     RP_setText("rpPassengersValue", "--");
     RP_setText("rpBaggageValue", "-- KG");
     RP_setText("rpFuelValue", "-- KG");
+    RP_setText("rpFuelInstrumentValue", "-- KG");
     RP_setText("rpTowValue", "-- KG");
     return;
   }
@@ -628,7 +629,7 @@ function RP_updateLoadScenario(
   );
 
 
-    /* ============================================================
+  /* ============================================================
      ACS OCC — OPERATIONAL FUEL CALCULATION
      ------------------------------------------------------------
      Global Route Planning fuel model.
@@ -702,11 +703,19 @@ function RP_updateLoadScenario(
         operationalHours *
         fuelBurnKgph;
 
-      RP_setText(
-        "rpFuelValue",
+      const formattedRouteFuel =
         `${Math.round(
           routeFuelKg
-        ).toLocaleString()} KG`
+        ).toLocaleString()} KG`;
+
+      RP_setText(
+        "rpFuelValue",
+        formattedRouteFuel
+      );
+
+      RP_setText(
+        "rpFuelInstrumentValue",
+        formattedRouteFuel
       );
 
     } else {
@@ -715,6 +724,11 @@ function RP_updateLoadScenario(
 
       RP_setText(
         "rpFuelValue",
+        "-- KG"
+      );
+
+      RP_setText(
+        "rpFuelInstrumentValue",
         "-- KG"
       );
     }
@@ -733,6 +747,11 @@ function RP_updateLoadScenario(
 
     RP_setText(
       "rpFuelValue",
+      "-- KG"
+    );
+
+    RP_setText(
+      "rpFuelInstrumentValue",
       "-- KG"
     );
   }
@@ -764,7 +783,7 @@ function RP_updateLoadScenario(
     mtowKg > 0
   ) {
 
-        RP_setText(
+    RP_setText(
       "rpTowValue",
       `${Math.round(
         estimatedTowKg
@@ -782,7 +801,6 @@ function RP_updateLoadScenario(
           ? "#ff5f5f"
           : "#7fe6a2";
     }
-     
 
   } else {
 
