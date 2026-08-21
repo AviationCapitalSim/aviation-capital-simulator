@@ -796,7 +796,102 @@ function RP_calculateGreatCircleNm(
   return EARTH_RADIUS_NM * c;
 }
 
+/* ============================================================
+   AIRPORT DATA
+   ============================================================ */
 
+function RP_updateAirportData() {
+  const airport =
+    RP_STATE.destination;
+
+  const aircraft =
+    RP_STATE.selectedAircraft;
+
+  if (!airport) {
+    RP_setText(
+      "rpAirportRunwayValue",
+      "-- M"
+    );
+
+    RP_setText(
+      "rpAircraftRunwayValue",
+      "-- M"
+    );
+
+    RP_setText(
+      "rpAirportElevationValue",
+      "-- FT"
+    );
+
+    return;
+  }
+
+
+  const runwayM =
+    Number(airport.runway_m);
+
+  const elevationFt =
+    Number(airport.elevation_ft);
+
+  const requiredRunwayM =
+    aircraft
+      ? Number(aircraft.required_runway_m)
+      : null;
+
+
+  RP_setText(
+    "rpAirportRunwayValue",
+    Number.isFinite(runwayM) &&
+    runwayM > 0
+      ? `${Math.round(
+          runwayM
+        ).toLocaleString()} M`
+      : "-- M"
+  );
+
+
+  RP_setText(
+    "rpAircraftRunwayValue",
+    Number.isFinite(requiredRunwayM) &&
+    requiredRunwayM > 0
+      ? `${Math.round(
+          requiredRunwayM
+        ).toLocaleString()} M`
+      : "-- M"
+  );
+
+
+  RP_setText(
+    "rpAirportElevationValue",
+    Number.isFinite(elevationFt)
+      ? `${Math.round(
+          elevationFt
+        ).toLocaleString()} FT`
+      : "-- FT"
+  );
+
+
+  const requiredElement =
+    RP_get("rpAircraftRunwayValue");
+
+  if (requiredElement) {
+    requiredElement.classList.remove(
+      "rp-runway-warning"
+    );
+
+    if (
+      Number.isFinite(runwayM) &&
+      runwayM > 0 &&
+      Number.isFinite(requiredRunwayM) &&
+      requiredRunwayM > runwayM
+    ) {
+      requiredElement.classList.add(
+        "rp-runway-warning"
+      );
+    }
+  }
+}
+   
 function RP_calculateRouteStudy() {
   const originIcao =
     String(
@@ -809,7 +904,9 @@ function RP_calculateRouteStudy() {
     RP_STATE.destination;
 
   const aircraft =
-    RP_STATE.selectedAircraft;
+  RP_STATE.selectedAircraft;
+
+  RP_updateAirportData();
 
   const originAirport =
     RP_STATE.airports.find(
