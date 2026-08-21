@@ -74,6 +74,7 @@ const RP_API_BASE =
   };
 
   let RP_MAP = null;
+  let RP_ORIGIN_MARKER = null;
 
   /* ============================================================
      DOM HELPERS
@@ -188,7 +189,7 @@ const RP_API_BASE =
     return RP_MAP;
   }
 
-    function RP_centerMapOnOrigin() {
+     function RP_centerMapOnOrigin() {
     if (!RP_MAP) {
       return false;
     }
@@ -239,13 +240,51 @@ const RP_API_BASE =
       return false;
     }
 
+    const originPosition =
+      [latitude, longitude];
+
     RP_MAP.setView(
-      [latitude, longitude],
+      originPosition,
       6,
       {
         animate: false
       }
     );
+
+    if (!RP_ORIGIN_MARKER) {
+      RP_ORIGIN_MARKER =
+        window.L.circleMarker(
+          originPosition,
+          {
+            radius: 7,
+            color: "#ffffff",
+            weight: 2,
+            opacity: 1,
+            fillColor: "#ff3b3b",
+            fillOpacity: 1,
+            interactive: false
+          }
+        )
+          .addTo(RP_MAP)
+          .bindTooltip(
+            originIcao,
+            {
+              permanent: true,
+              direction: "right",
+              offset: [10, 0],
+              className:
+                "rp-map-icao-label"
+            }
+          );
+    } else {
+      RP_ORIGIN_MARKER.setLatLng(
+        originPosition
+      );
+
+      RP_ORIGIN_MARKER.setTooltipContent(
+        originIcao
+      );
+    }
 
     RP_MAP.invalidateSize();
 
