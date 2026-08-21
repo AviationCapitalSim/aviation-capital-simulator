@@ -871,10 +871,176 @@ function RP_updateAirportData() {
   const elevationFt =
     Number(airport.elevation_ft);
 
-  const requiredRunwayM =
+  const baseRequiredRunwayM =
     aircraft
       ? Number(aircraft.required_runway_m)
       : null;
+
+
+  /* ============================================================
+     ACS OCC — ESTIMATED TAKEOFF WEIGHT
+     ============================================================ */
+
+  let estimatedTowKg = null;
+  let mtowKg = null;
+
+  if (aircraft) {
+    const oewKg =
+      Number(aircraft.oew_kg);
+
+    mtowKg =
+      Number(aircraft.mtow_kg);
+
+    const speedKts =
+      Number(aircraft.speed_kts);
+
+    const fuelBurnKgph =
+      Number(aircraft.fuel_burn_kgph);
+
+    const passengers =
+      Number(RP_STATE.passengers) || 0;
+
+    const passengerWeightKg =
+      passengers * 84;
+
+    const baggageKg =
+      passengers * 2 * 25;
+
+    let routeFuelKg = 0;
+
+    const originIcao =
+      String(
+        RP_STATE.origin?.icao || ""
+      )
+        .trim()
+        .toUpperCase();
+
+    const originAirport =
+      RP_STATE.airports.find(
+        item =>
+          String(
+            item.icao || ""
+          )
+            .trim()
+            .toUpperCase() ===
+          originIcao
+      ) || null;
+
+    if (
+      originAirport &&
+      Number.isFinite(speedKts) &&
+      speedKts > 0 &&
+      Number.isFinite(fuelBurnKgph) &&
+      fuelBurnKgph > 0
+    ) {
+      const distanceNm =
+        RP_calculateGreatCircleNm(
+          Number(originAirport.latitude),
+          Number(originAirport.longitude),
+          Number(airport.latitude),
+          Number(airport.longitude)
+        );
+
+      if (
+        Number.isFinite(distanceNm) &&
+        distanceNm > 0
+      ) {
+        const cruiseMinutes =
+          (distanceNm / speedKts) * 60;
+
+        const totalMinutes =
+          cruiseMinutes + 30;
+
+        routeFuelKg =
+          (totalMinutes / 60) *
+          fuelBurnKgph;
+      }
+    }
+
+    if (
+      Number.isFinite(oewKg) &&
+      oewKg > 0
+    ) {
+      estimatedTowKg =
+        oewKg +
+        passengerWeightKg +
+        baggageKg +
+        routeFuelKg;
+    }
+  }
+
+
+  /* ============================================================
+     ACS OCC — RUNWAY PERFORMANCE
+     ============================================================ */
+
+  let adjustedRequiredRunwayM =
+    baseRequiredRunwayM;
+
+  if (
+    Number.isFinite(baseRequiredRunwayM) &&
+    baseRequiredRunwayM > 0
+  ) {
+
+    /*
+      ALTITUDE
+
+      +7% runway requirement
+      per 1,000 FT above sea level.
+    */
+
+    const altitudeFactor =
+      Number.isFinite(elevationFt) &&
+      elevationFt > 0
+        ? 1 +
+          (
+            elevationFt /
+            1000
+          ) * 0.07
+        : 1;
+
+
+    /*
+      WEIGHT
+
+      required_runway_m is treated as
+      the aircraft reference requirement.
+
+      At MTOW:
+      factor = 1.00
+
+      Below MTOW the runway requirement
+      progressively decreases.
+
+      Minimum factor is limited to 0.70
+      so an unusually light scenario
+      cannot produce unrealistic values.
+    */
+
+    let weightFactor = 1;
+
+    if (
+      Number.isFinite(estimatedTowKg) &&
+      estimatedTowKg > 0 &&
+      Number.isFinite(mtowKg) &&
+      mtowKg > 0
+    ) {
+      const weightRatio =
+        estimatedTowKg / mtowKg;
+
+      weightFactor =
+        Math.max(
+          0.70,
+          weightRatio
+        );
+    }
+
+
+    adjustedRequiredRunwayM =
+      baseRequiredRunwayM *
+      altitudeFactor *
+      weightFactor;
+  }
 
 
   RP_setText(
@@ -890,16 +1056,16 @@ function RP_updateAirportData() {
 
   RP_setText(
     "rpAircraftRunwayValue",
-    Number.isFinite(requiredRunwayM) &&
-    requiredRunwayM > 0
+    Number.isFinite(adjustedRequiredRunwayM) &&
+    adjustedRequiredRunwayM > 0
       ? `${Math.round(
-          requiredRunwayM
+          adjustedRequiredRunwayM
         ).toLocaleString()} M`
       : "-- M"
   );
 
 
-    RP_setText(
+  RP_setText(
     "rpAirportElevationValue",
     Number.isFinite(elevationFt)
       ? `${Math.round(
@@ -908,8 +1074,13 @@ function RP_updateAirportData() {
       : "-- FT"
   );
 
+
+  /* ELEVATION VISUAL WARNING */
+
   const elevationElement =
-    RP_get("rpAirportElevationValue");
+    RP_get(
+      "rpAirportElevationValue"
+    );
 
   if (elevationElement) {
     elevationElement.style.color =
@@ -920,8 +1091,12 @@ function RP_updateAirportData() {
   }
 
 
+  /* RUNWAY VISUAL WARNING */
+
   const requiredElement =
-    RP_get("rpAircraftRunwayValue");
+    RP_get(
+      "rpAircraftRunwayValue"
+    );
 
   if (requiredElement) {
     requiredElement.classList.remove(
@@ -931,8 +1106,11 @@ function RP_updateAirportData() {
     if (
       Number.isFinite(runwayM) &&
       runwayM > 0 &&
-      Number.isFinite(requiredRunwayM) &&
-      requiredRunwayM > runwayM
+      Number.isFinite(
+        adjustedRequiredRunwayM
+      ) &&
+      adjustedRequiredRunwayM >
+        runwayM
     ) {
       requiredElement.classList.add(
         "rp-runway-warning"
