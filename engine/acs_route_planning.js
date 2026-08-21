@@ -73,10 +73,14 @@ const RP_API_BASE =
     passengers: 0
   };
 
-  let RP_MAP = null;
+    let RP_MAP = null;
   let RP_ORIGIN_MARKER = null;
   let RP_DESTINATION_MARKER = null;
 
+  let RP_REACHABLE_TRACE = null;
+  let RP_REMAINING_TRACE = null;
+  let RP_RANGE_LIMIT_MARKER = null;
+   
   /* ============================================================
      DOM HELPERS
      ============================================================ */
@@ -422,13 +426,235 @@ const RP_API_BASE =
       );
     }
 
+      return true;
+  }
+
+
+  function RP_clearRouteTrace() {
+    if (!RP_MAP) {
+      return;
+    }
+
+    if (RP_REACHABLE_TRACE) {
+      RP_MAP.removeLayer(
+        RP_REACHABLE_TRACE
+      );
+
+      RP_REACHABLE_TRACE = null;
+    }
+
+    if (RP_REMAINING_TRACE) {
+      RP_MAP.removeLayer(
+        RP_REMAINING_TRACE
+      );
+
+      RP_REMAINING_TRACE = null;
+    }
+
+    if (RP_RANGE_LIMIT_MARKER) {
+      RP_MAP.removeLayer(
+        RP_RANGE_LIMIT_MARKER
+      );
+
+      RP_RANGE_LIMIT_MARKER = null;
+    }
+  }
+
+
+  function RP_getAircraftModelLabel(
+    aircraft
+  ) {
+    return String(
+      aircraft?.model ||
+      aircraft?.aircraft_name ||
+      aircraft?.model_key ||
+      ""
+    )
+      .trim()
+      .toUpperCase();
+  }
+
+
+  function RP_renderLinearRouteTrace(
+    originAirport,
+    destination,
+    distanceNm,
+    aircraft,
+    rangeNm
+  ) {
+    RP_clearRouteTrace();
+
+    if (
+      !RP_MAP ||
+      !originAirport ||
+      !destination ||
+      !aircraft
+    ) {
+      return false;
+    }
+
+    const originLat =
+      Number(originAirport.latitude);
+
+    const originLon =
+      Number(originAirport.longitude);
+
+    const destinationLat =
+      Number(destination.latitude);
+
+    const destinationLon =
+      Number(destination.longitude);
+
+    if (
+      !Number.isFinite(originLat) ||
+      !Number.isFinite(originLon) ||
+      !Number.isFinite(destinationLat) ||
+      !Number.isFinite(destinationLon) ||
+      !Number.isFinite(distanceNm) ||
+      distanceNm <= 0 ||
+      !Number.isFinite(rangeNm) ||
+      rangeNm <= 0
+    ) {
+      return false;
+    }
+
+    const originPosition =
+      [originLat, originLon];
+
+    const destinationPosition =
+      [destinationLat, destinationLon];
+
+    /*
+     * Visual route geometry is intentionally linear.
+     *
+     * Great Circle Distance remains the numerical ACS
+     * authority for distance and range evaluation.
+     */
+
+    if (rangeNm >= distanceNm) {
+      RP_REACHABLE_TRACE =
+        window.L.polyline(
+          [
+            originPosition,
+            destinationPosition
+          ],
+          {
+            color: "#3f4b5a",
+            weight: 5,
+            opacity: 0.96,
+            lineCap: "round",
+            lineJoin: "round",
+            interactive: false
+          }
+        ).addTo(RP_MAP);
+
+      RP_ORIGIN_MARKER?.bringToFront();
+      RP_DESTINATION_MARKER?.bringToFront();
+
+      return true;
+    }
+
+    const reachableRatio =
+      Math.max(
+        0,
+        Math.min(
+          1,
+          rangeNm / distanceNm
+        )
+      );
+
+    const limitPosition =
+      [
+        originLat +
+          (
+            destinationLat -
+            originLat
+          ) * reachableRatio,
+
+        originLon +
+          (
+            destinationLon -
+            originLon
+          ) * reachableRatio
+      ];
+
+    RP_REACHABLE_TRACE =
+      window.L.polyline(
+        [
+          originPosition,
+          limitPosition
+        ],
+        {
+          color: "#3f4b5a",
+          weight: 5,
+          opacity: 0.96,
+          lineCap: "round",
+          lineJoin: "round",
+          interactive: false
+        }
+      ).addTo(RP_MAP);
+
+    RP_REMAINING_TRACE =
+      window.L.polyline(
+        [
+          limitPosition,
+          destinationPosition
+        ],
+        {
+          color: "#ff3b3b",
+          weight: 5,
+          opacity: 0.96,
+          dashArray: "12 10",
+          lineCap: "round",
+          lineJoin: "round",
+          interactive: false
+        }
+      ).addTo(RP_MAP);
+
+    const modelLabel =
+      RP_getAircraftModelLabel(
+        aircraft
+      );
+
+    RP_RANGE_LIMIT_MARKER =
+      window.L.circleMarker(
+        limitPosition,
+        {
+          radius: 7,
+          color: "#ffffff",
+          weight: 2,
+          opacity: 1,
+          fillColor: "#ff3b3b",
+          fillOpacity: 1,
+          interactive: false
+        }
+      ).addTo(RP_MAP);
+
+    if (modelLabel) {
+      RP_RANGE_LIMIT_MARKER.bindTooltip(
+        modelLabel,
+        {
+          permanent: true,
+          direction: "right",
+          offset: [10, 0],
+          className:
+            "rp-map-icao-label"
+        }
+      );
+    }
+
+    RP_ORIGIN_MARKER?.bringToFront();
+    RP_DESTINATION_MARKER?.bringToFront();
+    RP_RANGE_LIMIT_MARKER.bringToFront();
+
     return true;
   }
-   
+
+
   /* ============================================================
      FETCH AUTHORITY
      ============================================================ */
-
+   
   async function RP_fetchJson(url, options = {}) {
     const response = await fetch(url, {
       credentials: "include",
