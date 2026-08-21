@@ -739,7 +739,7 @@ function RP_updateLoadScenario(
     mtowKg > 0
   ) {
 
-    RP_setText(
+        RP_setText(
       "rpTowValue",
       `${Math.round(
         estimatedTowKg
@@ -747,6 +747,17 @@ function RP_updateLoadScenario(
         mtowKg
       ).toLocaleString()} KG`
     );
+
+    const towElement =
+      RP_get("rpTowValue");
+
+    if (towElement) {
+      towElement.style.color =
+        estimatedTowKg > mtowKg
+          ? "#ff5f5f"
+          : "#7fe6a2";
+    }
+     
 
   } else {
 
