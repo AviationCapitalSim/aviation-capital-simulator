@@ -971,7 +971,19 @@ function RP_updateAirportData() {
 
 
   /* ============================================================
-     ACS OCC — RUNWAY PERFORMANCE
+     ACS OCC — GLOBAL RUNWAY PERFORMANCE MODEL
+     ------------------------------------------------------------
+     Applies to every aircraft in Route Planning.
+
+     Inputs:
+     - Aircraft base required runway
+     - Estimated TOW
+     - MTOW
+     - Airport elevation
+
+     Model:
+     - ISA standard-atmosphere density correction
+     - Weight-squared takeoff performance correction
      ============================================================ */
 
   let adjustedRequiredRunwayM =
@@ -982,40 +994,50 @@ function RP_updateAirportData() {
     baseRequiredRunwayM > 0
   ) {
 
-    /*
-      ALTITUDE
+    /* ----------------------------------------------------------
+       AIR DENSITY — ISA
+       ---------------------------------------------------------- */
 
-      +7% runway requirement
-      per 1,000 FT above sea level.
-    */
+    const safeElevationFt =
+      Number.isFinite(elevationFt)
+        ? Math.max(0, elevationFt)
+        : 0;
 
-    const altitudeFactor =
-      Number.isFinite(elevationFt) &&
-      elevationFt > 0
-        ? 1 +
-          (
-            elevationFt /
-            1000
-          ) * 0.07
+    const isaBase =
+      1 -
+      (
+        6.87535e-6 *
+        safeElevationFt
+      );
+
+    const densityRatio =
+      isaBase > 0
+        ? Math.pow(
+            isaBase,
+            4.2561
+          )
         : 1;
 
 
-    /*
-      WEIGHT
+    /* ----------------------------------------------------------
+       ALTITUDE / DENSITY PERFORMANCE FACTOR
+       ---------------------------------------------------------- */
 
-      required_runway_m is treated as
-      the aircraft reference requirement.
+    const altitudeFactor =
+      densityRatio > 0
+        ? Math.pow(
+            1 / densityRatio,
+            1.7
+          )
+        : 1;
 
-      At MTOW:
-      factor = 1.00
 
-      Below MTOW the runway requirement
-      progressively decreases.
+    /* ----------------------------------------------------------
+       AIRCRAFT WEIGHT PERFORMANCE FACTOR
 
-      Minimum factor is limited to 0.70
-      so an unusually light scenario
-      cannot produce unrealistic values.
-    */
+       Takeoff distance varies strongly with aircraft weight.
+       Reference point = MTOW.
+       ---------------------------------------------------------- */
 
     let weightFactor = 1;
 
@@ -1025,23 +1047,28 @@ function RP_updateAirportData() {
       Number.isFinite(mtowKg) &&
       mtowKg > 0
     ) {
+
       const weightRatio =
-        estimatedTowKg / mtowKg;
+        estimatedTowKg /
+        mtowKg;
 
       weightFactor =
-        Math.max(
-          0.70,
-          weightRatio
+        Math.pow(
+          weightRatio,
+          2
         );
     }
 
+
+    /* ----------------------------------------------------------
+       GLOBAL ACS REQUIRED RUNWAY
+       ---------------------------------------------------------- */
 
     adjustedRequiredRunwayM =
       baseRequiredRunwayM *
       altitudeFactor *
       weightFactor;
   }
-
 
   RP_setText(
     "rpAirportRunwayValue",
