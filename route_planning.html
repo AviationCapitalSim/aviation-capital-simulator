@@ -967,7 +967,9 @@
       margin-top: 20px;
     }
 
-     .rp-instrument-btn {
+  .rp-instrument-btn {
+  position: relative;
+
   min-height: 122px;
 
   box-sizing: border-box;
@@ -1010,35 +1012,35 @@
   cursor: default;
 }
 
-
 .rp-instrument-btn > span {
+  position: absolute;
+
+  top: 13px;
+  left: 14px;
+  right: 14px;
+
+  box-sizing: border-box;
+
+  padding-bottom: 10px;
+
+  border-bottom:
+    1px solid rgba(74, 167, 255, 0.30);
+
   color: #4aa7ff;
 
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 800;
 
-  letter-spacing: 0.08em;
-
-  line-height: 1.2;
-}
-
-
-.rp-instrument-btn > strong {
-  color: #f3f7fc;
-
-  font-size: 0.74rem;
-  font-weight: 700;
-
-  letter-spacing: 0.04em;
+  letter-spacing: 0.10em;
 
   line-height: 1.2;
 
-  font-variant-numeric: tabular-nums;
+  text-align: left;
 
   text-shadow:
-    0 0 8px rgba(74, 167, 255, 0.20);
+    0 0 7px rgba(74, 167, 255, 0.55),
+    0 0 14px rgba(74, 167, 255, 0.24);
 }
-
 
 .rp-airport-data {
   gap: 13px;
