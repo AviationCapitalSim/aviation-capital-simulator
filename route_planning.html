@@ -653,23 +653,23 @@
     }
 
     .rp-panel-header h2 {
-      margin: 0;
+  margin: 0;
 
-      color: var(--rp-text);
+  color: var(--rp-gold);
 
-      font-family:
-        "Orbitron",
-        "Eurostile",
-        "Exo 2",
-        sans-serif;
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
 
-      font-size: 0.82rem;
-      font-weight: 700;
+  font-size: 0.82rem;
+  font-weight: 700;
 
-      letter-spacing: 0.12em;
+  letter-spacing: 0.12em;
 
-      text-transform: uppercase;
-    }
+  text-transform: uppercase;
+}
 
     .rp-panel-header span {
       color: var(--rp-muted);
@@ -2011,59 +2011,61 @@
          No fake functionality.
          ========================================================== -->
 
-    <nav
-      class="rp-instrument-nav"
-      aria-label="Route planning technical instruments"
-    >
+<nav
+  class="rp-instrument-nav"
+  aria-label="Route planning technical instruments"
+>
 
-      <div class="rp-instrument-btn">
-        Aircraft Data
+  <div class="rp-instrument-btn">
+    <span>Aircraft Data</span>
+  </div>
+
+  <div class="rp-instrument-btn rp-airport-data">
+
+    <span>Airport Data</span>
+
+    <div class="rp-airport-data-values">
+
+      <div>
+        <small>RUNWAY</small>
+        <strong id="rpAirportRunwayValue">
+          -- M
+        </strong>
       </div>
 
-      <div class="rp-instrument-btn rp-airport-data">
-  <span>Airport Data</span>
+      <div>
+        <small>AIRCRAFT REQ.</small>
+        <strong id="rpAircraftRunwayValue">
+          -- M
+        </strong>
+      </div>
 
-  <div class="rp-airport-data-values">
+      <div>
+        <small>ELEVATION</small>
+        <strong id="rpAirportElevationValue">
+          -- FT
+        </strong>
+      </div>
 
-    <div>
-      <small>RUNWAY</small>
-      <strong id="rpAirportRunwayValue">
-        -- M
-      </strong>
-    </div>
-
-    <div>
-      <small>AIRCRAFT REQ.</small>
-      <strong id="rpAircraftRunwayValue">
-        -- M
-      </strong>
-    </div>
-
-    <div>
-      <small>ELEVATION</small>
-      <strong id="rpAirportElevationValue">
-        -- FT
-      </strong>
     </div>
 
   </div>
-</div>
 
-     <div class="rp-instrument-btn">
-        <span>Fuel</span>
-        <strong id="rpFuelInstrumentValue">-- KG</strong>
-      </div>
+  <div class="rp-instrument-btn">
+    <span>Fuel</span>
+    <strong id="rpFuelInstrumentValue">-- KG</strong>
+  </div>
 
-      <div class="rp-instrument-btn">
-        <span>Time</span>
-        <strong id="rpTimeValue">--</strong>
-      </div>
+  <div class="rp-instrument-btn">
+    <span>Time</span>
+    <strong id="rpTimeValue">--</strong>
+  </div>
 
-      <div class="rp-instrument-btn">
-        Multi-Leg
-      </div>
+  <div class="rp-instrument-btn">
+    <span>Multi-Leg</span>
+  </div>
 
-    </nav>
+</nav>
 
 
     <div
