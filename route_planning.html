@@ -967,132 +967,169 @@
       margin-top: 20px;
     }
 
-        .rp-instrument-btn {
-      min-height: 82px;
+     .rp-instrument-btn {
+  min-height: 122px;
 
-      box-sizing: border-box;
+  box-sizing: border-box;
 
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
 
-      gap: 7px;
+  gap: 10px;
 
-      padding: 12px 14px;
+  padding: 18px 16px;
 
-      border: 1px solid var(--rp-border);
-      border-radius: 11px;
+  border: 1px solid var(--rp-border);
+  border-radius: 13px;
 
-      background: var(--rp-surface);
+  background: var(--rp-surface);
 
-      color: rgba(220, 230, 241, 0.72);
+  color: rgba(239, 245, 252, 0.92);
 
-      font-family:
-        "Orbitron",
-        "Eurostile",
-        "Exo 2",
-        sans-serif;
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
 
-      font-size: 0.61rem;
-      font-weight: 700;
+  font-size: 0.78rem;
+  font-weight: 700;
 
-      letter-spacing: 0.07em;
+  letter-spacing: 0.08em;
 
-      text-align: center;
-      text-transform: uppercase;
+  line-height: 1.25;
 
-      cursor: default;
-    }
+  text-align: center;
+  text-transform: uppercase;
 
+  text-shadow:
+    0 0 8px rgba(255, 255, 255, 0.10);
 
-    .rp-airport-data {
-      gap: 8px;
-    }
-
-
-    .rp-airport-data > span {
-      display: block;
-
-      color: rgba(220, 230, 241, 0.72);
-
-      font-size: 0.61rem;
-      font-weight: 700;
-
-      letter-spacing: 0.07em;
-
-      line-height: 1.1;
-    }
+  cursor: default;
+}
 
 
-    .rp-airport-data-values {
-      width: 100%;
+.rp-instrument-btn > span {
+  color: rgba(239, 245, 252, 0.92);
 
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+  font-size: 0.78rem;
+  font-weight: 700;
 
-      gap: 6px;
+  letter-spacing: 0.08em;
 
-      align-items: center;
-    }
-
-
-    .rp-airport-data-values > div {
-      min-width: 0;
-
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-
-      gap: 3px;
-    }
+  line-height: 1.2;
+}
 
 
-    .rp-airport-data-values small {
-      display: block;
+.rp-instrument-btn > strong {
+  color: #f3f7fc;
 
-      color: rgba(180, 195, 210, 0.48);
+  font-size: 0.74rem;
+  font-weight: 700;
 
-      font-family:
-        "Orbitron",
-        "Eurostile",
-        "Exo 2",
-        sans-serif;
+  letter-spacing: 0.04em;
 
-      font-size: 0.43rem;
-      font-weight: 700;
+  line-height: 1.2;
 
-      letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
 
-      line-height: 1;
-
-      white-space: nowrap;
-    }
+  text-shadow:
+    0 0 8px rgba(74, 167, 255, 0.20);
+}
 
 
-    .rp-airport-data-values strong {
-      display: block;
+.rp-airport-data {
+  gap: 13px;
+}
 
-      color: rgba(235, 241, 247, 0.82);
 
-      font-family:
-        "Orbitron",
-        "Eurostile",
-        "Exo 2",
-        sans-serif;
+.rp-airport-data > span {
+  display: block;
 
-      font-size: 0.55rem;
-      font-weight: 700;
+  color: rgba(239, 245, 252, 0.92);
 
-      letter-spacing: 0.02em;
+  font-size: 0.78rem;
+  font-weight: 700;
 
-      line-height: 1.15;
+  letter-spacing: 0.08em;
 
-      white-space: nowrap;
+  line-height: 1.2;
+}
 
-      font-variant-numeric: tabular-nums;
-    }
+
+.rp-airport-data-values {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  gap: 8px;
+
+  align-items: center;
+}
+
+
+.rp-airport-data-values > div {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+}
+
+
+.rp-airport-data-values small {
+  display: block;
+
+  color: rgba(202, 216, 232, 0.72);
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 0.53rem;
+  font-weight: 700;
+
+  letter-spacing: 0.05em;
+
+  line-height: 1.1;
+
+  white-space: nowrap;
+}
+
+
+.rp-airport-data-values strong {
+  display: block;
+
+  color: #f3f7fc;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 0.67rem;
+  font-weight: 700;
+
+  letter-spacing: 0.025em;
+
+  line-height: 1.2;
+
+  white-space: nowrap;
+
+  font-variant-numeric: tabular-nums;
+
+  text-shadow:
+    0 0 8px rgba(74, 167, 255, 0.20);
+}
 
     /* ============================================================
        STATUS LINE
