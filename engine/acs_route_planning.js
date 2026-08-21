@@ -54,7 +54,7 @@ const RP_API_BASE =
      This is NOT an ACS authority.
      ============================================================ */
 
-  const RP_STATE = {
+   const RP_STATE = {
     simTime: null,
     simYear: null,
 
@@ -67,11 +67,13 @@ const RP_API_BASE =
     countries: [],
     airports: [],
 
-     aircraftCatalog: [],
-  selectedAircraft: null,
+    aircraftCatalog: [],
+    selectedAircraft: null,
 
-  passengers: 0
-};
+    passengers: 0
+  };
+
+  let RP_MAP = null;
 
   /* ============================================================
      DOM HELPERS
@@ -113,6 +115,78 @@ const RP_API_BASE =
     );
   }
 
+   /* ============================================================
+     WORLD ROUTE STUDY MAP
+     ------------------------------------------------------------
+     Visual authority only.
+
+     Route calculations remain under the existing ACS
+     Route Planning engine.
+     ============================================================ */
+
+  function RP_initializeMap() {
+    const mapContainer =
+      RP_get("routePlanningMap");
+
+    if (
+      !mapContainer ||
+      typeof window.L === "undefined"
+    ) {
+      RP_setMapStatus(
+        "Map authority unavailable"
+      );
+
+      return null;
+    }
+
+    if (RP_MAP) {
+      return RP_MAP;
+    }
+
+    RP_MAP =
+      window.L.map(
+        mapContainer,
+        {
+          center: [20, 0],
+          zoom: 2,
+          minZoom: 2,
+          maxZoom: 19,
+          zoomControl: true,
+          attributionControl: true,
+          worldCopyJump: true
+        }
+      );
+
+    window.L.tileLayer(
+      "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+      {
+        maxZoom: 19,
+        attribution:
+          "&copy; " +
+          '<a href="https://www.openstreetmap.org/copyright" ' +
+          'target="_blank" rel="noopener noreferrer">' +
+          "OpenStreetMap contributors" +
+          "</a>"
+      }
+    ).addTo(RP_MAP);
+
+    mapContainer.classList.add(
+      "rp-map-active"
+    );
+
+    window.setTimeout(
+      () => {
+        RP_MAP?.invalidateSize();
+      },
+      200
+    );
+
+    RP_setMapStatus(
+      "Map ready — awaiting destination"
+    );
+
+    return RP_MAP;
+  }
 
   /* ============================================================
      FETCH AUTHORITY
@@ -1942,6 +2016,8 @@ function RP_bindEvents() {
       RP_setMapStatus(
         "Initializing"
       );
+
+      RP_initializeMap();
 
       RP_prepareDestinationSelectors();
       RP_bindEvents();
