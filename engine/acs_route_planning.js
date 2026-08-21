@@ -452,7 +452,10 @@ const RP_API_BASE =
           speedKts:
             ac.speed_kts ?? "",
           mtowKg:
+mtowKg:
   ac.mtow_kg ?? "",
+oewKg:
+  ac.oew_kg ?? "",
 fuelBurnKgph:
   ac.fuel_burn_kgph ?? "",
 requiredRunwayM:
