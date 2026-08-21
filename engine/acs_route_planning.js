@@ -899,7 +899,7 @@ function RP_updateAirportData() {
   );
 
 
-  RP_setText(
+    RP_setText(
     "rpAirportElevationValue",
     Number.isFinite(elevationFt)
       ? `${Math.round(
@@ -907,6 +907,17 @@ function RP_updateAirportData() {
         ).toLocaleString()} FT`
       : "-- FT"
   );
+
+  const elevationElement =
+    RP_get("rpAirportElevationValue");
+
+  if (elevationElement) {
+    elevationElement.style.color =
+      Number.isFinite(elevationFt) &&
+      elevationFt > 4000
+        ? "#ff5f5f"
+        : "#7fe6a2";
+  }
 
 
   const requiredElement =
