@@ -1322,12 +1322,22 @@ function RP_calculateRouteStudy() {
   );
 
 
-  RP_setText(
+    RP_setText(
     "rpRangeDifference",
     `${differenceNm >= 0 ? "+" : ""}${Math.round(
       differenceNm
     ).toLocaleString()} NM`
   );
+
+  const rangeDifferenceElement =
+    RP_get("rpRangeDifference");
+
+  if (rangeDifferenceElement) {
+    rangeDifferenceElement.style.color =
+      differenceNm < 0
+        ? "#ff5f5f"
+        : "#7fe6a2";
+  }
 
 
   RP_setMapStatus(
