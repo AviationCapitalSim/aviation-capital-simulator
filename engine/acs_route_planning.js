@@ -451,7 +451,6 @@ const RP_API_BASE =
             ac.range_nm ?? "",
           speedKts:
             ac.speed_kts ?? "",
-          mtowKg:
 mtowKg:
   ac.mtow_kg ?? "",
 oewKg:
