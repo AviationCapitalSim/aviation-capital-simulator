@@ -452,11 +452,13 @@ const RP_API_BASE =
           speedKts:
             ac.speed_kts ?? "",
           mtowKg:
-            ac.mtow_kg ?? "",
-          fuelBurnKgph:
-            ac.fuel_burn_kgph ?? "",
-          engines:
-            ac.engines ?? "",
+  ac.mtow_kg ?? "",
+fuelBurnKgph:
+  ac.fuel_burn_kgph ?? "",
+requiredRunwayM:
+  ac.required_runway_m ?? "",
+engines:
+  ac.engines ?? "",
           category:
             ac.aircraft_category ?? "",
           productionStartYear:
