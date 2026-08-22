@@ -1724,25 +1724,13 @@ const realAirlines = [
 let isSubmittingAirline = false;
 
 /* ============================================================
-   LOAD REGION AND COUNTRY FROM SELECTED BASE
+   LOAD OFFICIAL ONBOARDING BASE FROM RAILWAY
    ============================================================ */
-     
 async function updateCountries() {
-
-  const user = await getActiveUser();
-
-  if (!user?.base_icao) {
-    console.error(
-      "CREATE AIRLINE BASE ERROR:",
-      "NO_BASE_SELECTED"
-    );
-    return;
-  }
 
   try {
     const response = await fetch(
-      "https://api.aviationcapitalsim.com/v1/airports/catalog" +
-      "?operation=base&limit=5000",
+      "https://api.aviationcapitalsim.com/v1/users/base-context",
       {
         credentials: "include"
       }
@@ -1750,31 +1738,26 @@ async function updateCountries() {
 
     const result = await response.json();
 
-    if (!response.ok || !result.ok) {
+    if (
+      !response.ok ||
+      !result.ok ||
+      !result.base
+    ) {
       throw new Error(
         result.error ||
-        "AIRPORT_CATALOG_FAILED"
+        "ONBOARDING_BASE_CONTEXT_FAILED"
       );
     }
 
-    const baseIcao =
-      String(user.base_icao)
-        .trim()
-        .toUpperCase();
+    const region =
+      String(result.base.region || "").trim();
 
-    const airport =
-      (Array.isArray(result.airports)
-        ? result.airports
-        : []
-      ).find(item =>
-        String(item.icao || "")
-          .trim()
-          .toUpperCase() === baseIcao
-      );
+    const country =
+      String(result.base.country || "").trim();
 
-    if (!airport) {
+    if (!region || !country) {
       throw new Error(
-        "SELECTED_BASE_NOT_FOUND"
+        "ONBOARDING_BASE_CONTEXT_INCOMPLETE"
       );
     }
 
@@ -1784,19 +1767,15 @@ async function updateCountries() {
     const countrySelect =
       document.getElementById("country");
 
-    regionSelect.value =
-      String(airport.continent || "").trim();
+    regionSelect.value = region;
 
     countrySelect.innerHTML = "";
 
     const countryOption =
       document.createElement("option");
 
-    countryOption.value =
-      String(airport.country || "").trim();
-
-    countryOption.textContent =
-      String(airport.country || "").trim();
+    countryOption.value = country;
+    countryOption.textContent = country;
 
     countrySelect.appendChild(countryOption);
 
