@@ -1966,3 +1966,82 @@ html body :is(
 #acs-clock:not(.acs-cockpit-clock) {
   visibility: hidden !important;
 }
+
+/* ============================================================
+   GLOBAL SCROLLBAR
+   ============================================================ */
+
+html,
+body,
+* {
+  scrollbar-width: thin;
+  scrollbar-color:
+    #465f7a
+    #030c19;
+}
+
+
+/* SAFARI / CHROME / EDGE */
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track {
+  background: #030c19;
+
+  box-shadow:
+    inset 0 0 0 1px
+    rgba(105, 143, 184, 0.12);
+}
+
+
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-thumb {
+  min-height: 44px;
+
+  border-left:
+    2px solid #ffb300;
+
+  border-radius: 999px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #506b87,
+      #263a50
+    );
+
+  box-shadow:
+    0 0 7px rgba(31, 86, 139, 0.28);
+}
+
+
+html::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover,
+*::-webkit-scrollbar-thumb:hover {
+  background:
+    linear-gradient(
+      180deg,
+      #7398bb,
+      #3f607d
+    );
+
+  box-shadow:
+    0 0 9px rgba(74, 167, 255, 0.34);
+}
+
+
+html::-webkit-scrollbar-corner,
+body::-webkit-scrollbar-corner,
+*::-webkit-scrollbar-corner {
+  background: #030c19;
+}
+
