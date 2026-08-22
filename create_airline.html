@@ -1724,38 +1724,88 @@ const realAirlines = [
 let isSubmittingAirline = false;
 
 /* ============================================================
-   UPDATE COUNTRIES
+   LOAD REGION AND COUNTRY FROM SELECTED BASE
    ============================================================ */
+     
 async function updateCountries() {
 
-  const simYear = window.ACS_SIM_YEAR;
+  const user = await getActiveUser();
 
-  if (!simYear) {
-    console.warn("⏳ simYear not ready yet");
+  if (!user?.base_icao) {
+    console.error(
+      "CREATE AIRLINE BASE ERROR:",
+      "NO_BASE_SELECTED"
+    );
     return;
   }
 
-  const countrySelect = document.getElementById("country");
-  const selectedRegion = document.getElementById("region").value;
+  try {
+    const response = await fetch(
+      "https://api.aviationcapitalsim.com/v1/airports/catalog" +
+      "?operation=base&limit=5000",
+      {
+        credentials: "include"
+      }
+    );
 
-  countrySelect.innerHTML = '<option value="">Select Country</option>';
+    const result = await response.json();
 
-  if (!selectedRegion) return;
+    if (!response.ok || !result.ok) {
+      throw new Error(
+        result.error ||
+        "AIRPORT_CATALOG_FAILED"
+      );
+    }
 
-  const available = ACS_CountryHistory
-    .filter(c => 
-        c.region === selectedRegion &&
-        c.start <= simYear &&
-        (c.end === null || c.end >= simYear)
-    )
-    .sort((a, b) => a.name.localeCompare(b.name));
+    const baseIcao =
+      String(user.base_icao)
+        .trim()
+        .toUpperCase();
 
-  available.forEach(c => {
-    const opt = document.createElement("option");
-    opt.value = c.name;
-    opt.textContent = c.name;
-    countrySelect.appendChild(opt);
-  });
+    const airport =
+      (Array.isArray(result.airports)
+        ? result.airports
+        : []
+      ).find(item =>
+        String(item.icao || "")
+          .trim()
+          .toUpperCase() === baseIcao
+      );
+
+    if (!airport) {
+      throw new Error(
+        "SELECTED_BASE_NOT_FOUND"
+      );
+    }
+
+    const regionSelect =
+      document.getElementById("region");
+
+    const countrySelect =
+      document.getElementById("country");
+
+    regionSelect.value =
+      String(airport.continent || "").trim();
+
+    countrySelect.innerHTML = "";
+
+    const countryOption =
+      document.createElement("option");
+
+    countryOption.value =
+      String(airport.country || "").trim();
+
+    countryOption.textContent =
+      String(airport.country || "").trim();
+
+    countrySelect.appendChild(countryOption);
+
+  } catch (error) {
+    console.error(
+      "CREATE AIRLINE BASE ERROR:",
+      error
+    );
+  }
 
 }
      
