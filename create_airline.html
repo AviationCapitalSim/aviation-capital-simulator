@@ -488,6 +488,97 @@ text-shadow:
 
 
 /* ============================================================
+   ASSIGNED BASE LOCATION
+   ============================================================ */
+
+#region,
+#country {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  background-image: none;
+
+  cursor: default;
+}
+
+.base-country-row {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto;
+
+  gap: 10px;
+  align-items: center;
+}
+
+#createAirlineForm .change-base-btn {
+  width: auto;
+  height: 50px;
+
+  margin: 0;
+  padding: 0 16px;
+
+  color: #d9ffe9;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+
+  white-space: nowrap;
+  text-transform: uppercase;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(42, 190, 116, 0.34),
+      rgba(12, 91, 55, 0.30)
+    );
+
+  border:
+    1px solid rgba(91, 255, 165, 0.72);
+
+  border-radius: 11px;
+
+  box-shadow:
+    0 0 14px rgba(49, 221, 126, 0.18),
+    inset 0 1px 0 rgba(220, 255, 235, 0.20);
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+#createAirlineForm .change-base-btn:hover {
+  transform: translateY(-1px);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(53, 217, 135, 0.48),
+      rgba(15, 112, 67, 0.40)
+    );
+
+  box-shadow:
+    0 0 19px rgba(49, 221, 126, 0.30),
+    inset 0 1px 0 rgba(230, 255, 240, 0.26);
+}
+
+#createAirlineForm .change-base-btn:active {
+  transform: translateY(0);
+}
+
+
+/* ============================================================
    CREATE AIRLINE BUTTON
    ============================================================ */
 
@@ -1514,7 +1605,9 @@ button {
 </head>
 
 <body>
+     
   <!-- ================= Qatar Luxury Header ================= -->
+     
   <header class="acs-header">
     <div class="acs-logo">
       <img src="acs_logo.png" alt="ACS Logo" />
@@ -1632,16 +1725,28 @@ button {
         </option>
       </select>
 
-      <select
-        id="country"
-        required
-        disabled
-        aria-label="Country assigned by selected base"
-      >
-        <option value="">
-          Select Country
-        </option>
-      </select>
+            <div class="base-country-row">
+
+        <select
+          id="country"
+          required
+          disabled
+          aria-label="Country assigned by selected base"
+        >
+          <option value="">
+            Select Country
+          </option>
+        </select>
+
+        <button
+          type="button"
+          class="change-base-btn"
+          onclick="window.location.href='choose_base.html'"
+        >
+          CHANGE BASE
+        </button>
+
+      </div>
          
       <select id="businessModel" required>
         <option value="">
