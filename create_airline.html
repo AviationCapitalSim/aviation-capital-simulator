@@ -559,13 +559,291 @@ text-shadow:
 
 
 /* ============================================================
+   ACTIVE AIRLINES — CREATE AIRLINE DIRECTORY
+   ============================================================ */
+
+.create-airline-layout {
+  width: min(1040px, calc(100% - 32px));
+
+  display: grid;
+  grid-template-columns:
+    minmax(290px, 360px)
+    minmax(0, 560px);
+
+  justify-content: center;
+  align-items: start;
+
+  gap: 28px;
+
+  margin: 128px auto 70px;
+}
+
+.create-airline-layout .form-container {
+  width: 100%;
+  margin: 0;
+}
+
+.active-airlines-panel {
+  min-width: 0;
+
+  padding: 28px 20px 22px;
+
+  box-sizing: border-box;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(6, 17, 38, 0.97) 0%,
+      rgba(2, 9, 22, 0.985) 100%
+    );
+
+  border:
+    1px solid rgba(255, 170, 24, 0.76);
+
+  border-radius: 22px;
+
+  box-shadow:
+    0 24px 58px rgba(0, 0, 0, 0.46),
+    0 0 22px rgba(255, 179, 0, 0.055),
+    inset 0 0 28px rgba(255, 179, 0, 0.025);
+
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  animation:
+    createAirlineCardEntry 0.75s ease forwards;
+}
+
+.active-airlines-title {
+  margin: 0;
+
+  color: #ffb300;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 1rem;
+  font-weight: 700;
+
+  letter-spacing: 0.14em;
+  line-height: 1.2;
+
+  text-align: center;
+  text-transform: uppercase;
+
+  text-shadow:
+    0 0 8px rgba(255, 179, 0, 0.24);
+}
+
+.active-airlines-title::after {
+  content: "";
+
+  display: block;
+
+  width: 78%;
+  height: 1px;
+
+  margin: 18px auto 20px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 182, 35, 0.22) 22%,
+      #ffc74a 50%,
+      rgba(255, 182, 35, 0.22) 78%,
+      transparent 100%
+    );
+
+  box-shadow:
+    0 0 7px rgba(255, 190, 50, 0.34);
+}
+
+.active-airlines-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 11px;
+
+  max-height: 590px;
+
+  padding-right: 5px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.active-airline-card {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+
+  align-items: center;
+
+  gap: 13px;
+
+  padding: 14px;
+
+  border:
+    1px solid rgba(65, 123, 183, 0.42);
+
+  border-radius: 13px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(15, 39, 68, 0.92),
+      rgba(5, 20, 39, 0.96)
+    );
+
+  box-shadow:
+    inset 0 0 14px rgba(35, 101, 163, 0.08);
+}
+
+.active-airline-initials {
+  width: 52px;
+  height: 52px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border:
+    1px solid rgba(255, 179, 0, 0.72);
+
+  border-radius: 11px;
+
+  color: #ffc94a;
+  background: #07172b;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 0.84rem;
+  font-weight: 700;
+
+  letter-spacing: 0.06em;
+
+  box-shadow:
+    0 0 10px rgba(255, 179, 0, 0.08);
+}
+
+.active-airline-info {
+  min-width: 0;
+}
+
+.active-airline-name {
+  overflow: hidden;
+
+  margin-bottom: 6px;
+
+  color: #edf4ff;
+
+  font-size: 0.82rem;
+  font-weight: 700;
+
+  line-height: 1.25;
+
+  letter-spacing: 0.025em;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.active-airline-location {
+  color: rgba(177, 197, 221, 0.78);
+
+  font-size: 0.7rem;
+  font-weight: 500;
+
+  line-height: 1.35;
+  letter-spacing: 0.035em;
+}
+
+.active-airlines-status {
+  padding: 28px 12px;
+
+  color: rgba(177, 197, 221, 0.68);
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 0.68rem;
+  font-weight: 600;
+
+  line-height: 1.5;
+  letter-spacing: 0.09em;
+
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.active-airlines-status.is-error {
+  color: #ff7f8d;
+}
+
+
+/* ============================================================
+   ACTIVE AIRLINES — RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 980px) {
+
+  .create-airline-layout {
+    width: min(560px, calc(100% - 32px));
+
+    grid-template-columns: minmax(0, 1fr);
+
+    margin-top: 158px;
+  }
+
+  .create-airline-layout .form-container {
+    order: 1;
+  }
+
+  .active-airlines-panel {
+    order: 2;
+  }
+
+  .active-airlines-list {
+    max-height: 430px;
+  }
+}
+
+@media (max-width: 520px) {
+
+  .create-airline-layout {
+    width: calc(100% - 24px);
+
+    margin-top: 154px;
+    margin-bottom: 36px;
+
+    gap: 20px;
+  }
+
+  .active-airlines-panel {
+    padding: 24px 15px 18px;
+
+    border-radius: 19px;
+  }
+}
+
+
+/* ============================================================
    CREATE AIRLINE FOOTER SPACING
    ============================================================ */
 
 .acs-footer {
   margin-top: auto;
 }
-
 
 /* ============================================================
    CREATE AIRLINE — SMALL LAPTOP
@@ -1237,48 +1515,145 @@ button {
 </div>
   
 </header>
-  <!-- ======================================================= -->
+
+<main class="create-airline-layout">
+
+  <!-- ACTIVE AIRLINES -->
+
+  <aside
+    class="active-airlines-panel"
+    aria-labelledby="activeAirlinesTitle"
+  >
+    <h2
+      class="active-airlines-title"
+      id="activeAirlinesTitle"
+    >
+      Active Airlines
+    </h2>
+
+    <div
+      class="active-airlines-list"
+      id="activeAirlinesList"
+      aria-live="polite"
+    >
+      <div class="active-airlines-status">
+        Loading airlines...
+      </div>
+    </div>
+  </aside>
+
+
+  <!-- CREATE AIRLINE -->
 
   <section class="form-container">
-    <h2>Create Your Airline</h2>
-    <p>Enter your airline details below to begin your aviation journey.</p>
 
-   <form id="createAirlineForm" autocomplete="off" onsubmit="return handleAirlineCreation(event)">
-      <input type="text" id="airlineName" placeholder="Airline Name" autocomplete="off" required />
-      <input type="text" id="icao" placeholder="ICAO Code (auto)" maxlength="3" autocomplete="off" readonly />
-      <input type="text" id="iata" placeholder="IATA Code (auto)" maxlength="2" autocomplete="off" readonly />
-      <input type="text" id="slogan" placeholder="Airline Slogan (optional)" />
+    <h2>Create Your Airline</h2>
+
+    <p>
+      Enter your airline details below to begin your aviation journey.
+    </p>
+
+    <form
+      id="createAirlineForm"
+      autocomplete="off"
+      onsubmit="return handleAirlineCreation(event)"
+    >
+      <input
+        type="text"
+        id="airlineName"
+        placeholder="Airline Name"
+        autocomplete="off"
+        required
+      />
+
+      <input
+        type="text"
+        id="icao"
+        placeholder="ICAO Code (auto)"
+        maxlength="3"
+        autocomplete="off"
+        readonly
+      />
+
+      <input
+        type="text"
+        id="iata"
+        placeholder="IATA Code (auto)"
+        maxlength="2"
+        autocomplete="off"
+        readonly
+      />
+
+      <input
+        type="text"
+        id="slogan"
+        placeholder="Airline Slogan (optional)"
+      />
 
       <select id="region" required>
-        <option value="">Select World Area</option>
-        <option value="Europe">Europe</option>
-        <option value="Asia">Asia</option>
-        <option value="North America">North America</option>
-        <option value="South America">South America</option>
-        <option value="Africa">Africa</option>
-        <option value="Oceania">Oceania</option>
+        <option value="">
+          Select World Area
+        </option>
+        <option value="Europe">
+          Europe
+        </option>
+        <option value="Asia">
+          Asia
+        </option>
+        <option value="North America">
+          North America
+        </option>
+        <option value="South America">
+          South America
+        </option>
+        <option value="Africa">
+          Africa
+        </option>
+        <option value="Oceania">
+          Oceania
+        </option>
       </select>
 
       <select id="country" required>
-        <option value="">Select Country</option>
+        <option value="">
+          Select Country
+        </option>
       </select>
 
       <select id="businessModel" required>
-        <option value="">Select Business Model</option>
-        <option value="Regional">Regional</option>
-        <option value="Domestic">Domestic</option>
-        <option value="International">International</option>
+        <option value="">
+          Select Business Model
+        </option>
+        <option value="Regional">
+          Regional
+        </option>
+        <option value="Domestic">
+          Domestic
+        </option>
+        <option value="International">
+          International
+        </option>
       </select>
 
       <select id="operationMode" required>
-        <option value="">Select Operation Mode</option>
-        <option value="Passenger">Passenger</option>
+        <option value="">
+          Select Operation Mode
+        </option>
+        <option value="Passenger">
+          Passenger
+        </option>
       </select>
 
-      <button type="submit">CREATE AIRLINE</button>
+      <button type="submit">
+        CREATE AIRLINE
+      </button>
+
     </form>
+
   </section>
 
+</main>
+     
    <!-- global footer -->
 
 <footer class="acs-footer">
@@ -1540,34 +1915,263 @@ async function getSimYear(){
 }
      
 /* ============================================================
+   ACTIVE AIRLINES — INITIALS
+   ============================================================ */
+
+function getAirlineInitials(airlineName) {
+
+  const originalName =
+    String(airlineName || "").trim();
+
+  const separatedName =
+    originalName
+      .replace(/[_-]+/g, " ")
+      .replace(/([a-z])([A-Z])/g, "$1 $2")
+      .trim();
+
+  const words =
+    separatedName
+      .split(/\s+/)
+      .map(word =>
+        word.replace(/[^A-Za-z0-9]/g, "")
+      )
+      .filter(Boolean);
+
+  if (words.length >= 2) {
+    return (
+      words[0].charAt(0) +
+      words[1].charAt(0)
+    ).toUpperCase();
+  }
+
+  const singleWord =
+    String(words[0] || "").toUpperCase();
+
+  if (
+    singleWord.startsWith("AERO") &&
+    singleWord.length > 4
+  ) {
+    return (
+      "A" +
+      singleWord.charAt(4)
+    ).toUpperCase();
+  }
+
+  const firstLetter =
+    singleWord.charAt(0) || "-";
+
+  return (
+    firstLetter +
+    firstLetter
+  ).toUpperCase();
+}
+
+
+/* ============================================================
+   ACTIVE AIRLINES — CARD
+   ============================================================ */
+
+function createActiveAirlineCard(airline) {
+
+  const card =
+    document.createElement("article");
+
+  card.className =
+    "active-airline-card";
+
+  const initials =
+    document.createElement("div");
+
+  initials.className =
+    "active-airline-initials";
+
+  initials.textContent =
+    getAirlineInitials(
+      airline.airline_name
+    );
+
+  const info =
+    document.createElement("div");
+
+  info.className =
+    "active-airline-info";
+
+  const name =
+    document.createElement("div");
+
+  name.className =
+    "active-airline-name";
+
+  name.textContent =
+    airline.airline_name || "Unnamed Airline";
+
+  const location =
+    document.createElement("div");
+
+  location.className =
+    "active-airline-location";
+
+  const country =
+    String(
+      airline.country || "Unknown Country"
+    );
+
+  const baseIcao =
+    String(
+      airline.base_icao || "----"
+    ).toUpperCase();
+
+  location.textContent =
+    `${country} · ${baseIcao}`;
+
+  info.appendChild(name);
+  info.appendChild(location);
+
+  card.appendChild(initials);
+  card.appendChild(info);
+
+  return card;
+}
+
+
+/* ============================================================
+   ACTIVE AIRLINES — LOAD
+   ============================================================ */
+
+async function loadActiveAirlines() {
+
+  const list =
+    document.getElementById(
+      "activeAirlinesList"
+    );
+
+  if (!list) {
+    return;
+  }
+
+  try {
+
+    const response = await fetch(
+      "https://api.aviationcapitalsim.com/v1/airlines/active",
+      {
+        credentials: "include"
+      }
+    );
+
+    const result =
+      await response.json();
+
+    if (
+      !response.ok ||
+      !result.ok
+    ) {
+      throw new Error(
+        result.error ||
+        "ACTIVE_AIRLINES_REQUEST_FAILED"
+      );
+    }
+
+    list.replaceChildren();
+
+    const airlines =
+      Array.isArray(result.airlines)
+        ? result.airlines
+        : [];
+
+    if (airlines.length === 0) {
+
+      const emptyState =
+        document.createElement("div");
+
+      emptyState.className =
+        "active-airlines-status";
+
+      emptyState.textContent =
+        "No active airlines";
+
+      list.appendChild(emptyState);
+
+      return;
+    }
+
+    const fragment =
+      document.createDocumentFragment();
+
+    airlines.forEach(airline => {
+      fragment.appendChild(
+        createActiveAirlineCard(airline)
+      );
+    });
+
+    list.appendChild(fragment);
+
+  } catch (err) {
+
+    console.error(
+      "ACTIVE AIRLINES ERROR:",
+      err
+    );
+
+    const errorState =
+      document.createElement("div");
+
+    errorState.className =
+      "active-airlines-status is-error";
+
+    errorState.textContent =
+      "Airlines unavailable";
+
+    list.replaceChildren(errorState);
+  }
+}
+
+
+/* ============================================================
    INIT
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", async () => {
 
   window.ACS_SIM_YEAR = await getSimYear();
-  console.log("🌍 SIM YEAR:", window.ACS_SIM_YEAR);
+
+  console.log(
+    "🌍 SIM YEAR:",
+    window.ACS_SIM_YEAR
+  );
 
   const user = await getActiveUser();
 
-  if(!user){
+  if (!user) {
     alert("⚠ Session required. Please login.");
     window.location.href = "login.html";
     return;
   }
 
-  await updateCountries();
+  await Promise.all([
+    loadActiveAirlines(),
+    updateCountries()
+  ]);
 
-  const airlineInput = document.getElementById("airlineName");
+  const airlineInput =
+    document.getElementById("airlineName");
+
   if (airlineInput) {
-    airlineInput.addEventListener("input", generateUniqueCodes);
+    airlineInput.addEventListener(
+      "input",
+      generateUniqueCodes
+    );
   }
 
-  const regionSelect = document.getElementById("region");
+  const regionSelect =
+    document.getElementById("region");
+
   if (regionSelect) {
-    regionSelect.addEventListener("change", async () => {
-      await updateCountries();
-    });
+    regionSelect.addEventListener(
+      "change",
+      async () => {
+        await updateCountries();
+      }
+    );
   }
 
 });
