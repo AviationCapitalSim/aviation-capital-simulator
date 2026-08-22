@@ -896,9 +896,268 @@ text-shadow:
 
 
 /* ============================================================
-   ACTIVE AIRLINES — RESPONSIVE
+   AIRLINE PROFILE MODAL
    ============================================================ */
 
+.active-airline-card {
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.active-airline-card:hover {
+  transform: translateY(-1px);
+
+  border-color:
+    rgba(255, 179, 0, 0.58);
+
+  box-shadow:
+    0 0 18px rgba(255, 179, 0, 0.10),
+    inset 0 0 14px rgba(35, 101, 163, 0.10);
+}
+
+.active-airline-card:focus-visible {
+  outline:
+    1px solid rgba(255, 200, 74, 0.88);
+
+  outline-offset: 2px;
+}
+
+.airline-profile-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background:
+    rgba(1, 8, 20, 0.78);
+
+  backdrop-filter: blur(9px);
+  -webkit-backdrop-filter: blur(9px);
+}
+
+.airline-profile-overlay[hidden] {
+  display: none;
+}
+
+.airline-profile-modal {
+  width: min(430px, calc(100vw - 32px));
+
+  padding: 27px;
+
+  box-sizing: border-box;
+
+  color: #edf4ff;
+
+  background:
+    linear-gradient(
+      155deg,
+      rgba(10, 30, 55, 0.98),
+      rgba(3, 14, 30, 0.99)
+    );
+
+  border:
+    1px solid rgba(255, 179, 0, 0.66);
+
+  border-radius: 18px;
+
+  box-shadow:
+    0 24px 65px rgba(0, 0, 0, 0.62),
+    0 0 24px rgba(255, 179, 0, 0.08),
+    inset 0 0 25px rgba(54, 118, 183, 0.05);
+}
+
+.airline-profile-header {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) auto;
+
+  align-items: center;
+
+  gap: 13px;
+
+  padding-bottom: 20px;
+
+  border-bottom:
+    1px solid rgba(255, 179, 0, 0.22);
+}
+
+.airline-profile-initials {
+  width: 54px;
+  height: 54px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #ffc94a;
+  background: rgba(5, 20, 39, 0.92);
+
+  border:
+    1px solid rgba(255, 179, 0, 0.72);
+
+  border-radius: 12px;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.airline-profile-heading {
+  min-width: 0;
+}
+
+.airline-profile-label {
+  margin-bottom: 5px;
+
+  color: rgba(154, 182, 215, 0.72);
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 0.56rem;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+
+  text-transform: uppercase;
+}
+
+.airline-profile-name {
+  overflow: hidden;
+
+  color: #ffffff;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 0.94rem;
+  font-weight: 700;
+  letter-spacing: 0.045em;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.airline-profile-close {
+  width: 30px;
+  height: 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  color: rgba(224, 235, 249, 0.72);
+  background: rgba(255, 255, 255, 0.035);
+
+  border:
+    1px solid rgba(148, 177, 211, 0.24);
+
+  border-radius: 8px;
+
+  font-size: 1rem;
+
+  cursor: pointer;
+}
+
+.airline-profile-close:hover {
+  color: #ffffff;
+
+  border-color:
+    rgba(255, 179, 0, 0.58);
+}
+
+.airline-profile-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 10px;
+
+  margin-top: 20px;
+}
+
+.airline-profile-stat {
+  min-height: 72px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  padding: 13px;
+
+  box-sizing: border-box;
+
+  background:
+    rgba(10, 35, 62, 0.62);
+
+  border:
+    1px solid rgba(76, 132, 190, 0.25);
+
+  border-radius: 11px;
+}
+
+.airline-profile-stat:first-child {
+  grid-column: 1 / -1;
+}
+
+.airline-profile-stat-label {
+  margin-bottom: 7px;
+
+  color: rgba(158, 184, 214, 0.68);
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 0.54rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+
+  text-transform: uppercase;
+}
+
+.airline-profile-stat-value {
+  color: #ffc94a;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+
+/* ============================================================
+   ACTIVE AIRLINES — RESPONSIVE
+   ============================================================ */
+        
 @media (max-width: 980px) {
 
   .create-airline-layout {
@@ -2146,6 +2405,269 @@ function getCountryFlag(countryCode) {
 
 
 /* ============================================================
+   AIRLINE PROFILE MODAL
+   ============================================================ */
+
+function formatCompanyValue(value) {
+
+  const amount = Number(value);
+
+  if (!Number.isFinite(amount)) {
+    return "PENDING";
+  }
+
+  return new Intl.NumberFormat(
+    "en-US",
+    {
+      style: "currency",
+      currency: "USD",
+      notation: "compact",
+      maximumFractionDigits: 2
+    }
+  ).format(amount);
+}
+
+function closeAirlineProfile() {
+
+  const overlay =
+    document.getElementById(
+      "airlineProfileOverlay"
+    );
+
+  if (!overlay) {
+    return;
+  }
+
+  overlay.hidden = true;
+
+  document.body.style.overflow = "";
+}
+
+function ensureAirlineProfileModal() {
+
+  let overlay =
+    document.getElementById(
+      "airlineProfileOverlay"
+    );
+
+  if (overlay) {
+    return overlay;
+  }
+
+  overlay =
+    document.createElement("div");
+
+  overlay.id =
+    "airlineProfileOverlay";
+
+  overlay.className =
+    "airline-profile-overlay";
+
+  overlay.hidden = true;
+
+  overlay.innerHTML = `
+    <section
+      class="airline-profile-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="airlineProfileName"
+    >
+      <div class="airline-profile-header">
+
+        <div
+          id="airlineProfileInitials"
+          class="airline-profile-initials"
+        ></div>
+
+        <div class="airline-profile-heading">
+          <div class="airline-profile-label">
+            Airline Profile
+          </div>
+
+          <div
+            id="airlineProfileName"
+            class="airline-profile-name"
+          ></div>
+        </div>
+
+        <button
+          type="button"
+          class="airline-profile-close"
+          aria-label="Close"
+        >
+          ×
+        </button>
+
+      </div>
+
+      <div class="airline-profile-grid">
+
+        <div class="airline-profile-stat">
+          <div class="airline-profile-stat-label">
+            Business Model
+          </div>
+
+          <div
+            id="airlineProfileBusinessModel"
+            class="airline-profile-stat-value"
+          ></div>
+        </div>
+
+        <div class="airline-profile-stat">
+          <div class="airline-profile-stat-label">
+            Company Value
+          </div>
+
+          <div
+            id="airlineProfileCompanyValue"
+            class="airline-profile-stat-value"
+          ></div>
+        </div>
+
+        <div class="airline-profile-stat">
+          <div class="airline-profile-stat-label">
+            Active Aircraft
+          </div>
+
+          <div
+            id="airlineProfileAircraft"
+            class="airline-profile-stat-value"
+          ></div>
+        </div>
+
+        <div class="airline-profile-stat">
+          <div class="airline-profile-stat-label">
+            Active Routes
+          </div>
+
+          <div
+            id="airlineProfileRoutes"
+            class="airline-profile-stat-value"
+          ></div>
+        </div>
+
+        <div class="airline-profile-stat">
+          <div class="airline-profile-stat-label">
+            Global Rank
+          </div>
+
+          <div
+            id="airlineProfileRank"
+            class="airline-profile-stat-value"
+          ></div>
+        </div>
+
+      </div>
+    </section>
+  `;
+
+  overlay
+    .querySelector(
+      ".airline-profile-close"
+    )
+    .addEventListener(
+      "click",
+      closeAirlineProfile
+    );
+
+  overlay.addEventListener(
+    "click",
+    event => {
+      if (event.target === overlay) {
+        closeAirlineProfile();
+      }
+    }
+  );
+
+  document.addEventListener(
+    "keydown",
+    event => {
+      if (
+        event.key === "Escape" &&
+        !overlay.hidden
+      ) {
+        closeAirlineProfile();
+      }
+    }
+  );
+
+  document.body.appendChild(overlay);
+
+  return overlay;
+}
+
+function openAirlineProfile(airline) {
+
+  const overlay =
+    ensureAirlineProfileModal();
+
+  document.getElementById(
+    "airlineProfileInitials"
+  ).textContent =
+    getAirlineInitials(
+      airline.airline_name
+    );
+
+  document.getElementById(
+    "airlineProfileName"
+  ).textContent =
+    airline.airline_name ||
+    "Unnamed Airline";
+
+  document.getElementById(
+    "airlineProfileBusinessModel"
+  ).textContent =
+    airline.business_model ||
+    "NOT AVAILABLE";
+
+  document.getElementById(
+    "airlineProfileCompanyValue"
+  ).textContent =
+    formatCompanyValue(
+      airline.company_value
+    );
+
+  document.getElementById(
+    "airlineProfileAircraft"
+  ).textContent =
+    String(
+      Number(
+        airline.active_aircraft || 0
+      )
+    );
+
+  document.getElementById(
+    "airlineProfileRoutes"
+  ).textContent =
+    String(
+      Number(
+        airline.active_routes || 0
+      )
+    );
+
+  document.getElementById(
+    "airlineProfileRank"
+  ).textContent =
+    Number.isInteger(
+      Number(airline.global_rank)
+    )
+      ? `#${Number(airline.global_rank)}`
+      : "UNRANKED";
+
+  overlay.hidden = false;
+
+  document.body.style.overflow =
+    "hidden";
+
+  overlay
+    .querySelector(
+      ".airline-profile-close"
+    )
+    .focus();
+}
+
+
+/* ============================================================
    ACTIVE AIRLINES — CARD
    ============================================================ */
 
@@ -2156,6 +2678,41 @@ function createActiveAirlineCard(airline) {
 
   card.className =
     "active-airline-card";
+
+  card.setAttribute(
+    "role",
+    "button"
+  );
+
+  card.setAttribute(
+    "tabindex",
+    "0"
+  );
+
+  card.setAttribute(
+    "aria-label",
+    `Open ${airline.airline_name || "airline"} profile`
+  );
+
+  card.addEventListener(
+    "click",
+    () => {
+      openAirlineProfile(airline);
+    }
+  );
+
+  card.addEventListener(
+    "keydown",
+    event => {
+      if (
+        event.key === "Enter" ||
+        event.key === " "
+      ) {
+        event.preventDefault();
+        openAirlineProfile(airline);
+      }
+    }
+  );
 
   const initials =
     document.createElement("div");
@@ -2181,7 +2738,8 @@ function createActiveAirlineCard(airline) {
     "active-airline-name";
 
   name.textContent =
-    airline.airline_name || "Unnamed Airline";
+    airline.airline_name ||
+    "Unnamed Airline";
 
   const location =
     document.createElement("div");
@@ -2190,22 +2748,23 @@ function createActiveAirlineCard(airline) {
     "active-airline-location";
 
   const country =
-  String(
-    airline.country || "Unknown Country"
-  );
+    String(
+      airline.country ||
+      "Unknown Country"
+    );
 
-const countryFlag =
-  getCountryFlag(
-    airline.country_code
-  );
+  const countryFlag =
+    getCountryFlag(
+      airline.country_code
+    );
 
-const baseIcao =
-  String(
-    airline.base_icao || "----"
-  ).toUpperCase();
+  const baseIcao =
+    String(
+      airline.base_icao || "----"
+    ).toUpperCase();
 
-location.textContent =
-  `${countryFlag} ${country} · ${baseIcao}`;
+  location.textContent =
+    `${countryFlag} ${country} · ${baseIcao}`;
 
   info.appendChild(name);
   info.appendChild(location);
@@ -2215,7 +2774,6 @@ location.textContent =
 
   return card;
 }
-
 
 /* ============================================================
    ACTIVE AIRLINES — LOAD
