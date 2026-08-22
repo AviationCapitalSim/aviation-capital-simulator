@@ -1796,11 +1796,7 @@ function ACS_renderBaseMarketAnalysis(data) {
     `${ACS_safeText(base.city, base.icao)} ` +
     `(${ACS_safeText(base.icao)})`;
 
-  meta.textContent =
-    `${ACS_safeText(data.period_code)} · ` +
-    `ACS Year ${ACS_safeNumber(data.sim_year)} · ` +
-    `${ACS_safeText(data.version)} · ` +
-    `Global shared passenger market`;
+ meta.textContent = `Global shared passenger market`;
 
   const cards = [
     {
