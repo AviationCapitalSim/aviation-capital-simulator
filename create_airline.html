@@ -1603,7 +1603,12 @@ button {
         placeholder="Airline Slogan (optional)"
       />
 
-      <select id="region" required>
+            <select
+        id="region"
+        required
+        disabled
+        aria-label="World Area assigned by selected base"
+      >
         <option value="">
           Select World Area
         </option>
@@ -1627,12 +1632,17 @@ button {
         </option>
       </select>
 
-      <select id="country" required>
+      <select
+        id="country"
+        required
+        disabled
+        aria-label="Country assigned by selected base"
+      >
         <option value="">
           Select Country
         </option>
       </select>
-
+         
       <select id="businessModel" required>
         <option value="">
           Select Airline Model
