@@ -896,12 +896,11 @@ text-shadow:
 
 
 /* ============================================================
-   AIRLINE PROFILE MODAL
+   AIRLINE PROFILE MODAL — ACS OCC VISUAL
    ============================================================ */
 
 .active-airline-card {
   cursor: pointer;
-
   transition:
     transform 0.2s ease,
     border-color 0.2s ease,
@@ -910,9 +909,7 @@ text-shadow:
 
 .active-airline-card:hover {
   transform: translateY(-1px);
-
-  border-color:
-    rgba(255, 179, 0, 0.58);
+  border-color: rgba(255, 179, 0, 0.58);
 
   box-shadow:
     0 0 18px rgba(255, 179, 0, 0.10),
@@ -920,11 +917,12 @@ text-shadow:
 }
 
 .active-airline-card:focus-visible {
-  outline:
-    1px solid rgba(255, 200, 74, 0.88);
-
+  outline: 1px solid rgba(255, 200, 74, 0.88);
   outline-offset: 2px;
 }
+
+
+/* MODAL BACKDROP */
 
 .airline-profile-overlay {
   position: fixed;
@@ -938,140 +936,84 @@ text-shadow:
   padding: 20px;
 
   background:
-    rgba(1, 8, 20, 0.78);
+    radial-gradient(
+      circle at center,
+      rgba(9, 28, 60, 0.30),
+      rgba(0, 4, 14, 0.90)
+    );
 
-  backdrop-filter: blur(9px);
-  -webkit-backdrop-filter: blur(9px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .airline-profile-overlay[hidden] {
   display: none;
 }
 
+
+/* MODAL */
+
 .airline-profile-modal {
-  width: min(430px, calc(100vw - 32px));
+  width: min(760px, calc(100vw - 32px));
 
-  padding: 27px;
-
-  box-sizing: border-box;
   position: relative;
   overflow: hidden;
+
+  padding: 0;
+
+  box-sizing: border-box;
 
   color: #edf4ff;
 
   background:
-    radial-gradient(
-      circle at 88% 8%,
-      rgba(50, 134, 255, 0.26),
-      transparent 31%
-    ),
-    radial-gradient(
-      circle at 7% 92%,
-      rgba(0, 220, 174, 0.10),
-      transparent 30%
-    ),
     linear-gradient(
       145deg,
-      #102e59 0%,
-      #081c38 38%,
-      #041328 72%,
-      #020b19 100%
+      rgba(13, 32, 68, 0.99),
+      rgba(3, 11, 28, 0.995)
     );
 
-  border:
-    1px solid rgba(255, 184, 35, 0.88);
-
+  border: 1px solid rgba(255, 179, 0, 0.72);
   border-radius: 18px;
 
   box-shadow:
-    0 32px 85px rgba(0, 0, 0, 0.72),
-    0 0 34px rgba(44, 126, 255, 0.15),
-    0 0 18px rgba(255, 179, 0, 0.10),
-    inset 0 1px 0 rgba(255, 221, 143, 0.20),
-    inset 0 0 38px rgba(34, 112, 211, 0.08);
+    0 30px 90px rgba(0, 0, 0, 0.74),
+    0 0 30px rgba(255, 179, 0, 0.09);
 }
 
-.airline-profile-modal::before {
-  content: "";
 
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+/* HEADER */
 
-  height: 4px;
-
-  background:
-    linear-gradient(
-      90deg,
-      transparent 0%,
-      #ffad00 16%,
-      #ffd66c 50%,
-      #ffad00 84%,
-      transparent 100%
-    );
-
-  box-shadow:
-    0 0 16px rgba(255, 179, 0, 0.72);
-}
-
-.airline-profile-modal::after {
-  content: "";
-
-  position: absolute;
-  top: -105px;
-  right: -95px;
-
-  width: 255px;
-  height: 255px;
-
-  pointer-events: none;
-
-  background:
-    radial-gradient(
-      circle,
-      rgba(72, 151, 255, 0.18),
-      transparent 68%
-    );
-
-  border-radius: 50%;
-}
-
-.airline-profile-modal
 .airline-profile-header {
-  position: relative;
-  z-index: 1;
+  display: grid;
 
-  margin:
-    -27px
-    -27px
-    0;
+  grid-template-columns:
+    46px
+    minmax(0, 1fr)
+    42px;
 
-  padding:
-    25px
-    27px
-    22px;
+  align-items: center;
+  gap: 15px;
+
+  padding: 21px 22px;
 
   background:
     linear-gradient(
-      115deg,
-      rgba(31, 78, 142, 0.95),
-      rgba(17, 53, 105, 0.88) 58%,
-      rgba(10, 31, 64, 0.76)
+      100deg,
+      rgba(27, 67, 130, 0.40),
+      rgba(9, 22, 49, 0.13)
     );
 
   border-bottom:
-    1px solid rgba(255, 183, 32, 0.58);
-
-  box-shadow:
-    inset 0 -18px 30px rgba(0, 0, 0, 0.12),
-    0 10px 28px rgba(0, 0, 0, 0.18);
+    1px solid rgba(255, 179, 0, 0.36);
 }
 
-.airline-profile-modal
 .airline-profile-initials {
-  width: 58px;
-  height: 58px;
+  width: 46px;
+  height: 46px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   color: #071326;
 
@@ -1083,284 +1025,8 @@ text-shadow:
       #d98400
     );
 
-  border:
-    1px solid rgba(255, 235, 178, 0.92);
-
-  border-radius: 14px;
-
-  font-size: 0.92rem;
-
-  text-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.25);
-
-  box-shadow:
-    0 0 20px rgba(255, 179, 0, 0.30),
-    inset 0 1px 0 rgba(255, 255, 255, 0.62),
-    inset 0 -4px 8px rgba(125, 67, 0, 0.18);
-}
-
-.airline-profile-modal
-.airline-profile-label {
-  color: rgba(145, 197, 255, 0.88);
-
-  font-size: 0.57rem;
-  letter-spacing: 0.16em;
-}
-
-.airline-profile-modal
-.airline-profile-name {
-  color: #ffffff;
-
-  font-size: 1.08rem;
-  letter-spacing: 0.065em;
-
-  text-shadow:
-    0 0 14px rgba(118, 181, 255, 0.26);
-}
-
-.airline-profile-modal
-.airline-profile-close {
-  position: relative;
-  z-index: 2;
-
-  color: #ffd168;
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255, 185, 30, 0.12),
-      rgba(255, 185, 30, 0.04)
-    );
-
-  border:
-    1px solid rgba(255, 188, 40, 0.62);
-
-  box-shadow:
-    0 0 12px rgba(255, 179, 0, 0.09),
-    inset 0 1px 0 rgba(255, 230, 174, 0.12);
-}
-
-.airline-profile-modal
-.airline-profile-close:hover {
-  color: #071326;
-
-  background:
-    linear-gradient(
-      145deg,
-      #ffd86d,
-      #ffad00
-    );
-
-  border-color: #ffe096;
-
-  box-shadow:
-    0 0 18px rgba(255, 179, 0, 0.34);
-}
-
-.airline-profile-modal
-.airline-profile-grid {
-  position: relative;
-  z-index: 1;
-
-  gap: 11px;
-
-  margin-top: 22px;
-}
-
-.airline-profile-modal
-.airline-profile-stat {
-  min-height: 78px;
-
-  position: relative;
-  overflow: hidden;
-
-  padding: 14px;
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(16, 54, 96, 0.86),
-      rgba(6, 25, 51, 0.92)
-    );
-
-  border:
-    1px solid rgba(73, 147, 225, 0.38);
-
-  border-radius: 12px;
-
-  box-shadow:
-    inset 0 1px 0 rgba(164, 210, 255, 0.06),
-    inset 0 -12px 22px rgba(0, 0, 0, 0.12),
-    0 8px 18px rgba(0, 0, 0, 0.13);
-}
-
-.airline-profile-modal
-.airline-profile-stat::before {
-  content: "";
-
-  position: absolute;
-  top: 0;
-  left: 0;
-
-  width: 3px;
-  height: 100%;
-
-  background:
-    linear-gradient(
-      180deg,
-      #59a9ff,
-      rgba(48, 118, 218, 0.14)
-    );
-
-  box-shadow:
-    0 0 10px rgba(73, 155, 255, 0.30);
-}
-
-.airline-profile-modal
-.airline-profile-stat:first-child {
-  min-height: 70px;
-
-  background:
-    linear-gradient(
-      110deg,
-      rgba(95, 56, 5, 0.50),
-      rgba(39, 36, 39, 0.72) 42%,
-      rgba(9, 30, 57, 0.88)
-    );
-
-  border-color:
-    rgba(255, 182, 31, 0.50);
-}
-
-.airline-profile-modal
-.airline-profile-stat:first-child::before {
-  width: 4px;
-
-  background:
-    linear-gradient(
-      180deg,
-      #ffe08a,
-      #ffad00
-    );
-
-  box-shadow:
-    0 0 13px rgba(255, 179, 0, 0.48);
-}
-
-.airline-profile-modal
-.airline-profile-stat:nth-child(3)::before {
-  background:
-    linear-gradient(
-      180deg,
-      #66d8ff,
-      #158dc9
-    );
-
-  box-shadow:
-    0 0 11px rgba(70, 199, 255, 0.42);
-}
-
-.airline-profile-modal
-.airline-profile-stat:nth-child(4)::before {
-  background:
-    linear-gradient(
-      180deg,
-      #4ff0b0,
-      #07915f
-    );
-
-  box-shadow:
-    0 0 11px rgba(38, 224, 151, 0.42);
-}
-
-.airline-profile-modal
-.airline-profile-stat:nth-child(5)::before {
-  background:
-    linear-gradient(
-      180deg,
-      #c495ff,
-      #7646d2
-    );
-
-  box-shadow:
-    0 0 11px rgba(161, 104, 255, 0.40);
-}
-
-.airline-profile-modal
-.airline-profile-stat-label {
-  color: rgba(166, 198, 232, 0.78);
-
-  font-size: 0.55rem;
-  letter-spacing: 0.12em;
-}
-
-.airline-profile-modal
-.airline-profile-stat-value {
-  color: #ffd05b;
-
-  font-size: 0.92rem;
-  letter-spacing: 0.055em;
-
-  text-shadow:
-    0 0 12px rgba(255, 190, 53, 0.18);
-}
-
-.airline-profile-modal
-.airline-profile-stat:nth-child(3)
-.airline-profile-stat-value {
-  color: #77dcff;
-
-  text-shadow:
-    0 0 12px rgba(70, 199, 255, 0.22);
-}
-
-.airline-profile-modal
-.airline-profile-stat:nth-child(4)
-.airline-profile-stat-value {
-  color: #55eab0;
-
-  text-shadow:
-    0 0 12px rgba(38, 224, 151, 0.22);
-}
-
-.airline-profile-modal
-.airline-profile-stat:nth-child(5)
-.airline-profile-stat-value {
-  color: #c7a3ff;
-
-  text-shadow:
-    0 0 12px rgba(161, 104, 255, 0.22);
-}
-
-.airline-profile-header {
-  display: grid;
-  grid-template-columns: 54px minmax(0, 1fr) auto;
-
-  align-items: center;
-
-  gap: 13px;
-
-  padding-bottom: 20px;
-
-  border-bottom:
-    1px solid rgba(255, 179, 0, 0.22);
-}
-
-.airline-profile-initials {
-  width: 54px;
-  height: 54px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  color: #ffc94a;
-  background: rgba(5, 20, 39, 0.92);
-
-  border:
-    1px solid rgba(255, 179, 0, 0.72);
-
-  border-radius: 12px;
+  border: 1px solid rgba(255, 235, 178, 0.90);
+  border-radius: 11px;
 
   font-family:
     "Orbitron",
@@ -1368,9 +1034,13 @@ text-shadow:
     "Exo 2",
     sans-serif;
 
-  font-size: 0.86rem;
+  font-size: 0.73rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
+
+  box-shadow:
+    0 0 14px rgba(255, 179, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
 }
 
 .airline-profile-heading {
@@ -1378,9 +1048,9 @@ text-shadow:
 }
 
 .airline-profile-label {
-  margin-bottom: 5px;
+  margin-bottom: 6px;
 
-  color: rgba(154, 182, 215, 0.72);
+  color: #85baff;
 
   font-family:
     "Orbitron",
@@ -1388,17 +1058,22 @@ text-shadow:
     "Exo 2",
     sans-serif;
 
-  font-size: 0.56rem;
-  font-weight: 600;
-  letter-spacing: 0.13em;
+  font-size: 0;
+  font-weight: 700;
+  letter-spacing: 0.16em;
 
   text-transform: uppercase;
+}
+
+.airline-profile-label::after {
+  content: "AIRLINE OPERATIONS";
+  font-size: 0.62rem;
 }
 
 .airline-profile-name {
   overflow: hidden;
 
-  color: #ffffff;
+  color: #f5f8ff;
 
   font-family:
     "Orbitron",
@@ -1406,17 +1081,18 @@ text-shadow:
     "Exo 2",
     sans-serif;
 
-  font-size: 0.94rem;
+  font-size: 1.16rem;
   font-weight: 700;
   letter-spacing: 0.045em;
 
   text-overflow: ellipsis;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
 .airline-profile-close {
-  width: 30px;
-  height: 30px;
+  width: 42px;
+  height: 42px;
 
   display: flex;
   align-items: center;
@@ -1424,64 +1100,81 @@ text-shadow:
 
   padding: 0;
 
-  color: rgba(224, 235, 249, 0.72);
-  background: rgba(255, 255, 255, 0.035);
+  color: #ffb300;
+  background: rgba(255, 179, 0, 0.06);
 
-  border:
-    1px solid rgba(148, 177, 211, 0.24);
+  border: 1px solid rgba(255, 179, 0, 0.58);
+  border-radius: 12px;
 
-  border-radius: 8px;
-
-  font-size: 1rem;
+  font-size: 1.35rem;
+  line-height: 1;
 
   cursor: pointer;
 }
 
 .airline-profile-close:hover {
-  color: #ffffff;
+  background: rgba(255, 179, 0, 0.16);
 
-  border-color:
-    rgba(255, 179, 0, 0.58);
+  box-shadow:
+    0 0 16px rgba(255, 179, 0, 0.20);
 }
+
+
+/* INFORMATION GRID */
 
 .airline-profile-grid {
   display: grid;
-  grid-template-columns:
-    repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 
-  gap: 10px;
+  gap: 12px;
 
-  margin-top: 20px;
+  margin: 0;
+  padding: 20px 22px;
 }
 
 .airline-profile-stat {
-  min-height: 72px;
+  min-height: 84px;
+
+  position: relative;
 
   display: flex;
   flex-direction: column;
   justify-content: center;
 
-  padding: 13px;
+  padding: 16px;
 
   box-sizing: border-box;
 
   background:
-    rgba(10, 35, 62, 0.62);
+    rgba(4, 16, 40, 0.64);
 
-  border:
-    1px solid rgba(76, 132, 190, 0.25);
+  border: 1px solid rgba(90, 142, 218, 0.34);
+  border-radius: 12px;
 
-  border-radius: 11px;
+  box-shadow:
+    inset 0 1px 0 rgba(164, 210, 255, 0.045);
 }
+
+
+/* AIRLINE IDENTITY */
 
 .airline-profile-stat:first-child {
   grid-column: 1 / -1;
+  order: 1;
+
+  min-height: 100px;
+
+  padding-top: 40px;
 }
 
-.airline-profile-stat-label {
-  margin-bottom: 7px;
+.airline-profile-stat:first-child::before {
+  content: "AIRLINE IDENTITY";
 
-  color: rgba(158, 184, 214, 0.68);
+  position: absolute;
+  top: 15px;
+  left: 16px;
+
+  color: #ffb300;
 
   font-family:
     "Orbitron",
@@ -1489,15 +1182,102 @@ text-shadow:
     "Exo 2",
     sans-serif;
 
-  font-size: 0.54rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
 
-  text-transform: uppercase;
+
+/* OPERATIONAL ACTIVITY */
+
+.airline-profile-stat:nth-child(3),
+.airline-profile-stat:nth-child(4) {
+  grid-column: span 2;
+  order: 2;
+
+  min-height: 112px;
+  padding-top: 45px;
+}
+
+.airline-profile-stat:nth-child(4) {
+  order: 3;
+}
+
+.airline-profile-stat:nth-child(3)::before {
+  content: "OPERATIONAL ACTIVITY";
+
+  position: absolute;
+  top: 15px;
+  left: 16px;
+
+  color: #ffb300;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+
+/* COMPANY POSITION */
+
+.airline-profile-stat:nth-child(2),
+.airline-profile-stat:nth-child(5) {
+  grid-column: span 2;
+  order: 4;
+
+  min-height: 112px;
+  padding-top: 45px;
+}
+
+.airline-profile-stat:nth-child(5) {
+  order: 5;
+}
+
+.airline-profile-stat:nth-child(2)::before {
+  content: "COMPANY POSITION";
+
+  position: absolute;
+  top: 15px;
+  left: 16px;
+
+  color: #ffb300;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+
+/* LABELS AND VALUES */
+
+.airline-profile-stat-label {
+  margin-bottom: 8px;
+
+  color: #91a5c7;
+
+  font-family: "Segoe UI", sans-serif;
+
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+
+  text-transform: none;
 }
 
 .airline-profile-stat-value {
-  color: #ffc94a;
+  color: #f5f8ff;
 
   font-family:
     "Orbitron",
@@ -1505,11 +1285,88 @@ text-shadow:
     "Exo 2",
     sans-serif;
 
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.035em;
 }
 
+
+/* FOOTER */
+
+.airline-profile-modal::after {
+  content:
+    "ACS OCC operational profile · Live company information";
+
+  display: block;
+
+  padding: 14px 22px 16px;
+
+  color: #8198bd;
+  background: rgba(2, 9, 24, 0.72);
+
+  border-top:
+    1px solid rgba(90, 142, 218, 0.22);
+
+  font-size: 0.69rem;
+  letter-spacing: 0.055em;
+
+  text-align: center;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 620px) {
+
+  .airline-profile-overlay {
+    align-items: flex-start;
+    padding: 12px;
+  }
+
+  .airline-profile-modal {
+    width: calc(100vw - 24px);
+    max-height: calc(100vh - 24px);
+
+    overflow-y: auto;
+  }
+
+  .airline-profile-header {
+    grid-template-columns:
+      40px
+      minmax(0, 1fr)
+      36px;
+
+    padding: 17px;
+  }
+
+  .airline-profile-initials {
+    width: 40px;
+    height: 40px;
+  }
+
+  .airline-profile-name {
+    font-size: 0.92rem;
+  }
+
+  .airline-profile-close {
+    width: 36px;
+    height: 36px;
+  }
+
+  .airline-profile-grid {
+    grid-template-columns: 1fr;
+
+    padding: 16px;
+  }
+
+  .airline-profile-stat:first-child,
+  .airline-profile-stat:nth-child(2),
+  .airline-profile-stat:nth-child(3),
+  .airline-profile-stat:nth-child(4),
+  .airline-profile-stat:nth-child(5) {
+    grid-column: 1;
+  }
+}
 
 /* ============================================================
    ACTIVE AIRLINES — RESPONSIVE
