@@ -1968,6 +1968,30 @@ function getAirlineInitials(airlineName) {
 
 
 /* ============================================================
+   ACTIVE AIRLINES — COUNTRY FLAG
+   ============================================================ */
+
+function getCountryFlag(countryCode) {
+
+  const code =
+    String(countryCode || "")
+      .trim()
+      .toUpperCase();
+
+  if (!/^[A-Z]{2}$/.test(code)) {
+    return "🌐";
+  }
+
+  return String.fromCodePoint(
+    ...Array.from(code).map(
+      letter =>
+        127397 + letter.charCodeAt(0)
+    )
+  );
+}
+
+
+/* ============================================================
    ACTIVE AIRLINES — CARD
    ============================================================ */
 
@@ -2012,17 +2036,22 @@ function createActiveAirlineCard(airline) {
     "active-airline-location";
 
   const country =
-    String(
-      airline.country || "Unknown Country"
-    );
+  String(
+    airline.country || "Unknown Country"
+  );
 
-  const baseIcao =
-    String(
-      airline.base_icao || "----"
-    ).toUpperCase();
+const countryFlag =
+  getCountryFlag(
+    airline.country_code
+  );
 
-  location.textContent =
-    `${country} · ${baseIcao}`;
+const baseIcao =
+  String(
+    airline.base_icao || "----"
+  ).toUpperCase();
+
+location.textContent =
+  `${countryFlag} ${country} · ${baseIcao}`;
 
   info.appendChild(name);
   info.appendChild(location);
