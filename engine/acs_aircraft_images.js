@@ -10,7 +10,7 @@
 
   const PLACEHOLDER = "img/placeholder_aircraft.jpg";
 
- const MODEL_ALIASES = Object.freeze({
+  const MODEL_ALIASES = Object.freeze({
   "247": "boeing_247",
   "307_stratoliner": "boeing_307_stratoliner",
   "377_stratocruiser": "b_377_stratocruiser",
@@ -79,7 +79,7 @@ const FOLDER_ALIASES = Object.freeze({
     if (!manufacturer || !model) return [PLACEHOLDER];
 
     const folder =
-     FOLDER_ALIASES[manufacturer.toLowerCase()] || slug(manufacturer);
+      FOLDER_ALIASES[manufacturer.toLowerCase()] || manufacturer;
 
     const base = slug(model);
     const alias = MODEL_ALIASES[base] || base;
