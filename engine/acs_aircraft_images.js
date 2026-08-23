@@ -10,16 +10,20 @@
 
   const PLACEHOLDER = "img/placeholder_aircraft.jpg";
 
-  const MODEL_ALIASES = Object.freeze({
-    "247": "boeing_247",
-    "307_stratoliner": "boeing_307_stratoliner",
-    "377_stratocruiser": "b_377_stratocruiser",
-    "c_97_stratofreighter": "c_97_stratofreighter"
-  });
+ const MODEL_ALIASES = Object.freeze({
+  "247": "boeing_247",
+  "307_stratoliner": "boeing_307_stratoliner",
+  "377_stratocruiser": "b_377_stratocruiser",
+  "c_97_stratofreighter": "c_97_stratofreighter",
 
-  const FOLDER_ALIASES = Object.freeze({
-    "de havilland": "de_havilland"
-  });
+  /* De Havilland Canada */
+  "dhc_6_twin_otter_series_100": "dhc6_100"
+});
+
+const FOLDER_ALIASES = Object.freeze({
+  "de havilland": "de_havilland",
+  "de havilland canada": "de_havilland"
+});
 
   function slug(value) {
     return String(value || "")
@@ -75,7 +79,7 @@
     if (!manufacturer || !model) return [PLACEHOLDER];
 
     const folder =
-      FOLDER_ALIASES[manufacturer.toLowerCase()] || manufacturer;
+     FOLDER_ALIASES[manufacturer.toLowerCase()] || slug(manufacturer);
 
     const base = slug(model);
     const alias = MODEL_ALIASES[base] || base;
