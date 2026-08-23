@@ -339,39 +339,137 @@
       height: 100%;
       padding: 18px 12px 0;
     }
+.market-bar {
+  --bar-rgb: 74, 167, 255;
 
-    .market-bar {
-      flex: 1 0 9px;
-      min-width: 8px;
-      height: var(--bar-height, 0%);
-      padding: 0;
-      border: 0;
-      border-radius: 4px 4px 1px 1px;
-      background: var(--fuel-blue);
-      box-shadow: none;
-      cursor: pointer;
-      opacity: 0.92;
-    }
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  box-sizing: border-box;
 
-    .market-bar:hover,
-    .market-bar:focus-visible {
-      outline: 1px solid rgba(255, 255, 255, 0.86);
-      outline-offset: 2px;
-      opacity: 1;
-    }
+  flex: 1 0 9px;
+  min-width: 8px;
+  height: var(--bar-height, 0%);
+  padding: 0;
 
-    .market-bar.is-neutral { background: var(--fuel-blue); }
-    .market-bar.is-attention { background: var(--fuel-gold); }
-    .market-bar.is-critical { background: var(--fuel-red); }
-    .market-bar.is-decrease { background: var(--fuel-green); }
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 6px 6px 2px 2px;
 
-    .market-bar.is-projection {
-      background: repeating-linear-gradient(
-        135deg,
-        rgba(255, 179, 0, 0.88) 0 4px,
-        rgba(255, 179, 0, 0.22) 4px 8px
-      );
-    }
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.30) 0%,
+      rgba(255, 255, 255, 0.08) 22%,
+      rgba(255, 255, 255, 0.02) 55%,
+      rgba(255, 255, 255, 0.18) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(var(--bar-rgb), 0.96) 0%,
+      rgba(var(--bar-rgb), 0.72) 58%,
+      rgba(var(--bar-rgb), 0.46) 100%
+    );
+
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.20),
+    inset -1px 0 0 rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    0 0 10px rgba(var(--bar-rgb), 0.16);
+
+  backdrop-filter: blur(5px) saturate(135%);
+  -webkit-backdrop-filter: blur(5px) saturate(135%);
+
+  cursor: pointer;
+  opacity: 1;
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.market-bar::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: 2px;
+  right: 2px;
+  left: 2px;
+  height: 34%;
+  border-radius: 4px 4px 50% 50%;
+
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.46) 0%,
+    rgba(255, 255, 255, 0.10) 68%,
+    transparent 100%
+  );
+
+  pointer-events: none;
+}
+
+.market-bar::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: 8%;
+  bottom: 6%;
+  left: 18%;
+  width: 12%;
+
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  filter: blur(1px);
+  pointer-events: none;
+}
+
+.market-bar:hover,
+.market-bar:focus-visible {
+  z-index: 2;
+  transform: translateY(-2px);
+
+  border-color: rgba(255, 255, 255, 0.58);
+  outline: none;
+
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.28),
+    inset -1px 0 0 rgba(0, 0, 0, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.56),
+    0 0 16px rgba(var(--bar-rgb), 0.42);
+}
+
+.market-bar.is-neutral {
+  --bar-rgb: 74, 167, 255;
+}
+
+.market-bar.is-attention {
+  --bar-rgb: 255, 179, 0;
+}
+
+.market-bar.is-critical {
+  --bar-rgb: 255, 83, 100;
+}
+
+.market-bar.is-decrease {
+  --bar-rgb: 85, 227, 154;
+}
+
+.market-bar.is-projection {
+  --bar-rgb: 255, 179, 0;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.28),
+      transparent 38%,
+      rgba(255, 255, 255, 0.16)
+    ),
+    repeating-linear-gradient(
+      135deg,
+      rgba(255, 179, 0, 0.94) 0 4px,
+      rgba(255, 179, 0, 0.38) 4px 8px
+    );
+}
 
     .chart-x-axis {
       position: relative;
