@@ -1968,7 +1968,8 @@ html body :is(
 }
 
 /* ===== ACS GLOBAL BETA BADGE ===== */
-.acs-logo::after {
+.acs-logo::after,
+.acs-left::after {
   content: "BETA";
 
   display: inline-block;
