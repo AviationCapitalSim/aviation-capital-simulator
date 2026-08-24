@@ -125,31 +125,46 @@
   }
 
   function normalizeEvent(record) {
-    const category = String(record?.category || "")
-      .trim()
-      .toLowerCase();
+  const category = String(record?.category || "")
+    .trim()
+    .toLowerCase();
 
-    const publicationDate = isoDate(record?.publication_date);
+  const publicationDate = isoDate(
+    record?.publication_date
+  );
 
-    return {
-      id: String(record?.event_key || "").trim(),
-      origin: String(record?.origin || "historical").trim(),
-      category,
-      categoryLabel:
-        CATEGORY_LABELS[category] || "Global Event",
-      title: String(record?.headline || "").trim(),
-      summary: String(record?.summary || "").trim(),
-      description: String(record?.article || "").trim(),
-      aviationEffect: String(
-        record?.aviation_effect || ""
-      ).trim(),
-      region: String(record?.location || "").trim(),
-      publishedAt: publicationDate,
-      date: displayDate(publicationDate),
-      eventStartDate: isoDate(record?.event_start_date),
-      image: imagePath(record?.image_filename)
-    };
-  }
+  return {
+    id: String(record?.event_key || "").trim(),
+    origin: String(
+      record?.origin || "historical"
+    ).trim(),
+    category,
+    categoryLabel:
+      CATEGORY_LABELS[category] || "Global Event",
+    title: String(
+      record?.headline || ""
+    ).trim(),
+    summary: String(
+      record?.summary || ""
+    ).trim(),
+    description: String(
+      record?.article || ""
+    ).trim(),
+    aviationEffect: String(
+      record?.aviation_effect || ""
+    ).trim(),
+    region: String(
+      record?.location || ""
+    ).trim(),
+    publishedAt: publicationDate,
+    date: displayDate(publicationDate),
+    eventStartDate: isoDate(
+      record?.event_start_date
+    ),
+    isActive: record?.is_active === true,
+    image: imagePath(record?.image_filename)
+  };
+}
 
   function validatePayload(payload) {
     if (
@@ -243,47 +258,57 @@
   }
 
   function cardTemplate(event) {
-    const selected = event.id === state.selectedId;
+  const selected = event.id === state.selectedId;
 
-    return `
-      <button
-        class="event-card${selected ? " is-selected" : ""}"
-        type="button"
-        data-event-id="${escapeHTML(event.id)}"
-        aria-pressed="${selected}"
-      >
-        ${eventImageMarkup(event, "event-image")}
+  const activeIndicator = event.isActive
+    ? `
+      <span class="event-state state-active">
+        ACTIVE
+      </span>
+    `
+    : "";
 
-        <span class="event-card-body">
-          <span class="event-eyebrow">
-            <span class="event-category">
-              ${escapeHTML(event.categoryLabel)}
-            </span>
+  return `
+    <button
+      class="event-card${selected ? " is-selected" : ""}"
+      type="button"
+      data-event-id="${escapeHTML(event.id)}"
+      aria-pressed="${selected}"
+    >
+      ${eventImageMarkup(event, "event-image")}
+
+      <span class="event-card-body">
+        <span class="event-eyebrow">
+          <span class="event-category">
+            ${escapeHTML(event.categoryLabel)}
           </span>
 
-          <span class="event-title">
-            ${escapeHTML(event.title)}
+          ${activeIndicator}
+        </span>
+
+        <span class="event-title">
+          ${escapeHTML(event.title)}
+        </span>
+
+        <span class="event-summary">
+          ${escapeHTML(event.summary)}
+        </span>
+
+        <span class="event-meta">
+          <span>
+            Date
+            <b>${escapeHTML(event.date)}</b>
           </span>
 
-          <span class="event-summary">
-            ${escapeHTML(event.summary)}
-          </span>
-
-          <span class="event-meta">
-            <span>
-              Date
-              <b>${escapeHTML(event.date)}</b>
-            </span>
-
-            <span>
-              Region
-              <b>${escapeHTML(event.region || "--")}</b>
-            </span>
+          <span>
+            Region
+            <b>${escapeHTML(event.region || "--")}</b>
           </span>
         </span>
-      </button>
-    `;
-  }
+      </span>
+    </button>
+  `;
+}
 
   function renderStatistics() {
     elements.activeCount.textContent =
