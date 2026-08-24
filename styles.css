@@ -1990,7 +1990,7 @@ html body :is(
   box-shadow: 0 0 7px rgba(255, 179, 0, 0.25);
 
   white-space: nowrap;
-  transform: translateY(-2px);
+  transform: translateY(6px);
 }
 
 /* Ajuste para teléfonos */
