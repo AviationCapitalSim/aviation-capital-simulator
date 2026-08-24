@@ -1,7 +1,7 @@
 "use strict";
 
 /* ============================================================
-   ACS OCC - GLOBAL EVENTS v2.0
+   ACS OCC - GLOBAL EVENTS  v2.0
    ------------------------------------------------------------
    Read-only global-event intelligence.
 
