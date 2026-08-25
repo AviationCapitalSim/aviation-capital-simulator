@@ -2537,15 +2537,6 @@ async function handleAirlineCreation(event) {
       return false;
     }
 
-    /* 🧹 CLEAN LEGACY CACHE */
-    localStorage.removeItem("ACS_baseICAO");
-    localStorage.removeItem("ACS_baseIATA");
-    localStorage.removeItem("ACS_baseCity");
-    localStorage.removeItem("ACS_baseName");
-    localStorage.removeItem("ACS_baseCountry");
-    localStorage.removeItem("ACS_baseContinent");
-    localStorage.removeItem("ACS_baseReady");
-
     alert("✔ Airline synced with server!");
     window.location.href = "choose_base.html";
 
