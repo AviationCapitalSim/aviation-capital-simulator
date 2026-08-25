@@ -209,7 +209,10 @@ async function ACS_FINANCE_syncFromServer() {
           f.cost_leasing ??
           0
         ),
-        salaries: Number(f.cost_hr || 0),
+         salaries: Number(f.cost_hr || 0),
+        "Company Infrastructure": Number(
+          f.cost_company_infrastructure || 0
+        ),
         maintenance: Number(f.cost_maintenance || 0),
         "Aircraft Insurance": Number(
           f.cost_insurance_display ??
@@ -1022,16 +1025,23 @@ window.ACS_FINANCE_HISTORY = (() => {
           money(record.cost_maintenance)
         )}
 
-        ${detailItem(
+         ${detailItem(
           "Salaries",
           money(record.cost_hr)
+        )}
+
+        ${detailItem(
+          "Company Infrastructure",
+          money(
+            record.cost_company_infrastructure
+          )
         )}
 
         ${detailItem(
           "Leasing",
           money(record.cost_leasing)
         )}
-
+        
         ${detailItem(
           "Loans",
           money(record.cost_loans)
