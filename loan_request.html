@@ -971,6 +971,166 @@
   padding: 16px 0;
   color: rgba(255,255,255,0.65);
 }
+
+/* ============================================================
+   ACS OCC — PAY PRINCIPAL MINI MODAL
+   ============================================================ */
+
+.acs-principal-modal[hidden] {
+  display: none !important;
+}
+
+.acs-principal-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.acs-principal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(1, 7, 22, 0.82);
+  backdrop-filter: blur(7px);
+}
+
+.acs-principal-dialog {
+  position: relative;
+  width: min(500px, 100%);
+  padding: 26px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 179, 0, 0.55);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(8, 25, 58, 0.99),
+      rgba(2, 11, 31, 0.99)
+    );
+  box-shadow:
+    0 25px 70px rgba(0, 0, 0, 0.65),
+    0 0 30px rgba(255, 179, 0, 0.10);
+}
+
+.acs-principal-title {
+  margin: 0 !important;
+  color: #ffb300;
+  font-family: "Orbitron", sans-serif;
+  font-size: 1.25rem;
+  letter-spacing: 0.14em;
+  text-align: center;
+}
+
+.acs-principal-reference {
+  margin: 8px 0 22px;
+  color: #00ffd0;
+  font-weight: 700;
+  text-align: center;
+}
+
+.acs-principal-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 9px 0;
+  color: #9fb3ff;
+  border-bottom: 1px solid rgba(138, 180, 255, 0.10);
+}
+
+.acs-principal-row strong {
+  color: #ffffff;
+  text-align: right;
+}
+
+.acs-principal-row--capital strong {
+  color: #00ff88;
+}
+
+.acs-principal-row--capital.is-insufficient strong {
+  color: #ff4d6d;
+}
+
+.acs-principal-options {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 22px 0;
+}
+
+.acs-principal-percent {
+  padding: 12px 6px;
+  border: 1px solid rgba(77, 163, 255, 0.45);
+  border-radius: 10px;
+  background: rgba(77, 163, 255, 0.08);
+  color: #9fbfff;
+  font-family: "Orbitron", sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.acs-principal-percent:hover {
+  border-color: #ffb300;
+  color: #ffca5c;
+}
+
+.acs-principal-percent.is-selected {
+  border-color: #00ffd0;
+  background: rgba(0, 255, 208, 0.12);
+  color: #00ffd0;
+}
+
+.acs-principal-status {
+  min-height: 20px;
+  margin: 14px 0 0;
+  color: #8ca8ff;
+  text-align: center;
+  font-size: 0.88rem;
+}
+
+.acs-principal-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.acs-principal-cancel,
+.acs-principal-confirm {
+  min-height: 46px;
+  border-radius: 11px;
+  font-family: "Orbitron", sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.acs-principal-cancel {
+  border: 1px solid rgba(138, 180, 255, 0.35);
+  background: rgba(138, 180, 255, 0.06);
+  color: #9fb3ff;
+}
+
+.acs-principal-confirm {
+  border: 1px solid #00cfa4;
+  background: rgba(0, 207, 164, 0.14);
+  color: #00ffd0;
+}
+
+.acs-principal-confirm:disabled,
+.acs-principal-percent:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+@media (max-width: 560px) {
+  .acs-principal-options {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .acs-principal-actions {
+    grid-template-columns: 1fr;
+  }
+}
     
 </style>
   
@@ -1246,6 +1406,125 @@
    
 </main>
 
+<!-- ============================================================
+     ACS OCC — PAY PRINCIPAL MINI MODAL
+     ============================================================ -->
+
+<div
+  id="principalPaymentModal"
+  class="acs-principal-modal"
+  hidden
+>
+  <div
+    class="acs-principal-backdrop"
+    data-principal-close
+  ></div>
+
+  <section
+    class="acs-principal-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="principalPaymentTitle"
+  >
+    <h2
+      id="principalPaymentTitle"
+      class="acs-principal-title"
+    >
+      PAY PRINCIPAL
+    </h2>
+
+    <div
+      id="principalPaymentReference"
+      class="acs-principal-reference"
+    >
+      —
+    </div>
+
+    <div class="acs-principal-row">
+      <span>Outstanding Balance</span>
+      <strong id="principalOutstandingBalance">$0</strong>
+    </div>
+
+    <div class="acs-principal-options">
+      <button
+        type="button"
+        class="acs-principal-percent"
+        data-principal-percent="10"
+      >
+        10%
+      </button>
+
+      <button
+        type="button"
+        class="acs-principal-percent"
+        data-principal-percent="25"
+      >
+        25%
+      </button>
+
+      <button
+        type="button"
+        class="acs-principal-percent"
+        data-principal-percent="50"
+      >
+        50%
+      </button>
+
+      <button
+        type="button"
+        class="acs-principal-percent"
+        data-principal-percent="100"
+      >
+        100%
+      </button>
+    </div>
+
+    <div class="acs-principal-row">
+      <span>Principal Payment</span>
+      <strong id="principalPaymentAmount">$0</strong>
+    </div>
+
+    <div class="acs-principal-row">
+      <span>Remaining Balance</span>
+      <strong id="principalRemainingBalance">$0</strong>
+    </div>
+
+    <div
+      id="principalAvailableCapitalRow"
+      class="acs-principal-row acs-principal-row--capital"
+    >
+      <span>Available Capital</span>
+      <strong id="principalAvailableCapital">$0</strong>
+    </div>
+
+    <p
+      id="principalPaymentStatus"
+      class="acs-principal-status"
+    >
+      Select a payment percentage.
+    </p>
+
+    <div class="acs-principal-actions">
+      <button
+        type="button"
+        id="principalPaymentCancel"
+        class="acs-principal-cancel"
+      >
+        CANCEL
+      </button>
+
+      <button
+        type="button"
+        id="principalPaymentConfirm"
+        class="acs-principal-confirm"
+        disabled
+      >
+        CONFIRM PAYMENT
+      </button>
+    </div>
+  </section>
+</div>
+  
 <!-- global footer -->
 
 <footer class="acs-footer">
@@ -1332,6 +1611,60 @@ let BANK_AIRCRAFT = [];
 let SELECTED_AIRCRAFT = new Set();
 let MAX_PER_LOAN = 0;
 
+let PRINCIPAL_PAYMENT_LOAN = null;
+let PRINCIPAL_PAYMENT_PERCENT = 0;
+let PRINCIPAL_PAYMENT_BUSY = false;
+
+const principalPaymentModal =
+  document.getElementById(
+    "principalPaymentModal"
+  );
+
+const principalPaymentReference =
+  document.getElementById(
+    "principalPaymentReference"
+  );
+
+const principalOutstandingBalance =
+  document.getElementById(
+    "principalOutstandingBalance"
+  );
+
+const principalPaymentAmount =
+  document.getElementById(
+    "principalPaymentAmount"
+  );
+
+const principalRemainingBalance =
+  document.getElementById(
+    "principalRemainingBalance"
+  );
+
+const principalAvailableCapital =
+  document.getElementById(
+    "principalAvailableCapital"
+  );
+
+const principalAvailableCapitalRow =
+  document.getElementById(
+    "principalAvailableCapitalRow"
+  );
+
+const principalPaymentStatus =
+  document.getElementById(
+    "principalPaymentStatus"
+  );
+
+const principalPaymentCancel =
+  document.getElementById(
+    "principalPaymentCancel"
+  );
+
+const principalPaymentConfirm =
+  document.getElementById(
+    "principalPaymentConfirm"
+  );
+ 
 function money(value) {
   return "$" +
     Math.round(Number(value || 0)).toLocaleString();
@@ -1371,6 +1704,7 @@ function errorMessage(data) {
   const code = data?.error || "";
 
   const messages = {
+    
     INVALID_LOAN_AMOUNT:
       "Enter a valid loan amount.",
 
@@ -1403,6 +1737,9 @@ function errorMessage(data) {
 
     LOAN_NOT_FOUND:
       "The selected loan was not found."
+
+    INVALID_PAYMENT_PERCENT:
+      "Select a valid principal payment percentage."    
   };
 
   return messages[code] ||
@@ -1888,14 +2225,14 @@ function renderLoanPortfolio() {
       document.createElement("button");
 
     button.type = "button";
-    button.textContent = "Amortize";
+    button.textContent = "PAY PRINCIPAL";
     button.className = "buy-btn";
     button.style.width = "auto";
     button.style.margin = "0";
 
     button.addEventListener(
       "click",
-      () => amortizeLoan(loan)
+      () => openPrincipalPaymentModal(loan)
     );
 
     card.appendChild(button);
@@ -2031,37 +2368,186 @@ async function submitLoan() {
   }
 }
 
-async function amortizeLoan(loan) {
-  const entered = prompt(
-    `Enter amortization amount for ${loan.ref}:`
+function calculatePrincipalPreview(
+  balance,
+  percentage
+) {
+  const safeBalance =
+    Math.max(0, Math.round(Number(balance || 0)));
+
+  if (percentage === 100) {
+    return safeBalance;
+  }
+
+  return Math.min(
+    safeBalance,
+    Math.max(
+      1,
+      Math.floor(
+        safeBalance * percentage / 100
+      )
+    )
+  );
+}
+
+function updatePrincipalPaymentModal() {
+  if (!PRINCIPAL_PAYMENT_LOAN) return;
+
+  const balance = Math.max(
+    0,
+    Math.round(
+      Number(
+        PRINCIPAL_PAYMENT_LOAN.remaining || 0
+      )
+    )
   );
 
-  if (entered === null) return;
+  const availableCapital = Math.max(
+    0,
+    Math.round(
+      Number(
+        BANK_SUMMARY?.availableCapital || 0
+      )
+    )
+  );
 
-  const amount = cleanAmount(entered);
+  const payment =
+    PRINCIPAL_PAYMENT_PERCENT > 0
+      ? calculatePrincipalPreview(
+          balance,
+          PRINCIPAL_PAYMENT_PERCENT
+        )
+      : 0;
 
-  if (amount <= 0) {
-    showMessage(
-      "Enter a valid amortization amount.",
-      "#ff8844"
-    );
+  const remaining =
+    Math.max(0, balance - payment);
+
+  principalPaymentReference.textContent =
+    PRINCIPAL_PAYMENT_LOAN.ref || "ACS LOAN";
+
+  principalOutstandingBalance.textContent =
+    money(balance);
+
+  principalPaymentAmount.textContent =
+    money(payment);
+
+  principalRemainingBalance.textContent =
+    money(remaining);
+
+  principalAvailableCapital.textContent =
+    money(availableCapital);
+
+  const insufficient =
+    payment > availableCapital;
+
+  principalAvailableCapitalRow.classList.toggle(
+    "is-insufficient",
+    insufficient
+  );
+
+  document
+    .querySelectorAll(
+      "[data-principal-percent]"
+    )
+    .forEach(button => {
+      button.classList.toggle(
+        "is-selected",
+        Number(
+          button.dataset.principalPercent
+        ) === PRINCIPAL_PAYMENT_PERCENT
+      );
+
+      button.disabled =
+        PRINCIPAL_PAYMENT_BUSY;
+    });
+
+  principalPaymentConfirm.disabled =
+    PRINCIPAL_PAYMENT_BUSY ||
+    PRINCIPAL_PAYMENT_PERCENT === 0 ||
+    payment <= 0 ||
+    insufficient;
+
+  principalPaymentCancel.disabled =
+    PRINCIPAL_PAYMENT_BUSY;
+
+  if (PRINCIPAL_PAYMENT_BUSY) {
+    principalPaymentStatus.textContent =
+      "Processing principal payment...";
+    principalPaymentStatus.style.color =
+      "#ffca5c";
+  } else if (insufficient) {
+    principalPaymentStatus.textContent =
+      "Insufficient available capital.";
+    principalPaymentStatus.style.color =
+      "#ff4d6d";
+  } else if (PRINCIPAL_PAYMENT_PERCENT > 0) {
+    principalPaymentStatus.textContent =
+      "Review and confirm the payment.";
+    principalPaymentStatus.style.color =
+      "#00ffd0";
+  } else {
+    principalPaymentStatus.textContent =
+      "Select a payment percentage.";
+    principalPaymentStatus.style.color =
+      "#8ca8ff";
+  }
+}
+
+function openPrincipalPaymentModal(loan) {
+  PRINCIPAL_PAYMENT_LOAN = loan;
+  PRINCIPAL_PAYMENT_PERCENT = 0;
+  PRINCIPAL_PAYMENT_BUSY = false;
+
+  principalPaymentModal.hidden = false;
+  document.body.style.overflow = "hidden";
+
+  updatePrincipalPaymentModal();
+}
+
+function closePrincipalPaymentModal() {
+  if (PRINCIPAL_PAYMENT_BUSY) return;
+
+  principalPaymentModal.hidden = true;
+  document.body.style.overflow = "";
+
+  PRINCIPAL_PAYMENT_LOAN = null;
+  PRINCIPAL_PAYMENT_PERCENT = 0;
+}
+
+async function submitPrincipalPayment() {
+  if (
+    !PRINCIPAL_PAYMENT_LOAN ||
+    ![10, 25, 50, 100].includes(
+      PRINCIPAL_PAYMENT_PERCENT
+    ) ||
+    PRINCIPAL_PAYMENT_BUSY
+  ) {
     return;
   }
 
+  PRINCIPAL_PAYMENT_BUSY = true;
+  updatePrincipalPaymentModal();
+
   try {
     await bankFetch(
-      `/loans/${encodeURIComponent(loan.id)}/amortize`,
+      `/loans/${encodeURIComponent(
+        PRINCIPAL_PAYMENT_LOAN.id
+      )}/amortize`,
       {
         method: "POST",
 
         body: JSON.stringify({
-          amount
+          payment_percent:
+            PRINCIPAL_PAYMENT_PERCENT
         })
       }
     );
 
+    PRINCIPAL_PAYMENT_BUSY = false;
+    closePrincipalPaymentModal();
+
     showMessage(
-      "Payment completed successfully.",
+      "Principal payment completed successfully.",
       "#00ff88"
     );
 
@@ -2069,61 +2555,68 @@ async function amortizeLoan(loan) {
 
   } catch (error) {
     console.error(
-      "ACS LOAN AMORTIZATION ERROR:",
+      "ACS PRINCIPAL PAYMENT ERROR:",
       error
     );
 
-    showMessage(
-      error.message,
-      "#ff4d4d"
-    );
+    PRINCIPAL_PAYMENT_BUSY = false;
+    updatePrincipalPaymentModal();
+
+    principalPaymentStatus.textContent =
+      error.message;
+
+    principalPaymentStatus.style.color =
+      "#ff4d4d";
   }
 }
 
-loanAmountInput.addEventListener(
-  "input",
-  () => {
-    let amount =
-      cleanAmount(loanAmountInput.value);
+document
+  .querySelectorAll(
+    "[data-principal-percent]"
+  )
+  .forEach(button => {
+    button.addEventListener(
+      "click",
+      () => {
+        PRINCIPAL_PAYMENT_PERCENT =
+          Number(
+            button.dataset.principalPercent
+          );
 
-    if (amount > MAX_PER_LOAN) {
-      amount = MAX_PER_LOAN;
-    }
+        updatePrincipalPaymentModal();
+      }
+    );
+  });
 
-    loanAmountInput.value =
-      formatAmount(amount);
-
-    loanSlider.value = amount;
-
-    calculatePayment();
-  }
-);
-
-loanSlider.addEventListener(
-  "input",
-  () => {
-    const amount =
-      Math.round(
-        Number(loanSlider.value || 0) /
-        1000
-      ) * 1000;
-
-    loanSlider.value = amount;
-    loanAmountInput.value =
-      formatAmount(amount);
-
-    calculatePayment();
-  }
-);
-
-loanTermSelect.addEventListener(
-  "change",
-  calculatePayment
-);
-
-requestLoanBtn.addEventListener(
+principalPaymentCancel.addEventListener(
   "click",
-  submitLoan
+  closePrincipalPaymentModal
+);
+
+principalPaymentConfirm.addEventListener(
+  "click",
+  submitPrincipalPayment
+);
+
+document
+  .querySelector(
+    "[data-principal-close]"
+  )
+  .addEventListener(
+    "click",
+    closePrincipalPaymentModal
+  );
+
+document.addEventListener(
+  "keydown",
+  event => {
+    if (
+      event.key === "Escape" &&
+      !principalPaymentModal.hidden
+    ) {
+      closePrincipalPaymentModal();
+    }
+  }
 );
 
 /* ========== LOGOUT ========== */ 
