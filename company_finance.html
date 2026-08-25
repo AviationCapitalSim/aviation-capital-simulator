@@ -1837,29 +1837,55 @@ function loadTransactionLog() {
 
   types.forEach(type => {
 
-        const items =
+  const items =
       type === "FINANCING"
         ? (
             Array.isArray(window.ACS_Finance?.bank?.loans)
               ? window.ACS_Finance.bank.loans
               : []
           )
-            .filter(
-              loan =>
-                Number(loan?.remaining || 0) > 0
-            )
-            .map(loan => ({
-              type: "FINANCING",
-              source:
-                `BANK LOAN — ${loan?.ref || `LOAN #${loan?.id}`}`,
-              movementCount: 1,
-              totalAmount:
-                Number(loan?.remaining || 0)
-            }))
+            .map(loan => {
+
+              const originalAmount =
+                Number(loan?.originalAmount || 0);
+
+              const remaining =
+                Number(loan?.remaining || 0);
+
+              const monthlyPayment =
+                Number(loan?.monthlyPayment || 0);
+
+              return {
+                type: "FINANCING",
+
+                source:
+                  `BANK LOAN — ${
+                    loan?.ref || `LOAN #${loan?.id}`
+                  }`,
+
+                totalAmount: originalAmount,
+                originalAmount,
+                monthlyPayment,
+                remaining,
+
+                principalRepaid:
+                  Math.max(
+                    0,
+                    originalAmount - remaining
+                  ),
+
+                status:
+                  String(loan?.status || "UNKNOWN")
+                    .trim()
+                    .toUpperCase()
+              };
+
+            })
             .sort(
               (a, b) =>
-                b.totalAmount - a.totalAmount
+                b.originalAmount - a.originalAmount
             )
+
         : activity
             .filter(item => item.type === type)
             .sort(
@@ -1911,20 +1937,56 @@ function loadTransactionLog() {
 
       row.className = "activity-card";
 
-      row.innerHTML = `
-        <div class="activity-title">
-          ${item.source}
-        </div>
+      if (type === "FINANCING") {
 
-        <div class="activity-meta">
-          ${item.movementCount} movements
-        </div>
+        row.innerHTML = `
+          <div class="activity-title">
+            ${item.source}
+          </div>
 
-        <div class="activity-amount">
-          ${ACS_money(item.totalAmount)}
-        </div>
-      `;
+          <div class="activity-meta">
+            Status — ${item.status}
+          </div>
 
+          <div class="activity-meta">
+            Original Financing —
+            ${ACS_money(item.originalAmount)}
+          </div>
+
+          <div class="activity-meta">
+            Monthly Payment —
+            ${ACS_money(item.monthlyPayment)}
+          </div>
+
+          <div class="activity-meta">
+            Principal Repaid —
+            ${ACS_money(item.principalRepaid)}
+          </div>
+
+          <div class="activity-meta">
+            Outstanding Balance —
+            ${ACS_money(item.remaining)}
+          </div>
+        `;
+
+      } else {
+
+        row.innerHTML = `
+          <div class="activity-title">
+            ${item.source}
+          </div>
+
+          <div class="activity-meta">
+            ${item.movementCount} movements
+          </div>
+
+          <div class="activity-amount">
+            ${ACS_money(item.totalAmount)}
+          </div>
+        `;
+
+      }
+         
       body.appendChild(row);
 
     });
@@ -2021,16 +2083,23 @@ function loadBreakdown() {
       ? f.bank.loans
       : [];
 
-  const totalLoans = loans.reduce(
-    (sum, loan) =>
-      sum + Number(loan?.remaining || 0),
-    0
-  );
+  const monthlyDebtService = loans
+    .filter(loan =>
+      String(loan?.status || "")
+        .trim()
+        .toUpperCase() === "ACTIVE" &&
+      Number(loan?.remaining || 0) > 0
+    )
+    .reduce(
+      (sum, loan) =>
+        sum + Number(loan?.monthlyPayment || 0),
+      0
+    );
 
   categories.push({
     label: "Bank Loans",
-    value: totalLoans,
-    tone: "financing"
+    value: monthlyDebtService,
+    tone: "expense"
   });
 
   const max = Math.max(
@@ -2067,66 +2136,7 @@ function loadBreakdown() {
   });
 
 }
-     
-/* ============================================================
-   🟩 CF-B12 — ADD BANK LOANS FINANCING CARD (SAFE ADDITION)
-   Does NOT modify existing categories
-   Reads canonical bank structure from ACS_Finance.bank.loans
-   ============================================================ */
-
-(function(){
-
-  try{
-
-    const f = window.ACS_Finance;
-    if (!f) return;
-
-    const loans =
-      Array.isArray(f.bank?.loans)
-      ? f.bank.loans
-      : [];
-
-    if(loans.length === 0) return;
-
-    const total =
-      loans.reduce(
-        (sum, loan) =>
-          sum + Number(loan.originalAmount || 0),
-        0
-      );
-
-    const container =
-      document.getElementById("breakdownGrid");
-
-    if(!container) return;
-
-    const card =
-      document.createElement("div");
-
-    card.className = "finance-meter";
-
-    card.innerHTML = `
-      <div class="finance-meter-title">
-        Bank Loans (Financing) — $${Math.round(total).toLocaleString()}
-      </div>
-      <div class="finance-meter-bar">
-        <div class="finance-meter-fill"
-             style="width:100%; background:#00ffd0;">
-        </div>
-      </div>
-    `;
-
-    container.appendChild(card);
-
-  }
-  catch(e){
-
-    console.warn("CF-B12 failed:", e);
-
-  }
-
-})();
-     
+          
 /* ============================================================
    🟦 F-UI-3 — FINANCE UI LIVE REFRESH (same-tab)
    ------------------------------------------------------------
