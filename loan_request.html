@@ -2368,6 +2368,69 @@ async function submitLoan() {
   }
 }
 
+function ACS_bindLoanRequestControls() {
+
+  loanAmountInput.addEventListener(
+    "input",
+    () => {
+
+      let amount =
+        Math.max(
+          0,
+          cleanAmount(loanAmountInput.value)
+        );
+
+      amount =
+        Math.min(amount, MAX_PER_LOAN);
+
+      loanAmountInput.value =
+        amount > 0
+          ? formatAmount(amount)
+          : "";
+
+      loanSlider.value = amount;
+
+      calculatePayment();
+    }
+  );
+
+  loanSlider.addEventListener(
+    "input",
+    () => {
+
+      const rawAmount =
+        Number(loanSlider.value || 0);
+
+      const amount =
+        rawAmount >= MAX_PER_LOAN
+          ? MAX_PER_LOAN
+          : Math.min(
+              MAX_PER_LOAN,
+              Math.round(rawAmount / 1000) * 1000
+            );
+
+      loanSlider.value = amount;
+
+      loanAmountInput.value =
+        amount > 0
+          ? formatAmount(amount)
+          : "";
+
+      calculatePayment();
+    }
+  );
+
+  loanTermSelect.addEventListener(
+    "change",
+    calculatePayment
+  );
+
+  requestLoanBtn.addEventListener(
+    "click",
+    submitLoan
+  );
+}
+  
 function calculatePrincipalPreview(
   balance,
   percentage
@@ -2389,7 +2452,6 @@ function calculatePrincipalPreview(
     )
   );
 }
-
 function updatePrincipalPaymentModal() {
   if (!PRINCIPAL_PAYMENT_LOAN) return;
 
@@ -2445,76 +2507,12 @@ function updatePrincipalPaymentModal() {
     insufficient
   );
 
-  /* ============================================================
-   ACS LOAN REQUEST CONTROLS
-   ============================================================ */
-
-loanAmountInput.addEventListener(
-  "input",
-  () => {
-
-    let amount =
-      Math.max(
-        0,
-        cleanAmount(loanAmountInput.value)
-      );
-
-    if (amount > MAX_PER_LOAN) {
-      amount = MAX_PER_LOAN;
-    }
-
-    loanAmountInput.value =
-      amount > 0
-        ? formatAmount(amount)
-        : "";
-
-    loanSlider.value = amount;
-
-    calculatePayment();
-  }
-);
-
-loanSlider.addEventListener(
-  "input",
-  () => {
-
-    const rawAmount =
-      Number(loanSlider.value || 0);
-
-    const amount =
-      rawAmount >= MAX_PER_LOAN
-        ? MAX_PER_LOAN
-        : Math.min(
-            MAX_PER_LOAN,
-            Math.round(rawAmount / 1000) * 1000
-          );
-
-    loanSlider.value = amount;
-
-    loanAmountInput.value =
-      amount > 0
-        ? formatAmount(amount)
-        : "";
-
-    calculatePayment();
-  }
-);
-
-loanTermSelect.addEventListener(
-  "change",
-  calculatePayment
-);
-
-requestLoanBtn.addEventListener(
-  "click",
-  submitLoan
-);
-  
   document
     .querySelectorAll(
       "[data-principal-percent]"
     )
     .forEach(button => {
+
       button.classList.toggle(
         "is-selected",
         Number(
@@ -2536,23 +2534,34 @@ requestLoanBtn.addEventListener(
     PRINCIPAL_PAYMENT_BUSY;
 
   if (PRINCIPAL_PAYMENT_BUSY) {
+
     principalPaymentStatus.textContent =
       "Processing principal payment...";
+
     principalPaymentStatus.style.color =
       "#ffca5c";
+
   } else if (insufficient) {
+
     principalPaymentStatus.textContent =
       "Insufficient available capital.";
+
     principalPaymentStatus.style.color =
       "#ff4d6d";
+
   } else if (PRINCIPAL_PAYMENT_PERCENT > 0) {
+
     principalPaymentStatus.textContent =
       "Review and confirm the payment.";
+
     principalPaymentStatus.style.color =
       "#00ffd0";
+
   } else {
+
     principalPaymentStatus.textContent =
       "Select a payment percentage.";
+
     principalPaymentStatus.style.color =
       "#8ca8ff";
   }
@@ -2691,9 +2700,15 @@ function handleLogout(){
   window.location.href = "login.html";
 } 
 
+async function ACS_initializeLoanCenter() {
+  ACS_bindLoanRequestControls();
+  await loadBank();
+}
+
 document.addEventListener(
   "DOMContentLoaded",
-  loadBank
+  ACS_initializeLoanCenter,
+  { once: true }
 );
   
 </script>
