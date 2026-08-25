@@ -3177,15 +3177,39 @@ document.addEventListener("DOMContentLoaded", async () => {
     updateCountries()
   ]);
 
-  const airlineInput =
-    document.getElementById("airlineName");
+const airlineInput =
+  document.getElementById("airlineName");
 
-  if (airlineInput) {
-    airlineInput.addEventListener(
-      "input",
-      generateUniqueCodes
-    );
-  }
+if (airlineInput) {
+  airlineInput.addEventListener(
+    "input",
+    () => {
+      clearTimeout(
+        designatorPreviewTimer
+      );
+
+      const iataInput =
+        document.getElementById("iata");
+
+      const icaoInput =
+        document.getElementById("icao");
+
+      if (iataInput) {
+        iataInput.value = "";
+      }
+
+      if (icaoInput) {
+        icaoInput.value = "";
+      }
+
+      designatorPreviewTimer =
+        setTimeout(
+          previewAirlineDesignators,
+          350
+        );
+    }
+  );
+}
 
   const regionSelect =
     document.getElementById("region");
