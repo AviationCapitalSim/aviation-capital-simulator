@@ -3508,8 +3508,14 @@ async function handleAirlineCreation(event) {
         airline_name: airline.name,
         country,
         region,
-        business_model: businessModel,
-        operation_mode: operationMode
+        business_model:
+          businessModel,
+
+        operation_mode:
+          operationMode,
+
+        airline_type:
+          airlineType
       })
     });
 
@@ -4187,7 +4193,7 @@ if (airlineInput) {
   const regionSelect =
     document.getElementById("region");
 
-  if (regionSelect) {
+    if (regionSelect) {
     regionSelect.addEventListener(
       "change",
       async () => {
@@ -4195,6 +4201,17 @@ if (airlineInput) {
       }
     );
   }
+
+  document.addEventListener(
+    "keydown",
+    event => {
+      if (
+        event.key === "Escape"
+      ) {
+        ACS_closeAirlineTypeInfo();
+      }
+    }
+  );
 
 });
 
