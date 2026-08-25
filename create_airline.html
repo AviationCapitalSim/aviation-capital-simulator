@@ -2073,6 +2073,450 @@ button {
   margin-left: auto;
   margin-right: 45px;
 }
+
+/* ============================================================
+   ACS AIRLINE TYPE SELECTOR
+   ============================================================ */
+
+.airline-type-section {
+  display: grid;
+  gap: 10px;
+
+  padding: 13px;
+
+  background:
+    rgba(4, 15, 34, 0.70);
+
+  border:
+    1px solid rgba(255, 179, 0, 0.30);
+
+  border-radius: 11px;
+}
+
+.airline-type-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.airline-type-title {
+  color:
+    rgba(238, 243, 255, 0.90);
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
+}
+
+#createAirlineForm .type-info-btn {
+  width: auto;
+  height: 30px;
+
+  padding: 0 10px;
+
+  color:
+    rgba(217, 235, 255, 0.92);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(55, 126, 218, 0.23),
+      rgba(18, 59, 116, 0.19)
+    );
+
+  border:
+    1px solid rgba(111, 174, 255, 0.50);
+
+  border-radius: 8px;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 0.51rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+#createAirlineForm .type-info-btn:hover {
+  transform: translateY(-1px);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(71, 151, 255, 0.39),
+      rgba(22, 78, 151, 0.32)
+    );
+
+  box-shadow:
+    0 0 15px rgba(75, 151, 255, 0.22);
+}
+
+.airline-type-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 8px;
+}
+
+#createAirlineForm .airline-type-option {
+  min-width: 0;
+  height: 44px;
+
+  padding: 0 8px;
+
+  color:
+    rgba(218, 228, 247, 0.90);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(22, 59, 108, 0.42),
+      rgba(7, 25, 54, 0.62)
+    );
+
+  border:
+    1px solid rgba(73, 137, 218, 0.46);
+
+  border-radius: 9px;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 0.61rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+
+  text-transform: uppercase;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+#createAirlineForm
+.airline-type-option:not(:disabled):hover {
+  transform: translateY(-1px);
+
+  color: #ffffff;
+
+  border-color:
+    rgba(255, 190, 46, 0.64);
+
+  box-shadow:
+    0 0 13px rgba(255, 179, 0, 0.15);
+}
+
+#createAirlineForm
+.airline-type-option.is-selected {
+  color: #071528;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffd266,
+      #e39a19
+    );
+
+  border-color:
+    rgba(255, 226, 153, 0.90);
+
+  box-shadow:
+    0 0 16px rgba(255, 179, 0, 0.28);
+}
+
+#createAirlineForm
+.airline-type-option:disabled {
+  color:
+    rgba(137, 146, 164, 0.44);
+
+  background:
+    rgba(32, 39, 52, 0.34);
+
+  border-color:
+    rgba(118, 125, 139, 0.20);
+
+  box-shadow: none;
+
+  cursor: not-allowed;
+}
+
+.airline-type-limit-note {
+  min-height: 17px;
+
+  color:
+    rgba(143, 184, 240, 0.82);
+
+  font-size: 0.72rem;
+  line-height: 1.35;
+
+  text-align: center;
+}
+
+
+/* ============================================================
+   ACS TYPE INFORMATION MODAL
+   ============================================================ */
+
+.airline-type-info-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 7000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(13, 42, 85, 0.31),
+      rgba(0, 5, 17, 0.92)
+    );
+
+  backdrop-filter: blur(9px);
+  -webkit-backdrop-filter: blur(9px);
+}
+
+.airline-type-info-overlay[hidden] {
+  display: none;
+}
+
+.airline-type-info-modal {
+  width:
+    min(780px, calc(100vw - 32px));
+
+  max-height:
+    calc(100vh - 40px);
+
+  overflow-y: auto;
+
+  padding: 24px;
+
+  color: #edf4ff;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(12, 31, 66, 0.995),
+      rgba(3, 11, 27, 0.995)
+    );
+
+  border:
+    1px solid rgba(255, 179, 0, 0.72);
+
+  border-radius: 18px;
+
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.76),
+    0 0 30px rgba(255, 179, 0, 0.09);
+}
+
+.airline-type-info-header {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto;
+
+  align-items: start;
+  gap: 16px;
+
+  margin-bottom: 18px;
+}
+
+.airline-type-info-header h3 {
+  margin: 0 0 6px;
+
+  color: #ffbd27;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
+}
+
+.airline-type-info-header p {
+  margin: 0;
+
+  color:
+    rgba(194, 211, 241, 0.82);
+
+  font-size: 0.82rem;
+}
+
+.airline-type-info-close {
+  width: 36px;
+  height: 36px;
+
+  padding: 0;
+
+  color: #ffffff;
+
+  background:
+    rgba(255, 255, 255, 0.06);
+
+  border:
+    1px solid rgba(255, 255, 255, 0.17);
+
+  border-radius: 9px;
+
+  font-size: 1.15rem;
+  cursor: pointer;
+}
+
+.airline-type-info-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 12px;
+}
+
+.airline-type-info-card {
+  padding: 15px;
+
+  background:
+    rgba(8, 26, 56, 0.72);
+
+  border:
+    1px solid rgba(75, 139, 224, 0.38);
+
+  border-radius: 12px;
+}
+
+.airline-type-info-card.is-available {
+  border-color:
+    rgba(63, 223, 153, 0.50);
+}
+
+.airline-type-info-card.is-locked {
+  opacity: 0.48;
+  filter: grayscale(0.48);
+}
+
+.airline-type-info-card h4 {
+  margin: 0 0 11px;
+
+  color: #ffbd27;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 0.76rem;
+  letter-spacing: 0.06em;
+}
+
+.airline-type-info-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 6px 0;
+
+  color:
+    rgba(194, 211, 241, 0.84);
+
+  border-bottom:
+    1px solid rgba(94, 135, 194, 0.14);
+
+  font-size: 0.76rem;
+}
+
+.airline-type-info-row strong {
+  color: #ffffff;
+  text-align: right;
+}
+
+.airline-type-info-status {
+  margin-top: 11px;
+
+  color: #26f0b2;
+
+  font-family:
+    "Orbitron",
+    sans-serif;
+
+  font-size: 0.61rem;
+  font-weight: 700;
+
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.airline-type-info-card.is-locked
+.airline-type-info-status {
+  color: #ff6f7d;
+}
+
+.airline-type-financing-note {
+  margin: 17px 0 0;
+  padding: 12px 14px;
+
+  color:
+    rgba(213, 225, 246, 0.86);
+
+  background:
+    rgba(7, 22, 47, 0.72);
+
+  border:
+    1px solid rgba(255, 179, 0, 0.24);
+
+  border-radius: 10px;
+
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 620px) {
+  .airline-type-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .airline-type-info-modal {
+    padding: 18px;
+  }
+}
         
 </style>
 </head>
