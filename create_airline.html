@@ -2163,13 +2163,7 @@ button {
         readonly
       />
 
-      <input
-        type="text"
-        id="slogan"
-        placeholder="Airline Slogan (optional)"
-      />
-
-            <select
+     <select
         id="region"
         required
         disabled
@@ -2314,6 +2308,7 @@ let isSubmittingAirline = false;
 /* ============================================================
    LOAD OFFICIAL ONBOARDING BASE FROM RAILWAY
    ============================================================ */
+     
 async function updateCountries() {
 
   try {
@@ -2414,7 +2409,6 @@ async function handleAirlineCreation(event) {
   const country = document.getElementById("country").value;
   const businessModel = document.getElementById("businessModel").value;
   const operationMode = document.getElementById("operationMode").value;
-  const slogan = document.getElementById("slogan").value.trim();
   const icao = document.getElementById("icao").value.trim().toUpperCase();
   const iata = document.getElementById("iata").value.trim().toUpperCase();
 
@@ -2433,7 +2427,6 @@ async function handleAirlineCreation(event) {
     name: airlineName,
     icao,
     iata,
-    slogan,
     region,
     country,
     businessModel,
