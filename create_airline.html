@@ -2621,6 +2621,15 @@ button {
         readonly
       />
 
+     <input
+        type="text"
+         id="callsign"
+         placeholder="Callsign (assigned automatically)"
+         maxlength="6"
+         autocomplete="off"
+         readonly
+      />           
+         
      <select
         id="region"
         required
@@ -3330,7 +3339,7 @@ let designatorPreviewTimer = null;
 let designatorPreviewController = null;
 
 async function previewAirlineDesignators() {
-     
+
   const airlineInput =
     document.getElementById("airlineName");
 
@@ -3340,16 +3349,24 @@ async function previewAirlineDesignators() {
   const icaoInput =
     document.getElementById("icao");
 
+  const callsignInput =
+    document.getElementById("callsign");
+
   const airlineName =
     String(airlineInput?.value || "").trim();
 
-  if (!iataInput || !icaoInput) {
+  if (
+    !iataInput ||
+    !icaoInput ||
+    !callsignInput
+  ) {
     return;
   }
 
   if (airlineName.length < 2) {
     iataInput.value = "";
     icaoInput.value = "";
+    callsignInput.value = "";
     return;
   }
 
@@ -3377,7 +3394,8 @@ async function previewAirlineDesignators() {
       !response.ok ||
       !result.ok ||
       !result.airline_iata ||
-      !result.airline_icao
+      !result.airline_icao ||
+      !result.airline_callsign
     ) {
       throw new Error(
         result.error ||
@@ -3398,6 +3416,9 @@ async function previewAirlineDesignators() {
     icaoInput.value =
       result.airline_icao;
 
+    callsignInput.value =
+      result.airline_callsign;
+
   } catch (error) {
     if (error.name === "AbortError") {
       return;
@@ -3410,6 +3431,7 @@ async function previewAirlineDesignators() {
 
     iataInput.value = "";
     icaoInput.value = "";
+    callsignInput.value = "";
   }
 }
      
@@ -4166,6 +4188,9 @@ if (airlineInput) {
       const icaoInput =
         document.getElementById("icao");
 
+      const callsignInput =
+        document.getElementById("callsign");
+         
       if (iataInput) {
         iataInput.value = "";
       }
@@ -4174,6 +4199,10 @@ if (airlineInput) {
         icaoInput.value = "";
       }
 
+      if (callsignInput) {
+        callsignInput.value = "";
+      }
+         
       designatorPreviewTimer =
         setTimeout(
           previewAirlineDesignators,
