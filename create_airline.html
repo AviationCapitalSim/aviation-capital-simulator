@@ -2116,27 +2116,29 @@ button {
 
   text-transform: uppercase;
 }
-
 #createAirlineForm .type-info-btn {
   width: auto;
-  height: 30px;
+  height: 32px;
+  padding: 0 13px;
 
-  padding: 0 10px;
-
-  color:
-    rgba(217, 235, 255, 0.92);
+  color: #061326;
 
   background:
     linear-gradient(
       180deg,
-      rgba(55, 126, 218, 0.23),
-      rgba(18, 59, 116, 0.19)
+      #ffd469 0%,
+      #ffb719 55%,
+      #e79700 100%
     );
 
   border:
-    1px solid rgba(111, 174, 255, 0.50);
+    1px solid rgba(255, 219, 122, 0.95);
 
   border-radius: 8px;
+
+  box-shadow:
+    0 0 12px rgba(255, 183, 25, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
 
   font-family:
     "Orbitron",
@@ -2144,20 +2146,32 @@ button {
     "Exo 2",
     sans-serif;
 
-  font-size: 0.51rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-size: 0.54rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
 
   cursor: pointer;
 
   transition:
     transform 0.2s ease,
-    background 0.2s ease,
+    filter 0.2s ease,
     box-shadow 0.2s ease;
 }
 
 #createAirlineForm .type-info-btn:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+
+  filter: brightness(1.08);
+
+  box-shadow:
+    0 0 20px rgba(255, 190, 45, 0.58),
+    inset 0 1px 0 rgba(255, 255, 255, 0.58);
+}
+
+#createAirlineForm .type-info-btn:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+}
 
   background:
     linear-gradient(
@@ -2744,27 +2758,6 @@ button {
         </div>
 
       </section>
-
-      <select id="businessModel" required>
-        <option value="">
-          Select Airline Model
-        </option>
-        <option value="Regional">
-          Regional
-        </option>
-        <option value="International">
-          International
-        </option>
-      </select>
-
-      <select id="operationMode" required>
-        <option value="">
-          Select Operation Mode
-        </option>
-        <option value="Passenger">
-          Passenger
-        </option>
-      </select>
 
       <button type="submit">
         CREATE AIRLINE
@@ -3444,14 +3437,21 @@ async function handleAirlineCreation(event) {
     return false;
   }
 
-  const airlineName = document.getElementById("airlineName").value.trim();
-  const region = document.getElementById("region").value;
-  const country = document.getElementById("country").value;
-  const businessModel = document.getElementById("businessModel").value;
-  const operationMode =
-    document.getElementById(
-      "operationMode"
-    ).value;
+    const airlineName =
+    document
+      .getElementById("airlineName")
+      .value
+      .trim();
+
+  const region =
+    document
+      .getElementById("region")
+      .value;
+
+  const country =
+    document
+      .getElementById("country")
+      .value;
 
   const airlineType =
     ACS_selectedAirlineType;
@@ -3483,14 +3483,12 @@ async function handleAirlineCreation(event) {
     return false;
   }
 
-  const airline = {
+    const airline = {
     name: airlineName,
     icao,
     iata,
     region,
     country,
-    businessModel,
-    operationMode,
     airlineType
   };
 
@@ -3504,16 +3502,11 @@ async function handleAirlineCreation(event) {
       headers: {
         "Content-Type": "application/json"
       },
+         
       body: JSON.stringify({
         airline_name: airline.name,
         country,
         region,
-        business_model:
-          businessModel,
-
-        operation_mode:
-          operationMode,
-
         airline_type:
           airlineType
       })
