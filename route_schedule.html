@@ -1393,6 +1393,8 @@ if (allDays) {
 }
 
   await RS_populateAircraftSelector(edit.aircraftId);
+  
+  await RS_refreshInfrastructureAuthority();
 
   const btn = document.getElementById("confirmRouteBtn");
   if (btn) {
