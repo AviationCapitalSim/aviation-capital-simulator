@@ -2087,79 +2087,466 @@ function ACS_checkRangeSimple(distNM, publishedRange) {
     };
 }
 
-/* ============================================================
-   🟦 ACS ROUTE CHECK CHIP — Airbus OCC Feasibility Display
-   ============================================================ */
+window.ACS_ROUTE_INFRASTRUCTURE_CHECK = null;
+window.__ACS_ROUTE_INFRASTRUCTURE_REQUEST = 0;
 
-function RS_updateRouteCheckChip(distNM, aircraftRangeNM, rangeCheck) {
+function RS_setConfirmRouteAvailability(
+  enabled,
+  title = ""
+) {
+  const confirmBtn =
+    document.getElementById("confirmRouteBtn");
 
-  const chip = document.getElementById("routeCheckChip");
-  const title = document.getElementById("routeCheckTitle");
-  const distanceEl = document.getElementById("routeCheckDistance");
-  const rangeEl = document.getElementById("routeCheckRange");
-  const excessEl = document.getElementById("routeCheckExcess");
-  const confirmBtn = document.getElementById("confirmRouteBtn");
+  if (!confirmBtn) return;
 
-  if (!chip || !title || !distanceEl || !rangeEl || !excessEl) {
+  confirmBtn.disabled = !enabled;
+  confirmBtn.style.opacity = enabled
+    ? "1"
+    : "0.45";
+
+  confirmBtn.style.cursor = enabled
+    ? "pointer"
+    : "not-allowed";
+
+  confirmBtn.title = title;
+}
+
+async function RS_refreshInfrastructureAuthority() {
+
+  const selectedAircraft =
+    typeof RS_getSelectedAircraftFromBackendCache ===
+    "function"
+      ? RS_getSelectedAircraftFromBackendCache()
+      : null;
+
+  const aircraftId = Number(
+    selectedAircraft?.id || 0
+  );
+
+  const requestId =
+    ++window.__ACS_ROUTE_INFRASTRUCTURE_REQUEST;
+
+  if (
+    !Number.isInteger(aircraftId) ||
+    aircraftId <= 0
+  ) {
+    window.ACS_ROUTE_INFRASTRUCTURE_CHECK = null;
+
+    if (
+      typeof RS_clearRouteCheckChip ===
+      "function"
+    ) {
+      RS_clearRouteCheckChip();
+    }
+
+    return null;
+  }
+
+  window.ACS_ROUTE_INFRASTRUCTURE_CHECK = {
+    status: "loading",
+    authorized: false,
+    aircraft_id: aircraftId
+  };
+
+  if (typeof autoCalculate === "function") {
+    autoCalculate();
+  }
+
+  try {
+
+    const response = await fetch(
+      "https://api.aviationcapitalsim.com" +
+      "/v1/routes/" +
+      "aircraft-infrastructure-authority/" +
+      encodeURIComponent(aircraftId),
+      {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          "Accept": "application/json"
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (
+      requestId !==
+      window.__ACS_ROUTE_INFRASTRUCTURE_REQUEST
+    ) {
+      return null;
+    }
+
+    if (
+      !response.ok ||
+      !data ||
+      data.ok !== true ||
+      !data.infrastructure_check
+    ) {
+      throw new Error(
+        data?.details ||
+        data?.error ||
+        "INFRASTRUCTURE_AUTHORITY_FAILED"
+      );
+    }
+
+    const check = data.infrastructure_check;
+
+    window.ACS_ROUTE_INFRASTRUCTURE_CHECK = {
+      status: "ready",
+      aircraft_id: aircraftId,
+
+      authorized:
+        check.authorized === true,
+
+      denial_code:
+        check.denial_code || null,
+
+      company_infrastructure:
+        String(
+          check.company_infrastructure || ""
+        ).toUpperCase(),
+
+      aircraft_classification:
+        String(
+          check.aircraft_classification || ""
+        ).toUpperCase(),
+
+      required_infrastructure:
+        String(
+          check.required_infrastructure || ""
+        ).toUpperCase(),
+
+      company_rank:
+        Number(check.company_rank || 0),
+
+      required_rank:
+        Number(check.required_rank || 0)
+    };
+
+  } catch (error) {
+
+    if (
+      requestId !==
+      window.__ACS_ROUTE_INFRASTRUCTURE_REQUEST
+    ) {
+      return null;
+    }
+
+    console.error(
+      "ACS INFRASTRUCTURE AUTHORITY ERROR:",
+      error
+    );
+
+    window.ACS_ROUTE_INFRASTRUCTURE_CHECK = {
+      status: "error",
+      authorized: false,
+      aircraft_id: aircraftId,
+      denial_code:
+        "INFRASTRUCTURE_AUTHORITY_UNAVAILABLE"
+    };
+  }
+
+  if (typeof autoCalculate === "function") {
+    autoCalculate();
+  }
+
+  return window.ACS_ROUTE_INFRASTRUCTURE_CHECK;
+}
+
+function RS_handleAircraftSelectionChange() {
+  RS_refreshInfrastructureAuthority();
+}
+
+function RS_updateRouteCheckChip(
+  distNM,
+  aircraftRangeNM,
+  rangeCheck
+) {
+
+  const chip =
+    document.getElementById("routeCheckChip");
+
+  const title =
+    document.getElementById("routeCheckTitle");
+
+  const message =
+    document.getElementById("routeCheckMessage");
+
+  const labelDistance =
+    document.getElementById(
+      "routeCheckLabelDistance"
+    );
+
+  const labelRange =
+    document.getElementById(
+      "routeCheckLabelRange"
+    );
+
+  const labelExcess =
+    document.getElementById(
+      "routeCheckLabelExcess"
+    );
+
+  const distanceEl =
+    document.getElementById(
+      "routeCheckDistance"
+    );
+
+  const rangeEl =
+    document.getElementById(
+      "routeCheckRange"
+    );
+
+  const excessEl =
+    document.getElementById(
+      "routeCheckExcess"
+    );
+
+  if (
+    !chip ||
+    !title ||
+    !message ||
+    !labelDistance ||
+    !labelRange ||
+    !labelExcess ||
+    !distanceEl ||
+    !rangeEl ||
+    !excessEl
+  ) {
     return;
   }
 
-  const distance = Math.round(Number(distNM || 0));
-  const range = Math.round(Number(aircraftRangeNM || 0));
-  const excess = Math.max(0, distance - range);
+  const infrastructure =
+    window.ACS_ROUTE_INFRASTRUCTURE_CHECK;
 
   chip.style.display = "block";
 
-  distanceEl.textContent = `${distance} NM`;
-  rangeEl.textContent = `${range} NM`;
-  excessEl.textContent = `${excess} NM`;
+  chip.classList.remove(
+    "route-check-ok",
+    "route-check-danger"
+  );
 
-  chip.classList.remove("route-check-ok", "route-check-danger");
-  excessEl.classList.remove("route-check-excess");
+  distanceEl.classList.remove(
+    "route-check-excess",
+    "route-check-warning",
+    "route-check-required"
+  );
 
-  if (rangeCheck && rangeCheck.ok === false) {
+  rangeEl.classList.remove(
+    "route-check-excess",
+    "route-check-warning",
+    "route-check-required"
+  );
+
+  excessEl.classList.remove(
+    "route-check-excess",
+    "route-check-warning",
+    "route-check-required"
+  );
+
+  if (
+    !infrastructure ||
+    infrastructure.status === "loading"
+  ) {
+    title.textContent =
+      "CHECKING OPERATION AUTHORITY";
+
+    message.style.display = "block";
+    message.textContent =
+      "Validating company infrastructure capability.";
+
+    labelDistance.textContent =
+      "COMPANY INFRASTRUCTURE";
+
+    labelRange.textContent =
+      "AIRCRAFT CLASSIFICATION";
+
+    labelExcess.textContent =
+      "REQUIRED INFRASTRUCTURE";
+
+    distanceEl.textContent = "--";
+    rangeEl.textContent = "--";
+    excessEl.textContent = "--";
+
+    RS_setConfirmRouteAvailability(
+      false,
+      "Checking company infrastructure."
+    );
+
+    return;
+  }
+
+  if (infrastructure.status === "error") {
     chip.classList.add("route-check-danger");
-    title.textContent = "ROUTE CHECK — NOT DISPATCHABLE";
-    excessEl.classList.add("route-check-excess");
 
-    if (confirmBtn) {
-      confirmBtn.disabled = true;
-      confirmBtn.style.opacity = "0.45";
-      confirmBtn.style.cursor = "not-allowed";
-      confirmBtn.title = "Aircraft range insufficient for this route.";
-    }
+    title.textContent =
+      "OPERATION AUTHORITY UNAVAILABLE";
+
+    message.style.display = "block";
+    message.textContent =
+      "ACS could not validate this aircraft operation.";
+
+    labelDistance.textContent =
+      "COMPANY INFRASTRUCTURE";
+
+    labelRange.textContent =
+      "AIRCRAFT CLASSIFICATION";
+
+    labelExcess.textContent =
+      "REQUIRED INFRASTRUCTURE";
+
+    distanceEl.textContent = "UNAVAILABLE";
+    rangeEl.textContent = "UNAVAILABLE";
+    excessEl.textContent = "UNAVAILABLE";
+
+    distanceEl.classList.add(
+      "route-check-excess"
+    );
+
+    RS_setConfirmRouteAvailability(
+      false,
+      "Operation authority unavailable."
+    );
+
+    return;
+  }
+
+  if (infrastructure.authorized !== true) {
+    chip.classList.add("route-check-danger");
+
+    title.textContent =
+      "OPERATION NOT AUTHORIZED";
+
+    message.style.display = "block";
+    message.textContent =
+      "This aircraft exceeds the company’s " +
+      "current infrastructure capability.";
+
+    labelDistance.textContent =
+      "COMPANY INFRASTRUCTURE";
+
+    labelRange.textContent =
+      "AIRCRAFT CLASSIFICATION";
+
+    labelExcess.textContent =
+      "REQUIRED INFRASTRUCTURE";
+
+    distanceEl.textContent =
+      infrastructure.company_infrastructure ||
+      "NOT AVAILABLE";
+
+    rangeEl.textContent =
+      infrastructure.aircraft_classification ||
+      "NOT AVAILABLE";
+
+    excessEl.textContent =
+      infrastructure.required_infrastructure ||
+      "NOT AVAILABLE";
+
+    distanceEl.classList.add(
+      "route-check-excess"
+    );
+
+    rangeEl.classList.add(
+      "route-check-warning"
+    );
+
+    excessEl.classList.add(
+      "route-check-required"
+    );
+
+    RS_setConfirmRouteAvailability(
+      false,
+      "Aircraft exceeds company infrastructure."
+    );
+
+    return;
+  }
+
+  const distance = Math.round(
+    Number(distNM || 0)
+  );
+
+  const range = Math.round(
+    Number(aircraftRangeNM || 0)
+  );
+
+  const excess = Math.max(
+    0,
+    distance - range
+  );
+
+  message.style.display = "none";
+  message.textContent = "";
+
+  labelDistance.textContent =
+    "ROUTE DISTANCE";
+
+  labelRange.textContent =
+    "AIRCRAFT MAX RANGE";
+
+  labelExcess.textContent =
+    "EXCESS";
+
+  distanceEl.textContent =
+    `${distance} NM`;
+
+  rangeEl.textContent =
+    `${range} NM`;
+
+  excessEl.textContent =
+    `${excess} NM`;
+
+  if (
+    rangeCheck &&
+    rangeCheck.ok === false
+  ) {
+    chip.classList.add("route-check-danger");
+
+    title.textContent =
+      "ROUTE CHECK — NOT DISPATCHABLE";
+
+    excessEl.classList.add(
+      "route-check-excess"
+    );
+
+    RS_setConfirmRouteAvailability(
+      false,
+      "Aircraft range insufficient for this route."
+    );
 
     return;
   }
 
   chip.classList.add("route-check-ok");
-  title.textContent = "ROUTE CHECK — DISPATCHABLE";
 
-  if (confirmBtn) {
-    confirmBtn.disabled = false;
-    confirmBtn.style.opacity = "1";
-    confirmBtn.style.cursor = "pointer";
-    confirmBtn.title = "";
-  }
+  title.textContent =
+    "ROUTE CHECK — DISPATCHABLE";
+
+  RS_setConfirmRouteAvailability(true);
 }
 
 function RS_clearRouteCheckChip() {
 
-  const chip = document.getElementById("routeCheckChip");
-  const confirmBtn = document.getElementById("confirmRouteBtn");
+  const chip =
+    document.getElementById("routeCheckChip");
 
   if (chip) {
     chip.style.display = "none";
-    chip.classList.remove("route-check-ok", "route-check-danger");
+
+    chip.classList.remove(
+      "route-check-ok",
+      "route-check-danger"
+    );
   }
 
-  if (confirmBtn) {
-    confirmBtn.disabled = false;
-    confirmBtn.style.opacity = "1";
-    confirmBtn.style.cursor = "pointer";
-    confirmBtn.title = "";
-  }
-}     
+  RS_setConfirmRouteAvailability(
+    false,
+    "Select an aircraft and validate the route."
+  );
+}
      
 /* ============================================================
    🟦 C) CREW ENGINE — Reemplazo para Route Schedule
