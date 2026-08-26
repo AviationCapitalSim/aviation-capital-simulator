@@ -396,43 +396,496 @@ body::after {
 }
   
 /* ============================================================
-   === WELCOME CHIPS — Airbus OCC Clean =======================
+   ACS OCC — AIRLINE TELEMETRY HUD
+   Rank • Registry • Base • Callsign • Infrastructure
    ============================================================ */
 
-.welcome-badges{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  margin-top:8px;
-  margin-bottom:36px;
-  gap:32px;
+.acs-occ-telemetry{
+  position:relative;
+
+  width:min(860px, 88vw);
+  height:118px;
+
+  margin:34px auto 42px;
+
+  display:grid;
+  grid-template-columns:repeat(5, 1fr);
+  align-items:start;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Segoe UI",
+    sans-serif;
+
+  isolation:isolate;
 }
 
-.welcome-chip{
-  padding:6px 18px;
-  font-size:0.85rem;
-  letter-spacing:1px;
+
+/* ============================================================
+   OCC NODE
+   ============================================================ */
+
+.occ-node{
+  position:relative;
+  z-index:3;
+
+  min-width:0;
+
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+
+  text-align:center;
+}
+
+
+/* ============================================================
+   SMALL TECHNICAL LABEL
+   ============================================================ */
+
+.occ-label{
+  height:15px;
+
+  margin-bottom:4px;
+
+  color:#5cc9ff;
+
+  font-size:0.58rem;
+  font-weight:600;
+
+  letter-spacing:0.16em;
+  line-height:1;
+
   text-transform:uppercase;
 
-  border-radius:6px;
+  text-shadow:
+    0 0 5px rgba(70,190,255,.42);
+}
 
-  background:rgba(25,45,85,0.65);
-  border:1px solid rgba(120,180,255,0.25);
 
-  color:#dbe6ff;
+/* ============================================================
+   VECTOR ICON
+   ============================================================ */
+
+.occ-icon{
+  width:31px;
+  height:31px;
+
+  margin-bottom:3px;
 
   display:flex;
   align-items:center;
-  gap:8px;
+  justify-content:center;
 
-  backdrop-filter:blur(4px);
+  color:#55c9ff;
+
+  filter:
+    drop-shadow(0 0 3px rgba(60,190,255,.40))
+    drop-shadow(0 0 7px rgba(30,130,255,.18));
 }
 
-/* Base — un poco más técnico (no royal blue) */
-.welcome-chip.base-chip{
-  background:rgba(0,80,160,0.25);
-  border:1px solid rgba(120,180,255,0.55);
-  color:#8ecbff;
+.occ-icon svg{
+  width:100%;
+  height:100%;
+
+  overflow:visible;
+}
+
+
+/* ============================================================
+   RANK ICON
+   ============================================================ */
+
+.occ-rank-icon{
+  color:#d99045;
+
+  filter:
+    drop-shadow(0 0 3px rgba(255,175,75,.45))
+    drop-shadow(0 0 7px rgba(255,145,40,.20));
+}
+
+
+/* ============================================================
+   REGISTRY FLAG
+   ============================================================ */
+
+.occ-flag-icon{
+  width:auto;
+  min-width:31px;
+
+  font-family:
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    sans-serif;
+
+  font-size:1.35rem;
+
+  line-height:31px;
+
+  filter:
+    drop-shadow(0 1px 1px rgba(0,0,0,.80))
+    drop-shadow(0 0 5px rgba(70,180,255,.18));
+}
+
+
+/* ============================================================
+   PRIMARY VALUE
+   ============================================================ */
+
+.occ-value{
+  width:100%;
+
+  margin-top:1px;
+
+  padding:0 6px;
+
+  overflow:hidden;
+
+  color:#dce9f8;
+
+  font-size:0.69rem;
+  font-weight:600;
+
+  letter-spacing:0.07em;
+  line-height:1.2;
+
+  text-transform:uppercase;
+
+  white-space:nowrap;
+  text-overflow:ellipsis;
+
+  text-shadow:
+    0 1px 2px rgba(0,0,0,.90),
+    0 0 5px rgba(80,180,255,.15);
+}
+
+.occ-primary-value{
+  color:#6fcfff;
+
+  text-shadow:
+    0 0 5px rgba(70,190,255,.34);
+}
+
+
+/* ============================================================
+   RANK VALUE
+   ============================================================ */
+
+.occ-rank-value{
+  color:#d99855;
+
+  text-shadow:
+    0 0 5px rgba(255,160,65,.28);
+}
+
+
+/* ============================================================
+   SMALL VERTICAL LINK INTO DATA BUS
+   ============================================================ */
+
+.occ-techline{
+  position:absolute;
+
+  top:76px;
+  left:50%;
+
+  width:1px;
+  height:12px;
+
+  transform:translateX(-50%);
+
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(80,200,255,.75),
+      rgba(80,200,255,.08)
+    );
+
+  box-shadow:
+    0 0 5px rgba(70,190,255,.28);
+}
+
+
+/* ============================================================
+   OCC DATA BUS
+   ============================================================ */
+
+.occ-data-bus{
+  position:absolute;
+
+  z-index:1;
+
+  left:0;
+  right:0;
+
+  top:68px;
+
+  width:100%;
+  height:50px;
+
+  pointer-events:none;
+}
+
+.occ-data-bus svg{
+  display:block;
+
+  width:100%;
+  height:100%;
+
+  overflow:visible;
+}
+
+
+/* MAIN CYAN LINE */
+
+.occ-bus-main{
+  fill:none;
+
+  stroke:#399ee5;
+  stroke-width:1.25;
+
+  vector-effect:non-scaling-stroke;
+
+  opacity:.82;
+
+  filter:url(#occBusGlow);
+}
+
+
+/* LOWER TECHNICAL CIRCUIT */
+
+.occ-bus-secondary{
+  fill:none;
+
+  stroke:#397fb6;
+  stroke-width:1;
+
+  vector-effect:non-scaling-stroke;
+
+  opacity:.48;
+}
+
+
+/* GOLD NODES */
+
+.occ-bus-node{
+  fill:#ffc24c;
+
+  stroke:#fff0bd;
+  stroke-width:.8;
+
+  vector-effect:non-scaling-stroke;
+
+  filter:
+    drop-shadow(0 0 2px #ffd36b)
+    drop-shadow(0 0 5px rgba(255,174,40,.75));
+}
+
+
+/* ============================================================
+   SMALL ACS OCC SIGNAL DETAILS
+   ============================================================ */
+
+.occ-node::after{
+  content:"";
+
+  position:absolute;
+
+  top:100px;
+
+  width:24px;
+  height:2px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,181,50,.85),
+      rgba(255,210,110,.95),
+      transparent
+    );
+
+  opacity:.72;
+
+  box-shadow:
+    0 0 4px rgba(255,180,45,.28);
+}
+
+
+/* Slight variations prevent the HUD from looking repetitive */
+
+.occ-node:nth-child(2)::after{
+  width:15px;
+  transform:translateX(11px);
+}
+
+.occ-node:nth-child(3)::after{
+  width:27px;
+}
+
+.occ-node:nth-child(4)::after{
+  width:17px;
+  transform:translateX(-10px);
+}
+
+.occ-node:nth-child(5)::after{
+  width:23px;
+}
+
+
+/* ============================================================
+   SUBTLE OCC STATUS PULSE
+   ============================================================ */
+
+@keyframes occNodePulse{
+
+  0%,
+  100%{
+    opacity:.72;
+  }
+
+  50%{
+    opacity:1;
+  }
+}
+
+.occ-bus-node{
+  animation:
+    occNodePulse 3.6s ease-in-out infinite;
+}
+
+.occ-bus-node:nth-of-type(2){
+  animation-delay:.35s;
+}
+
+.occ-bus-node:nth-of-type(3){
+  animation-delay:.70s;
+}
+
+.occ-bus-node:nth-of-type(4){
+  animation-delay:1.05s;
+}
+
+
+/* ============================================================
+   TABLET
+   ============================================================ */
+
+@media (max-width:900px){
+
+  .acs-occ-telemetry{
+    width:min(760px, 94vw);
+    height:112px;
+
+    margin-top:30px;
+
+    column-gap:2px;
+  }
+
+  .occ-label{
+    font-size:.53rem;
+    letter-spacing:.12em;
+  }
+
+  .occ-icon{
+    width:28px;
+    height:28px;
+  }
+
+  .occ-value{
+    font-size:.62rem;
+    letter-spacing:.045em;
+  }
+
+  .occ-techline{
+    top:71px;
+  }
+
+  .occ-data-bus{
+    top:64px;
+  }
+
+  .occ-node::after{
+    top:95px;
+  }
+}
+
+
+/* ============================================================
+   MOBILE
+   Keep all five OCC nodes visible without creating cards
+   ============================================================ */
+
+@media (max-width:600px){
+
+  .acs-occ-telemetry{
+    width:96vw;
+    height:100px;
+
+    margin-top:27px;
+    margin-bottom:32px;
+
+    grid-template-columns:repeat(5, minmax(0,1fr));
+  }
+
+  .occ-label{
+    height:12px;
+
+    margin-bottom:3px;
+
+    font-size:.43rem;
+    letter-spacing:.07em;
+  }
+
+  .occ-icon{
+    width:23px;
+    height:23px;
+
+    margin-bottom:2px;
+  }
+
+  .occ-flag-icon{
+    min-width:23px;
+
+    font-size:1.05rem;
+    line-height:23px;
+  }
+
+  .occ-value{
+    padding:0 2px;
+
+    font-size:.50rem;
+    letter-spacing:.025em;
+  }
+
+  .occ-techline{
+    top:60px;
+    height:9px;
+  }
+
+  .occ-data-bus{
+    top:54px;
+    height:42px;
+  }
+
+  .occ-node::after{
+    top:82px;
+
+    width:14px;
+  }
+}
+
+
+/* ============================================================
+   ACCESSIBILITY
+   ============================================================ */
+
+@media (prefers-reduced-motion:reduce){
+
+  .occ-bus-node{
+    animation:none;
+  }
 }
   
 /* ============================================================
@@ -1269,24 +1722,278 @@ button {
   aria-hidden="true"
 ></div>
 
-<div class="welcome-badges">
+<!-- ============================================================
+     ACS OCC — AIRLINE TELEMETRY HUD
+     Rank • Registry • Base • Callsign • Infrastructure
+     ============================================================ -->
 
-    <!-- RANK -->
-    
-    <div class="welcome-chip">
-      🥉 <span id="chipRank">Company Rank</span>
+<div class="acs-occ-telemetry">
+
+  <!-- RANK -->
+  <div class="occ-node occ-rank">
+    <div class="occ-label">RANK</div>
+
+    <div class="occ-icon occ-rank-icon" aria-hidden="true">
+      <svg viewBox="0 0 48 48">
+        <path d="M15 5 L21 5 L25 17 L19 17 Z" fill="#d87945"/>
+        <path d="M27 5 L33 5 L29 17 L23 17 Z" fill="#e7e9ef"/>
+        <circle cx="24" cy="28" r="10"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"/>
+        <path d="M24 21 L26.2 25.5 L31 26.2 L27.5 29.7
+                 L28.4 34.5 L24 32.2 L19.6 34.5
+                 L20.5 29.7 L17 26.2 L21.8 25.5 Z"
+              fill="currentColor"/>
+      </svg>
     </div>
 
-   <!-- WORLD / COUNTRY -->
-<div class="welcome-chip">
-  <span id="chipWorld">—</span>
-</div>
+    <div class="occ-value occ-rank-value" id="chipRank">
+      BRONZE
+    </div>
 
-<!-- BASE (AZUL QATAR ROYAL) -->
-<div class="welcome-chip base-chip">
-  <span id="chipBase">Base: —</span>
-</div>
-    
+    <div class="occ-techline" aria-hidden="true"></div>
+  </div>
+
+
+  <!-- REGISTRY -->
+  <div class="occ-node occ-registry">
+    <div class="occ-label">REGISTRY</div>
+
+    <div class="occ-icon occ-flag-icon" aria-hidden="true">
+      <span id="occRegistryFlag">🌍</span>
+    </div>
+
+    <div class="occ-value" id="chipWorld">
+      —
+    </div>
+
+    <div class="occ-techline" aria-hidden="true"></div>
+  </div>
+
+
+  <!-- BASE -->
+  <div class="occ-node occ-base">
+    <div class="occ-label">BASE</div>
+
+    <div class="occ-icon" aria-hidden="true">
+      <svg viewBox="0 0 48 48">
+        <path d="M15 14 H33"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.4"/>
+
+        <path d="M18 10 H30 L33 14 H15 Z"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.4"/>
+
+        <path d="M20 14 L18 21 H30 L28 14"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.4"/>
+
+        <path d="M21 21 L18 39"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.4"/>
+
+        <path d="M27 21 L30 39"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.4"/>
+
+        <path d="M17 39 H31"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.4"/>
+
+        <path d="M24 4 V10"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"/>
+
+        <circle cx="24" cy="3.5" r="1.5"
+                fill="currentColor"/>
+      </svg>
+    </div>
+
+    <div class="occ-value occ-primary-value" id="chipBase">
+      —
+    </div>
+
+    <div class="occ-techline" aria-hidden="true"></div>
+  </div>
+
+
+  <!-- CALLSIGN -->
+  <div class="occ-node occ-callsign">
+    <div class="occ-label">CALLSIGN</div>
+
+    <div class="occ-icon" aria-hidden="true">
+      <svg viewBox="0 0 48 48">
+
+        <circle cx="24" cy="24" r="3"
+                fill="currentColor"/>
+
+        <path d="M17.5 17.5
+                 A9 9 0 0 0 17.5 30.5"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.3"
+              stroke-linecap="round"/>
+
+        <path d="M30.5 17.5
+                 A9 9 0 0 1 30.5 30.5"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.3"
+              stroke-linecap="round"/>
+
+        <path d="M12.5 12.5
+                 A16 16 0 0 0 12.5 35.5"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.3"
+              stroke-linecap="round"/>
+
+        <path d="M35.5 12.5
+                 A16 16 0 0 1 35.5 35.5"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.3"
+              stroke-linecap="round"/>
+
+      </svg>
+    </div>
+
+    <div class="occ-value" id="chipCallsign">
+      —
+    </div>
+
+    <div class="occ-techline" aria-hidden="true"></div>
+  </div>
+
+
+  <!-- INFRASTRUCTURE -->
+  <div class="occ-node occ-infra">
+    <div class="occ-label">INFRA</div>
+
+    <div class="occ-icon" aria-hidden="true">
+      <svg viewBox="0 0 48 48">
+
+        <circle cx="24" cy="24" r="17"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"/>
+
+        <ellipse cx="24" cy="24" rx="8" ry="17"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="1.8"/>
+
+        <path d="M7 24 H41"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"/>
+
+        <path d="M10 16 H38"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.4"
+              opacity=".75"/>
+
+        <path d="M10 32 H38"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.4"
+              opacity=".75"/>
+
+      </svg>
+    </div>
+
+    <div class="occ-value occ-primary-value" id="chipInfra">
+      —
+    </div>
+
+    <div class="occ-techline" aria-hidden="true"></div>
+  </div>
+
+
+  <!-- HUD CONNECTION BUS -->
+  <div class="occ-data-bus" aria-hidden="true">
+
+    <svg viewBox="0 0 1000 74"
+         preserveAspectRatio="none">
+
+      <defs>
+        <filter id="occBusGlow"
+                x="-20%"
+                y="-100%"
+                width="140%"
+                height="300%">
+          <feGaussianBlur stdDeviation="2.2"
+                          result="blur"/>
+          <feMerge>
+            <feMergeNode in="blur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+
+      <!-- MAIN DATA LINE -->
+      <path
+        class="occ-bus-main"
+        d="
+          M18 18
+          H170
+          L184 32
+          H372
+          L386 18
+          H574
+          L588 32
+          H776
+          L790 18
+          H982
+        "
+      />
+
+      <!-- LOWER TECH SEGMENTS -->
+      <path
+        class="occ-bus-secondary"
+        d="
+          M40 28
+          L62 58
+          H166
+
+          M218 32
+          L240 58
+          H364
+
+          M418 28
+          L440 58
+          H566
+
+          M620 32
+          L642 58
+          H768
+
+          M820 28
+          L842 58
+          H960
+        "
+      />
+
+      <!-- GOLD OCC NODES -->
+      <circle class="occ-bus-node" cx="184" cy="32" r="3"/>
+      <circle class="occ-bus-node" cx="386" cy="18" r="3"/>
+      <circle class="occ-bus-node" cx="588" cy="32" r="3"/>
+      <circle class="occ-bus-node" cx="790" cy="18" r="3"/>
+
+    </svg>
+
+  </div>
+
 </div>
   
   <!-- ============================================================
