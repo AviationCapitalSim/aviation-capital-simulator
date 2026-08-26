@@ -2394,6 +2394,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       clean(airline.rank) ||
       "Bronze";
 
+    const airlineCallsign =
+      clean(airline.callsign).toUpperCase();
+
+    const airlineInfrastructure =
+      clean(airline.infrastructure).toUpperCase();
+    
     const baseIcao =
       clean(user.base_icao).toUpperCase();
 
@@ -2432,11 +2438,32 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     /* ===== RANK ===== */
+    
     const chipRank = document.getElementById("chipRank");
     if (chipRank) {
       chipRank.textContent = airlineRank;
     }
 
+        /* ===== CALLSIGN ===== */
+    
+    const chipCallsign =
+      document.getElementById("chipCallsign");
+
+    if (chipCallsign) {
+      chipCallsign.textContent =
+        airlineCallsign || "—";
+    }
+
+    /* ===== INFRASTRUCTURE ===== */
+    
+    const chipInfra =
+      document.getElementById("chipInfra");
+
+    if (chipInfra) {
+      chipInfra.textContent =
+        airlineInfrastructure || "—";
+    }
+    
     console.log("✅ Dashboard profile loaded:", {
       user_id: user.user_id,
       airline_id: user.airline_id,
@@ -2461,6 +2488,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     const chipWorld = document.getElementById("chipWorld");
     if (chipWorld) chipWorld.textContent = "🌍 —";
 
+    const chipCallsign =
+      document.getElementById("chipCallsign");
+
+    if (chipCallsign) {
+      chipCallsign.textContent = "—";
+    }
+
+    const chipInfra =
+      document.getElementById("chipInfra");
+
+    if (chipInfra) {
+      chipInfra.textContent = "—";
+    }
+    
     const welcome = document.getElementById("welcomeMessage");
     if (welcome) {
       welcome.innerHTML = `<span class="w-airline">Dashboard Load Error</span>`;
