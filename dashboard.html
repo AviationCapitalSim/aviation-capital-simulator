@@ -567,8 +567,60 @@ body::after {
     0 0 5px rgba(70,190,255,.34);
 }
 
+/* ============================================================
+   OCC CALLSIGN — STRONG SILVER
+   ============================================================ */
+
+#chipCallsign{
+  color:#E3E8EF;
+
+  font-weight:700;
+
+  text-shadow:
+    0 1px 2px rgba(0,0,0,.92),
+    0 0 5px rgba(210,225,240,.30);
+}
+
 
 /* ============================================================
+   OCC INFRASTRUCTURE — LEVEL PALETTE
+   ============================================================ */
+
+#chipInfra[data-infra-level="STARTER"]{
+  color:#B89A7A;
+
+  text-shadow:
+    0 1px 2px rgba(0,0,0,.92),
+    0 0 5px rgba(184,154,122,.28);
+}
+
+#chipInfra[data-infra-level="MEDIUM"]{
+  color:#C49A32;
+
+  text-shadow:
+    0 1px 2px rgba(0,0,0,.92),
+    0 0 5px rgba(196,154,50,.32);
+}
+
+#chipInfra[data-infra-level="ADVANCED"]{
+  color:#55B98A;
+
+  text-shadow:
+    0 1px 2px rgba(0,0,0,.92),
+    0 0 6px rgba(85,185,138,.34);
+}
+
+#chipInfra[data-infra-level="GLOBAL"]{
+  color:#FFC247;
+
+  font-weight:700;
+
+  text-shadow:
+    0 1px 2px rgba(0,0,0,.92),
+    0 0 6px rgba(255,194,71,.46);
+}
+  
+  /* ============================================================
    RANK VALUE
    ============================================================ */
 
@@ -2454,7 +2506,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         airlineCallsign || "—";
     }
 
-    /* ===== INFRASTRUCTURE ===== */
+   /* ===== INFRASTRUCTURE ===== */
     
     const chipInfra =
       document.getElementById("chipInfra");
@@ -2462,6 +2514,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (chipInfra) {
       chipInfra.textContent =
         airlineInfrastructure || "—";
+
+      if (airlineInfrastructure) {
+        chipInfra.dataset.infraLevel =
+          airlineInfrastructure;
+      } else {
+        delete chipInfra.dataset.infraLevel;
+      }
     }
     
     console.log("✅ Dashboard profile loaded:", {
