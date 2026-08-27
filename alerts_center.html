@@ -416,6 +416,13 @@ table.alerts-table {
   color: #ff8080;
 }
 
+.alert-severe {
+  background: rgba(170, 0, 255, 0.18);
+  border: 1px solid #c13cff;
+  color: #e2a3ff;
+  box-shadow: 0 0 12px rgba(193, 60, 255, 0.22);
+}
+  
 .alert-category {
   display: flex;
   justify-content: center;
@@ -753,10 +760,14 @@ function ACS_renderAlerts(alerts) {
     const level = String(alert.level || "info").toLowerCase();
     const dateText = ACS_escapeHTML(ACS_formatAlertDate(alert.timestamp || alert.date));
 
-    const levelClass =
-      level === "critical" ? "alert-chip alert-critical" :
-      level === "medium" || level === "warning" ? "alert-chip alert-medium" :
-      "alert-chip alert-low";
+        const levelClass =
+      level === "severe"
+        ? "alert-chip alert-severe"
+        : level === "critical"
+          ? "alert-chip alert-critical"
+          : level === "medium" || level === "warning"
+            ? "alert-chip alert-medium"
+            : "alert-chip alert-low";
 
     const row = document.createElement("tr");
 
