@@ -1743,16 +1743,14 @@ color:#ffffff !important;
 
 .acs-alert-bell--idle .acs-alert-bell-svg{
   animation:none;
-
-  filter:
-    drop-shadow(0 2px 2px rgba(0,0,0,.85));
+  filter:none;
 }
 
 
 /* Bell body */
 
 .acs-alert-bell--idle .acs-alert-body{
-  fill:#102131;
+  fill:transparent;
 
   stroke:#506477;
   stroke-width:1.5;
@@ -1762,7 +1760,10 @@ color:#ffffff !important;
 /* Top cap */
 
 .acs-alert-bell--idle .acs-alert-cap{
-  fill:#172b3b;
+  fill:transparent;
+
+  stroke:#506477;
+  stroke-width:1.5;
 
   filter:none;
 }
@@ -1771,7 +1772,7 @@ color:#ffffff !important;
 /* Bell base */
 
 .acs-alert-bell--idle .acs-alert-base{
-  fill:#142838;
+  fill:transparent;
 
   stroke:#506477;
   stroke-width:1.2;
@@ -1790,11 +1791,7 @@ color:#ffffff !important;
 /* Signal rays OFF */
 
 .acs-alert-bell--idle .acs-alert-rays{
-  stroke:#263846;
-
-  opacity:.42;
-
-  filter:none;
+  display:none;
 }
 
 
