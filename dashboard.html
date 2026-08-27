@@ -2445,9 +2445,69 @@ button {
 
   <div class="panel operational-alert-panel">
   <h3 id="dashboardAlertTitle" class="ops-alert-title">
-  <span id="opsAlertBadge">0</span>
+
+  <span class="acs-alert-bell acs-alert-bell--solid" aria-hidden="true">
+
+    <svg class="acs-alert-bell-svg"
+         viewBox="0 0 64 64">
+
+      <!-- OCC SIGNAL RAYS -->
+      <g class="acs-alert-rays">
+        <path d="M32 3 V9"/>
+        <path d="M12 12 L17 17"/>
+        <path d="M52 12 L47 17"/>
+        <path d="M4 31 H11"/>
+        <path d="M60 31 H53"/>
+      </g>
+
+      <!-- SOLID BELL BODY -->
+      <path
+        class="acs-alert-body"
+        d="
+          M17 43
+          H47
+          L44 39
+          V27
+          C44 18.5 39.2 13 32 13
+          C24.8 13 20 18.5 20 27
+          V39
+          Z
+        "
+      />
+
+      <!-- TOP CAP -->
+      <circle
+        class="acs-alert-cap"
+        cx="32"
+        cy="10"
+        r="3"
+      />
+
+      <!-- BELL BASE -->
+      <path
+        class="acs-alert-base"
+        d="M14 43 H50 L53 48 H11 Z"
+      />
+
+      <!-- LOWER LIGHT -->
+      <path
+        class="acs-alert-clapper"
+        d="M27 51
+           C28 55 30 57 32 57
+           C34 57 36 55 37 51
+           Z"
+      />
+
+    </svg>
+
+    <span id="opsAlertBadge"
+          class="acs-alert-count">0</span>
+
+  </span>
+
   <span>Operational Alerts</span>
-   </h3>
+
+</h3>
   <p>Manage Operational, Financial, HR, and Maintenance Alerts.</p>
   <button class="acs-btn" onclick="window.location.href='alerts_center.html'">Open</button>
 </div>
