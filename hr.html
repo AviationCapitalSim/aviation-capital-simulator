@@ -689,21 +689,51 @@ data.departments.forEach(dep => {
 
   if (!dep?.dept_id) return;
 
-  HR[dep.dept_id] = {
+    HR[dep.dept_id] = {
     id: dep.dept_id,
     name: dep.dept_name,
     base: dep.base_role,
     role: dep.base_role,
 
-    staff: Number(dep.staff) || 0,
-    required: Number(dep.required) || 0,
-    morale: Number(dep.morale) || 100,
+    staff: Number(dep.staff || 0),
+    required: Number(dep.required || 0),
+    morale: Number(dep.morale || 100),
 
-    salary: Number(dep.salary) || 0,
-    payroll: Number(dep.payroll) || 0,
+    salary: Number(dep.salary || 0),
+    payroll: Number(dep.payroll || 0),
 
-    bonus: Number(dep.bonus) || 0,
-    years: Number(dep.years) || 0
+    bonus: Number(dep.bonus || 0),
+    years: Number(dep.years || 0),
+
+    salaryPercent: Number(
+      dep.salary_percent || 100
+    ),
+
+    salaryCycleYear:
+      dep.salary_cycle_year === null
+        ? null
+        : Number(dep.salary_cycle_year),
+
+    salaryCycleHalf:
+      dep.salary_cycle_half === null
+        ? null
+        : Number(dep.salary_cycle_half),
+
+    salaryCycleKey:
+      dep.salary_cycle_year !== null &&
+      dep.salary_cycle_half !== null
+        ? `${dep.salary_cycle_year}-H${dep.salary_cycle_half}`
+        : null,
+
+    captainSalary:
+      dep.captain_salary === null
+        ? null
+        : Number(dep.captain_salary),
+
+    firstOfficerSalary:
+      dep.first_officer_salary === null
+        ? null
+        : Number(dep.first_officer_salary)
   };
 
 });
@@ -725,11 +755,7 @@ const totalStaff = deps.reduce(
 
 const totalPayroll = deps.reduce(
   (sum, d) =>
-    sum +
-    Math.round(
-      (Number(d.staff) || 0) *
-      (Number(d.salary) || 0)
-    ),
+    sum + Number(d.payroll || 0),
   0
 );
        
