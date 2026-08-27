@@ -2168,13 +2168,20 @@ button {
 }
 
 .acs-alert-clapper{
-  fill:#ff9a4a;
+  fill:#ff493f;
 
   filter:
-    drop-shadow(0 0 4px rgba(255,80,35,.95));
+    drop-shadow(0 0 3px rgba(255,45,35,.65));
 }
 
-
+/* Keep the SOLID bell clean behind multi-digit counters */
+.acs-alert-count{
+  background:transparent !important;
+  border:none !important;
+  box-shadow:none !important;
+  outline:none !important;
+}
+  
 /* ============================================================
    OCC SIGNAL RAYS
    ============================================================ */
