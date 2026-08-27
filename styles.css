@@ -1610,11 +1610,16 @@ textarea {
   border:0;
   border-radius:0;
 
-  background:none;
-  box-shadow:none;
+  background:transparent !important;
+background-image:none !important;
 
-  color:#ffffff;
-  -webkit-text-fill-color:#ffffff;
+-webkit-background-clip:border-box !important;
+background-clip:border-box !important;
+
+box-shadow:none;
+
+color:#ffffff !important;
+-webkit-text-fill-color:#ffffff !important;
 
   font-family:
     "Orbitron",
