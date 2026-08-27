@@ -1304,7 +1304,7 @@ textarea {
    Orbitron only for these titles
    ============================================================ */
 
-.dashboard-grid > .panel h3,
+.dashboard-grid > .panel:not(.operational-alert-panel) h3,
 .main-grid > .panel h3,
 .aircraft-panels > .panel h3 {
   margin: 0 0 1rem;
