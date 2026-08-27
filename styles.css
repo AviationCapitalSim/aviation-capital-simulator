@@ -1732,6 +1732,106 @@ color:#ffffff !important;
 }
 
 /* ============================================================
+   ACS OCC — GLOBAL ALERT BELL STATES
+   IDLE / ACTIVE
+   ============================================================ */
+
+
+/* ============================================================
+   IDLE — NO ACTIVE ALERTS
+   ============================================================ */
+
+.acs-alert-bell--idle .acs-alert-bell-svg{
+  animation:none;
+
+  filter:
+    drop-shadow(0 2px 2px rgba(0,0,0,.85));
+}
+
+
+/* Bell body */
+
+.acs-alert-bell--idle .acs-alert-body{
+  fill:#102131;
+
+  stroke:#506477;
+  stroke-width:1.5;
+}
+
+
+/* Top cap */
+
+.acs-alert-bell--idle .acs-alert-cap{
+  fill:#172b3b;
+
+  filter:none;
+}
+
+
+/* Bell base */
+
+.acs-alert-bell--idle .acs-alert-base{
+  fill:#142838;
+
+  stroke:#506477;
+  stroke-width:1.2;
+}
+
+
+/* Clapper */
+
+.acs-alert-bell--idle .acs-alert-clapper{
+  fill:#253b4a;
+
+  filter:none;
+}
+
+
+/* Signal rays OFF */
+
+.acs-alert-bell--idle .acs-alert-rays{
+  stroke:#263846;
+
+  opacity:.42;
+
+  filter:none;
+}
+
+
+/* Counter remains visible */
+
+.acs-alert-bell--idle .acs-alert-count{
+  color:#ffffff;
+  -webkit-text-fill-color:#ffffff;
+
+  text-shadow:
+    0 2px 2px rgba(0,0,0,.95),
+    0 0 2px rgba(255,255,255,.35);
+}
+
+
+/* ============================================================
+   ACTIVE — LIVE ALERTS
+   ============================================================ */
+
+.acs-alert-bell--active .acs-alert-bell-svg{
+  animation:
+    ACS_alertBellPulse 2.8s ease-in-out infinite;
+}
+
+
+/* ============================================================
+   ACCESSIBILITY
+   ============================================================ */
+
+@media (prefers-reduced-motion:reduce){
+
+  .acs-alert-bell--active .acs-alert-bell-svg{
+    animation:none;
+  }
+}
+
+/* ============================================================
    ACS CONTINENT AIRPORT PAGES — GLOBAL REPAIR
    Applies automatically to every airport_list_*.html page
    ============================================================ */
