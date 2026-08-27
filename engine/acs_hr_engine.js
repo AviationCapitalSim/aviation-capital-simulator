@@ -971,7 +971,7 @@ async function ACS_HR_loadFromServer(){
 
       if (!dep?.dept_id) return;
 
-      HR[dep.dept_id] = {
+            HR[dep.dept_id] = {
         id: dep.dept_id,
         name: dep.dept_name,
         base: dep.base_role,
@@ -985,12 +985,56 @@ async function ACS_HR_loadFromServer(){
 
         bonus: Number(dep.bonus || 0),
         years: Number(dep.years || 0),
-        salaryPercent: Number(dep.salary_percent || 100),
-        salaryDecade: Number(dep.salary_decade || 1940)
+
+        salaryPercent: Number(
+          dep.salary_percent || 100
+        ),
+
+        salaryDecade:
+          dep.salary_decade === null
+            ? null
+            : Number(dep.salary_decade),
+
+        salaryCycleYear:
+          dep.salary_cycle_year === null
+            ? null
+            : Number(dep.salary_cycle_year),
+
+        salaryCycleHalf:
+          dep.salary_cycle_half === null
+            ? null
+            : Number(dep.salary_cycle_half),
+
+        salaryCycleKey:
+          dep.salary_cycle_year !== null &&
+          dep.salary_cycle_half !== null
+            ? `${dep.salary_cycle_year}-H${dep.salary_cycle_half}`
+            : null,
+
+        captainSalary:
+          dep.captain_salary === null
+            ? null
+            : Number(dep.captain_salary),
+
+        firstOfficerSalary:
+          dep.first_officer_salary === null
+            ? null
+            : Number(dep.first_officer_salary)
       };
 
     });
 
+    window.ACS_HR_AUTOMATION_FLAGS = {
+      autoHire:
+        data.automation?.auto_hire === true,
+
+      autoSalary:
+        data.automation?.auto_salary === true,
+
+      manualSalaryOverride:
+        data.automation?.manual_salary_override === true
+    };
+     
     window.ACS_HR_SERVER_STATE = HR;
 
     console.log(
