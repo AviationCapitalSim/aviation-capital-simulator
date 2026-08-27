@@ -2427,8 +2427,8 @@ button {
   <div class="panel operational-alert-panel">
   <h3 id="dashboardAlertTitle" class="ops-alert-title">
 
-  <span class="acs-alert-bell acs-alert-bell--solid" aria-hidden="true">
-
+  <span class="acs-alert-bell acs-alert-bell--solid acs-alert-bell--idle" aria-hidden="true">
+    
     <svg class="acs-alert-bell-svg"
          viewBox="0 0 64 64">
 
@@ -3726,41 +3726,49 @@ document.addEventListener(
 <script>
 /* ============================================================
    ACS DASHBOARD OCC ALERT BADGE
-   ------------------------------------------------------------
    Backend authority: /v1/occ/alerts
-   Dashboard only reads live OCC status.
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
   const badge = document.getElementById("opsAlertBadge");
+  const bell = badge?.closest(".acs-alert-bell");
 
-  if (!badge) return;
+  if (!badge || !bell) return;
+
+  function ACS_setDashboardBellState(total) {
+    const hasAlerts = total > 0;
+
+    badge.textContent = String(total);
+    badge.style.display = hasAlerts ? "inline-block" : "none";
+
+    bell.classList.toggle("acs-alert-bell--active", hasAlerts);
+    bell.classList.toggle("acs-alert-bell--idle", !hasAlerts);
+  }
 
   async function ACS_loadDashboardOccAlertBadge() {
     try {
-      const response = await fetch("https://api.aviationcapitalsim.com/v1/occ/alerts", {
-        method: "GET",
-        credentials: "include",
-        cache: "no-store"
-      });
+      const response = await fetch(
+        "https://api.aviationcapitalsim.com/v1/occ/alerts",
+        {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store"
+        }
+      );
 
       if (!response.ok) {
-        badge.style.display = "none";
-        badge.textContent = "0";
+        ACS_setDashboardBellState(0);
         return;
       }
 
       const data = await response.json();
       const alerts = Array.isArray(data.alerts) ? data.alerts : [];
-      const total = alerts.length;
 
-      badge.textContent = String(total);
-      badge.style.display = total > 0 ? "inline-block" : "none";
+      ACS_setDashboardBellState(alerts.length);
 
     } catch (error) {
       console.warn("ACS Dashboard OCC alert badge failed:", error);
-      badge.style.display = "none";
-      badge.textContent = "0";
+      ACS_setDashboardBellState(0);
     }
   }
 
@@ -3773,7 +3781,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-  
 </script>
   
 </body>
