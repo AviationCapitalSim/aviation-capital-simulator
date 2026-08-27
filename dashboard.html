@@ -1731,6 +1731,367 @@ button {
   }
 
 }
+
+/* ============================================================
+   ACS DASHBOARD — INFRASTRUCTURE INTERACTION
+   ============================================================ */
+
+.occ-infra {
+  cursor: pointer;
+  border-radius: 10px;
+
+  transition:
+    transform 0.2s ease,
+    filter 0.2s ease;
+}
+
+.occ-infra:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.12);
+}
+
+.occ-infra:focus-visible {
+  outline:
+    1px solid rgba(255, 194, 71, 0.88);
+
+  outline-offset: 5px;
+}
+
+
+/* ============================================================
+   ACS DASHBOARD — INFRASTRUCTURE MODAL
+   Mirror of Create Airline
+   ============================================================ */
+
+.infra-change-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 7000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(13, 42, 85, 0.31),
+      rgba(0, 5, 17, 0.92)
+    );
+
+  backdrop-filter: blur(9px);
+  -webkit-backdrop-filter: blur(9px);
+}
+
+.infra-change-overlay[hidden] {
+  display: none;
+}
+
+.infra-change-modal {
+  width:
+    min(780px, calc(100vw - 32px));
+
+  max-height:
+    calc(100vh - 40px);
+
+  overflow-y: auto;
+
+  padding: 24px;
+
+  color: #edf4ff;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(12, 31, 66, 0.995),
+      rgba(3, 11, 27, 0.995)
+    );
+
+  border:
+    1px solid rgba(255, 179, 0, 0.72);
+
+  border-radius: 18px;
+
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.76),
+    0 0 30px rgba(255, 179, 0, 0.09);
+}
+
+.infra-change-header {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto;
+
+  align-items: start;
+  gap: 16px;
+
+  margin-bottom: 18px;
+}
+
+.infra-change-header h3 {
+  margin: 0 0 6px;
+
+  color: #ffbd27;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
+}
+
+.infra-change-header p {
+  margin: 0;
+
+  color:
+    rgba(194, 211, 241, 0.82);
+
+  font-size: 0.82rem;
+}
+
+.infra-change-close {
+  width: 36px;
+  height: 36px;
+
+  padding: 0;
+
+  color: #ffffff;
+
+  background:
+    rgba(255, 255, 255, 0.06);
+
+  border:
+    1px solid rgba(255, 255, 255, 0.17);
+
+  border-radius: 9px;
+
+  font-size: 1.15rem;
+  cursor: pointer;
+}
+
+.infra-change-close:hover {
+  background:
+    rgba(255, 179, 0, 0.13);
+
+  border-color:
+    rgba(255, 179, 0, 0.48);
+}
+
+.infra-change-status {
+  min-height: 20px;
+  margin-bottom: 14px;
+
+  color:
+    rgba(194, 211, 241, 0.86);
+
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.infra-change-status.is-error {
+  color: #ff7f8d;
+}
+
+.infra-change-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 12px;
+}
+
+.infra-change-card {
+  padding: 15px;
+
+  background:
+    rgba(8, 26, 56, 0.72);
+
+  border:
+    1px solid rgba(75, 139, 224, 0.38);
+
+  border-radius: 12px;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.infra-change-card.is-available {
+  border-color:
+    rgba(63, 223, 153, 0.50);
+}
+
+.infra-change-card.is-current {
+  border-color:
+    rgba(255, 194, 71, 0.72);
+
+  box-shadow:
+    inset 0 0 22px
+      rgba(255, 179, 0, 0.07);
+}
+
+.infra-change-card.is-locked {
+  opacity: 0.48;
+  filter: grayscale(0.48);
+}
+
+.infra-change-card h4 {
+  margin: 0 0 11px;
+
+  color: #ffbd27;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 0.76rem;
+  letter-spacing: 0.06em;
+
+  text-align: center;
+}
+
+.infra-change-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 6px 0;
+
+  color:
+    rgba(194, 211, 241, 0.84);
+
+  border-bottom:
+    1px solid rgba(94, 135, 194, 0.14);
+
+  font-size: 0.76rem;
+}
+
+.infra-change-row strong {
+  color: #ffffff;
+  text-align: right;
+}
+
+.infra-change-card-status {
+  margin: 11px 0 10px;
+
+  color: #26f0b2;
+
+  font-family:
+    "Orbitron",
+    sans-serif;
+
+  font-size: 0.61rem;
+  font-weight: 700;
+
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.infra-change-card.is-current
+.infra-change-card-status {
+  color: #ffc247;
+}
+
+.infra-change-card.is-locked
+.infra-change-card-status {
+  color: #ff6f7d;
+}
+
+.infra-change-action {
+  width: 100%;
+  min-height: 38px;
+
+  padding: 8px 12px;
+
+  color: #071528;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffe08a,
+      #ffb300
+    );
+
+  border:
+    1px solid rgba(255, 221, 125, 0.76);
+
+  border-radius: 9px;
+
+  font-family:
+    "Orbitron",
+    sans-serif;
+
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+
+  cursor: pointer;
+}
+
+.infra-change-action:hover:not(:disabled) {
+  filter: brightness(1.08);
+
+  box-shadow:
+    0 0 14px rgba(255, 179, 0, 0.22);
+}
+
+.infra-change-action:disabled {
+  color:
+    rgba(137, 146, 164, 0.62);
+
+  background:
+    rgba(32, 39, 52, 0.54);
+
+  border-color:
+    rgba(137, 146, 164, 0.22);
+
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.infra-change-note {
+  margin: 17px 0 0;
+  padding: 12px 14px;
+
+  color:
+    rgba(213, 225, 246, 0.86);
+
+  background:
+    rgba(7, 22, 47, 0.72);
+
+  border:
+    1px solid rgba(255, 179, 0, 0.24);
+
+  border-radius: 10px;
+
+  font-size: 0.76rem;
+  line-height: 1.5;
+
+  text-align: center;
+}
+
+@media (max-width: 620px) {
+  .infra-change-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .infra-change-modal {
+    padding: 18px;
+  }
+}
   
 </style>
 </head>
@@ -1825,6 +2186,7 @@ button {
 
 
   <!-- BASE -->
+  
   <div class="occ-node occ-base">
     <div class="occ-label">BASE</div>
 
@@ -1879,6 +2241,7 @@ button {
 
 
   <!-- CALLSIGN -->
+  
   <div class="occ-node occ-callsign">
     <div class="occ-label">CALLSIGN</div>
 
@@ -1928,7 +2291,16 @@ button {
 
 
   <!-- INFRASTRUCTURE -->
-  <div class="occ-node occ-infra">
+  
+  <div
+  class="occ-node occ-infra"
+  id="infraChangeTrigger"
+  role="button"
+  tabindex="0"
+  aria-haspopup="dialog"
+  aria-controls="infraChangeOverlay"
+  aria-label="Open company infrastructure"
+>
     <div class="occ-label">INFRA</div>
 
     <div class="occ-icon" aria-hidden="true">
@@ -1973,6 +2345,7 @@ button {
 
 
   <!-- HUD CONNECTION BUS -->
+  
   <div class="occ-data-bus" aria-hidden="true">
 
     <svg viewBox="0 0 1000 74"
@@ -1994,6 +2367,7 @@ button {
       </defs>
 
       <!-- MAIN DATA LINE -->
+      
       <path
         class="occ-bus-main"
         d="
@@ -2011,6 +2385,7 @@ button {
       />
 
       <!-- LOWER TECH SEGMENTS -->
+      
       <path
         class="occ-bus-secondary"
         d="
@@ -2037,6 +2412,7 @@ button {
       />
 
       <!-- GOLD OCC NODES -->
+      
       <circle class="occ-bus-node" cx="184" cy="32" r="3"/>
       <circle class="occ-bus-node" cx="386" cy="18" r="3"/>
       <circle class="occ-bus-node" cx="588" cy="32" r="3"/>
@@ -2155,6 +2531,63 @@ button {
 
 </main>
 
+<!-- ============================================================
+     ACS DASHBOARD — COMPANY INFRASTRUCTURE MODAL
+     ============================================================ -->
+
+<div
+  class="infra-change-overlay"
+  id="infraChangeOverlay"
+  hidden
+>
+  <section
+    class="infra-change-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="infraChangeTitle"
+  >
+    <header class="infra-change-header">
+      <div>
+        <h3 id="infraChangeTitle">
+          Company Infrastructure Authority
+        </h3>
+
+        <p id="infraChangeContext">
+          Loading Railway authority...
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="infra-change-close"
+        id="infraChangeClose"
+        aria-label="Close infrastructure modal"
+      >
+        ×
+      </button>
+    </header>
+
+    <div
+      class="infra-change-status"
+      id="infraChangeStatus"
+      aria-live="polite"
+    ></div>
+
+    <div
+      class="infra-change-grid"
+      id="infraChangeGrid"
+    ></div>
+
+    <p
+      class="infra-change-note"
+      id="infraChangeNote"
+    >
+      Infrastructure changes are calculated and authorized
+      exclusively by Railway and PostgreSQL.
+    </p>
+  </section>
+</div>
+  
  <!-- global footer -->
 
 <footer class="acs-footer">
@@ -2568,6 +3001,700 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
 });
+</script>
+
+<script>
+/* ============================================================
+   ACS DASHBOARD — COMPANY INFRASTRUCTURE MODAL
+   ------------------------------------------------------------
+   Railway authority:
+   GET  /v1/airlines/infrastructure/context
+   POST /v1/airlines/infrastructure/change
+   ============================================================ */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
+    const ACS_INFRA_API =
+      "https://api.aviationcapitalsim.com";
+
+    const ACS_INFRA_ACCESS =
+      Object.freeze({
+        STARTER:
+          "Small aircraft",
+
+        MEDIUM:
+          "Small + Medium aircraft",
+
+        ADVANCED:
+          "Small + Medium + Large aircraft",
+
+        GLOBAL:
+          "All aircraft"
+      });
+
+    const trigger =
+      document.getElementById(
+        "infraChangeTrigger"
+      );
+
+    const overlay =
+      document.getElementById(
+        "infraChangeOverlay"
+      );
+
+    const closeButton =
+      document.getElementById(
+        "infraChangeClose"
+      );
+
+    const contextElement =
+      document.getElementById(
+        "infraChangeContext"
+      );
+
+    const statusElement =
+      document.getElementById(
+        "infraChangeStatus"
+      );
+
+    const grid =
+      document.getElementById(
+        "infraChangeGrid"
+      );
+
+    const note =
+      document.getElementById(
+        "infraChangeNote"
+      );
+
+    if (
+      !trigger ||
+      !overlay ||
+      !closeButton ||
+      !contextElement ||
+      !statusElement ||
+      !grid ||
+      !note
+    ) {
+      console.error(
+        "ACS INFRA MODAL ELEMENTS NOT FOUND"
+      );
+
+      return;
+    }
+
+    let infrastructureContext = null;
+    let changeInProgress = false;
+
+    function ACS_formatInfraMoney(value) {
+      const amount = Number(value || 0);
+
+      return new Intl.NumberFormat(
+        "en-US",
+        {
+          style: "currency",
+          currency: "USD",
+          maximumFractionDigits: 0
+        }
+      ).format(amount);
+    }
+
+    function ACS_getInfraDenialText(code) {
+      const messages = {
+        CURRENT_LEVEL:
+          "Current level",
+
+        INFRASTRUCTURE_CHANGE_COOLDOWN:
+          "Six-month cooldown active",
+
+        UPGRADE_LEVEL_SKIP:
+          "Upgrade must advance one level",
+
+        AIRPORT_INFRASTRUCTURE_LIMIT:
+          "Unavailable at current base",
+
+        INSUFFICIENT_CAPITAL:
+          "Insufficient company capital"
+      };
+
+      return (
+        messages[String(code || "")] ||
+        "Change unavailable"
+      );
+    }
+
+    function ACS_setInfraStatus(
+      message,
+      isError = false
+    ) {
+      statusElement.textContent =
+        String(message || "");
+
+      statusElement.classList.toggle(
+        "is-error",
+        isError
+      );
+    }
+
+    function ACS_closeInfrastructureModal() {
+      if (changeInProgress) {
+        return;
+      }
+
+      overlay.hidden = true;
+      document.body.style.overflow = "";
+
+      trigger.focus();
+    }
+
+    function ACS_createInfraRow(
+      label,
+      value
+    ) {
+      const row =
+        document.createElement("div");
+
+      row.className =
+        "infra-change-row";
+
+      const labelElement =
+        document.createElement("span");
+
+      labelElement.textContent =
+        label;
+
+      const valueElement =
+        document.createElement("strong");
+
+      valueElement.textContent =
+        value;
+
+      row.append(
+        labelElement,
+        valueElement
+      );
+
+      return row;
+    }
+
+    function ACS_renderInfrastructureContext(
+      data
+    ) {
+      infrastructureContext = data;
+
+      const currentType =
+        String(
+          data.current?.airline_type || ""
+        ).toUpperCase();
+
+      const baseIcao =
+        String(
+          data.base?.base_icao || "—"
+        ).toUpperCase();
+
+      const simYear =
+        Number(
+          data.simulation?.sim_year || 0
+        );
+
+      const simMonth =
+        Number(
+          data.simulation?.sim_month || 0
+        );
+
+      contextElement.textContent =
+        (
+          `${baseIcao} · Current ${currentType} · ` +
+          `${String(simMonth).padStart(2, "0")}/${simYear}`
+        );
+
+      grid.replaceChildren();
+
+      const options =
+        Array.isArray(data.options)
+          ? data.options
+          : [];
+
+      for (const option of options) {
+        const airlineType =
+          String(
+            option.airline_type || ""
+          ).toUpperCase();
+
+        const isCurrent =
+          option.current === true;
+
+        const available =
+          option.available === true;
+
+        const card =
+          document.createElement("article");
+
+        card.className =
+          "infra-change-card";
+
+        if (isCurrent) {
+          card.classList.add(
+            "is-current"
+          );
+
+        } else if (available) {
+          card.classList.add(
+            "is-available"
+          );
+
+        } else {
+          card.classList.add(
+            "is-locked"
+          );
+        }
+
+        const title =
+          document.createElement("h4");
+
+        title.textContent =
+          airlineType;
+
+        card.appendChild(title);
+
+        card.appendChild(
+          ACS_createInfraRow(
+            "Aircraft Access",
+            ACS_INFRA_ACCESS[
+              airlineType
+            ] || "Not available"
+          )
+        );
+
+        card.appendChild(
+          ACS_createInfraRow(
+            "Infrastructure Value",
+            ACS_formatInfraMoney(
+              option.initial_investment
+            )
+          )
+        );
+
+        card.appendChild(
+          ACS_createInfraRow(
+            "Monthly Infrastructure",
+            ACS_formatInfraMoney(
+              option.monthly_operating_cost
+            )
+          )
+        );
+
+        card.appendChild(
+          ACS_createInfraRow(
+            "Upgrade Charge",
+            ACS_formatInfraMoney(
+              option.upgrade_charge
+            )
+          )
+        );
+
+        card.appendChild(
+          ACS_createInfraRow(
+            "Amount Due Now",
+            ACS_formatInfraMoney(
+              option.amount_due_now
+            )
+          )
+        );
+
+        const cardStatus =
+          document.createElement("div");
+
+        cardStatus.className =
+          "infra-change-card-status";
+
+        if (isCurrent) {
+          cardStatus.textContent =
+            "Current level";
+
+        } else if (available) {
+          cardStatus.textContent =
+            option.action === "UPGRADE"
+              ? "Upgrade available"
+              : "Downgrade available";
+
+        } else {
+          cardStatus.textContent =
+            ACS_getInfraDenialText(
+              option.denial_code
+            );
+        }
+
+        card.appendChild(cardStatus);
+
+        const actionButton =
+          document.createElement("button");
+
+        actionButton.type =
+          "button";
+
+        actionButton.className =
+          "infra-change-action";
+
+        actionButton.disabled =
+          !available;
+
+        if (isCurrent) {
+          actionButton.textContent =
+            "CURRENT";
+
+        } else if (option.action === "UPGRADE") {
+          actionButton.textContent =
+            available
+              ? `UPGRADE TO ${airlineType}`
+              : "UPGRADE LOCKED";
+
+        } else if (
+          option.action === "DOWNGRADE"
+        ) {
+          actionButton.textContent =
+            available
+              ? `DOWNGRADE TO ${airlineType}`
+              : "DOWNGRADE LOCKED";
+
+        } else {
+          actionButton.textContent =
+            "UNAVAILABLE";
+        }
+
+        if (available) {
+          actionButton.addEventListener(
+            "click",
+            () => {
+              ACS_confirmInfrastructureChange(
+                option
+              );
+            }
+          );
+        }
+
+        card.appendChild(actionButton);
+        grid.appendChild(card);
+      }
+
+      if (data.cooldown?.active) {
+        const remaining =
+          Number(
+            data.cooldown
+              .months_remaining || 0
+          );
+
+        ACS_setInfraStatus(
+          (
+            `Infrastructure changes locked for ` +
+            `${remaining} more ACS month` +
+            `${remaining === 1 ? "" : "s"}.`
+          ),
+          true
+        );
+
+        note.textContent =
+          (
+            `Next change available in ` +
+            `${String(
+              data.cooldown
+                .next_allowed_sim_month
+            ).padStart(2, "0")}/` +
+            `${data.cooldown
+                .next_allowed_sim_year}.`
+          );
+
+      } else {
+        ACS_setInfraStatus(
+          "Select an available infrastructure level."
+        );
+
+        note.textContent =
+          (
+            "Upgrades charge the complete historical value " +
+            "of the destination level. Downgrades have no " +
+            "charge and no refund. A six-month ACS cooldown " +
+            "begins after every successful change."
+          );
+      }
+    }
+
+    async function ACS_loadInfrastructureContext() {
+      ACS_setInfraStatus(
+        "Loading Railway authority..."
+      );
+
+      grid.replaceChildren();
+
+      contextElement.textContent =
+        "Connecting to Railway...";
+
+      try {
+        const response =
+          await fetch(
+            `${ACS_INFRA_API}/v1/airlines/infrastructure/context`,
+            {
+              method: "GET",
+              credentials: "include",
+              cache: "no-store"
+            }
+          );
+
+        const data =
+          await response.json();
+
+        if (
+          !response.ok ||
+          !data.ok ||
+          !Array.isArray(data.options)
+        ) {
+          throw new Error(
+            data.error ||
+            "INFRASTRUCTURE_CONTEXT_FAILED"
+          );
+        }
+
+        ACS_renderInfrastructureContext(
+          data
+        );
+
+      } catch (error) {
+        console.error(
+          "ACS INFRA CONTEXT ERROR:",
+          error
+        );
+
+        contextElement.textContent =
+          "Infrastructure authority unavailable";
+
+        ACS_setInfraStatus(
+          error.message ||
+          "Unable to load infrastructure.",
+          true
+        );
+      }
+    }
+
+    async function ACS_openInfrastructureModal() {
+      overlay.hidden = false;
+      document.body.style.overflow =
+        "hidden";
+
+      closeButton.focus();
+
+      await ACS_loadInfrastructureContext();
+    }
+
+    async function ACS_confirmInfrastructureChange(
+      option
+    ) {
+      if (
+        changeInProgress ||
+        option.available !== true
+      ) {
+        return;
+      }
+
+      const currentType =
+        String(
+          infrastructureContext
+            ?.current?.airline_type || ""
+        ).toUpperCase();
+
+      const targetType =
+        String(
+          option.airline_type || ""
+        ).toUpperCase();
+
+      const action =
+        String(
+          option.action || ""
+        ).toUpperCase();
+
+      const confirmationMessage =
+        action === "UPGRADE"
+          ? (
+              `Confirm infrastructure upgrade?\n\n` +
+              `${currentType} → ${targetType}\n` +
+              `Upgrade charge: ` +
+              `${ACS_formatInfraMoney(
+                option.upgrade_charge
+              )}\n` +
+              `Amount due now: ` +
+              `${ACS_formatInfraMoney(
+                option.amount_due_now
+              )}\n` +
+              `New monthly cost: ` +
+              `${ACS_formatInfraMoney(
+                option.monthly_operating_cost
+              )}\n\n` +
+              `The next change will be available ` +
+              `after six ACS months.`
+            )
+          : (
+              `Confirm infrastructure downgrade?\n\n` +
+              `${currentType} → ${targetType}\n` +
+              `Charge: $0\n` +
+              `Refund: $0\n` +
+              `New monthly cost: ` +
+              `${ACS_formatInfraMoney(
+                option.monthly_operating_cost
+              )}\n\n` +
+              `The next change will be available ` +
+              `after six ACS months.`
+            );
+
+      if (
+        !window.confirm(
+          confirmationMessage
+        )
+      ) {
+        return;
+      }
+
+      changeInProgress = true;
+
+      const buttons =
+        grid.querySelectorAll(
+          ".infra-change-action"
+        );
+
+      buttons.forEach(button => {
+        button.disabled = true;
+      });
+
+      ACS_setInfraStatus(
+        "Railway is processing the infrastructure change..."
+      );
+
+      try {
+        const response =
+          await fetch(
+            `${ACS_INFRA_API}/v1/airlines/infrastructure/change`,
+            {
+              method: "POST",
+              credentials: "include",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body: JSON.stringify({
+                target_airline_type:
+                  targetType
+              })
+            }
+          );
+
+        const data =
+          await response.json();
+
+        if (!response.ok || !data.ok) {
+          throw new Error(
+            data.error ||
+            "INFRASTRUCTURE_CHANGE_FAILED"
+          );
+        }
+
+        const chipInfra =
+          document.getElementById(
+            "chipInfra"
+          );
+
+        if (chipInfra) {
+          chipInfra.textContent =
+            targetType;
+
+          chipInfra.dataset.infraLevel =
+            targetType;
+        }
+
+        await ACS_loadInfrastructureContext();
+
+        ACS_setInfraStatus(
+          (
+            `Infrastructure changed successfully: ` +
+            `${currentType} → ${targetType}.`
+          )
+        );
+
+      } catch (error) {
+        console.error(
+          "ACS INFRA CHANGE ERROR:",
+          error
+        );
+
+        ACS_setInfraStatus(
+          error.message ||
+          "Infrastructure change failed.",
+          true
+        );
+
+        if (infrastructureContext) {
+          ACS_renderInfrastructureContext(
+            infrastructureContext
+          );
+
+          ACS_setInfraStatus(
+            error.message ||
+            "Infrastructure change failed.",
+            true
+          );
+        }
+
+      } finally {
+        changeInProgress = false;
+      }
+    }
+
+    trigger.addEventListener(
+      "click",
+      ACS_openInfrastructureModal
+    );
+
+    trigger.addEventListener(
+      "keydown",
+      event => {
+        if (
+          event.key === "Enter" ||
+          event.key === " "
+        ) {
+          event.preventDefault();
+
+          ACS_openInfrastructureModal();
+        }
+      }
+    );
+
+    closeButton.addEventListener(
+      "click",
+      ACS_closeInfrastructureModal
+    );
+
+    overlay.addEventListener(
+      "click",
+      event => {
+        if (event.target === overlay) {
+          ACS_closeInfrastructureModal();
+        }
+      }
+    );
+
+    document.addEventListener(
+      "keydown",
+      event => {
+        if (
+          event.key === "Escape" &&
+          !overlay.hidden
+        ) {
+          ACS_closeInfrastructureModal();
+        }
+      }
+    );
+  }
+);
 </script>
   
 <script>
