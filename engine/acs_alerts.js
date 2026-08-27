@@ -17,6 +17,7 @@
   function ACS_normalizeLevel(level) {
     const value = String(level || "info").trim().toLowerCase();
 
+    if (value.includes("severe")) return "severe";
     if (value.includes("crit")) return "critical";
     if (value.includes("warn")) return "warning";
     if (value.includes("high")) return "warning";
@@ -81,6 +82,7 @@
 
   function ACS_sortAlerts(alerts) {
     const levelWeight = {
+      severe: 5,
       critical: 4,
       warning: 3,
       medium: 2,
