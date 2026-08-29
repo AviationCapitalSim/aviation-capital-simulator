@@ -28,7 +28,7 @@ const FOLDER_ALIASES = Object.freeze({
   "de havilland canada": "de_havilland",
 
   /* Britten-Norman */
-  "britten-norman": "britten_norman"
+  "britten-norman": "britten norman"
 });
 
   function slug(value) {
@@ -84,11 +84,9 @@ const FOLDER_ALIASES = Object.freeze({
 
     if (!manufacturer || !model) return [PLACEHOLDER];
 
-    const manufacturerKey = manufacturer.toLowerCase().trim();
-
-    const folder =
-     FOLDER_ALIASES[manufacturerKey] || slug(manufacturer);
-
+   const folder =
+     FOLDER_ALIASES[manufacturer.toLowerCase()] || manufacturer;
+     
     const base = slug(model);
     const alias = MODEL_ALIASES[base] || base;
 
