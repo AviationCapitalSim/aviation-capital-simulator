@@ -988,24 +988,32 @@ tr:nth-child(even) {
 }
 
 /* ============================================================
-   🟢 KPI AVERAGE MORALE — FORCE COLOR OVERRIDE
+   ACS HR — AVERAGE MORALE ALERT COLORS
    ============================================================ */
 
 #kpiAverageMorale.morale-green {
   color: #00ff88 !important;
-  text-shadow: 0 0 8px rgba(0,255,136,0.45);
+  text-shadow: 0 0 8px rgba(0, 255, 136, 0.45);
 }
 
 #kpiAverageMorale.morale-yellow {
-  color: #ffd84d !important;
+  color: #fff200 !important;
+  text-shadow: 0 0 10px rgba(255, 242, 0, 0.65);
+}
+
+#kpiAverageMorale.morale-mustard {
+  color: #d6a800 !important;
+  text-shadow: 0 0 9px rgba(214, 168, 0, 0.55);
 }
 
 #kpiAverageMorale.morale-orange {
-  color: #ff9f43 !important;
+  color: #ff7a00 !important;
+  text-shadow: 0 0 10px rgba(255, 122, 0, 0.60);
 }
 
 #kpiAverageMorale.morale-red {
-  color: #ff4d4d !important;
+  color: #ff2d2d !important;
+  text-shadow: 0 0 11px rgba(255, 45, 45, 0.70);
 }
 
 /* ============================================================
@@ -1860,14 +1868,30 @@ function HR_updateKPI() {
 
   moraleEl.textContent = avgMorale + "%";
 
-  moraleEl.classList.remove(
+    moraleEl.classList.remove(
+    "morale-green",
     "morale-yellow",
+    "morale-mustard",
     "morale-orange",
     "morale-red"
   );
 
-  moraleEl.classList.add("morale-green");
+  if (avgMorale > 95) {
+    moraleEl.classList.add("morale-green");
 
+  } else if (avgMorale > 80) {
+    moraleEl.classList.add("morale-yellow");
+
+  } else if (avgMorale > 60) {
+    moraleEl.classList.add("morale-mustard");
+
+  } else if (avgMorale > 40) {
+    moraleEl.classList.add("morale-orange");
+
+  } else {
+    moraleEl.classList.add("morale-red");
+  }
+     
   console.log(
     "%c📊 HR KPI SYNC FIXED",
     "color:#00ffcc;font-weight:700",
