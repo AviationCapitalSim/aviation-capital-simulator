@@ -10,19 +10,25 @@
 
   const PLACEHOLDER = "img/placeholder_aircraft.jpg";
 
-  const MODEL_ALIASES = Object.freeze({
+const MODEL_ALIASES = Object.freeze({
   "247": "boeing_247",
   "307_stratoliner": "boeing_307_stratoliner",
   "377_stratocruiser": "b_377_stratocruiser",
   "c_97_stratofreighter": "c_97_stratofreighter",
 
   /* De Havilland Canada */
-  "dhc_6_twin_otter_series_100": "dhc6_100"
+  "dhc_6_twin_otter_series_100": "dhc6_100",
+
+  /* Britten-Norman */
+  "bn_2a_islander": "bn_2a_islander"
 });
 
 const FOLDER_ALIASES = Object.freeze({
   "de havilland": "de_havilland",
-  "de havilland canada": "de_havilland"
+  "de havilland canada": "de_havilland",
+
+  /* Britten-Norman */
+  "britten-norman": "britten_norman"
 });
 
   function slug(value) {
