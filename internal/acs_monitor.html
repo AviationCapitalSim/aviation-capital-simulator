@@ -753,6 +753,109 @@
       font-size: 12px;
     }
 
+        .users-summary {
+      display: grid;
+      grid-template-columns:
+        repeat(4, 1fr);
+
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .user-summary-card {
+      padding: 14px;
+
+      border:
+        1px solid var(--line);
+
+      border-radius: 12px;
+
+      background: #081720;
+    }
+
+    .user-summary-card small {
+      display: block;
+
+      margin-bottom: 7px;
+
+      color: var(--muted);
+
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .user-summary-card strong {
+      color: var(--text);
+      font-size: 24px;
+    }
+
+    .user-identity {
+      display: grid;
+      gap: 3px;
+    }
+
+    .user-identity strong {
+      color: var(--text);
+    }
+
+    .user-identity span,
+    .user-identity small {
+      color: var(--muted);
+    }
+
+    .user-review {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .review-flag {
+      display: inline-flex;
+
+      padding: 5px 7px;
+
+      border:
+        1px solid #8c6830;
+
+      border-radius: 999px;
+
+      background: #33250d;
+      color: var(--yellow);
+
+      font-size: 9px;
+      font-weight: 750;
+    }
+
+    .ONLINE,
+    .CLEAR {
+      color: var(--green);
+    }
+
+    .INACTIVE {
+      color: var(--yellow);
+    }
+
+    .EXPIRED,
+    .REVOKED,
+    .REVIEW {
+      color: var(--red);
+    }
+
+    @media (max-width: 950px) {
+      .users-summary {
+        grid-template-columns:
+          1fr 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .users-summary {
+        grid-template-columns:
+          1fr;
+      }
+    }
+       
     .hidden {
       display: none !important;
     }
@@ -792,7 +895,10 @@
         grid-template-columns: 1fr;
       }
     }
-  </style>
+
+       
+</style>
+     
 </head>
 
 <body>
@@ -986,6 +1092,98 @@
         </div>
       </section>
 
+           <section class="panel">
+        <div class="head">
+          <div>
+            <h2>
+              Usuarios y sesiones
+            </h2>
+
+            <p class="sub">
+              Control privado de cuentas,
+              actividad y sesiones ACS
+            </p>
+          </div>
+
+          <span class="pill CLEAN">
+            SOLO LECTURA
+          </span>
+        </div>
+
+        <div class="users-summary">
+          <article class="user-summary-card">
+            <small>
+              Usuarios registrados
+            </small>
+
+            <strong id="registeredUsers">
+              —
+            </strong>
+          </article>
+
+          <article class="user-summary-card">
+            <small>
+              Sesiones válidas
+            </small>
+
+            <strong id="validSessionUsers">
+              —
+            </strong>
+          </article>
+
+          <article class="user-summary-card">
+            <small>
+              Usuarios online
+            </small>
+
+            <strong id="onlineUsers">
+              —
+            </strong>
+          </article>
+
+          <article class="user-summary-card">
+            <small>
+              Requieren revisión
+            </small>
+
+            <strong id="reviewUsers">
+              —
+            </strong>
+          </article>
+        </div>
+
+        <div class="notice">
+          <span id="emailVerificationStatus">
+            Verificación por correo:
+            sin lectura
+          </span>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Estado</th>
+                <th>Usuario</th>
+                <th>Aerolínea / ID</th>
+                <th>Registro</th>
+                <th>Último acceso</th>
+                <th>Última actividad</th>
+                <th>Revisión</th>
+              </tr>
+            </thead>
+
+            <tbody id="usersBody">
+              <tr>
+                <td colspan="7">
+                  Leyendo usuarios ACS…
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+         
       <div class="grid">
         <div>
           <section class="panel">
@@ -1370,5 +1568,6 @@
     src="acs_monitor.js"
     defer
   ></script>
+     
 </body>
 </html>
