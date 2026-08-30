@@ -1099,6 +1099,267 @@
         `;
   }
 
+    function renderUsersSessions(
+    snapshot,
+    errorMessage = null
+  ) {
+    const summary =
+      snapshot?.summary || {};
+
+    text(
+      "registeredUsers",
+      formatNumber(
+        summary.registeredUsers
+      )
+    );
+
+    text(
+      "validSessionUsers",
+      formatNumber(
+        summary.validSessionUsers
+      )
+    );
+
+    text(
+      "onlineUsers",
+      formatNumber(
+        summary.onlineUsers
+      )
+    );
+
+    text(
+      "reviewUsers",
+      formatNumber(
+        summary.reviewUsers
+      )
+    );
+
+    text(
+      "emailVerificationStatus",
+
+      snapshot
+        ?.emailVerificationAvailable
+        ? "Verificación por correo disponible"
+        : "Verificación por correo todavía no implementada"
+    );
+
+    const indicatorNames = {
+      INVALID_EMAIL_FORMAT:
+        "FORMATO DE EMAIL",
+
+      KNOWN_DISPOSABLE_EMAIL_DOMAIN:
+        "DOMINIO TEMPORAL",
+
+      SHARED_NETWORK_REVIEW:
+        "RED COMPARTIDA",
+
+      MULTIPLE_ACTIVE_SESSIONS:
+        "SESIONES MÚLTIPLES"
+    };
+
+    const users =
+      snapshot?.users || [];
+
+    byId(
+      "usersBody"
+    ).innerHTML =
+      errorMessage
+        ? `
+          <tr>
+            <td colspan="7">
+              Guardian no pudo leer usuarios:
+              ${safe(errorMessage)}
+            </td>
+          </tr>
+        `
+        : users.length
+          ? users
+              .map((user) => {
+                const indicators =
+                  user
+                    .reviewIndicators ||
+                  [];
+
+                const review =
+                  indicators.length
+                    ? indicators
+                        .map(
+                          (indicator) => `
+                            <span
+                              class="
+                                review-flag
+                              "
+                            >
+                              ${safe(
+                                indicatorNames[
+                                  indicator
+                                ] ||
+                                indicator
+                              )}
+                            </span>
+                          `
+                        )
+                        .join("")
+                    : `
+                        <span
+                          class="
+                            pill CLEAR
+                          "
+                        >
+                          SIN ALERTAS
+                        </span>
+                      `;
+
+                return `
+                  <tr>
+                    <td>
+                      <span
+                        class="
+                          pill
+                          ${safe(
+                            user
+                              .sessionStatus
+                          )}
+                        "
+                      >
+                        ${safe(
+                          user
+                            .sessionStatus
+                        )}
+                      </span>
+                    </td>
+
+                    <td>
+                      <div
+                        class="
+                          user-identity
+                        "
+                      >
+                        <strong>
+                          ${safe(
+                            user.fullName ||
+                            "Sin nombre"
+                          )}
+                        </strong>
+
+                        <span>
+                          ${safe(
+                            user.email ||
+                            "Sin email"
+                          )}
+                        </span>
+
+                        <small>
+                          ${safe(
+                            user.country ||
+                            "—"
+                          )}
+                        </small>
+                      </div>
+                    </td>
+
+                    <td>
+                      <div
+                        class="
+                          user-identity
+                        "
+                      >
+                        <strong>
+                          ${safe(
+                            user
+                              .airlineName ||
+                            "Sin aerolínea"
+                          )}
+                        </strong>
+
+                        <span>
+                          ${
+                            user.airlineId
+                              ? `ID ${safe(
+                                  user
+                                    .airlineId
+                                )}`
+                              : "—"
+                          }
+                        </span>
+                      </div>
+                    </td>
+
+                    <td>
+                      ${safe(
+                        formatDate(
+                          user.registeredAt
+                        )
+                      )}
+                    </td>
+
+                    <td>
+                      ${safe(
+                        formatDate(
+                          user.lastLoginAt
+                        )
+                      )}
+                    </td>
+
+                    <td>
+                      ${safe(
+                        formatDate(
+                          user.lastSeenAt
+                        )
+                      )}
+                    </td>
+
+                    <td>
+                      <div
+                        class="
+                          user-review
+                        "
+                      >
+                        ${review}
+                      </div>
+                    </td>
+                  </tr>
+                `;
+              })
+              .join("")
+          : `
+              <tr>
+                <td colspan="7">
+                  No existen usuarios
+                  registrados.
+                </td>
+              </tr>
+            `;
+  }
+
+  async function loadUsersSessions() {
+    try {
+      const snapshot =
+        await api(
+          "/guardian/users-sessions",
+          {
+            protectedRoute:
+              true
+          }
+        );
+
+      renderUsersSessions(
+        snapshot
+      );
+
+    } catch (error) {
+
+      if (error.status === 401) {
+        throw error;
+      }
+
+      renderUsersSessions(
+        null,
+        error.message
+      );
+    }
+  }
+   
   async function refresh() {
     byId(
       "refreshButton"
@@ -1123,7 +1384,9 @@
             protectedRoute:
               true
           }
-        )
+        ),
+
+        loadUsersSessions()
       ]);
 
       renderSupervisor(
@@ -1163,7 +1426,9 @@
             )
         }`
       );
+
     } finally {
+
       byId(
         "refreshButton"
       ).disabled = false;
