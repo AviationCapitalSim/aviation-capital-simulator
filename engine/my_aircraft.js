@@ -4145,9 +4145,126 @@ function renderPendingDeliveryModal() {
     orders.length - 1
   );
 
-  const index = ACS_MY_AIRCRAFT.pendingOrderIndex;
-  const order = orders[index];
-  const totalAircraft = getPendingAircraftTotal();
+    const index =
+    ACS_MY_AIRCRAFT.pendingOrderIndex;
+
+  const order =
+    orders[index];
+
+  const totalAircraft =
+    getPendingAircraftTotal();
+
+  /*
+    ACS OCC IV:
+    Read the individual delivery schedule belonging
+    to the selected commercial order.
+  */
+  let orderNotes = {};
+
+  try {
+    orderNotes =
+      order?.notes &&
+      typeof order.notes === "object"
+        ? order.notes
+        : JSON.parse(
+            String(
+              order?.notes ||
+              "{}"
+            )
+          );
+  } catch (_) {
+    orderNotes = {};
+  }
+
+  const orderedQuantity = Math.max(
+    1,
+    Math.trunc(
+      safeNumber(
+        order.quantity,
+        1
+      )
+    )
+  );
+
+  const deliveredUnitCount = Math.min(
+    orderedQuantity,
+    Math.max(
+      0,
+      Math.trunc(
+        safeNumber(
+          orderNotes.delivery_unit_count,
+          0
+        )
+      )
+    )
+  );
+
+  const storedDeliverySchedule =
+    Array.isArray(
+      orderNotes.unit_delivery_schedule
+    )
+      ? orderNotes.unit_delivery_schedule
+      : [];
+
+  let pendingDeliveryUnits =
+    storedDeliverySchedule
+      .map((unit, unitIndex) => ({
+        unit_number:
+          Math.max(
+            1,
+            Math.trunc(
+              safeNumber(
+                unit?.unit_number,
+                unitIndex + 1
+              )
+            )
+          ),
+
+        estimated_delivery_date:
+          unit?.estimated_delivery_date ||
+          null
+      }))
+      .filter(
+        unit =>
+          unit.unit_number >
+          deliveredUnitCount
+      )
+      .sort(
+        (a, b) =>
+          a.unit_number -
+          b.unit_number
+      );
+
+  /*
+    Compatibility with pending orders created before
+    ACS OCC IV. Their original single delivery date
+    remains visible.
+  */
+  if (!pendingDeliveryUnits.length) {
+    const legacyPendingQuantity =
+      Math.max(
+        0,
+        orderedQuantity -
+        deliveredUnitCount
+      );
+
+    pendingDeliveryUnits =
+      Array.from(
+        {
+          length:
+            legacyPendingQuantity
+        },
+        (_, unitIndex) => ({
+          unit_number:
+            deliveredUnitCount +
+            unitIndex +
+            1,
+
+          estimated_delivery_date:
+            order.estimated_delivery_date
+        })
+      );
+  }
 
   setText(
     "pendingDeliverySummary",
@@ -4156,22 +4273,80 @@ function renderPendingDeliveryModal() {
 
   setText("pendingFactory", safeText(order.manufacturer));
   setText("pendingModel", safeText(order.aircraft_name));
+   
   setText(
     "pendingQuantity",
-    Math.max(1, safeNumber(order.quantity, 1))
+    pendingDeliveryUnits.length
   );
+
   setText(
     "pendingOwnership",
-    normalizeDisplay(order.ownership_type)
+    normalizeDisplay(
+      order.ownership_type
+    )
   );
+
   setText(
     "pendingPayment",
-    normalizeDisplay(order.payment_status)
+    normalizeDisplay(
+      order.payment_status
+    )
   );
+
   setText(
     "pendingEstimatedDelivery",
-    formatDate(order.estimated_delivery_date)
+    formatDate(
+      pendingDeliveryUnits[0]
+        ?.estimated_delivery_date ||
+      order.estimated_delivery_date
+    )
   );
+
+  /*
+    Render every pending aircraft belonging
+    to this order.
+
+    Navigation remains between commercial orders.
+    The list inside the modal represents aircraft units.
+  */
+  const scheduleContainer =
+    $("pendingDeliverySchedule");
+
+  if (scheduleContainer) {
+    scheduleContainer.innerHTML =
+      pendingDeliveryUnits.length
+        ? pendingDeliveryUnits
+            .map(
+              unit => `
+                <div class="pending-occ-schedule-row">
+                  <span class="pending-occ-schedule-unit">
+                    AIRCRAFT ${escapeHtml(
+                      unit.unit_number
+                    )}
+                  </span>
+
+                  <strong class="pending-occ-schedule-date">
+                    ${escapeHtml(
+                      formatDate(
+                        unit
+                          .estimated_delivery_date
+                      )
+                    )}
+                  </strong>
+
+                  <em class="pending-occ-schedule-quantity">
+                    1 AIRCRAFT
+                  </em>
+                </div>
+              `
+            )
+            .join("")
+        : `
+            <div class="pending-occ-schedule-empty">
+              No aircraft pending
+            </div>
+          `;
+  }
 
   const deliveryStatus =
     normalizeStatus(order.delivery_status);
