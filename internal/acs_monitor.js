@@ -646,16 +646,26 @@
   function renderPolicies(
     policies
   ) {
-    const names = {
-      FLIGHT_HISTORY_COMPACTION:
-        "Historial de vuelos cerrados",
+     
+ const names = {
+  FLIGHT_HISTORY_COMPACTION:
+    "Historial de vuelos cerrados",
 
-      FINANCE_CLOSED_DETAIL_COMPACTION:
-        "Detalle financiero cerrado",
+  FINANCE_CLOSED_DETAIL_COMPACTION:
+    "Detalle financiero cerrado",
 
-      OCC_DELETED_ALERTS_COMPACTION:
-        "Mensajes OCC borrados"
-    };
+  OCC_DELETED_ALERTS_COMPACTION:
+    "Mensajes OCC borrados",
+
+  SECURITY_LOG_BETA_COMPACTION:
+    "Historial de seguridad repetitivo — BETA",
+
+  SKYTRACK_OPS_IMPACTS_BETA_COMPACTION:
+    "Impactos históricos SkyTrack — BETA",
+
+  PASSENGER_MARKET_DAILY_BETA_COMPACTION:
+    "Mercado diario de pasajeros — BETA"
+};
 
     byId(
       "policies"
