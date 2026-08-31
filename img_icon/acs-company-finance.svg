@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" fill="none" role="img" aria-labelledby="financeTitle financeDesc">
+  <title id="financeTitle">ACS OCC Company Finance</title>
+  <desc id="financeDesc">Panel financiero con barras, crecimiento y símbolo monetario.</desc>
+  <defs>
+    <linearGradient id="financeCyan" x1="25" y1="24" x2="137" y2="143" gradientUnits="userSpaceOnUse"><stop stop-color="#60DBFC"/><stop offset="1" stop-color="#168FBE"/></linearGradient>
+    <linearGradient id="financeGold" x1="41" y1="104" x2="113" y2="65" gradientUnits="userSpaceOnUse"><stop stop-color="#F0A615"/><stop offset="1" stop-color="#FFD44F"/></linearGradient>
+    <filter id="financeGlow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <rect x="25" y="31" width="110" height="111" rx="19" stroke="url(#financeCyan)" stroke-width="4"/>
+    <path d="M25 60H135" stroke="#4CCEF4" stroke-width="3"/>
+    <circle cx="42" cy="46" r="3.5" fill="#FFC43B" filter="url(#financeGlow)"/>
+    <path d="M54 46H74M82 46H108" stroke="#39B6E2" stroke-width="2.5" opacity="0.62"/>
+    <rect x="42" y="101" width="14" height="24" rx="4" fill="#209BC7"/>
+    <rect x="66" y="88" width="14" height="37" rx="4" fill="#33B4DE"/>
+    <rect x="90" y="73" width="14" height="52" rx="4" fill="#52D2F5"/>
+    <path d="M40 101C59 83 75 89 95 68C101 62 107 59 114 57" stroke="url(#financeGold)" stroke-width="4" filter="url(#financeGlow)"/>
+    <path d="M107 52L116 56L112 66" stroke="#FFC43B" stroke-width="3"/>
+    <g transform="translate(108 105)" filter="url(#financeGlow)">
+      <circle cx="17" cy="17" r="17" fill="#0A2942" stroke="#1D6D91" stroke-width="1.6"/>
+      <circle cx="17" cy="17" r="10" stroke="#FFC43B" stroke-width="2"/>
+      <path d="M20.5 13.5C20 12.2 18.7 11.5 17 11.5C15 11.5 13.7 12.4 13.7 13.8C13.7 17.1 20.4 15.3 20.4 18.8C20.4 20.3 19 21.2 16.8 21.2C15 21.2 13.6 20.5 13 19.2M17 9V23" stroke="#FFC43B" stroke-width="1.7"/>
+    </g>
+  </g>
+</svg>

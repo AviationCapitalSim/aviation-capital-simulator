@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" fill="none" role="img" aria-labelledby="hrCommandTitle hrCommandDesc">
+  <title id="hrCommandTitle">ACS OCC HR Command</title>
+  <desc id="hrCommandDesc">Centro de mando de tripulaciones con comunicaciones y aeronave.</desc>
+  <defs>
+    <linearGradient id="hrCommandCyan" x1="24" y1="24" x2="138" y2="142" gradientUnits="userSpaceOnUse"><stop stop-color="#60DBFC"/><stop offset="1" stop-color="#168FBE"/></linearGradient>
+    <filter id="hrCommandGlow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <path d="M27 34C27 26.3 33.3 20 41 20H119C126.7 20 133 26.3 133 34V118L116 140H44L27 118V34Z" stroke="url(#hrCommandCyan)" stroke-width="4"/>
+    <path d="M49 46H111" stroke="#2DA9D5" stroke-width="2.5" opacity="0.55"/>
+    <path d="M45 118H115V129H45V118Z" fill="#0A2942" stroke="#37B8E4" stroke-width="2.5"/>
+    <path d="M58 123H89" stroke="#39DF91" stroke-width="3" filter="url(#hrCommandGlow)"/>
+    <circle cx="101" cy="123" r="4" fill="#FFC43B" filter="url(#hrCommandGlow)"/>
+    <path d="M54 86V71C54 56.6 65.6 45 80 45C94.4 45 106 56.6 106 71V86" stroke="#E8F8FF" stroke-width="3" filter="url(#hrCommandGlow)"/>
+    <rect x="49" y="72" width="11" height="24" rx="5" fill="#0A2942" stroke="#E8F8FF" stroke-width="2.5"/>
+    <rect x="100" y="72" width="11" height="24" rx="5" fill="#0A2942" stroke="#E8F8FF" stroke-width="2.5"/>
+    <path d="M106 92C104 103 96 107 88 107" stroke="#E8F8FF" stroke-width="2.5"/>
+    <circle cx="86" cy="107" r="3" fill="#FFC43B" filter="url(#hrCommandGlow)"/>
+    <g transform="translate(60 61) rotate(-16 20 18)" filter="url(#hrCommandGlow)">
+      <path d="M20 3.5C22.1 3.5 23.8 5.2 23.8 7.3V14.2L35.4 22.3V26.8L23.8 23.4V31.4L28 35.2V38.2L20 35.8L12 38.2V35.2L16.2 31.4V23.4L4.6 26.8V22.3L16.2 14.2V7.3C16.2 5.2 17.9 3.5 20 3.5Z" fill="#0A2942" stroke="#FFC43B" stroke-width="2.4"/>
+    </g>
+    <path d="M42 65C36 70 36 84 42 90M35 57C24 66 24 89 35 98" stroke="#3DC4EF" stroke-width="3"/>
+    <path d="M118 65C124 70 124 84 118 90M125 57C136 66 136 89 125 98" stroke="#3DC4EF" stroke-width="3"/>
+    <circle cx="34" cy="119" r="6" fill="#39DF91" filter="url(#hrCommandGlow)"/>
+    <circle cx="126" cy="119" r="6" fill="#39DF91" filter="url(#hrCommandGlow)"/>
+  </g>
+</svg>

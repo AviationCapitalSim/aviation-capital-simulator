@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" fill="none" role="img" aria-labelledby="usedAircraftTitle usedAircraftDesc">
+  <title id="usedAircraftTitle">ACS OCC Buy-Rent Used Aircraft</title>
+  <desc id="usedAircraftDesc">Aeronave dentro de un circuito de mercado con símbolo de compra o arrendamiento.</desc>
+  <defs>
+    <linearGradient id="usedAircraftCyan" x1="30" y1="25" x2="132" y2="140" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#60DAFC"/>
+      <stop offset="1" stop-color="#168FBE"/>
+    </linearGradient>
+    <filter id="usedAircraftGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <path d="M42 42C62.9 21.1 96.7 21.1 117.6 42C124.9 49.3 129.6 58.1 132 67.4" stroke="url(#usedAircraftCyan)" stroke-width="4"/>
+    <path d="M132 67.4L122.7 58.2M132 67.4L136.3 54.9" stroke="#42C6EF" stroke-width="4"/>
+    <path d="M118 118C97.1 138.9 63.3 138.9 42.4 118C35.1 110.7 30.4 101.9 28 92.6" stroke="url(#usedAircraftCyan)" stroke-width="4"/>
+    <path d="M28 92.6L37.3 101.8M28 92.6L23.7 105.1" stroke="#42C6EF" stroke-width="4"/>
+    <circle cx="80" cy="80" r="43" stroke="#229DCC" stroke-width="1.7" opacity="0.28"/>
+    <circle cx="45" cy="61" r="2.4" fill="#4FCBF2" opacity="0.2"/>
+    <circle cx="109" cy="97" r="2.4" fill="#4FCBF2" opacity="0.18"/>
+    <g transform="translate(58 57) rotate(-18 20 18)" filter="url(#usedAircraftGlow)">
+      <path d="M20 3.5C22.1 3.5 23.8 5.2 23.8 7.3V14.2L35.4 22.3V26.8L23.8 23.4V31.4L28 35.2V38.2L20 35.8L12 38.2V35.2L16.2 31.4V23.4L4.6 26.8V22.3L16.2 14.2V7.3C16.2 5.2 17.9 3.5 20 3.5Z" fill="#0B2940" stroke="#E8F8FF" stroke-width="2.4"/>
+      <path d="M20 5.7V34.3" stroke="#9DE7FF" stroke-width="1.1" opacity="0.5"/>
+    </g>
+    <g transform="translate(107 105)" filter="url(#usedAircraftGlow)">
+      <circle cx="15" cy="15" r="15" fill="#0B2A43" stroke="#1C6D91" stroke-width="1.6"/>
+      <circle cx="15" cy="15" r="9.5" stroke="#FFC43B" stroke-width="2"/>
+      <path d="M18.6 11.7C18 10.6 16.8 10 15.2 10C13.2 10 11.8 10.9 11.8 12.3C11.8 15.8 18.7 13.7 18.7 17.5C18.7 19 17.2 20 15 20C13.2 20 11.8 19.3 11.1 18" stroke="#FFC43B" stroke-width="1.8"/>
+      <path d="M15 7.8V22.2" stroke="#FFC43B" stroke-width="1.5"/>
+    </g>
+  </g>
+</svg>

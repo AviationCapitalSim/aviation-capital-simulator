@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" fill="none" role="img" aria-labelledby="routePlanningTitle routePlanningDesc">
+  <title id="routePlanningTitle">ACS OCC Route Planning</title>
+  <desc id="routePlanningDesc">Radar de planificación con trayectoria, aeronave y brújula.</desc>
+  <defs>
+    <linearGradient id="rpCyan" x1="26" y1="26" x2="134" y2="138" gradientUnits="userSpaceOnUse"><stop stop-color="#60DBFC"/><stop offset="1" stop-color="#168FBE"/></linearGradient>
+    <linearGradient id="rpGold" x1="42" y1="82" x2="119" y2="55" gradientUnits="userSpaceOnUse"><stop stop-color="#F1A716"/><stop offset="1" stop-color="#FFD34D"/></linearGradient>
+    <filter id="rpGlow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="78" cy="83" r="52" stroke="url(#rpCyan)" stroke-width="4"/>
+    <path d="M78 22V39M78 127V144M17 83H34M122 83H139" stroke="#35B6E2" stroke-width="2.5" opacity="0.75"/>
+    <path d="M78 41V125M36 83H120" stroke="#229FCC" stroke-width="1.8" opacity="0.38"/>
+    <path d="M39 96C57 54 90 48 120 61" stroke="url(#rpGold)" stroke-width="4" filter="url(#rpGlow)"/>
+    <circle cx="40" cy="96" r="5.5" fill="#FFC43B" filter="url(#rpGlow)"/>
+    <circle cx="120" cy="61" r="5.5" fill="#FFC43B" filter="url(#rpGlow)"/>
+    <g transform="translate(59 59) rotate(-23 20 18)" filter="url(#rpGlow)">
+      <path d="M20 3.5C22.1 3.5 23.8 5.2 23.8 7.3V14.2L35.4 22.3V26.8L23.8 23.4V31.4L28 35.2V38.2L20 35.8L12 38.2V35.2L16.2 31.4V23.4L4.6 26.8V22.3L16.2 14.2V7.3C16.2 5.2 17.9 3.5 20 3.5Z" fill="#0B2940" stroke="#E8F8FF" stroke-width="2.4"/>
+      <path d="M20 5.7V34.3" stroke="#9DE7FF" stroke-width="1.1" opacity="0.5"/>
+    </g>
+    <g transform="translate(114 18)" filter="url(#rpGlow)">
+      <circle cx="15" cy="15" r="15" fill="#0A2942" stroke="#1D6D91" stroke-width="1.5"/>
+      <circle cx="15" cy="15" r="8.5" stroke="#FFC43B" stroke-width="1.8"/>
+      <path d="M18.8 11.2L16.7 16.7L11.2 18.8L13.3 13.3L18.8 11.2Z" stroke="#FFC43B" stroke-width="1.7"/>
+    </g>
+  </g>
+</svg>

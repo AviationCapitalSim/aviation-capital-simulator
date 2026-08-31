@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" fill="none" role="img" aria-labelledby="settingsTitle settingsDesc">
+  <title id="settingsTitle">ACS OCC Settings</title>
+  <desc id="settingsDesc">Núcleo tecnológico de configuración con engranaje y nodos del sistema.</desc>
+  <defs>
+    <linearGradient id="settingsCyan" x1="25" y1="25" x2="136" y2="140" gradientUnits="userSpaceOnUse"><stop stop-color="#60DBFC"/><stop offset="1" stop-color="#168FBE"/></linearGradient>
+    <filter id="settingsGlow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <path d="M80 22L88 34C92 35 96 37 100 39L114 35L124 46L119 60C121 64 123 68 124 72L138 80L134 95L119 98C117 102 115 106 112 109L113 124L99 132L88 122C84 123 80 124 76 124L65 136L51 130L50 114C47 111 44 108 42 104L27 101L24 86L37 78C38 74 39 70 41 66L35 52L46 41L61 46C64 44 68 42 72 41L80 22Z" stroke="url(#settingsCyan)" stroke-width="4"/>
+    <circle cx="80" cy="80" r="39" stroke="#269FCB" stroke-width="2" opacity="0.5"/>
+    <circle cx="80" cy="80" r="23" stroke="#FFC43B" stroke-width="3" filter="url(#settingsGlow)"/>
+    <path d="M80 64V96M64 80H96" stroke="#FFC43B" stroke-width="3"/>
+    <circle cx="80" cy="80" r="6" fill="#0A2942" stroke="#FFC43B" stroke-width="2.5"/>
+    <path d="M41 80H57M103 80H119M80 41V57M80 103V119" stroke="#38B9E5" stroke-width="2.5" opacity="0.7"/>
+    <circle cx="35" cy="80" r="7" fill="#071A30" stroke="#49CDF3" stroke-width="3"/>
+    <circle cx="125" cy="80" r="7" fill="#071A30" stroke="#49CDF3" stroke-width="3"/>
+    <circle cx="80" cy="35" r="7" fill="#071A30" stroke="#49CDF3" stroke-width="3"/>
+    <circle cx="80" cy="125" r="7" fill="#071A30" stroke="#FFC43B" stroke-width="3" filter="url(#settingsGlow)"/>
+  </g>
+</svg>

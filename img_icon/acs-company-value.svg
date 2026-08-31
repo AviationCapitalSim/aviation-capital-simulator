@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" fill="none" role="img" aria-labelledby="valueTitle valueDesc">
+  <title id="valueTitle">ACS OCC Company Value</title>
+  <desc id="valueDesc">Maletín de activos con aeronave y monedas de valoración.</desc>
+  <defs>
+    <linearGradient id="valueCyan" x1="25" y1="27" x2="137" y2="143" gradientUnits="userSpaceOnUse"><stop stop-color="#60DBFC"/><stop offset="1" stop-color="#168FBE"/></linearGradient>
+    <filter id="valueGlow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <path d="M57 43V34C57 28.5 61.5 24 67 24H93C98.5 24 103 28.5 103 34V43" stroke="#47C9F0" stroke-width="4"/>
+    <rect x="24" y="42" width="112" height="99" rx="19" stroke="url(#valueCyan)" stroke-width="4"/>
+    <path d="M24 83H136" stroke="#35B1DD" stroke-width="3" opacity="0.66"/>
+    <rect x="70" y="77" width="20" height="13" rx="4" fill="#0A2942" stroke="#FFC43B" stroke-width="2.5" filter="url(#valueGlow)"/>
+    <g transform="translate(59 48) rotate(-17 20 18)" filter="url(#valueGlow)">
+      <path d="M20 3.5C22.1 3.5 23.8 5.2 23.8 7.3V14.2L35.4 22.3V26.8L23.8 23.4V31.4L28 35.2V38.2L20 35.8L12 38.2V35.2L16.2 31.4V23.4L4.6 26.8V22.3L16.2 14.2V7.3C16.2 5.2 17.9 3.5 20 3.5Z" fill="#0B2940" stroke="#E8F8FF" stroke-width="2.4"/>
+      <path d="M20 5.7V34.3" stroke="#9DE7FF" stroke-width="1.1" opacity="0.5"/>
+    </g>
+    <g transform="translate(103 101)" filter="url(#valueGlow)">
+      <ellipse cx="17" cy="9" rx="14" ry="6" fill="#0A2942" stroke="#FFC43B" stroke-width="2.2"/>
+      <path d="M3 9V17C3 20.3 9.3 23 17 23C24.7 23 31 20.3 31 17V9" stroke="#FFC43B" stroke-width="2.2"/>
+      <path d="M3 17V25C3 28.3 9.3 31 17 31C24.7 31 31 28.3 31 25V17" stroke="#FFC43B" stroke-width="2.2"/>
+    </g>
+  </g>
+</svg>
