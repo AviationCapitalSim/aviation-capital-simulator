@@ -1663,7 +1663,50 @@ function ACS_ST_resolveTimesFromRuntime(snapshotItem) {
     flightContext: snapshotItem.flightContext || null
   };
 }
-        
+
+// ============================================================
+// 🖼️ SKYTRACK — AIRCRAFT IMAGE IDENTITY NORMALIZER
+// Prepares snapshot aircraft data for ACS aircraft image resolver.
+// ============================================================
+
+function ACS_ST_buildAircraftImageIdentity(item) {
+  const aircraftName = String(
+    item?.aircraft_name ||
+    item?.aircraft_model ||
+    item?.model ||
+    ""
+  ).trim();
+
+  let manufacturer = String(
+    item?.manufacturer ||
+    item?.catalog_manufacturer ||
+    item?.oem ||
+    item?.make ||
+    ""
+  ).trim();
+
+  if (!manufacturer && aircraftName) {
+    const manufacturerMatch = aircraftName.match(
+      /^(.+?)\s+(?=(?:MODEL\s+)?(?:[A-Z]{1,5}(?:[.\-\s]?\d)|\d))/i
+    );
+
+    if (manufacturerMatch) {
+      manufacturer = manufacturerMatch[1].trim();
+    }
+  }
+
+  return {
+    ...item,
+    manufacturer,
+    aircraft_name: aircraftName,
+    model: aircraftName,
+    model_key:
+      item?.model_key ||
+      item?.modelKey ||
+      ""
+  };
+}
+     
 // 🟦 A9.2 — Render Flight Details (FR24)
 
 function renderFlightDetails(snapshot) {
@@ -1704,6 +1747,25 @@ const aircraftRegistration =
   item.registration ||
   item.tail ||
   "—";
+
+// Aircraft image identity
+const aircraftImageIdentity =
+  ACS_ST_buildAircraftImageIdentity(item);
+
+// Preserve the loaded image between snapshot refreshes
+const aircraftImageKey = String(
+  item.aircraftId ||
+  item.registration ||
+  id
+);
+
+const previousAircraftImageEl =
+  detailsEl.querySelector(".skytrack-aircraft-image");
+
+const canReuseAircraftImage =
+  previousAircraftImageEl &&
+  previousAircraftImageEl.naturalWidth > 0 &&
+  detailsEl.dataset.acsAircraftImageKey === aircraftImageKey;
 
   const originCity = ACS_ST_resolveAirportCity(item.originICAO);
   const destinationCity = ACS_ST_resolveAirportCity(item.destinationICAO);
@@ -1860,16 +1922,26 @@ const aircraftImageEl =
 
 if (
   aircraftImageEl &&
+  canReuseAircraftImage
+) {
+  aircraftImageEl.replaceWith(
+    previousAircraftImageEl
+  );
+} else if (
+  aircraftImageEl &&
   typeof window.ACS_setAircraftImage === "function"
 ) {
   window.ACS_setAircraftImage(
     aircraftImageEl,
-    item
+    aircraftImageIdentity
   );
- }
 }
 
-   function apLatLng(icao) {
+detailsEl.dataset.acsAircraftImageKey =
+  aircraftImageKey;
+}
+
+function apLatLng(icao) {
        
       const ap = window.ACS_AIRPORT_INDEX?.[icao];
       if (!ap) return null;
