@@ -522,30 +522,42 @@ body {
 .skytrack-aircraft-stage {
   width: 100%;
   aspect-ratio: 16 / 10;
+  box-sizing: border-box;
+  padding: 4px;
+
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border: 1px solid rgba(90, 169, 255, 0.34);
+
+  border: 2px solid rgba(90, 169, 255, 0.78);
   border-radius: 16px;
+
   background:
-    radial-gradient(
-      circle at center,
-      rgba(90, 169, 255, 0.13),
-      rgba(6, 18, 42, 0.84)
+    linear-gradient(
+      145deg,
+      rgba(90, 169, 255, 0.22),
+      rgba(6, 18, 42, 0.92)
     );
+
   box-shadow:
-    inset 0 0 24px rgba(90, 169, 255, 0.08),
-    0 0 18px rgba(0, 0, 0, 0.24);
+    inset 0 0 0 1px rgba(220, 238, 255, 0.16),
+    inset 0 0 20px rgba(90, 169, 255, 0.12),
+    0 0 14px rgba(90, 169, 255, 0.20),
+    0 8px 22px rgba(0, 0, 0, 0.34);
 }
 
 .skytrack-aircraft-image {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: contain;
-}
 
+  object-fit: cover;
+  object-position: center;
+
+  border-radius: 11px;
+}
+     
 .skytrack-flight-data {
   display: flex;
   flex-direction: column;
