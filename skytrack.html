@@ -1721,42 +1721,135 @@ const delayMin = opsDisplay.delayMinutes;
     const mm = String(remaining % 60).padStart(2, "0");
 
     extra = `
-      <div style="margin-top:8px;">
-        <strong>Progress:</strong> ${pct}%<br>
-        <strong>Time Remaining:</strong> ${hh}:${mm}
-      </div>
-    `;
+  <div class="skytrack-detail-row">
+    <span class="skytrack-detail-label">Progress:</span>
+    <span class="skytrack-detail-value">${pct}%</span>
+  </div>
+
+  <div class="skytrack-detail-row">
+    <span class="skytrack-detail-label">Time Remaining:</span>
+    <span class="skytrack-detail-value">${hh}:${mm}</span>
+  </div>
+`;
   }
 
   detailsEl.innerHTML = `
-    <h3>📊 Flight Details</h3>
-    <div style="font-size:0.95rem; line-height:1.5;">
-      <strong>Flight:</strong> ${item.flightNumber || "—"}<br>
-      <strong>Route:</strong> ${(item.originICAO || "—")} → ${(item.destinationICAO || "—")}<br>
-      <strong>City Pair:</strong> ${cityPair}<br>
-      <strong>Aircraft:</strong> ${aircraftLabel}<br>
-      <strong>Status:</strong> ${item.state || "—"}<br>
-      <strong>Departure:</strong> ${depTime}<br>
-      <strong>Arrival:</strong> ${arrTime}<br>
+  <h3>📊 Flight Details</h3>
 
-      <div style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,179,0,0.18);">
-        <strong>OPS Status:</strong>
-        <span style="color:${opsColor}; font-weight:800; letter-spacing:0.4px;">
+  <div class="skytrack-flight-layout">
+
+    <div class="skytrack-aircraft-stage">
+      <img
+        class="skytrack-aircraft-image"
+        alt="${aircraftLabel} ${aircraftRegistration}"
+      >
+    </div>
+
+    <div class="skytrack-flight-data">
+
+      <div class="skytrack-detail-row">
+        <span class="skytrack-detail-label">Flight:</span>
+        <span class="skytrack-detail-value">
+          ${item.flightNumber || "—"}
+        </span>
+      </div>
+
+      <div class="skytrack-detail-row">
+        <span class="skytrack-detail-label">Route:</span>
+        <span class="skytrack-detail-value">
+          ${(item.originICAO || "—")} → ${(item.destinationICAO || "—")}
+        </span>
+      </div>
+
+      <div class="skytrack-detail-row">
+        <span class="skytrack-detail-label">City Pair:</span>
+        <span class="skytrack-detail-value">
+          ${cityPair}
+        </span>
+      </div>
+
+      <div class="skytrack-detail-row">
+        <span class="skytrack-detail-label">Aircraft:</span>
+        <span class="skytrack-detail-value">
+          ${aircraftLabel}
+        </span>
+      </div>
+
+      <div class="skytrack-detail-row">
+        <span class="skytrack-detail-label">Registration:</span>
+        <span class="skytrack-detail-value">
+          ${aircraftRegistration}
+        </span>
+      </div>
+
+      <div class="skytrack-detail-row">
+        <span class="skytrack-detail-label">Status:</span>
+        <span class="skytrack-detail-value">
+          ${item.state || "—"}
+        </span>
+      </div>
+
+      <div class="skytrack-detail-row">
+        <span class="skytrack-detail-label">Departure:</span>
+        <span class="skytrack-detail-value">
+          ${depTime}
+        </span>
+      </div>
+
+      <div class="skytrack-detail-row">
+        <span class="skytrack-detail-label">Arrival:</span>
+        <span class="skytrack-detail-value">
+          ${arrTime}
+        </span>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="skytrack-ops-section">
+    <div class="skytrack-ops-data">
+
+      <div class="skytrack-detail-row">
+        <span class="skytrack-detail-label">OPS Status:</span>
+        <span
+          class="skytrack-detail-value"
+          style="color:${opsColor}; font-weight:800; letter-spacing:0.4px;"
+        >
           ${opsLabel}
-        </span><br>
-        <strong>Delay:</strong>
-        <span style="color:${opsColor}; font-weight:800;">
+        </span>
+      </div>
+
+      <div class="skytrack-detail-row">
+        <span class="skytrack-detail-label">Delay:</span>
+        <span
+          class="skytrack-detail-value"
+          style="color:${opsColor}; font-weight:800;"
+        >
           ${Math.max(0, delayMin)} min
         </span>
       </div>
 
       ${extra}
+
     </div>
-  `;
+  </div>
+`;
+
+const aircraftImageEl =
+  detailsEl.querySelector(".skytrack-aircraft-image");
+
+if (
+  aircraftImageEl &&
+  typeof window.ACS_setAircraftImage === "function"
+) {
+  window.ACS_setAircraftImage(
+    aircraftImageEl,
+    item
+  );
+ }
 }
 
-     
-    function apLatLng(icao) {
+   function apLatLng(icao) {
        
       const ap = window.ACS_AIRPORT_INDEX?.[icao];
       if (!ap) return null;
