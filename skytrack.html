@@ -194,11 +194,23 @@ body {
   margin-bottom: 1.4rem;
 }
 
-.panel h3 {
-  margin-top: 0;
-  color: #ffca3a;
-  text-shadow: 0 0 10px rgba(255,200,60,0.35);
-  letter-spacing: 0.4px;
+/* ============================================================
+   🟦 SKYTRACK — ACS OCC TITLE ICONS
+   ============================================================ */
+
+.skytrack-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.skytrack-title-icon {
+  display: block;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  object-fit: contain;
 }
 
 /* ============================================================
@@ -819,7 +831,15 @@ body {
   <div class="skytrack-grid">
 
     <div class="panel">
-      <h3>✈️ Live Traffic</h3>
+      <h3 class="skytrack-section-title">
+  <img
+    src="./img_icon/acs-live-traffic.svg"
+    class="skytrack-title-icon"
+    alt=""
+    aria-hidden="true"
+  >
+  <span>Live Traffic</span>
+</h3>
 
       <div class="skytrack-list" id="skytrackLiveList">
         <!-- Live traffic rendered by JS -->
@@ -827,9 +847,18 @@ body {
     </div>
 
     <div class="panel skytrack-details-panel">
-      <h3>📊 Flight Details</h3>
-      <p>Select a flight to view detailed information.</p>
-    </div>
+  <h3 class="skytrack-section-title">
+    <img
+      src="./img_icon/acs-flight-details.svg"
+      class="skytrack-title-icon"
+      alt=""
+      aria-hidden="true"
+    >
+    <span>Flight Details</span>
+  </h3>
+
+  <p>Select a flight to view detailed information.</p>
+</div>
 
   </div>
 
@@ -1726,13 +1755,23 @@ function renderFlightDetails(snapshot) {
   if (!detailsEl) return;
 
   const id = window.ACS_ACTIVE_FLIGHT_ID;
+   
   if (!id) {
-    detailsEl.innerHTML = `
-      <h3>📊 Flight Details</h3>
-      <p>Select a flight to view detailed information.</p>
-    `;
-    return;
-  }
+  detailsEl.innerHTML = `
+    <h3 class="skytrack-section-title">
+      <img
+        src="./img_icon/acs-flight-details.svg"
+        class="skytrack-title-icon"
+        alt=""
+        aria-hidden="true"
+      >
+      <span>Flight Details</span>
+    </h3>
+
+    <p>Select a flight to view detailed information.</p>
+  `;
+  return;
+}
 
   const item = (snapshot || []).find(f => f.aircraftId === id);
   if (!item) return;
@@ -1828,7 +1867,15 @@ const delayMin = opsDisplay.delayMinutes;
   }
 
   detailsEl.innerHTML = `
-  <h3>📊 Flight Details</h3>
+  <h3 class="skytrack-section-title">
+    <img
+      src="./img_icon/acs-flight-details.svg"
+      class="skytrack-title-icon"
+      alt=""
+      aria-hidden="true"
+    >
+    <span>Flight Details</span>
+  </h3>
 
   <div class="skytrack-flight-layout">
 
