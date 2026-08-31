@@ -6173,10 +6173,34 @@ html body .order-book-table tbody tr:hover {
       </div>
     </div>
 
-    <div class="pending-occ-delivery-date">
-      <span>Estimated Delivery</span>
+        <div class="pending-occ-delivery-date">
+      <span>Next Estimated Delivery</span>
       <strong id="pendingEstimatedDelivery">—</strong>
     </div>
+
+    <!-- ============================================================
+         🟦 ACS OCC IV — INDIVIDUAL DELIVERY SCHEDULE
+         ------------------------------------------------------------
+         One row represents one pending aircraft from this order.
+         ============================================================ -->
+
+    <section
+      class="pending-occ-schedule-panel"
+      aria-labelledby="pendingDeliveryScheduleTitle"
+    >
+      <div
+        id="pendingDeliveryScheduleTitle"
+        class="pending-occ-schedule-title"
+      >
+        Individual Delivery Schedule
+      </div>
+
+      <div
+        id="pendingDeliverySchedule"
+        class="pending-occ-schedule"
+      >
+      </div>
+    </section>
 
     <footer
       id="pendingDeliveryNavigation"
