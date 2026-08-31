@@ -579,13 +579,16 @@ body {
 .skytrack-ops-section {
   width: min(860px, 100%);
   margin: 24px auto 0;
-  padding-top: 18px;
-  border-top: 1px solid rgba(255, 179, 0, 0.22);
+  display: grid;
+  grid-template-columns: minmax(230px, 300px) minmax(360px, 1fr);
+  column-gap: 38px;
 }
 
 .skytrack-ops-data {
-  width: min(440px, 100%);
-  margin: 0 auto;
+  grid-column: 2;
+  width: 100%;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 179, 0, 0.22);
   display: flex;
   flex-direction: column;
   gap: 7px;
@@ -606,7 +609,18 @@ body {
     margin: 0 auto;
   }
 
-  .skytrack-flight-data {
+    .skytrack-flight-data {
+    width: min(520px, 100%);
+    margin: 0 auto;
+  }
+
+  .skytrack-ops-section {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+  }
+
+  .skytrack-ops-data {
+    grid-column: 1;
     width: min(520px, 100%);
     margin: 0 auto;
   }
