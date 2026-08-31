@@ -1294,6 +1294,33 @@ const liveListEl = document.getElementById("skytrackLiveList");
 const detailsEl = document.querySelector(".panel h3 + p")
   ? document.querySelector(".panel h3 + p").parentElement
   : null;
+
+// ============================================================
+// 🟦 A9.2 — GLOBAL AIRPORT CITY RESOLVER
+// Obtiene la ciudad real desde la base mundial de aeropuertos ACS.
+// ============================================================
+
+function ACS_ST_resolveAirportCity(icao) {
+  const airportCode = String(icao || "").trim().toUpperCase();
+
+  if (!airportCode) {
+    return "—";
+  }
+
+  const airport =
+    window.ACS_AIRPORT_INDEX?.[airportCode] ||
+    window.__ACS_AIRPORT_INDEX__?.[airportCode] ||
+    null;
+
+  const city =
+    airport?.city ||
+    airport?.municipality ||
+    airport?.city_name ||
+    airport?.location ||
+    "";
+
+  return String(city || airportCode).trim();
+}
      
 function renderLiveTrackPanel(snapshot) {
   if (!liveListEl || !Array.isArray(snapshot)) return;
@@ -1527,6 +1554,10 @@ function renderFlightDetails(snapshot) {
   // Aircraft + matrícula (registration)
   const aircraftLabel = `${item.model || "—"} (${item.registration || "—"})`;
 
+  const originCity = ACS_ST_resolveAirportCity(item.originICAO);
+  const destinationCity = ACS_ST_resolveAirportCity(item.destinationICAO);
+  const cityPair = `${originCity} → ${destinationCity}`;  
+   
   // ============================================================
   // ✅ OPS UI (PLAYER-FACING ONLY) — NO $$, NO %, NO Finance data
   // Fuente: snapshot item (inyectado por runtime desde registry)
@@ -1571,6 +1602,7 @@ const delayMin = opsDisplay.delayMinutes;
     <div style="font-size:0.95rem; line-height:1.5;">
       <strong>Flight:</strong> ${item.flightNumber || "—"}<br>
       <strong>Route:</strong> ${(item.originICAO || "—")} → ${(item.destinationICAO || "—")}<br>
+      <strong>City Pair:</strong> ${cityPair}<br>
       <strong>Aircraft:</strong> ${aircraftLabel}<br>
       <strong>Status:</strong> ${item.state || "—"}<br>
       <strong>Departure:</strong> ${depTime}<br>
