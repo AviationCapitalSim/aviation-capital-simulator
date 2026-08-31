@@ -4129,154 +4129,234 @@ function getPendingOrderImage(order) {
   return getAircraftImage(imageObject);
 }
 
-function renderPendingDeliveryModal() {
+/* ============================================================
+   🟦 ACS OCC IV — GLOBAL PENDING AIRCRAFT PAGES
+   ------------------------------------------------------------
+   Creates one modal page per pending aircraft.
+   Pages are sorted by individual delivery date.
+   ============================================================ */
+
+function ACS_buildPendingAircraftPages() {
   const orders =
-    Array.isArray(ACS_MY_AIRCRAFT.pendingOrders)
+    Array.isArray(
+      ACS_MY_AIRCRAFT.pendingOrders
+    )
       ? ACS_MY_AIRCRAFT.pendingOrders
       : [];
 
-  if (!orders.length) {
+  const pages = [];
+
+  for (const order of orders) {
+    let orderNotes = {};
+
+    try {
+      orderNotes =
+        order?.notes &&
+        typeof order.notes === "object"
+          ? order.notes
+          : JSON.parse(
+              String(
+                order?.notes ||
+                "{}"
+              )
+            );
+    } catch (_) {
+      orderNotes = {};
+    }
+
+    const orderedQuantity = Math.max(
+      1,
+      Math.trunc(
+        safeNumber(
+          order.quantity,
+          1
+        )
+      )
+    );
+
+    const deliveredUnitCount = Math.min(
+      orderedQuantity,
+      Math.max(
+        0,
+        Math.trunc(
+          safeNumber(
+            orderNotes.delivery_unit_count,
+            0
+          )
+        )
+      )
+    );
+
+    const storedSchedule =
+      Array.isArray(
+        orderNotes.unit_delivery_schedule
+      )
+        ? orderNotes.unit_delivery_schedule
+        : [];
+
+    if (storedSchedule.length) {
+      storedSchedule
+        .map((unit, unitIndex) => ({
+          unit_number:
+            Math.max(
+              1,
+              Math.trunc(
+                safeNumber(
+                  unit?.unit_number,
+                  unitIndex + 1
+                )
+              )
+            ),
+
+          estimated_delivery_date:
+            unit?.estimated_delivery_date ||
+            order.estimated_delivery_date
+        }))
+        .filter(
+          unit =>
+            unit.unit_number >
+            deliveredUnitCount
+        )
+        .forEach(unit => {
+          pages.push({
+            order,
+            unit_number:
+              unit.unit_number,
+
+            estimated_delivery_date:
+              unit.estimated_delivery_date
+          });
+        });
+
+      continue;
+    }
+
+    /*
+      Compatibility with pending orders created
+      before ACS OCC IV.
+    */
+    for (
+      let unitNumber =
+        deliveredUnitCount + 1;
+
+      unitNumber <=
+        orderedQuantity;
+
+      unitNumber += 1
+    ) {
+      pages.push({
+        order,
+        unit_number:
+          unitNumber,
+
+        estimated_delivery_date:
+          order.estimated_delivery_date
+      });
+    }
+  }
+
+  pages.sort((pageA, pageB) => {
+    const dateA = new Date(
+      pageA.estimated_delivery_date ||
+      0
+    ).getTime();
+
+    const dateB = new Date(
+      pageB.estimated_delivery_date ||
+      0
+    ).getTime();
+
+    const safeDateA =
+      Number.isFinite(dateA)
+        ? dateA
+        : Number.MAX_SAFE_INTEGER;
+
+    const safeDateB =
+      Number.isFinite(dateB)
+        ? dateB
+        : Number.MAX_SAFE_INTEGER;
+
+    if (safeDateA !== safeDateB) {
+      return safeDateA - safeDateB;
+    }
+
+    const orderDifference =
+      safeNumber(
+        pageA.order?.id,
+        0
+      ) -
+      safeNumber(
+        pageB.order?.id,
+        0
+      );
+
+    if (orderDifference !== 0) {
+      return orderDifference;
+    }
+
+    return (
+      pageA.unit_number -
+      pageB.unit_number
+    );
+  });
+
+  return pages;
+}
+   
+function renderPendingDeliveryModal() {
+  const pages =
+    ACS_buildPendingAircraftPages();
+
+  if (!pages.length) {
     closePendingDeliveryModal();
     return;
   }
 
-  ACS_MY_AIRCRAFT.pendingOrderIndex = Math.min(
-    Math.max(ACS_MY_AIRCRAFT.pendingOrderIndex, 0),
-    orders.length - 1
-  );
+  ACS_MY_AIRCRAFT.pendingOrderIndex =
+    Math.min(
+      Math.max(
+        ACS_MY_AIRCRAFT
+          .pendingOrderIndex,
+        0
+      ),
+      pages.length - 1
+    );
 
-    const index =
-    ACS_MY_AIRCRAFT.pendingOrderIndex;
+  const index =
+    ACS_MY_AIRCRAFT
+      .pendingOrderIndex;
+
+  const page =
+    pages[index];
 
   const order =
-    orders[index];
-
-  const totalAircraft =
-    getPendingAircraftTotal();
-
-  /*
-    ACS OCC IV:
-    Read the individual delivery schedule belonging
-    to the selected commercial order.
-  */
-  let orderNotes = {};
-
-  try {
-    orderNotes =
-      order?.notes &&
-      typeof order.notes === "object"
-        ? order.notes
-        : JSON.parse(
-            String(
-              order?.notes ||
-              "{}"
-            )
-          );
-  } catch (_) {
-    orderNotes = {};
-  }
-
-  const orderedQuantity = Math.max(
-    1,
-    Math.trunc(
-      safeNumber(
-        order.quantity,
-        1
-      )
-    )
-  );
-
-  const deliveredUnitCount = Math.min(
-    orderedQuantity,
-    Math.max(
-      0,
-      Math.trunc(
-        safeNumber(
-          orderNotes.delivery_unit_count,
-          0
-        )
-      )
-    )
-  );
-
-  const storedDeliverySchedule =
-    Array.isArray(
-      orderNotes.unit_delivery_schedule
-    )
-      ? orderNotes.unit_delivery_schedule
-      : [];
-
-  let pendingDeliveryUnits =
-    storedDeliverySchedule
-      .map((unit, unitIndex) => ({
-        unit_number:
-          Math.max(
-            1,
-            Math.trunc(
-              safeNumber(
-                unit?.unit_number,
-                unitIndex + 1
-              )
-            )
-          ),
-
-        estimated_delivery_date:
-          unit?.estimated_delivery_date ||
-          null
-      }))
-      .filter(
-        unit =>
-          unit.unit_number >
-          deliveredUnitCount
-      )
-      .sort(
-        (a, b) =>
-          a.unit_number -
-          b.unit_number
-      );
-
-  /*
-    Compatibility with pending orders created before
-    ACS OCC IV. Their original single delivery date
-    remains visible.
-  */
-  if (!pendingDeliveryUnits.length) {
-    const legacyPendingQuantity =
-      Math.max(
-        0,
-        orderedQuantity -
-        deliveredUnitCount
-      );
-
-    pendingDeliveryUnits =
-      Array.from(
-        {
-          length:
-            legacyPendingQuantity
-        },
-        (_, unitIndex) => ({
-          unit_number:
-            deliveredUnitCount +
-            unitIndex +
-            1,
-
-          estimated_delivery_date:
-            order.estimated_delivery_date
-        })
-      );
-  }
+    page.order;
 
   setText(
     "pendingDeliverySummary",
-    `${totalAircraft} aircraft pending · Order ${index + 1} of ${orders.length}`
+    `${pages.length} aircraft pending · Aircraft ${index + 1} of ${pages.length}`
   );
 
-  setText("pendingFactory", safeText(order.manufacturer));
-  setText("pendingModel", safeText(order.aircraft_name));
-   
+  setText(
+    "pendingFactory",
+    safeText(
+      order.manufacturer
+    )
+  );
+
+  setText(
+    "pendingModel",
+    safeText(
+      order.aircraft_name
+    )
+  );
+
+  /*
+    One modal page represents one aircraft.
+  */
   setText(
     "pendingQuantity",
-    pendingDeliveryUnits.length
+    1
   );
 
   setText(
@@ -4296,107 +4376,87 @@ function renderPendingDeliveryModal() {
   setText(
     "pendingEstimatedDelivery",
     formatDate(
-      pendingDeliveryUnits[0]
-        ?.estimated_delivery_date ||
-      order.estimated_delivery_date
+      page.estimated_delivery_date
     )
   );
 
-  /*
-    Render every pending aircraft belonging
-    to this order.
-
-    Navigation remains between commercial orders.
-    The list inside the modal represents aircraft units.
-  */
-  const scheduleContainer =
-    $("pendingDeliverySchedule");
-
-  if (scheduleContainer) {
-    scheduleContainer.innerHTML =
-      pendingDeliveryUnits.length
-        ? pendingDeliveryUnits
-            .map(
-              unit => `
-                <div class="pending-occ-schedule-row">
-                  <span class="pending-occ-schedule-unit">
-                    AIRCRAFT ${escapeHtml(
-                      unit.unit_number
-                    )}
-                  </span>
-
-                  <strong class="pending-occ-schedule-date">
-                    ${escapeHtml(
-                      formatDate(
-                        unit
-                          .estimated_delivery_date
-                      )
-                    )}
-                  </strong>
-
-                  <em class="pending-occ-schedule-quantity">
-                    1 AIRCRAFT
-                  </em>
-                </div>
-              `
-            )
-            .join("")
-        : `
-            <div class="pending-occ-schedule-empty">
-              No aircraft pending
-            </div>
-          `;
-  }
-
   const deliveryStatus =
-    normalizeStatus(order.delivery_status);
+    normalizeStatus(
+      order.delivery_status
+    );
 
-  const statusElement = $("pendingDeliveryStatus");
+  const statusElement =
+    $("pendingDeliveryStatus");
 
   if (statusElement) {
     statusElement.textContent =
-      normalizeDisplay(deliveryStatus);
+      normalizeDisplay(
+        deliveryStatus
+      );
 
     statusElement.className =
-      deliveryStatus === "PAYMENT_HOLD"
+      deliveryStatus ===
+      "PAYMENT_HOLD"
         ? "pending-occ-status pending-occ-status-hold"
         : "pending-occ-status pending-occ-status-waiting";
   }
 
-  const image = $("pendingAircraftImage");
+  const image =
+    $("pendingAircraftImage");
 
   if (image) {
-  const imageAircraft = normalizeMyAircraftImageObject({
-    manufacturer: order.manufacturer,
-    aircraft_name: order.aircraft_name,
-    model_key: order.model_key
-  });
+    const imageAircraft =
+      normalizeMyAircraftImageObject({
+        manufacturer:
+          order.manufacturer,
 
-  window.ACS_setAircraftImage(image, imageAircraft);
+        aircraft_name:
+          order.aircraft_name,
 
-  image.alt =
-    safeText(order.aircraft_name, "Pending aircraft");
-}
+        model_key:
+          order.model_key
+      });
 
-  const previousButton = $("pendingPreviousButton");
-  const nextButton = $("pendingNextButton");
-  const navigation = $("pendingDeliveryNavigation");
+    window.ACS_setAircraftImage(
+      image,
+      imageAircraft
+    );
+
+    image.alt =
+      safeText(
+        order.aircraft_name,
+        "Pending aircraft"
+      );
+  }
+
+  const previousButton =
+    $("pendingPreviousButton");
+
+  const nextButton =
+    $("pendingNextButton");
+
+  const navigation =
+    $("pendingDeliveryNavigation");
 
   if (previousButton) {
-    previousButton.disabled = index === 0;
+    previousButton.disabled =
+      index === 0;
   }
 
   if (nextButton) {
-    nextButton.disabled = index === orders.length - 1;
+    nextButton.disabled =
+      index ===
+      pages.length - 1;
   }
 
   if (navigation) {
-  navigation.style.display = "grid";
-}
+    navigation.style.display =
+      "grid";
+  }
 
   setText(
     "pendingPageIndicator",
-    `${index + 1} OF ${orders.length}`
+    `${index + 1} OF ${pages.length}`
   );
 }
 
@@ -4427,21 +4487,31 @@ function closePendingDeliveryModal() {
   document.body.classList.remove("pending-modal-open");
 }
 
-function changePendingDeliveryPage(direction) {
-  const orders = ACS_MY_AIRCRAFT.pendingOrders;
+function changePendingDeliveryPage(
+  direction
+) {
+  const pages =
+    ACS_buildPendingAircraftPages();
 
-  if (!Array.isArray(orders) || orders.length < 2) {
+  if (pages.length < 2) {
     return;
   }
 
   const nextIndex =
-    ACS_MY_AIRCRAFT.pendingOrderIndex + Number(direction);
+    ACS_MY_AIRCRAFT
+      .pendingOrderIndex +
+    Number(direction);
 
-  if (nextIndex < 0 || nextIndex >= orders.length) {
+  if (
+    nextIndex < 0 ||
+    nextIndex >= pages.length
+  ) {
     return;
   }
 
-  ACS_MY_AIRCRAFT.pendingOrderIndex = nextIndex;
+  ACS_MY_AIRCRAFT.pendingOrderIndex =
+    nextIndex;
+
   renderPendingDeliveryModal();
 }
 
