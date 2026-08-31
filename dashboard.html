@@ -2155,7 +2155,7 @@ button {
     <div class="occ-label">REGISTRY</div>
 
     <div class="occ-icon occ-flag-icon" aria-hidden="true">
-      <span id="occRegistryFlag">🌍</span>
+  <span id="occRegistryFlag">—</span>
     </div>
 
     <div class="occ-value" id="chipWorld">
@@ -2724,7 +2724,7 @@ function handleLogout(){
    1️⃣ UNIVERSAL FLAG ENGINE — Qatar Luxury
    ============================================================ */
 function getFlagEmojiFromCountryName(countryName) {
-  if (!countryName) return "🌍";
+  if (!countryName) return "";
 
   const isoMap = {
   "afghanistan":"AF","albania":"AL","algeria":"DZ","andorra":"AD","angola":"AO","antigua and barbuda":"AG","argentina":"AR","armenia":"AM","australia":"AU","austria":"AT","azerbaijan":"AZ",
@@ -2754,7 +2754,7 @@ function getFlagEmojiFromCountryName(countryName) {
 
   const key = countryName.trim().toLowerCase();
   const iso = isoMap[key];
-  if (!iso) return "🌍";
+  if (!iso) return "";
 
   return String.fromCodePoint(
     iso.charCodeAt(0) - 65 + 0x1F1E6,
@@ -2927,14 +2927,35 @@ document.addEventListener("DOMContentLoaded", async () => {
       welcome.innerHTML = `<span class="w-airline">${airlineName}</span>`;
     }
 
-    /* ===== WORLD ===== */
-    const chipWorld = document.getElementById("chipWorld");
-    if (chipWorld) {
-      const flag = getFlagEmojiFromCountryName(airlineCountry || baseCountry);
-      chipWorld.textContent = airlineCountry
-        ? `${flag} ${airlineCountry}`
-        : "🌍 —";
-    }
+    /* ===== REGISTRY ===== */
+const registryCountry =
+  airlineCountry ||
+  baseCountry;
+
+const registryFlag =
+  getFlagEmojiFromCountryName(
+    registryCountry
+  );
+
+const occRegistryFlag =
+  document.getElementById(
+    "occRegistryFlag"
+  );
+
+if (occRegistryFlag) {
+  occRegistryFlag.textContent =
+    registryFlag || "—";
+}
+
+const chipWorld =
+  document.getElementById(
+    "chipWorld"
+  );
+
+if (chipWorld) {
+  chipWorld.textContent =
+    registryCountry || "—";
+}
 
     /* ===== BASE ===== */
     const chipBase = document.getElementById("chipBase");
@@ -2997,14 +3018,30 @@ document.addEventListener("DOMContentLoaded", async () => {
   try {
     const profileData = await loadProfileFromRailway();
     renderDashboardProfile(profileData);
+    
   } catch (error) {
     console.error("❌ Dashboard bootstrap failed:", error);
 
     const chipBase = document.getElementById("chipBase");
     if (chipBase) chipBase.textContent = "Base: —";
 
-    const chipWorld = document.getElementById("chipWorld");
-    if (chipWorld) chipWorld.textContent = "🌍 —";
+    const occRegistryFlag =
+  document.getElementById(
+    "occRegistryFlag"
+  );
+
+if (occRegistryFlag) {
+  occRegistryFlag.textContent = "—";
+}
+
+const chipWorld =
+  document.getElementById(
+    "chipWorld"
+  );
+
+if (chipWorld) {
+  chipWorld.textContent = "—";
+}
 
     const chipCallsign =
       document.getElementById("chipCallsign");
