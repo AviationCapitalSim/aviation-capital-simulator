@@ -53,7 +53,8 @@ pendingOrderIndex: 0,
 selectedAircraft: null,
 
 saleQuote: null,
-saleListing: null
+saleListing: null,
+scrapQuote: null
   };
 
   /* ============================================================
@@ -3531,15 +3532,84 @@ function closeAircraftSaleModal(
    ACS OCC — SCRAP AIRCRAFT MODAL
    ============================================================ */
 
+async function fetchAircraftScrapQuote(
+  aircraftId
+) {
+  const response =
+    await fetch(
+      `${ACS_MY_AIRCRAFT_API_BASE}/v1/aircraft/fleet/${aircraftId}/scrap/quote`,
+      {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          "Accept": "application/json"
+        }
+      }
+    );
+
+  const payload =
+    await response
+      .json()
+      .catch(() => null);
+
+  if (
+    !response.ok ||
+    !payload?.ok
+  ) {
+    throw new Error(
+      payload?.details ||
+      payload?.error ||
+      "Scrap evaluation failed."
+    );
+  }
+
+  return payload;
+}
+
 function resetAircraftScrapModal() {
-  setText("scrapAircraftName", "—");
-  setText("scrapAircraftRegistration", "—");
-  setText("scrapAircraftOwnership", "—");
-  setText("scrapAircraftAge", "—");
-  setText("scrapAircraftStatus", "—");
-  setText("scrapCurrentValue", "—");
-  setText("scrapRecoveryAmount", "—");
-  setText("scrapCapitalAfter", "—");
+  ACS_MY_AIRCRAFT.scrapQuote =
+    null;
+
+  setText(
+    "scrapAircraftName",
+    "—"
+  );
+
+  setText(
+    "scrapAircraftRegistration",
+    "—"
+  );
+
+  setText(
+    "scrapAircraftOwnership",
+    "—"
+  );
+
+  setText(
+    "scrapAircraftAge",
+    "—"
+  );
+
+  setText(
+    "scrapAircraftStatus",
+    "—"
+  );
+
+  setText(
+    "scrapCurrentValue",
+    "—"
+  );
+
+  setText(
+    "scrapRecoveryAmount",
+    "—"
+  );
+
+  setText(
+    "scrapCapitalAfter",
+    "—"
+  );
 
   const acknowledgement =
     $("scrapAcknowledgement");
@@ -3561,7 +3631,7 @@ function resetAircraftScrapModal() {
 
   if (message) {
     message.textContent =
-      "Waiting for ACS backend evaluation.";
+      "ACS OCC is evaluating this aircraft.";
 
     message.classList.remove(
       "is-blocked"
@@ -3649,53 +3719,118 @@ function renderAircraftScrapIdentity(
     image.alt =
       `${aircraftName} ${registration}`;
   }
+}
+
+function renderAircraftScrapQuote(
+  payload
+) {
+  ACS_MY_AIRCRAFT.scrapQuote =
+    payload;
+
+  const eligibility =
+    payload?.eligibility;
+
+  const quote =
+    payload?.quote;
+
+  const acknowledgement =
+    $("scrapAcknowledgement");
+
+  const confirmButton =
+    $("scrapConfirmButton");
 
   const message =
     $("scrapEligibilityMessage");
 
-  if (!message) return;
-
-  if (ownership !== "OWNED") {
-    message.textContent =
-      "SCRAP NOT AVAILABLE — Only owned aircraft may be scrapped.";
-
-    message.classList.add(
-      "is-blocked"
-    );
-
-    return;
-  }
-
   if (
-    Number.isFinite(age) &&
-    age < 12
+    !eligibility?.eligible ||
+    !quote
   ) {
-    message.textContent =
-      `SCRAP NOT AVAILABLE — Aircraft must be at least 12 years old. Current age: ${age} years.`;
-
-    message.classList.add(
-      "is-blocked"
+    setText(
+      "scrapRecoveryAmount",
+      "—"
     );
 
+    setText(
+      "scrapCapitalAfter",
+      "—"
+    );
+
+    if (acknowledgement) {
+      acknowledgement.checked = false;
+      acknowledgement.disabled = true;
+    }
+
+    if (confirmButton) {
+      confirmButton.disabled = true;
+    }
+
+    if (message) {
+      message.textContent =
+        eligibility?.message ||
+        "Aircraft is not eligible for scrap.";
+
+      message.classList.add(
+        "is-blocked"
+      );
+    }
+
     return;
   }
 
-  if (!Number.isFinite(age)) {
-    message.textContent =
-      "Aircraft age requires backend verification.";
+  const currency =
+    quote.currency || "USD";
 
-    return;
-  }
-
-  message.textContent =
-    "Preliminary eligibility confirmed. ACS backend must verify flight, lease and financial authority.";
-
-  message.classList.remove(
-    "is-blocked"
+  setText(
+    "scrapCurrentValue",
+    formatMoney(
+      quote.current_value,
+      currency
+    )
   );
+
+  setText(
+    "scrapRecoveryAmount",
+    formatMoney(
+      quote.recovery_amount,
+      currency
+    )
+  );
+
+  setText(
+    "scrapCapitalAfter",
+    formatMoney(
+      quote.capital_after,
+      currency
+    )
+  );
+
+  if (acknowledgement) {
+    acknowledgement.checked = false;
+
+    /*
+      It remains disabled until the permanent
+      deletion endpoint is connected.
+    */
+
+    acknowledgement.disabled = true;
+  }
+
+  if (confirmButton) {
+    confirmButton.disabled = true;
+  }
+
+  if (message) {
+    message.textContent =
+      "Aircraft eligible. Immediate recovery calculated by ACS backend authority.";
+
+    message.classList.remove(
+      "is-blocked"
+    );
+  }
 }
 
-function openAircraftScrapModal(
+async function openAircraftScrapModal(
   aircraft
 ) {
   if (!aircraft?.id) return;
@@ -3712,12 +3847,17 @@ function openAircraftScrapModal(
   const scrapModal =
     $("aircraftScrapModal");
 
+  const message =
+    $("scrapEligibilityMessage");
+
   if (aircraftModal) {
-    aircraftModal.style.display = "none";
+    aircraftModal.style.display =
+      "none";
   }
 
   if (scrapModal) {
-    scrapModal.style.display = "flex";
+    scrapModal.style.display =
+      "flex";
 
     scrapModal.setAttribute(
       "aria-hidden",
@@ -3728,6 +3868,41 @@ function openAircraftScrapModal(
   document.body.classList.add(
     "aircraft-scrap-modal-open"
   );
+
+  try {
+    const payload =
+      await fetchAircraftScrapQuote(
+        aircraft.id
+      );
+
+    if (
+      Number(
+        ACS_MY_AIRCRAFT
+          .selectedAircraft?.id
+      ) !== Number(aircraft.id)
+    ) {
+      return;
+    }
+
+    renderAircraftScrapQuote(
+      payload
+    );
+
+  } catch (error) {
+    console.error(
+      "ACS AIRCRAFT SCRAP QUOTE ERROR:",
+      error
+    );
+
+    if (message) {
+      message.textContent =
+        error.message;
+
+      message.classList.add(
+        "is-blocked"
+      );
+    }
+  }
 }
 
 function closeAircraftScrapModal(
@@ -3740,7 +3915,8 @@ function closeAircraftScrapModal(
     $("aircraftModal");
 
   if (scrapModal) {
-    scrapModal.style.display = "none";
+    scrapModal.style.display =
+      "none";
 
     scrapModal.setAttribute(
       "aria-hidden",
@@ -3757,7 +3933,8 @@ function closeAircraftScrapModal(
     ACS_MY_AIRCRAFT.selectedAircraft &&
     aircraftModal
   ) {
-    aircraftModal.style.display = "flex";
+    aircraftModal.style.display =
+      "flex";
   }
 }
 
