@@ -384,6 +384,26 @@ table.alerts-table {
   width: 18%;
 }
 
+/* ============================================================
+   ACS OCC — ALERT MESSAGE HIERARCHY
+   ============================================================ */
+
+.alert-message-title {
+  color: #63a9ff;
+  font-weight: 800;
+  letter-spacing: 0.25px;
+}
+
+.alert-message-separator {
+  color: rgba(99,169,255,0.78);
+  font-weight: 700;
+}
+
+.alert-message-body {
+  color: #ffffff;
+  font-weight: 400;
+}
+
 .occ-alert-check {
   width: 15px;
   height: 15px;
@@ -775,7 +795,11 @@ function ACS_renderAlerts(alerts) {
       <td>
         <input type="checkbox" class="occ-alert-check" data-alert-id="${ACS_escapeHTML(alertId)}">
       </td>
-      <td>${title} — ${message}</td>
+      <td>
+        <span class="alert-message-title">${title}</span>
+        <span class="alert-message-separator"> — </span>
+        <span class="alert-message-body">${message}</span>
+      </td>
       <td><div class="alert-category"><span>${category}</span></div></td>
       <td><span class="${levelClass}">${ACS_escapeHTML(level)}</span></td>
       <td>${dateText}</td>
