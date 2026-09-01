@@ -190,6 +190,28 @@
       font-size: 0.6rem;
     }
 
+         .fuel-card-movement {
+      display: block;
+      margin-top: 9px;
+      font-family: "Orbitron", monospace;
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .fuel-card-movement.is-increase {
+      color: var(--fuel-gold);
+    }
+
+    .fuel-card-movement.is-decrease {
+      color: var(--fuel-green);
+    }
+
+    .fuel-card-movement.is-neutral,
+    .fuel-card-movement.is-pending {
+      color: #63a9ff;
+    }
+       
     .fuel-workspace {
       display: grid;
       grid-template-columns: minmax(0, 2fr) minmax(290px, 0.72fr);
@@ -252,6 +274,74 @@
       font-size: 0.59rem;
     }
 
+        .fuel-range-controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 20px 0;
+    }
+
+    .fuel-range-button {
+      min-width: 68px;
+      padding: 8px 16px;
+      border: 1px solid rgba(99, 169, 255, 0.34);
+      border-radius: 10px;
+
+      background:
+        linear-gradient(
+          180deg,
+          rgba(99, 169, 255, 0.12),
+          rgba(10, 27, 55, 0.26)
+        );
+
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 5px 16px rgba(0, 0, 0, 0.18);
+
+      color: #b8d5ff;
+      font-family: "Orbitron", monospace;
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+
+      transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+    }
+
+    .fuel-range-button:hover,
+    .fuel-range-button:focus-visible {
+      border-color:
+        rgba(99, 169, 255, 0.72);
+
+      color: #ffffff;
+      outline: none;
+      transform: translateY(-1px);
+    }
+
+    .fuel-range-button.is-active {
+      border-color:
+        var(--fuel-gold);
+
+      background:
+        linear-gradient(
+          180deg,
+          rgba(255, 179, 0, 0.16),
+          rgba(255, 179, 0, 0.035)
+        );
+
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 0 14px rgba(255, 179, 0, 0.18);
+
+      color:
+        var(--fuel-gold);
+    }
+       
     .fuel-info {
       padding: 5px 20px 17px;
     }
@@ -320,7 +410,7 @@
       position: relative;
       grid-row: 1;
       min-width: 0;
-      overflow-x: auto;
+      overflow-x: hidden;
       overflow-y: hidden;
       border-left: 1px solid rgba(135, 178, 219, 0.2);
       border-bottom: 1px solid rgba(135, 178, 219, 0.22);
@@ -330,7 +420,6 @@
         transparent calc(25% - 1px),
         rgba(145, 181, 218, 0.11) 25%
       );
-      scrollbar-color: rgba(255, 179, 0, 0.38) transparent;
     }
 
     .bar-list {
@@ -338,14 +427,14 @@
       align-items: flex-end;
       gap: 5px;
       width: 100%;
-      min-width: 720px;
+      min-width: 0;
       height: 100%;
       padding: 18px 12px 0;
     }
        
 .market-bar {
-  flex: 1 0 9px;
-  min-width: 8px;
+  flex: 1 1 0;
+  min-width: 0;
   height: var(--bar-height, 0%);
   padding: 0;
 
@@ -966,20 +1055,53 @@
       <article class="fuel-panel fuel-chart-panel" aria-labelledby="marketHistoryTitle">
         <header class="fuel-panel-header">
           <div>
-            <h2 id="marketHistoryTitle">Fuel Market Bars</h2>
+            <h2 id="marketHistoryTitle">Monthly Market Bars</h2>
             <p id="selectedFuelName">Select a fuel product</p>
           </div>
           <div class="fuel-current-reading">
             <strong id="selectedFuelPrice">--</strong>
             <span id="selectedFuelChange">NO VERIFIED READING</span>
           </div>
-        </header>
+                </header>
+
+        <div
+          class="fuel-range-controls"
+          id="fuelRangeControls"
+          aria-label="Monthly chart range"
+        >
+          <button
+            type="button"
+            class="fuel-range-button"
+            data-range-months="6"
+            aria-pressed="false"
+          >
+            6M
+          </button>
+
+          <button
+            type="button"
+            class="fuel-range-button is-active"
+            data-range-months="12"
+            aria-pressed="true"
+          >
+            12M
+          </button>
+
+          <button
+            type="button"
+            class="fuel-range-button"
+            data-range-months="24"
+            aria-pressed="false"
+          >
+            24M
+          </button>
+        </div>
 
         <div class="bar-chart-shell">
           <div
             class="bar-chart"
             role="img"
-            aria-label="Historical aviation fuel prices shown exclusively as vertical bars"
+            aria-label="Monthly aviation fuel prices shown exclusively as vertical bars"
           >
             <div class="chart-y-axis" id="chartYAxis"></div>
             <div class="bar-viewport">
@@ -999,11 +1121,29 @@
           </div>
         </div>
 
-        <div class="chart-legend" aria-label="Annual movement legend">
-          <span><i class="legend-dot is-neutral"></i>Stable -3% to +3%</span>
-          <span><i class="legend-dot is-attention"></i>Increase +3% to +10%</span>
-          <span><i class="legend-dot is-critical"></i>Increase above +10%</span>
-          <span><i class="legend-dot is-decrease"></i>Decrease below -3%</span>
+               <div
+          class="chart-legend"
+          aria-label="Monthly movement legend"
+        >
+          <span>
+            <i class="legend-dot is-neutral"></i>
+            Stable -0.25% to +0.25%
+          </span>
+
+          <span>
+            <i class="legend-dot is-attention"></i>
+            Monthly increase
+          </span>
+
+          <span>
+            <i class="legend-dot is-critical"></i>
+            Increase above +2.5%
+          </span>
+
+          <span>
+            <i class="legend-dot is-decrease"></i>
+            Monthly decrease
+          </span>
         </div>
       </article>
 
