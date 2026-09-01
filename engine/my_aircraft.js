@@ -575,10 +575,100 @@ async function resolveCompletedMaintenanceEvents() {
       throw new Error("Invalid fleet payload from backend.");
     }
 
-    ACS_MY_AIRCRAFT.fleet = payload.fleet;
-    ACS_MY_AIRCRAFT.filteredFleet = [...payload.fleet];
+        /*
+      ACS OCC — FLEET REGISTRATION ORDER
+
+      Registered aircraft are displayed from the lowest
+      registration to the highest registration.
+
+      Natural numeric comparison preserves this order:
+      YV-1001, YV-1002, YV-1009, YV-1010.
+
+      Aircraft without a final registration remain at the end.
+      This is presentation logic only. PostgreSQL remains the
+      fleet and registration authority.
+    */
+
+    const registrationCollator =
+      new Intl.Collator(
+        "en",
+        {
+          numeric: true,
+          sensitivity: "base"
+        }
+      );
+
+    const sortedFleet =
+      [...payload.fleet].sort(
+        (aircraftA, aircraftB) => {
+          const registrationA =
+            String(
+              aircraftA?.registration || ""
+            )
+              .trim()
+              .toUpperCase();
+
+          const registrationB =
+            String(
+              aircraftB?.registration || ""
+            )
+              .trim()
+              .toUpperCase();
+
+          const pendingValues =
+            new Set([
+              "",
+              "PENDING",
+              "NULL",
+              "N/A"
+            ]);
+
+          const pendingA =
+            pendingValues.has(registrationA);
+
+          const pendingB =
+            pendingValues.has(registrationB);
+
+          if (pendingA && !pendingB) {
+            return 1;
+          }
+
+          if (!pendingA && pendingB) {
+            return -1;
+          }
+
+          if (pendingA && pendingB) {
+            return (
+              Number(aircraftA?.id || 0) -
+              Number(aircraftB?.id || 0)
+            );
+          }
+
+          const registrationOrder =
+            registrationCollator.compare(
+              registrationA,
+              registrationB
+            );
+
+          if (registrationOrder !== 0) {
+            return registrationOrder;
+          }
+
+          return (
+            Number(aircraftA?.id || 0) -
+            Number(aircraftB?.id || 0)
+          );
+        }
+      );
+
+    ACS_MY_AIRCRAFT.fleet =
+      sortedFleet;
+
+    ACS_MY_AIRCRAFT.filteredFleet =
+      [...sortedFleet];
 
     console.log("🟦 ACS MY AIRCRAFT — Fleet loaded:", {
+       
       version: ACS_MY_AIRCRAFT.version,
       count: ACS_MY_AIRCRAFT.fleet.length,
       backend_authority: true,
