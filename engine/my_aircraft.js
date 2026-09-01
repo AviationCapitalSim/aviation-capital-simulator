@@ -4196,29 +4196,81 @@ if (
    🟦 PENDING DELIVERY MODAL — ACS OCC
    ============================================================ */
 
+function ACS_getPendingUsedAircraft() {
+  const fleet =
+    Array.isArray(ACS_MY_AIRCRAFT.fleet)
+      ? ACS_MY_AIRCRAFT.fleet
+      : [];
+
+  return fleet.filter(aircraft => {
+    const status =
+      normalizeStatus(
+        aircraft.status
+      );
+
+    const source =
+      normalizeStatus(
+        aircraft.source
+      );
+
+    return (
+      status === "PENDING_DELIVERY" &&
+      (
+        source === "USED_MARKET" ||
+        source === "LEASE_USED"
+      )
+    );
+  });
+}
+
 function getPendingAircraftTotal() {
   const pendingOrders =
     Array.isArray(ACS_MY_AIRCRAFT.pendingOrders)
       ? ACS_MY_AIRCRAFT.pendingOrders
       : [];
 
-  return pendingOrders.reduce(
-    (total, order) =>
-      total + Math.max(1, safeNumber(order.quantity, 1)),
-    0
+  const pendingNewAircraft =
+    pendingOrders.reduce(
+      (total, order) =>
+        total +
+        Math.max(
+          1,
+          safeNumber(
+            order.quantity,
+            1
+          )
+        ),
+      0
+    );
+
+  const pendingUsedAircraft =
+    ACS_getPendingUsedAircraft()
+      .length;
+
+  return (
+    pendingNewAircraft +
+    pendingUsedAircraft
   );
 }
 
 function getPendingOrderImage(order) {
-  const imageObject = normalizeMyAircraftImageObject({
-    manufacturer: order.manufacturer,
-    aircraft_name: order.aircraft_name,
-    model_key: order.model_key
-  });
+  const imageObject =
+    normalizeMyAircraftImageObject({
+      manufacturer:
+        order.manufacturer,
 
-  return getAircraftImage(imageObject);
+      aircraft_name:
+        order.aircraft_name,
+
+      model_key:
+        order.model_key
+    });
+
+  return getAircraftImage(
+    imageObject
+  );
 }
-
+   
 /* ============================================================
    🟦 ACS OCC IV — GLOBAL PENDING AIRCRAFT PAGES
    ------------------------------------------------------------
@@ -4234,8 +4286,15 @@ function ACS_buildPendingAircraftPages() {
       ? ACS_MY_AIRCRAFT.pendingOrders
       : [];
 
+  const usedAircraft =
+    ACS_getPendingUsedAircraft();
+
   const pages = [];
 
+  /*
+    New and factory aircraft pending delivery.
+    One modal page is created for each aircraft unit.
+  */
   for (const order of orders) {
     let orderNotes = {};
 
@@ -4254,28 +4313,30 @@ function ACS_buildPendingAircraftPages() {
       orderNotes = {};
     }
 
-    const orderedQuantity = Math.max(
-      1,
-      Math.trunc(
-        safeNumber(
-          order.quantity,
-          1
-        )
-      )
-    );
-
-    const deliveredUnitCount = Math.min(
-      orderedQuantity,
+    const orderedQuantity =
       Math.max(
-        0,
+        1,
         Math.trunc(
           safeNumber(
-            orderNotes.delivery_unit_count,
-            0
+            order.quantity,
+            1
           )
         )
-      )
-    );
+      );
+
+    const deliveredUnitCount =
+      Math.min(
+        orderedQuantity,
+        Math.max(
+          0,
+          Math.trunc(
+            safeNumber(
+              orderNotes.delivery_unit_count,
+              0
+            )
+          )
+        )
+      );
 
     const storedSchedule =
       Array.isArray(
@@ -4309,7 +4370,10 @@ function ACS_buildPendingAircraftPages() {
         )
         .forEach(unit => {
           pages.push({
+            page_type: "NEW_ORDER",
+
             order,
+
             unit_number:
               unit.unit_number,
 
@@ -4335,7 +4399,10 @@ function ACS_buildPendingAircraftPages() {
       unitNumber += 1
     ) {
       pages.push({
+        page_type: "NEW_ORDER",
+
         order,
+
         unit_number:
           unitNumber,
 
@@ -4345,16 +4412,41 @@ function ACS_buildPendingAircraftPages() {
     }
   }
 
-  pages.sort((pageA, pageB) => {
-    const dateA = new Date(
-      pageA.estimated_delivery_date ||
-      0
-    ).getTime();
+  /*
+    Used aircraft already exist in aircraft_fleet while
+    waiting for their delivery date.
 
-    const dateB = new Date(
-      pageB.estimated_delivery_date ||
-      0
-    ).getTime();
+    One fleet aircraft equals one modal page.
+  */
+  for (const aircraft of usedAircraft) {
+    pages.push({
+      page_type: "USED_AIRCRAFT",
+
+      aircraft,
+
+      unit_number: 1,
+
+      estimated_delivery_date:
+        aircraft.delivery_date
+    });
+  }
+
+  /*
+    New and used aircraft share the same chronological
+    delivery queue.
+  */
+  pages.sort((pageA, pageB) => {
+    const dateA =
+      new Date(
+        pageA.estimated_delivery_date ||
+        0
+      ).getTime();
+
+    const dateB =
+      new Date(
+        pageB.estimated_delivery_date ||
+        0
+      ).getTime();
 
     const safeDateA =
       Number.isFinite(dateA)
@@ -4370,23 +4462,33 @@ function ACS_buildPendingAircraftPages() {
       return safeDateA - safeDateB;
     }
 
-    const orderDifference =
+    const recordIdA =
       safeNumber(
-        pageA.order?.id,
-        0
-      ) -
-      safeNumber(
-        pageB.order?.id,
+        pageA.order?.id ??
+        pageA.aircraft?.id,
         0
       );
 
-    if (orderDifference !== 0) {
-      return orderDifference;
+    const recordIdB =
+      safeNumber(
+        pageB.order?.id ??
+        pageB.aircraft?.id,
+        0
+      );
+
+    if (recordIdA !== recordIdB) {
+      return recordIdA - recordIdB;
     }
 
     return (
-      pageA.unit_number -
-      pageB.unit_number
+      safeNumber(
+        pageA.unit_number,
+        1
+      ) -
+      safeNumber(
+        pageB.unit_number,
+        1
+      )
     );
   });
 
@@ -4419,25 +4521,45 @@ function renderPendingDeliveryModal() {
   const page =
     pages[index];
 
-  const order =
-    page.order;
+  const isUsedAircraft =
+    page.page_type ===
+    "USED_AIRCRAFT";
+
+  const aircraftRecord =
+    isUsedAircraft
+      ? page.aircraft
+      : page.order;
+
+  if (!aircraftRecord) {
+    closePendingDeliveryModal();
+    return;
+  }
 
   setText(
     "pendingDeliverySummary",
     `${pages.length} aircraft pending · Aircraft ${index + 1} of ${pages.length}`
   );
 
+  /*
+    Factory orders show their manufacturer.
+    Used aircraft show the fleet source:
+    USED MARKET or LEASE USED.
+  */
   setText(
     "pendingFactory",
-    safeText(
-      order.manufacturer
-    )
+    isUsedAircraft
+      ? getSourceDisplay(
+          aircraftRecord
+        )
+      : safeText(
+          aircraftRecord.manufacturer
+        )
   );
 
   setText(
     "pendingModel",
     safeText(
-      order.aircraft_name
+      aircraftRecord.aircraft_name
     )
   );
 
@@ -4451,16 +4573,29 @@ function renderPendingDeliveryModal() {
 
   setText(
     "pendingOwnership",
-    normalizeDisplay(
-      order.ownership_type
-    )
+    isUsedAircraft
+      ? getOwnershipDisplay(
+          aircraftRecord
+        )
+      : normalizeDisplay(
+          aircraftRecord.ownership_type
+        )
   );
 
+  /*
+    Used-market aircraft have already completed
+    their purchase before entering aircraft_fleet.
+  */
   setText(
     "pendingPayment",
-    normalizeDisplay(
-      order.payment_status
-    )
+    isUsedAircraft
+      ? normalizeDisplay(
+          aircraftRecord.payment_status ||
+          "PAID"
+        )
+      : normalizeDisplay(
+          aircraftRecord.payment_status
+        )
   );
 
   setText(
@@ -4472,7 +4607,9 @@ function renderPendingDeliveryModal() {
 
   const deliveryStatus =
     normalizeStatus(
-      order.delivery_status
+      isUsedAircraft
+        ? aircraftRecord.status
+        : aircraftRecord.delivery_status
     );
 
   const statusElement =
@@ -4498,13 +4635,13 @@ function renderPendingDeliveryModal() {
     const imageAircraft =
       normalizeMyAircraftImageObject({
         manufacturer:
-          order.manufacturer,
+          aircraftRecord.manufacturer,
 
         aircraft_name:
-          order.aircraft_name,
+          aircraftRecord.aircraft_name,
 
         model_key:
-          order.model_key
+          aircraftRecord.model_key
       });
 
     window.ACS_setAircraftImage(
@@ -4514,7 +4651,7 @@ function renderPendingDeliveryModal() {
 
     image.alt =
       safeText(
-        order.aircraft_name,
+        aircraftRecord.aircraft_name,
         "Pending aircraft"
       );
   }
@@ -4549,22 +4686,35 @@ function renderPendingDeliveryModal() {
     `${index + 1} OF ${pages.length}`
   );
 }
-
+   
 function openPendingDeliveryModal() {
-  if (!ACS_MY_AIRCRAFT.pendingOrders.length) {
+  const pages =
+    ACS_buildPendingAircraftPages();
+
+  if (!pages.length) {
     return;
   }
 
   ACS_MY_AIRCRAFT.pendingOrderIndex = 0;
 
-  const modal = $("pendingDeliveryModal");
+  const modal =
+    $("pendingDeliveryModal");
 
   if (!modal) return;
 
   renderPendingDeliveryModal();
-  modal.style.display = "flex";
-  modal.setAttribute("aria-hidden", "false");
-  document.body.classList.add("pending-modal-open");
+
+  modal.style.display =
+    "flex";
+
+  modal.setAttribute(
+    "aria-hidden",
+    "false"
+  );
+
+  document.body.classList.add(
+    "pending-modal-open"
+  );
 }
 
 function closePendingDeliveryModal() {
