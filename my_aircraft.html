@@ -5995,6 +5995,408 @@ html body .order-book-table tbody tr:hover {
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================
+   ACS OCC — SCRAP AIRCRAFT CONTROL
+   ============================================================ */
+
+#aircraftScrapModal.modal-bg {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  box-sizing: border-box;
+  background: rgba(1, 7, 18, 0.88);
+  backdrop-filter: blur(11px);
+  -webkit-backdrop-filter: blur(11px);
+  z-index: 6300;
+}
+
+#aircraftScrapModal .scrap-modal {
+  width: min(720px, calc(100vw - 28px));
+  max-height: calc(100dvh - 28px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: #eaf2ff;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(15, 34, 66, 0.98),
+      rgba(4, 14, 32, 0.99)
+    );
+  border: 1px solid rgba(235, 84, 84, 0.72);
+  border-radius: 15px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 32px rgba(0, 0, 0, 0.68),
+    0 0 24px rgba(235, 84, 84, 0.1);
+}
+
+#aircraftScrapModal .scrap-modal-header {
+  position: relative;
+  display: grid;
+  grid-template-columns: 185px minmax(0, 1fr);
+  gap: 17px;
+  align-items: center;
+  min-height: 116px;
+  padding: 13px 46px 13px 13px;
+  background:
+    linear-gradient(
+      110deg,
+      rgba(19, 48, 88, 0.88),
+      rgba(8, 22, 48, 0.96)
+    );
+  border-bottom: 1px solid rgba(235, 84, 84, 0.42);
+}
+
+#aircraftScrapModal .scrap-aircraft-image-stage {
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(36, 65, 104, 0.4),
+      rgba(7, 21, 46, 0.64)
+    );
+  border: 1px solid rgba(121, 163, 211, 0.38);
+  border-radius: 10px;
+}
+
+#aircraftScrapModal .scrap-aircraft-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+}
+
+#aircraftScrapModal .scrap-header-information {
+  min-width: 0;
+}
+
+#aircraftScrapModal .scrap-modal-kicker {
+  margin-bottom: 5px;
+  color: #80cfff;
+  font-family: "Orbitron", sans-serif;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+#aircraftScrapModal .scrap-modal-title {
+  margin: 0 0 8px;
+  color: #ff7f7f;
+  font-family: "Orbitron", sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+#aircraftScrapModal .scrap-aircraft-identity {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#aircraftScrapModal .scrap-aircraft-identity strong {
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+#aircraftScrapModal .scrap-aircraft-identity span {
+  color: #70cfff;
+  font-family: "Orbitron", sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+#aircraftScrapModal .scrap-modal-close {
+  position: absolute;
+  top: 11px;
+  right: 12px;
+  width: 29px;
+  height: 29px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: #b9cbe0;
+  background: rgba(7, 20, 43, 0.72);
+  border: 1px solid rgba(144, 172, 205, 0.38);
+  border-radius: 50%;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+#aircraftScrapModal .scrap-modal-close:hover {
+  color: #ffffff;
+  background: rgba(235, 84, 84, 0.16);
+  border-color: #ff7f7f;
+}
+
+#aircraftScrapModal .scrap-modal-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 14px;
+}
+
+#aircraftScrapModal .scrap-section-title {
+  margin-bottom: 8px;
+  color: #ffb300;
+  font-family: "Orbitron", sans-serif;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+#aircraftScrapModal .scrap-eligibility-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+#aircraftScrapModal .scrap-eligibility-card {
+  min-width: 0;
+  padding: 10px;
+  background: rgba(12, 33, 66, 0.58);
+  border: 1px solid rgba(111, 153, 205, 0.3);
+  border-radius: 9px;
+}
+
+#aircraftScrapModal .scrap-eligibility-card span,
+#aircraftScrapModal .scrap-value-card span {
+  display: block;
+  margin-bottom: 6px;
+  color: #9db3cf;
+  font-family: "Orbitron", sans-serif;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+#aircraftScrapModal .scrap-eligibility-card strong {
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+#aircraftScrapModal .scrap-financial-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 13px;
+}
+
+#aircraftScrapModal .scrap-value-card {
+  min-width: 0;
+  padding: 11px;
+  background: rgba(8, 26, 54, 0.64);
+  border: 1px solid rgba(112, 155, 207, 0.3);
+  border-radius: 9px;
+}
+
+#aircraftScrapModal .scrap-value-card strong {
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+#aircraftScrapModal .scrap-recovery-card {
+  border-color: rgba(54, 218, 143, 0.55);
+  background: rgba(18, 79, 59, 0.22);
+}
+
+#aircraftScrapModal .scrap-recovery-card strong {
+  color: #6ff0b1;
+}
+
+#aircraftScrapModal .scrap-capital-card {
+  border-color: rgba(255, 179, 0, 0.48);
+  background: rgba(100, 69, 8, 0.2);
+}
+
+#aircraftScrapModal .scrap-capital-card strong {
+  color: #ffd36c;
+}
+
+#aircraftScrapModal .scrap-permanent-warning {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 11px;
+  align-items: center;
+  margin-top: 13px;
+  padding: 12px;
+  background:
+    linear-gradient(
+      110deg,
+      rgba(112, 25, 31, 0.28),
+      rgba(55, 15, 24, 0.42)
+    );
+  border: 1px solid rgba(241, 86, 91, 0.58);
+  border-radius: 10px;
+}
+
+#aircraftScrapModal .scrap-warning-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ff8f8f;
+  background: rgba(246, 76, 83, 0.12);
+  border: 1px solid rgba(246, 76, 83, 0.42);
+  border-radius: 50%;
+  font-family: "Orbitron", sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+#aircraftScrapModal .scrap-warning-content strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #ff9696;
+  font-family: "Orbitron", sans-serif;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+#aircraftScrapModal .scrap-warning-content span {
+  color: #d7c2ca;
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+#aircraftScrapModal .scrap-acknowledgement {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-top: 12px;
+  padding: 11px;
+  color: #c7d5e8;
+  background: rgba(10, 28, 56, 0.58);
+  border: 1px solid rgba(111, 153, 205, 0.28);
+  border-radius: 9px;
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+#aircraftScrapModal .scrap-acknowledgement input {
+  margin-top: 2px;
+  accent-color: #e8565b;
+}
+
+#aircraftScrapModal .scrap-eligibility-message {
+  min-height: 17px;
+  margin-top: 10px;
+  padding: 8px 10px;
+  color: #9fc8ef;
+  background: rgba(21, 63, 103, 0.24);
+  border: 1px solid rgba(83, 153, 218, 0.3);
+  border-radius: 8px;
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+#aircraftScrapModal .scrap-eligibility-message.is-blocked {
+  color: #ffabab;
+  background: rgba(114, 26, 32, 0.22);
+  border-color: rgba(237, 83, 89, 0.44);
+}
+
+#aircraftScrapModal .scrap-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  padding: 11px 14px;
+  background: rgba(5, 17, 38, 0.92);
+  border-top: 1px solid rgba(130, 159, 196, 0.2);
+}
+
+#aircraftScrapModal .scrap-confirm-btn,
+#aircraftScrapModal .scrap-cancel-btn {
+  min-width: 145px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-family: "Orbitron", sans-serif;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+#aircraftScrapModal .scrap-confirm-btn {
+  color: #ffffff;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(218, 62, 68, 0.96),
+      rgba(145, 30, 37, 0.98)
+    );
+  border: 1px solid #f16c71;
+  cursor: pointer;
+}
+
+#aircraftScrapModal .scrap-confirm-btn:disabled {
+  color: rgba(218, 226, 237, 0.44);
+  background: rgba(54, 62, 75, 0.48);
+  border-color: rgba(134, 148, 169, 0.28);
+  cursor: not-allowed;
+}
+
+#aircraftScrapModal .scrap-cancel-btn {
+  color: #c8d7e9;
+  background: rgba(18, 39, 70, 0.62);
+  border: 1px solid rgba(120, 156, 201, 0.4);
+  cursor: pointer;
+}
+
+#aircraftScrapModal .scrap-cancel-btn:hover {
+  color: #ffffff;
+  border-color: #70bfff;
+}
+
+body.aircraft-scrap-modal-open {
+  overflow: hidden;
+}
+
+@media (max-width: 650px) {
+  #aircraftScrapModal .scrap-modal-header {
+    grid-template-columns: 1fr;
+  }
+
+  #aircraftScrapModal .scrap-aircraft-image-stage {
+    display: none;
+  }
+
+  #aircraftScrapModal .scrap-eligibility-grid,
+  #aircraftScrapModal .scrap-financial-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #aircraftScrapModal .scrap-modal-actions {
+    flex-direction: column;
+  }
+
+  #aircraftScrapModal .scrap-confirm-btn,
+  #aircraftScrapModal .scrap-cancel-btn {
+    width: 100%;
+  }
+}
     
 </style>
   
@@ -6684,6 +7086,179 @@ html body .order-book-table tbody tr:hover {
 </div>
 
 
+<!-- ============================================================
+     ACS OCC — SCRAP AIRCRAFT CONTROL
+     ============================================================ -->
+
+<div
+  class="modal-bg"
+  id="aircraftScrapModal"
+  aria-hidden="true"
+>
+  <div
+    class="scrap-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="scrapModalTitle"
+  >
+
+    <header class="scrap-modal-header">
+
+      <div class="scrap-aircraft-image-stage">
+        <img
+          id="scrapAircraftImage"
+          class="scrap-aircraft-image"
+          src=""
+          alt="Aircraft selected for scrap"
+        />
+      </div>
+
+      <div class="scrap-header-information">
+
+        <div class="scrap-modal-kicker">
+          ACS OCC · Final Asset Disposition
+        </div>
+
+        <h3
+          id="scrapModalTitle"
+          class="scrap-modal-title"
+        >
+          Scrap Aircraft
+        </h3>
+
+        <div class="scrap-aircraft-identity">
+          <strong id="scrapAircraftName">—</strong>
+          <span id="scrapAircraftRegistration">—</span>
+        </div>
+
+      </div>
+
+      <button
+        id="scrapModalCloseTop"
+        class="scrap-modal-close"
+        type="button"
+        aria-label="Close Scrap Aircraft"
+      >
+        ×
+      </button>
+
+    </header>
+
+    <div class="scrap-modal-body">
+
+      <div class="scrap-section-title">
+        Scrap Eligibility
+      </div>
+
+      <section class="scrap-eligibility-grid">
+
+        <div class="scrap-eligibility-card">
+          <span>Ownership</span>
+          <strong id="scrapAircraftOwnership">—</strong>
+        </div>
+
+        <div class="scrap-eligibility-card">
+          <span>Aircraft Age</span>
+          <strong id="scrapAircraftAge">—</strong>
+        </div>
+
+        <div class="scrap-eligibility-card">
+          <span>Operational Status</span>
+          <strong id="scrapAircraftStatus">—</strong>
+        </div>
+
+      </section>
+
+      <section class="scrap-financial-grid">
+
+        <div class="scrap-value-card">
+          <span>Current Value</span>
+          <strong id="scrapCurrentValue">—</strong>
+        </div>
+
+        <div class="scrap-value-card scrap-recovery-card">
+          <span>Immediate Recovery</span>
+          <strong id="scrapRecoveryAmount">—</strong>
+        </div>
+
+        <div class="scrap-value-card scrap-capital-card">
+          <span>Capital After Scrap</span>
+          <strong id="scrapCapitalAfter">—</strong>
+        </div>
+
+      </section>
+
+      <div class="scrap-permanent-warning">
+
+        <div class="scrap-warning-icon">
+          !
+        </div>
+
+        <div class="scrap-warning-content">
+
+          <strong>
+            Permanent Aircraft Deletion
+          </strong>
+
+          <span>
+            Once confirmed, this aircraft and all associated
+            operational records will be permanently removed
+            from ACS. This action cannot be reversed.
+          </span>
+
+        </div>
+
+      </div>
+
+      <label class="scrap-acknowledgement">
+
+        <input
+          id="scrapAcknowledgement"
+          type="checkbox"
+          disabled
+        />
+
+        <span>
+          I understand that this aircraft will be permanently
+          deleted and cannot be restored.
+        </span>
+
+      </label>
+
+      <div
+        id="scrapEligibilityMessage"
+        class="scrap-eligibility-message"
+        aria-live="polite"
+      >
+        Waiting for ACS backend evaluation.
+      </div>
+
+    </div>
+
+    <footer class="scrap-modal-actions">
+
+      <button
+        id="scrapConfirmButton"
+        class="scrap-confirm-btn"
+        type="button"
+        disabled
+      >
+        Confirm Scrap
+      </button>
+
+      <button
+        id="scrapModalCloseBottom"
+        class="scrap-cancel-btn"
+        type="button"
+      >
+        Close
+      </button>
+
+    </footer>
+
+  </div>
+</div>  
+  
 <!-- ============================================================
      🟨 ACS OCC — AIRCRAFT SALE CONTROL
      ------------------------------------------------------------
