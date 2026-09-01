@@ -3527,6 +3527,296 @@ function closeAircraftSaleModal(
   }
 }
 
+/* ============================================================
+   ACS OCC — SCRAP AIRCRAFT MODAL
+   ============================================================ */
+
+function resetAircraftScrapModal() {
+  setText("scrapAircraftName", "—");
+  setText("scrapAircraftRegistration", "—");
+  setText("scrapAircraftOwnership", "—");
+  setText("scrapAircraftAge", "—");
+  setText("scrapAircraftStatus", "—");
+  setText("scrapCurrentValue", "—");
+  setText("scrapRecoveryAmount", "—");
+  setText("scrapCapitalAfter", "—");
+
+  const acknowledgement =
+    $("scrapAcknowledgement");
+
+  const confirmButton =
+    $("scrapConfirmButton");
+
+  const message =
+    $("scrapEligibilityMessage");
+
+  if (acknowledgement) {
+    acknowledgement.checked = false;
+    acknowledgement.disabled = true;
+  }
+
+  if (confirmButton) {
+    confirmButton.disabled = true;
+  }
+
+  if (message) {
+    message.textContent =
+      "Waiting for ACS backend evaluation.";
+
+    message.classList.remove(
+      "is-blocked"
+    );
+  }
+}
+
+function renderAircraftScrapIdentity(
+  aircraft
+) {
+  if (!aircraft) return;
+
+  const aircraftName =
+    safeText(
+      aircraft.catalog_aircraft_name ||
+      aircraft.aircraft_name
+    );
+
+  const registration =
+    getRegistrationDisplay(aircraft);
+
+  const ownership =
+    normalizeStatus(
+      aircraft.ownership_type
+    );
+
+  const age =
+    resolveAircraftAge(aircraft);
+
+  const statusInfo =
+    resolveFleetStatus(aircraft);
+
+  const currency =
+    aircraft.currency || "USD";
+
+  setText(
+    "scrapAircraftName",
+    aircraftName
+  );
+
+  setText(
+    "scrapAircraftRegistration",
+    registration
+  );
+
+  setText(
+    "scrapAircraftOwnership",
+    normalizeDisplay(ownership)
+  );
+
+  setText(
+    "scrapAircraftAge",
+    Number.isFinite(age)
+      ? `${age} YEARS`
+      : "—"
+  );
+
+  setText(
+    "scrapAircraftStatus",
+    statusInfo.label
+  );
+
+  setText(
+    "scrapCurrentValue",
+    formatMoney(
+      aircraft.current_value,
+      currency
+    )
+  );
+
+  const image =
+    $("scrapAircraftImage");
+
+  if (image) {
+    const imageAircraft =
+      normalizeMyAircraftImageObject(
+        aircraft
+      );
+
+    window.ACS_setAircraftImage(
+      image,
+      imageAircraft
+    );
+
+    image.alt =
+      `${aircraftName} ${registration}`;
+  }
+
+  const message =
+    $("scrapEligibilityMessage");
+
+  if (!message) return;
+
+  if (ownership !== "OWNED") {
+    message.textContent =
+      "SCRAP NOT AVAILABLE — Only owned aircraft may be scrapped.";
+
+    message.classList.add(
+      "is-blocked"
+    );
+
+    return;
+  }
+
+  if (
+    Number.isFinite(age) &&
+    age < 12
+  ) {
+    message.textContent =
+      `SCRAP NOT AVAILABLE — Aircraft must be at least 12 years old. Current age: ${age} years.`;
+
+    message.classList.add(
+      "is-blocked"
+    );
+
+    return;
+  }
+
+  if (!Number.isFinite(age)) {
+    message.textContent =
+      "Aircraft age requires backend verification.";
+
+    return;
+  }
+
+  message.textContent =
+    "Preliminary eligibility confirmed. ACS backend must verify flight, lease and financial authority.";
+
+  message.classList.remove(
+    "is-blocked"
+  );
+}
+
+function openAircraftScrapModal(
+  aircraft
+) {
+  if (!aircraft?.id) return;
+
+  ACS_MY_AIRCRAFT.selectedAircraft =
+    aircraft;
+
+  resetAircraftScrapModal();
+  renderAircraftScrapIdentity(aircraft);
+
+  const aircraftModal =
+    $("aircraftModal");
+
+  const scrapModal =
+    $("aircraftScrapModal");
+
+  if (aircraftModal) {
+    aircraftModal.style.display = "none";
+  }
+
+  if (scrapModal) {
+    scrapModal.style.display = "flex";
+
+    scrapModal.setAttribute(
+      "aria-hidden",
+      "false"
+    );
+  }
+
+  document.body.classList.add(
+    "aircraft-scrap-modal-open"
+  );
+}
+
+function closeAircraftScrapModal(
+  returnToAircraftPanel = true
+) {
+  const scrapModal =
+    $("aircraftScrapModal");
+
+  const aircraftModal =
+    $("aircraftModal");
+
+  if (scrapModal) {
+    scrapModal.style.display = "none";
+
+    scrapModal.setAttribute(
+      "aria-hidden",
+      "true"
+    );
+  }
+
+  document.body.classList.remove(
+    "aircraft-scrap-modal-open"
+  );
+
+  if (
+    returnToAircraftPanel &&
+    ACS_MY_AIRCRAFT.selectedAircraft &&
+    aircraftModal
+  ) {
+    aircraftModal.style.display = "flex";
+  }
+}
+
+function bindAircraftScrapModal() {
+  const scrapModal =
+    $("aircraftScrapModal");
+
+  const closeTop =
+    $("scrapModalCloseTop");
+
+  const closeBottom =
+    $("scrapModalCloseBottom");
+
+  if (closeTop) {
+    closeTop.addEventListener(
+      "click",
+      () => {
+        closeAircraftScrapModal(true);
+      }
+    );
+  }
+
+  if (closeBottom) {
+    closeBottom.addEventListener(
+      "click",
+      () => {
+        closeAircraftScrapModal(true);
+      }
+    );
+  }
+
+  if (scrapModal) {
+    scrapModal.addEventListener(
+      "click",
+      event => {
+        if (event.target === scrapModal) {
+          closeAircraftScrapModal(true);
+        }
+      }
+    );
+  }
+
+  document.addEventListener(
+    "keydown",
+    event => {
+      const isScrapModalOpen =
+        $("aircraftScrapModal")
+          ?.style.display === "flex";
+
+      if (
+        event.key === "Escape" &&
+        isScrapModalOpen
+      ) {
+        closeAircraftScrapModal(true);
+      }
+    }
+  );
+}
+   
 function bindAircraftSaleModal() {
   const saleModal =
     $("aircraftSaleModal");
@@ -3774,11 +4064,21 @@ if (btnReturnLeasedAircraft) {
       };
     }
 
-    if (btnScrap) {
-      btnScrap.onclick = () => {
-        console.log("🟦 Scrap Aircraft Evaluation pending:", aircraft);
-        alert("Scrap Aircraft Evaluation will be connected in a later block.");
-      };
+if (btnScrap) {
+  btnScrap.hidden =
+    !isOwnedAircraft;
+
+  btnScrap.disabled =
+    !isOwnedAircraft;
+
+  btnScrap.onclick =
+    isOwnedAircraft
+      ? () => {
+          openAircraftScrapModal(
+            aircraft
+          );
+        }
+      : null;
     }
   }
 
@@ -4833,9 +5133,11 @@ function bindPendingDeliveryModal() {
 
   async function initMyAircraft() {
     try {
+       
       renderLoadingState();
       bindAircraftInsuranceModal();
       bindAircraftSaleModal();
+      bindAircraftScrapModal();
        
       await resolveCompletedMaintenanceEvents();
 
