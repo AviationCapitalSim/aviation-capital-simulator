@@ -59,13 +59,14 @@
     }
   ];
 
-  const state = {
+    const state = {
     payload: null,
     fuels: [],
     selectedFuelId: null,
+    rangeMonths: 12,
     requestController: null
   };
-
+   
   const elements = {};
 
   const REQUIRED_ELEMENT_IDS = [
@@ -128,11 +129,113 @@
     return `${sign}${numericValue.toFixed(1)}%`;
   }
 
-  function movementClass(percent) {
-    const value = numberOrNull(percent);
-    if (value === null || (value >= -3 && value <= 3)) return "neutral";
-    if (value < -3) return "decrease";
-    if (value > 10) return "critical";
+    function formatPeriod(value) {
+    const match =
+      String(value || "")
+        .match(
+          /^(\d{4})-(\d{2})$/
+        );
+
+    if (!match) {
+      return String(
+        value || "--"
+      );
+    }
+
+    const monthNames = [
+      "JAN",
+      "FEB",
+      "MAR",
+      "APR",
+      "MAY",
+      "JUN",
+      "JUL",
+      "AUG",
+      "SEP",
+      "OCT",
+      "NOV",
+      "DEC"
+    ];
+
+    return (
+      `${monthNames[
+        Number(match[2]) - 1
+      ]} ${match[1]}`
+    );
+  }
+
+  function weeklyMovementLabel(
+    value
+  ) {
+    const numericValue =
+      numberOrNull(value);
+
+    if (numericValue === null) {
+      return "WEEKLY DATA PENDING";
+    }
+
+    if (
+      Math.abs(numericValue) <
+      0.05
+    ) {
+      return (
+        `● ${formatPercent(
+          numericValue
+        )} THIS WEEK`
+      );
+    }
+
+    return (
+      `${numericValue > 0 ? "▲" : "▼"} ` +
+      `${formatPercent(numericValue)} ` +
+      "THIS WEEK"
+    );
+  }
+
+  function weeklyMovementTone(
+    value
+  ) {
+    const numericValue =
+      numberOrNull(value);
+
+    if (numericValue === null) {
+      return "is-pending";
+    }
+
+    if (
+      Math.abs(numericValue) <
+      0.05
+    ) {
+      return "is-neutral";
+    }
+
+    return numericValue > 0
+      ? "is-increase"
+      : "is-decrease";
+  }
+   
+    function movementClass(percent) {
+    const value =
+      numberOrNull(percent);
+
+    if (
+      value === null ||
+      (
+        value >= -0.25 &&
+        value <= 0.25
+      )
+    ) {
+      return "neutral";
+    }
+
+    if (value < -0.25) {
+      return "decrease";
+    }
+
+    if (value > 2.5) {
+      return "critical";
+    }
+
     return "attention";
   }
 
@@ -142,13 +245,44 @@
     return {
       period: period == null ? null : String(period),
       price: numberOrNull(record?.price ?? record?.usd_per_us_gal),
-      annual_change_percent: numberOrNull(
-        record?.annual_change_percent ?? record?.change_percent
-      ),
-      quality_grade: record?.quality_grade || "UNAVAILABLE",
-      source_method: record?.source_method || "UNAVAILABLE",
-      is_projection: Boolean(record?.is_projection),
-      source_name: record?.source_name || null
+            monthly_change_percent:
+        numberOrNull(
+          record
+            ?.monthly_change_percent ??
+          record?.change_percent
+        ),
+
+      weekly_change_percent:
+        numberOrNull(
+          record
+            ?.weekly_change_percent
+        ),
+
+      quality_grade:
+        record?.quality_grade ||
+        "UNAVAILABLE",
+
+      source_method:
+        record?.source_method ||
+        "UNAVAILABLE",
+
+      is_projection:
+        Boolean(
+          record?.is_projection
+        ),
+
+      is_modeled_period:
+        Boolean(
+          record?.is_modeled_period
+        ),
+
+      methodology:
+        record?.methodology ||
+        null,
+
+      source_name:
+        record?.source_name ||
+        null
     };
   }
 
@@ -185,9 +319,21 @@
     }
 
     return {
+       
       ok: true,
-      world_year: numberOrNull(payload.world_year),       
-      as_of: payload.as_of || null,
+
+      world_year:
+        numberOrNull(
+          payload.world_year
+        ),
+
+      world_date:
+        payload.world_date ||
+        null,
+
+      as_of:
+        payload.as_of ||
+        null,
       dataset_revision: payload.dataset_revision || null,
       fuels: payload.fuels.map(normalizeFuel).filter((fuel) => fuel.id)
     };
@@ -232,36 +378,126 @@
     return fuel.series.length ? fuel.series[fuel.series.length - 1] : null;
   }
 
-  function createFuelCard(fuel) {
-    const latest = latestRecord(fuel);
-    const card = document.createElement("button");
-    const name = document.createElement("span");
-    const family = document.createElement("span");
-    const price = document.createElement("strong");
-    const period = document.createElement("span");
+    function createFuelCard(fuel) {
+    const latest =
+      latestRecord(fuel);
+
+    const card =
+      document.createElement(
+        "button"
+      );
+
+    const name =
+      document.createElement(
+        "span"
+      );
+
+    const family =
+      document.createElement(
+        "span"
+      );
+
+    const price =
+      document.createElement(
+        "strong"
+      );
+
+    const movement =
+      document.createElement(
+        "span"
+      );
+
+    const period =
+      document.createElement(
+        "span"
+      );
 
     card.type = "button";
     card.className = "fuel-card";
-    card.dataset.fuelId = fuel.id;
-    card.setAttribute("aria-pressed", String(fuel.id === state.selectedFuelId));
 
-    name.className = "fuel-card-name";
-    family.className = "fuel-card-family";
-    price.className = "fuel-card-price";
-    period.className = "fuel-card-period";
+    card.dataset.fuelId =
+      fuel.id;
 
-    text(name, fuel.name);
-    text(family, fuel.family);
-    text(price, latest ? formatPrice(latest.price, fuel.unit) : "DATA PENDING");
+    card.setAttribute(
+      "aria-pressed",
+      String(
+        fuel.id ===
+        state.selectedFuelId
+      )
+    );
+
+    name.className =
+      "fuel-card-name";
+
+    family.className =
+      "fuel-card-family";
+
+    price.className =
+      "fuel-card-price";
+
+    movement.className =
+      `fuel-card-movement ` +
+      weeklyMovementTone(
+        latest
+          ?.weekly_change_percent
+      );
+
+    period.className =
+      "fuel-card-period";
+
     text(
-  period,
-  latest
-    ? latest.period
-    : "NO VERIFIED MARKET RECORD"
-);
+      name,
+      fuel.name
+    );
 
-    card.append(name, family, price, period);
-    card.addEventListener("click", () => selectFuel(fuel.id));
+    text(
+      family,
+      fuel.family
+    );
+
+    text(
+      price,
+      latest
+        ? formatPrice(
+            latest.price,
+            fuel.unit
+          )
+        : "DATA PENDING"
+    );
+
+    text(
+      movement,
+      latest
+        ? weeklyMovementLabel(
+            latest
+              .weekly_change_percent
+          )
+        : "WEEKLY DATA PENDING"
+    );
+
+    text(
+      period,
+      latest
+        ? formatPeriod(
+            latest.period
+          )
+        : "NO VERIFIED MARKET RECORD"
+    );
+
+    card.append(
+      name,
+      family,
+      price,
+      movement,
+      period
+    );
+
+    card.addEventListener(
+      "click",
+      () =>
+        selectFuel(fuel.id)
+    );
+
     return card;
   }
 
@@ -292,7 +528,12 @@
     text(
       elements.selectedFuelChange,
       latest
-        ? `${formatPercent(latest.annual_change_percent)} ANNUAL MOVEMENT`
+        ? (
+            `${formatPercent(
+              latest
+                .monthly_change_percent
+            )} MONTHLY MOVEMENT`
+          )
         : "NO VERIFIED READING"
     );
 
@@ -324,92 +565,311 @@
     container.appendChild(element);
   }
 
-  function showTooltip(event, fuel, record) {
-  const tooltip = elements.fuelTooltip;
-  tooltip.replaceChildren();
+   function showTooltip(
+    event,
+    fuel,
+    record
+  ) {
+    const tooltip =
+      elements.fuelTooltip;
 
-  const title = document.createElement("strong");
-  const price = document.createElement("div");
-  const movement = document.createElement("div");
+    tooltip.replaceChildren();
 
-  title.textContent = record.period;
-  price.textContent = formatPrice(record.price, fuel.unit);
-  movement.textContent = `Annual movement: ${formatPercent(record.annual_change_percent)}`;
-  tooltip.append(title, price, movement);
+    const title =
+      document.createElement(
+        "strong"
+      );
 
-  tooltip.hidden = false;
-  tooltip.style.left = `${Math.min(global.innerWidth - 265, event.clientX + 14)}px`;
-  tooltip.style.top = `${Math.max(8, event.clientY - 90)}px`;
-}
+    const price =
+      document.createElement(
+        "div"
+      );
+
+    const monthlyMovement =
+      document.createElement(
+        "div"
+      );
+
+    const weeklyMovement =
+      document.createElement(
+        "div"
+      );
+
+    title.textContent =
+      formatPeriod(
+        record.period
+      );
+
+    price.textContent =
+      formatPrice(
+        record.price,
+        fuel.unit
+      );
+
+    monthlyMovement.textContent =
+      `Monthly movement: ${formatPercent(
+        record
+          .monthly_change_percent
+      )}`;
+
+    weeklyMovement.textContent =
+      `Weekly movement: ${formatPercent(
+        record
+          .weekly_change_percent
+      )}`;
+
+    tooltip.append(
+      title,
+      price,
+      monthlyMovement,
+      weeklyMovement
+    );
+
+    tooltip.hidden = false;
+
+    tooltip.style.left =
+      `${Math.min(
+        global.innerWidth - 265,
+        event.clientX + 14
+      )}px`;
+
+    tooltip.style.top =
+      `${Math.max(
+        8,
+        event.clientY - 90
+      )}px`;
+  }
 
   function hideTooltip() {
     elements.fuelTooltip.hidden = true;
   }
 
-  function renderBars(fuel) {
-    const series = fuel.series;
+    function renderBars(fuel) {
+    const series =
+      fuel.series.slice(
+        -state.rangeMonths
+      );
+
     if (!series.length) {
       renderEmptyChart(
         "The visual structure is ready. Bars will appear only after Railway returns traceable records from PostgreSQL."
       );
+
       return;
     }
 
-    const prices = series.map((record) => record.price);
-    const maximum = Math.max(...prices);
-    const axisMaximum = maximum > 0 ? maximum * 1.12 : 1;
-
-    elements.barList.replaceChildren();
-    elements.chartYAxis.replaceChildren();
-    elements.chartXAxis.replaceChildren();
-    elements.chartEmpty.hidden = true;
-
-    [100, 75, 50, 25, 0].forEach((percentage) => {
-      const value = axisMaximum * (percentage / 100);
-      createAxisLabel(elements.chartYAxis, `$${value.toFixed(2)}`, {
-        axis: "bottom",
-        value: percentage
-      });
-    });
-
-    const labelEvery = Math.max(1, Math.ceil(series.length / 9));
-
-    series.forEach((record, index) => {
-      const bar = document.createElement("button");
-      const height = Math.max(1.5, (record.price / axisMaximum) * 100);
-
-      bar.type = "button";
-      bar.className = `market-bar is-${movementClass(record.annual_change_percent)}`;
-      if (record.is_projection) bar.classList.add("is-projection");
-      bar.style.setProperty("--bar-height", `${height}%`);
-      bar.setAttribute(
-        "aria-label",
-        `${record.period}, ${formatPrice(record.price, fuel.unit)}, ${formatPercent(record.annual_change_percent)}`
+    const prices =
+      series.map(
+        record =>
+          record.price
       );
 
-      bar.addEventListener("pointermove", (event) => showTooltip(event, fuel, record));
-      bar.addEventListener("pointerleave", hideTooltip);
-      bar.addEventListener("focus", (event) => {
-        const rectangle = event.currentTarget.getBoundingClientRect();
-        showTooltip(
-          { clientX: rectangle.left, clientY: rectangle.top },
-          fuel,
-          record
-        );
-      });
-      bar.addEventListener("blur", hideTooltip);
-      elements.barList.appendChild(bar);
+    const maximum =
+      Math.max(...prices);
 
-      if (index % labelEvery === 0 || index === series.length - 1) {
-        const label = document.createElement("span");
-        label.textContent = record.period.slice(0, 4);
-        label.style.position = "absolute";
-        label.style.left = `${series.length === 1 ? 50 : (index / (series.length - 1)) * 100}%`;
-        label.style.transform = "translateX(-50%)";
-        label.style.top = "9px";
-        elements.chartXAxis.appendChild(label);
+    const axisMaximum =
+      maximum > 0
+        ? maximum * 1.12
+        : 1;
+
+    elements.barList
+      .replaceChildren();
+
+    elements.chartYAxis
+      .replaceChildren();
+
+    elements.chartXAxis
+      .replaceChildren();
+
+    elements.chartEmpty.hidden =
+      true;
+
+    [100, 75, 50, 25, 0]
+      .forEach(
+        percentage => {
+          const value =
+            axisMaximum *
+            (percentage / 100);
+
+          createAxisLabel(
+            elements.chartYAxis,
+            `$${value.toFixed(2)}`,
+            {
+              axis: "bottom",
+              value: percentage
+            }
+          );
+        }
+      );
+
+    const labelEvery =
+      state.rangeMonths === 24
+        ? 2
+        : 1;
+
+    series.forEach(
+      (record, index) => {
+        const bar =
+          document.createElement(
+            "button"
+          );
+
+        const height =
+          Math.max(
+            1.5,
+            (
+              record.price /
+              axisMaximum
+            ) * 100
+          );
+
+        bar.type = "button";
+
+        bar.className =
+          `market-bar is-${movementClass(
+            record
+              .monthly_change_percent
+          )}`;
+
+        if (
+          record.is_projection
+        ) {
+          bar.classList.add(
+            "is-projection"
+          );
+        }
+
+        bar.style.setProperty(
+          "--bar-height",
+          `${height}%`
+        );
+
+        bar.setAttribute(
+          "aria-label",
+          (
+            `${formatPeriod(record.period)}, ` +
+            `${formatPrice(record.price, fuel.unit)}, ` +
+            `monthly ${formatPercent(record.monthly_change_percent)}, ` +
+            `weekly ${formatPercent(record.weekly_change_percent)}`
+          )
+        );
+
+        bar.addEventListener(
+          "pointermove",
+          event =>
+            showTooltip(
+              event,
+              fuel,
+              record
+            )
+        );
+
+        bar.addEventListener(
+          "pointerleave",
+          hideTooltip
+        );
+
+        bar.addEventListener(
+          "focus",
+          event => {
+            const rectangle =
+              event.currentTarget
+                .getBoundingClientRect();
+
+            showTooltip(
+              {
+                clientX:
+                  rectangle.left,
+
+                clientY:
+                  rectangle.top
+              },
+              fuel,
+              record
+            );
+          }
+        );
+
+        bar.addEventListener(
+          "blur",
+          hideTooltip
+        );
+
+        elements.barList
+          .appendChild(bar);
+
+        if (
+          index % labelEvery === 0 ||
+          index ===
+            series.length - 1
+        ) {
+          const label =
+            document.createElement(
+              "span"
+            );
+
+          const periodParts =
+            record.period.split("-");
+
+          const monthNames = [
+            "JAN",
+            "FEB",
+            "MAR",
+            "APR",
+            "MAY",
+            "JUN",
+            "JUL",
+            "AUG",
+            "SEP",
+            "OCT",
+            "NOV",
+            "DEC"
+          ];
+
+          const monthLabel =
+            monthNames[
+              Number(
+                periodParts[1]
+              ) - 1
+            ] ||
+            record.period;
+
+          label.textContent =
+            state.rangeMonths === 24 &&
+            periodParts[1] === "01"
+              ? (
+                  `${monthLabel} ` +
+                  `${periodParts[0].slice(-2)}`
+                )
+              : monthLabel;
+
+          label.style.position =
+            "absolute";
+
+          label.style.left =
+            `${
+              series.length === 1
+                ? 50
+                : (
+                    index /
+                    (
+                      series.length -
+                      1
+                    )
+                  ) * 100
+            }%`;
+
+          label.style.transform =
+            "translateX(-50%)";
+
+          label.style.top =
+            "9px";
+
+          elements.chartXAxis
+            .appendChild(label);
+        }
       }
-    });
+    );
   }
 
   function selectFuel(fuelId) {
@@ -422,7 +882,83 @@
     renderBars(fuel);
   }
 
+    function initializeRangeControls() {
+    const controls =
+      document.getElementById(
+        "fuelRangeControls"
+      );
+
+    if (!controls) return;
+
+    controls
+      .querySelectorAll(
+        "[data-range-months]"
+      )
+      .forEach(button => {
+        button.addEventListener(
+          "click",
+          () => {
+            const rangeMonths =
+              Number(
+                button.dataset
+                  .rangeMonths
+              );
+
+            if (
+              ![6, 12, 24]
+                .includes(
+                  rangeMonths
+                )
+            ) {
+              return;
+            }
+
+            state.rangeMonths =
+              rangeMonths;
+
+            controls
+              .querySelectorAll(
+                "[data-range-months]"
+              )
+              .forEach(item => {
+                const selected =
+                  Number(
+                    item.dataset
+                      .rangeMonths
+                  ) ===
+                  rangeMonths;
+
+                item.classList
+                  .toggle(
+                    "is-active",
+                    selected
+                  );
+
+                item.setAttribute(
+                  "aria-pressed",
+                  String(selected)
+                );
+              });
+
+            const selectedFuel =
+              state.fuels.find(
+                fuel =>
+                  fuel.id ===
+                  state.selectedFuelId
+              );
+
+            if (selectedFuel) {
+              renderBars(
+                selectedFuel
+              );
+            }
+          }
+        );
+      });
+  }
+   
   function technicalPreviewFuels() {
+     
     return TECHNICAL_PREVIEW.map((fuel) => normalizeFuel({
       ...fuel,
       market_status: "UNVERIFIED",
@@ -460,11 +996,21 @@
       : state.fuels[0].id;
 
     setStatus(
-  payload.world_year
-    ? `AVAILABLE THROUGH ${payload.world_year}`
-    : "MARKET DATA ONLINE",
-  "ready"
-);
+      payload.world_date
+        ? (
+            `AVAILABLE THROUGH ${formatPeriod(
+              String(
+                payload.world_date
+              ).slice(0, 7)
+            )}`
+          )
+        : payload.world_year
+          ? (
+              `AVAILABLE THROUGH ${payload.world_year}`
+            )
+          : "MARKET DATA ONLINE",
+      "ready"
+    );
     renderCards();
     selectFuel(state.selectedFuelId);
   }
@@ -493,27 +1039,60 @@
     }
   }
 
-  function observeACSClock() {
-    const clock = document.getElementById("acs-clock");
-    if (!clock || typeof MutationObserver !== "function") return;
+    function observeACSClock() {
+    const clock =
+      document.getElementById(
+        "acs-clock"
+      );
 
-    let previousYear = null;
-    const observer = new MutationObserver(() => {
-      const years = clock.textContent.match(/\b(19|20)\d{2}\b/g);
-      const year = years?.at(-1) || null;
+    if (
+      !clock ||
+      typeof MutationObserver !==
+        "function"
+    ) {
+      return;
+    }
 
-      if (year && previousYear && year !== previousYear) {
-        loadMarket();
+    let previousWorldDate =
+      null;
+
+    const observer =
+      new MutationObserver(
+        () => {
+          const dateMatch =
+            clock.textContent.match(
+              /\b\d{1,2}\s+[A-Z]{3}\s+(?:19|20)\d{2}\b/i
+            );
+
+          const worldDate =
+            dateMatch?.[0]
+              ?.toUpperCase() ||
+            null;
+
+          if (
+            worldDate &&
+            previousWorldDate &&
+            worldDate !==
+              previousWorldDate
+          ) {
+            loadMarket();
+          }
+
+          if (worldDate) {
+            previousWorldDate =
+              worldDate;
+          }
+        }
+      );
+
+    observer.observe(
+      clock,
+      {
+        childList: true,
+        subtree: true,
+        characterData: true
       }
-
-      if (year) previousYear = year;
-    });
-
-    observer.observe(clock, {
-      childList: true,
-      subtree: true,
-      characterData: true
-    });
+    );
   }
 
   async function initialize() {
@@ -525,6 +1104,7 @@
     }
 
     renderPendingState();
+    initializeRangeControls();
     observeACSClock();
     await loadMarket();
   }
