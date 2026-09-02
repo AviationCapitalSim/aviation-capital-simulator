@@ -2821,9 +2821,12 @@ async function submitAircraftSaleListing() {
       );
 
     ACS_MY_AIRCRAFT.saleListing =
-      payload.listing;
+    payload.listing;
 
-    if (modalMessage) {
+    setAircraftSalePublishing(false);
+
+   if (modalMessage) {
+   
       modalMessage.textContent =
         `Aircraft ${safeText(
           payload.aircraft?.registration
