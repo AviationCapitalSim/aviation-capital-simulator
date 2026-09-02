@@ -2069,14 +2069,12 @@ function loadBreakdown() {
   ]);
 
   Object.keys(cost).forEach((key) => {
-    categories.push({
-      label: key,
-      value: Number(cost[key] || 0),
-      tone: investmentKeys.has(key)
-        ? "investment"
-        : "expense"
-    });
+  categories.push({
+    label: key,
+    value: Number(cost[key] || 0),
+    tone: "expense"
   });
+});
 
   const loans =
     Array.isArray(f.bank?.loans)
