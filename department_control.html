@@ -266,22 +266,22 @@ tr:nth-child(even) {
    ============================================================ */
 
 #deptTable th:nth-child(1),
-#deptTable td:nth-child(1) { width: 32%; }   /* Department ↓ */
+#deptTable td:nth-child(1) { width: 44%; }
 
 #deptTable th:nth-child(2),
-#deptTable td:nth-child(2) { width: 8%; }    /* Staff ↑ */
+#deptTable td:nth-child(2) { width: 8%; }
 
 #deptTable th:nth-child(3),
-#deptTable td:nth-child(3) { width: 8%; }    /* Required ↑ */
+#deptTable td:nth-child(3) { width: 8%; }
 
 #deptTable th:nth-child(4),
-#deptTable td:nth-child(4) { width: 14%; }   /* Salary ↑ */
+#deptTable td:nth-child(4) { width: 14%; }
 
 #deptTable th:nth-child(5),
-#deptTable td:nth-child(5) { width: 10%; }   /* Morale ↑ */
+#deptTable td:nth-child(5) { width: 10%; }
 
 #deptTable th:nth-child(6),
-#deptTable td:nth-child(6) { width: 28%; }   /* Actions = fijo */
+#deptTable td:nth-child(6) { width: 16%; }
 
        
 /* Staff, Salary, Morale colors */
@@ -386,6 +386,277 @@ tr:nth-child(even) {
   box-shadow: 0 0 14px rgba(255,200,60,0.55);
 }
 
+/* ============================================================
+   ACS HR — DEPARTMENT MASTER MODAL
+   ============================================================ */
+
+.hr-manage-btn {
+  width: 118px;
+  height: 38px;
+  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #8ad8ff;
+  border: 1px solid rgba(85,183,255,0.62);
+  background: linear-gradient(
+    180deg,
+    rgba(16,50,88,0.92),
+    rgba(7,25,50,0.96)
+  );
+  box-shadow:
+    inset 0 0 18px rgba(85,183,255,0.06),
+    0 0 10px rgba(85,183,255,0.12);
+}
+
+.hr-manage-btn:hover {
+  color: #ffffff;
+  border-color: #55b7ff;
+  background: linear-gradient(
+    180deg,
+    rgba(22,67,112,0.96),
+    rgba(9,32,61,0.98)
+  );
+  box-shadow: 0 0 15px rgba(85,183,255,0.28);
+}
+
+#hrMasterModal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+  background: rgba(1,7,18,0.84);
+  backdrop-filter: blur(8px);
+}
+
+.hr-master-panel {
+  position: relative;
+  width: min(1120px, 96vw);
+  padding: 34px 34px 38px;
+  overflow: hidden;
+  border: 1px solid rgba(255,179,0,0.72);
+  border-radius: 18px;
+  background:
+    radial-gradient(
+      circle at 84% 12%,
+      rgba(39,132,199,0.18),
+      transparent 31%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(13,35,69,0.99),
+      rgba(4,16,37,0.995) 72%
+    );
+  box-shadow:
+    0 30px 90px rgba(0,0,0,0.72),
+    0 0 28px rgba(255,179,0,0.16),
+    inset 0 0 52px rgba(49,137,204,0.05);
+}
+
+.hr-master-panel::before {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  pointer-events: none;
+  border: 1px solid rgba(85,183,255,0.08);
+  border-radius: 12px;
+}
+
+.hr-master-panel::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 42%;
+  height: 3px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    #ffb300,
+    rgba(255,179,0,0)
+  );
+  box-shadow: 0 0 14px rgba(255,179,0,0.48);
+}
+
+.hr-master-close {
+  position: absolute;
+  z-index: 2;
+  top: 18px;
+  right: 20px;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  color: rgba(226,237,255,0.78);
+  font-size: 1.12rem;
+  cursor: pointer;
+  border: 1px solid rgba(138,180,255,0.36);
+  border-radius: 9px;
+  background: rgba(7,24,48,0.82);
+}
+
+.hr-master-close:hover {
+  color: #ffffff;
+  border-color: #55b7ff;
+  box-shadow: 0 0 13px rgba(85,183,255,0.24);
+}
+
+.hr-master-title {
+  position: relative;
+  z-index: 1;
+  margin: 4px 58px 30px 0;
+  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+  font-size: clamp(1.65rem, 3.2vw, 2.65rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 0.14em;
+  color: #ffb300;
+  text-transform: uppercase;
+  text-shadow:
+    0 0 10px rgba(255,179,0,0.30),
+    0 0 24px rgba(255,179,0,0.12);
+}
+
+.hr-master-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255,179,0,0.24);
+}
+
+.hr-master-card {
+  position: relative;
+  min-height: 235px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px 18px 18px;
+  border: 1px solid rgba(80,135,190,0.34);
+  border-radius: 14px;
+  background: linear-gradient(
+    180deg,
+    rgba(18,46,81,0.86),
+    rgba(6,21,44,0.96)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.03),
+    inset 0 0 30px rgba(65,151,218,0.035);
+}
+
+.hr-master-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 18px;
+  right: 18px;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(85,183,255,0.78),
+    transparent
+  );
+}
+
+.hr-master-card-title {
+  margin: auto 0;
+  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+  font-size: clamp(1rem, 1.8vw, 1.25rem);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #f2f6ff;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.hr-master-open {
+  width: 100%;
+  height: 46px;
+  color: #72d2ff;
+  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  cursor: pointer;
+  border: 1px solid rgba(85,183,255,0.64);
+  border-radius: 9px;
+  background: linear-gradient(
+    180deg,
+    rgba(16,53,91,0.92),
+    rgba(7,26,51,0.98)
+  );
+}
+
+.hr-master-open:hover {
+  color: #ffffff;
+  border-color: #55b7ff;
+  box-shadow: 0 0 14px rgba(85,183,255,0.24);
+}
+
+.hr-master-card:last-child {
+  border-color: rgba(255,179,0,0.38);
+}
+
+.hr-master-card:last-child::before {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,179,0,0.90),
+    transparent
+  );
+}
+
+@media (max-width: 900px) {
+  #hrMasterModal {
+    padding: 18px;
+  }
+
+  .hr-master-panel {
+    padding: 28px 24px 30px;
+  }
+
+  .hr-master-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hr-master-card {
+    min-height: 190px;
+  }
+}
+
+@media (max-width: 560px) {
+  #hrMasterModal {
+    align-items: flex-start;
+    padding: 12px;
+    overflow-y: auto;
+  }
+
+  .hr-master-panel {
+    width: 100%;
+    margin: 10px 0;
+    padding: 24px 16px 22px;
+  }
+
+  .hr-master-title {
+    margin-bottom: 22px;
+    font-size: 1.35rem;
+    letter-spacing: 0.09em;
+  }
+
+  .hr-master-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hr-master-card {
+    min-height: 145px;
+  }
+}
+       
 /* Total Payroll */
 #totalPayroll {
   padding-top: 1.2rem;
@@ -1342,6 +1613,86 @@ tr:nth-child(even) {
 </table>
 
 <!-- ============================================================
+     ACS HR — DEPARTMENT MASTER MODAL
+     ============================================================ -->
+
+<div
+  id="hrMasterModal"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="hrMasterTitle"
+>
+  <div class="hr-master-panel">
+
+    <button
+      type="button"
+      class="hr-master-close"
+      aria-label="Close Department Management"
+      onclick="window.closeHRMasterModal()"
+    >
+      ✕
+    </button>
+
+    <h2 id="hrMasterTitle" class="hr-master-title">
+      Department Management
+    </h2>
+
+    <div class="hr-master-grid">
+
+      <section class="hr-master-card">
+        <h3 class="hr-master-card-title">Salary</h3>
+
+        <button
+          type="button"
+          class="hr-master-open"
+          data-hr-master-section="salary"
+        >
+          Open
+        </button>
+      </section>
+
+      <section class="hr-master-card">
+        <h3 class="hr-master-card-title">Personnel</h3>
+
+        <button
+          type="button"
+          class="hr-master-open"
+          data-hr-master-section="personnel"
+        >
+          Open
+        </button>
+      </section>
+
+      <section class="hr-master-card">
+        <h3 class="hr-master-card-title">Bonus</h3>
+
+        <button
+          type="button"
+          class="hr-master-open"
+          data-hr-master-section="bonus"
+        >
+          Open
+        </button>
+      </section>
+
+      <section class="hr-master-card">
+        <h3 class="hr-master-card-title">Training</h3>
+
+        <button
+          type="button"
+          class="hr-master-open"
+          data-hr-master-section="training"
+        >
+          Open
+        </button>
+      </section>
+
+    </div>
+
+  </div>
+</div>
+     
+<!-- ============================================================
    🟥 FIRE MINI MODAL — Qatar Luxury Premium
    Purpose:
    - Confirm multiple dismissals
@@ -1581,6 +1932,7 @@ function ACS_HR_renderLoadBar(dep) {
 /* ============================================================
    === HR_prepareTableData — RECONSTRUIDA PREMIUM v2 ============
    ============================================================ */
+     
 function HR_prepareTableData(d) {
     const staff    = d.staff || 0;
     const required = (typeof d.required === "number") ? d.required : staff;
@@ -1607,6 +1959,32 @@ function HR_prepareTableData(d) {
         morale: d.morale || 0
     };
 }
+
+/* ============================================================
+   ACS HR — DEPARTMENT MASTER MODAL CONTROL
+   ============================================================ */
+
+window.__ACS_HR_MASTER_DEPT_ID = null;
+
+window.openHRMasterModal = function(depId) {
+  const HR = window.ACS_HR_SERVER_STATE;
+  const modal = document.getElementById("hrMasterModal");
+
+  if (!modal || !HR || !HR[depId]) {
+    return;
+  }
+
+  window.__ACS_HR_MASTER_DEPT_ID = depId;
+  modal.style.display = "flex";
+};
+
+window.closeHRMasterModal = function() {
+  const modal = document.getElementById("hrMasterModal");
+
+  if (modal) {
+    modal.style.display = "none";
+  }
+};
      
 /* ============================================================
    === LOAD DEPARTMENTS — FINAL OPERATIONAL CORE (ACS) =========
@@ -1651,6 +2029,7 @@ const depts = ACS_HR_DEPARTMENTS
     const staff = Number(dep.staff || 0);
 
     // 🔧 Required balance real desde PostgreSQL/Railway
+       
 const requiredAbsolute = Number(dep.required || 0);
 const balance = staff - requiredAbsolute;
 
@@ -1665,6 +2044,7 @@ if (balance < 0) {
   requiredText = `-${missing}`;
 
   // 🔔 ALERTA SOLO SI FALTA PERSONAL
+     
   if (window.ACS_Alerts && typeof window.ACS_Alerts.push === "function") {
 
     const alertKey = `HR_MISSING_${dep.id}`;
@@ -1688,9 +2068,7 @@ if (balance < 0) {
   requiredText = `+${balance}`;
 
 }
-       
-  const canFire = dep.id !== "ceo" && staff > 0;
-       
+            
     rows.innerHTML += `
   <tr>
     <td>${dep.name}</td>
@@ -1714,46 +2092,14 @@ if (balance < 0) {
 
     ${dep.id === "ceo" ? `
 
-      <!-- CEO: SOLO SALARY -->
-      <button class="btn btn-adjust" title="Adjust Salary"
-        onclick="openSalaryInline('${dep.id}')">
-        💰
-      </button>
-
-    ` : `
-
-      <!-- Hire +1 -->
-      <button class="btn btn-hire" title="Hire Staff"
-        onclick="HR_hireOne('${dep.id}')">
-        👤➕
-      </button>
-
-      <!-- Fire -->
-<button
-  class="btn btn-dismiss ${canFire ? "" : "hr-disabled"}"
-  title="${canFire ? "Fire Staff" : "No staff available to dismiss"}"
-  ${canFire ? `onclick="window.openFireMiniModal('${dep.id}')"` : "disabled"}
->
-  👤➖
-</button>
-
-      <!-- Salary -->
-      <button class="btn btn-adjust" title="Adjust Salary"
-        onclick="openSalaryInline('${dep.id}')">
-        💰
-      </button>
-
-      <!-- Bonus -->
-
-     <button class="btn btn-bonus" title="Authorize Department Bonus"
-     onclick="window.openBonusModal('${dep.id}')">
-     🎁
-     </button>
-      
-    `}
-
-  </div>
-
+<td>
+  <button
+    type="button"
+    class="btn hr-manage-btn"
+    onclick="window.openHRMasterModal('${dep.id}')"
+  >
+    Manage
+  </button>
 </td>
 
 </tr>
