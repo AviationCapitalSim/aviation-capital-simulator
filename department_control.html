@@ -2717,13 +2717,13 @@ tr:nth-child(even) {
         </p>
 
         <button
-          type="button"
-          id="hrPersonnelConfirmHire"
-          class="hr-personnel-confirm hr-personnel-confirm-hire"
-          disabled
-        >
-          Confirm Hire
-        </button>
+  type="button"
+  id="hrPersonnelConfirmHire"
+  class="hr-personnel-confirm hr-personnel-confirm-hire"
+  onclick="window.confirmPersonnelHire()"
+>
+  Confirm Hire
+</button>
 
       </section>
 
@@ -2799,13 +2799,13 @@ tr:nth-child(even) {
         </p>
 
         <button
-          type="button"
-          id="hrPersonnelConfirmRelease"
-          class="hr-personnel-confirm hr-personnel-confirm-release"
-          disabled
-        >
-          Confirm Release
-        </button>
+  type="button"
+  id="hrPersonnelConfirmRelease"
+  class="hr-personnel-confirm hr-personnel-confirm-release"
+  onclick="window.confirmPersonnelRelease()"
+>
+  Confirm Release
+</button>
 
       </section>
 
@@ -3107,24 +3107,25 @@ window.closeHRMasterModal = function() {
     modal.style.display = "none";
   }
 };
-
+     
 /* ============================================================
-   ACS OCC — PERSONNEL CONTROL VISUAL CONTROLLER
-   No backend mutations in this stage
+   ACS OCC — PERSONNEL CONTROL
+   PostgreSQL authority through ACS_HR_hire / ACS_HR_fire
    ============================================================ */
 
 window.__ACS_HR_PERSONNEL_STATE = {
   deptId: null,
   hireQuantity: 1,
-  releaseQuantity: 1
+  releaseQuantity: 1,
+  busy: false
 };
 
 window.renderPersonnelModal = function() {
   const state = window.__ACS_HR_PERSONNEL_STATE;
   const HR = window.ACS_HR_SERVER_STATE;
-  const dep = HR?.[state.deptId];
+  const dep = HR?.[state?.deptId];
 
-  if (!dep) return false;
+  if (!state || !dep) return false;
 
   const staff = Math.max(
     0,
@@ -3138,28 +3139,38 @@ window.renderPersonnelModal = function() {
 
   const balance = staff - required;
   const isCEO = dep.id === "ceo";
+  const busy = state.busy === true;
 
   state.hireQuantity = Math.max(
     1,
-    Math.min(10000, Number(state.hireQuantity || 1))
+    Math.min(
+      10000,
+      Math.trunc(Number(state.hireQuantity || 1))
+    )
   );
 
   state.releaseQuantity =
     staff > 0
       ? Math.max(
           1,
-          Math.min(staff, Number(state.releaseQuantity || 1))
+          Math.min(
+            staff,
+            Math.trunc(Number(state.releaseQuantity || 1))
+          )
         )
       : 0;
 
-  document.getElementById("hrPersonnelDepartment").textContent =
-    dep.name || dep.id;
+  document.getElementById(
+    "hrPersonnelDepartment"
+  ).textContent = dep.name || dep.id;
 
-  document.getElementById("hrPersonnelCurrent").textContent =
-    staff.toLocaleString();
+  document.getElementById(
+    "hrPersonnelCurrent"
+  ).textContent = staff.toLocaleString();
 
-  document.getElementById("hrPersonnelRequired").textContent =
-    required.toLocaleString();
+  document.getElementById(
+    "hrPersonnelRequired"
+  ).textContent = required.toLocaleString();
 
   const balanceElement =
     document.getElementById("hrPersonnelBalance");
@@ -3204,14 +3215,29 @@ window.renderPersonnelModal = function() {
   document
     .querySelectorAll("[data-personnel-hire-control]")
     .forEach(button => {
-      button.disabled = isCEO;
+      button.disabled = isCEO || busy;
     });
 
   document
     .querySelectorAll("[data-personnel-release-control]")
     .forEach(button => {
-      button.disabled = isCEO || staff <= 0;
+      button.disabled = isCEO || staff <= 0 || busy;
     });
+
+  const confirmHire =
+    document.getElementById("hrPersonnelConfirmHire");
+
+  const confirmRelease =
+    document.getElementById("hrPersonnelConfirmRelease");
+
+  if (confirmHire) {
+    confirmHire.disabled = isCEO || busy;
+  }
+
+  if (confirmRelease) {
+    confirmRelease.disabled =
+      isCEO || staff <= 0 || busy;
+  }
 
   return true;
 };
@@ -3232,7 +3258,8 @@ window.openPersonnelModal = function(depId) {
     deptId: depId,
     hireQuantity: 1,
     releaseQuantity:
-      Number(HR[depId].staff || 0) > 0 ? 1 : 0
+      Number(HR[depId].staff || 0) > 0 ? 1 : 0,
+    busy: false
   };
 
   if (!window.renderPersonnelModal()) return;
@@ -3243,6 +3270,7 @@ window.openPersonnelModal = function(depId) {
 
 window.closePersonnelModal = function() {
   const modal = document.getElementById("hrPersonnelModal");
+
   const depId =
     window.__ACS_HR_PERSONNEL_STATE?.deptId;
 
@@ -3260,9 +3288,17 @@ window.changePersonnelQuantity = function(action, delta) {
   const HR = window.ACS_HR_SERVER_STATE;
   const dep = HR?.[state?.deptId];
 
-  if (!state || !dep || dep.id === "ceo") return;
+  if (
+    !state ||
+    !dep ||
+    state.busy === true ||
+    dep.id === "ceo"
+  ) {
+    return;
+  }
 
   const step = Math.trunc(Number(delta || 0));
+
   const staff = Math.max(
     0,
     Math.trunc(Number(dep.staff || 0))
@@ -3289,6 +3325,136 @@ window.changePersonnelQuantity = function(action, delta) {
   }
 
   window.renderPersonnelModal();
+};
+
+window.confirmPersonnelHire = async function() {
+  const state = window.__ACS_HR_PERSONNEL_STATE;
+  const HR = window.ACS_HR_SERVER_STATE;
+  const dep = HR?.[state?.deptId];
+
+  if (!state || !dep || state.busy === true) {
+    return;
+  }
+
+  if (dep.id === "ceo") {
+    alert("Only one CEO is allowed.");
+    return;
+  }
+
+  const quantity = Math.max(
+    1,
+    Math.min(
+      10000,
+      Math.trunc(Number(state.hireQuantity || 1))
+    )
+  );
+
+  state.busy = true;
+  window.renderPersonnelModal();
+
+  try {
+    const success = await ACS_HR_hire(
+      dep.id,
+      quantity
+    );
+
+    if (!success) {
+      alert("Personnel could not be hired.");
+      return;
+    }
+
+    state.hireQuantity = 1;
+
+    if (typeof loadDepartments === "function") {
+      loadDepartments();
+    }
+
+    if (typeof HR_updateKPI === "function") {
+      HR_updateKPI();
+    }
+
+  } catch (error) {
+    console.error(
+      "❌ PERSONNEL HIRE FAILED:",
+      error
+    );
+
+    alert("Personnel could not be hired.");
+
+  } finally {
+    state.busy = false;
+    window.renderPersonnelModal();
+  }
+};
+
+window.confirmPersonnelRelease = async function() {
+  const state = window.__ACS_HR_PERSONNEL_STATE;
+  const HR = window.ACS_HR_SERVER_STATE;
+  const dep = HR?.[state?.deptId];
+
+  if (!state || !dep || state.busy === true) {
+    return;
+  }
+
+  if (dep.id === "ceo") {
+    alert("The CEO cannot be released.");
+    return;
+  }
+
+  const staff = Math.max(
+    0,
+    Math.trunc(Number(dep.staff || 0))
+  );
+
+  if (staff <= 0) {
+    alert("There is no personnel to release.");
+    return;
+  }
+
+  const quantity = Math.max(
+    1,
+    Math.min(
+      staff,
+      Math.trunc(Number(state.releaseQuantity || 1))
+    )
+  );
+
+  state.busy = true;
+  window.renderPersonnelModal();
+
+  try {
+    const success = await ACS_HR_fire(
+      dep.id,
+      quantity
+    );
+
+    if (!success) {
+      alert("Personnel could not be released.");
+      return;
+    }
+
+    state.releaseQuantity = 1;
+
+    if (typeof loadDepartments === "function") {
+      loadDepartments();
+    }
+
+    if (typeof HR_updateKPI === "function") {
+      HR_updateKPI();
+    }
+
+  } catch (error) {
+    console.error(
+      "❌ PERSONNEL RELEASE FAILED:",
+      error
+    );
+
+    alert("Personnel could not be released.");
+
+  } finally {
+    state.busy = false;
+    window.renderPersonnelModal();
+  }
 };
      
 /* ============================================================
