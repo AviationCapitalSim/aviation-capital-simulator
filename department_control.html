@@ -2358,7 +2358,6 @@ tr:nth-child(even) {
 <!-- ============================================================
      ACS OCC — DEPARTMENT MANAGEMENT MASTER MODAL
      ============================================================ -->
-
 <div
   id="hrMasterModal"
   role="dialog"
@@ -2387,7 +2386,6 @@ tr:nth-child(even) {
     <div class="hr-master-grid">
 
       <!-- SALARY -->
-         
       <section class="hr-master-card">
 
         <div class="hr-master-icon" aria-hidden="true">
@@ -2395,7 +2393,6 @@ tr:nth-child(even) {
 
             <rect x="11" y="7" width="29" height="47" rx="3"></rect>
             <path d="M19 7V4h13v3"></path>
-
             <path d="M17 18h9"></path>
             <path d="M17 23h7"></path>
 
@@ -2408,7 +2405,6 @@ tr:nth-child(even) {
 
             <rect x="35" y="31" width="18" height="23" rx="2"></rect>
             <path d="M39 36h10"></path>
-
             <path d="M39 41h2"></path>
             <path d="M45 41h2"></path>
             <path d="M39 46h2"></path>
@@ -2424,18 +2420,17 @@ tr:nth-child(even) {
         </h3>
 
         <button
-  type="button"
-  class="hr-master-open"
-  data-hr-master-section="salary"
-  onclick="openSalary(window.__ACS_HR_MASTER_DEPT_ID); window.closeHRMasterModal();"
->
-  Open
-</button>
+          type="button"
+          class="hr-master-open"
+          data-hr-master-section="salary"
+          onclick="openSalary(window.__ACS_HR_MASTER_DEPT_ID)"
+        >
+          Open
+        </button>
 
       </section>
 
       <!-- PERSONNEL -->
-         
       <section class="hr-master-card">
 
         <div class="hr-master-icon" aria-hidden="true">
@@ -2453,7 +2448,6 @@ tr:nth-child(even) {
 
             <path class="hr-icon-gold" d="M25 15h14"></path>
             <path class="hr-icon-gold" d="M28 12h8l3 3H25z"></path>
-
             <path class="hr-icon-gold" d="M25 43h3"></path>
             <path class="hr-icon-gold" d="M36 43h3"></path>
 
@@ -2468,6 +2462,7 @@ tr:nth-child(even) {
           type="button"
           class="hr-master-open"
           data-hr-master-section="personnel"
+          onclick="window.openPersonnelModal(window.__ACS_HR_MASTER_DEPT_ID)"
         >
           Open
         </button>
@@ -2475,7 +2470,6 @@ tr:nth-child(even) {
       </section>
 
       <!-- BONUS -->
-         
       <section class="hr-master-card">
 
         <div class="hr-master-icon" aria-hidden="true">
@@ -2508,13 +2502,13 @@ tr:nth-child(even) {
         </h3>
 
         <button
-  type="button"
-  class="hr-master-open"
-  data-hr-master-section="bonus"
-  onclick="window.openBonusModal(window.__ACS_HR_MASTER_DEPT_ID)"
->
-  Open
-</button>
+          type="button"
+          class="hr-master-open"
+          data-hr-master-section="bonus"
+          onclick="window.openBonusModal(window.__ACS_HR_MASTER_DEPT_ID)"
+        >
+          Open
+        </button>
 
       </section>
 
@@ -2553,6 +2547,264 @@ tr:nth-child(even) {
           data-hr-master-section="training"
         >
           Open
+        </button>
+
+      </section>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================
+     ACS OCC — PERSONNEL CONTROL MODAL
+     ============================================================ -->
+
+<div
+  id="hrPersonnelModal"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="hrPersonnelTitle"
+>
+  <div class="hr-personnel-panel">
+
+    <header class="hr-personnel-header">
+
+      <div class="hr-personnel-heading">
+
+        <h2 id="hrPersonnelTitle" class="hr-personnel-title">
+          Personnel Control
+        </h2>
+
+        <p
+          id="hrPersonnelDepartment"
+          class="hr-personnel-department"
+        ></p>
+
+      </div>
+
+      <button
+        type="button"
+        class="hr-personnel-close"
+        aria-label="Close Personnel Control"
+        onclick="window.closePersonnelModal()"
+      >
+        ×
+      </button>
+
+    </header>
+
+    <div class="hr-personnel-summary">
+
+      <div class="hr-personnel-stat">
+
+        <span class="hr-personnel-stat-label">
+          Current Staff
+        </span>
+
+        <strong
+          id="hrPersonnelCurrent"
+          class="hr-personnel-stat-value"
+        >
+          0
+        </strong>
+
+      </div>
+
+      <div class="hr-personnel-stat">
+
+        <span class="hr-personnel-stat-label">
+          Required
+        </span>
+
+        <strong
+          id="hrPersonnelRequired"
+          class="hr-personnel-stat-value"
+        >
+          0
+        </strong>
+
+      </div>
+
+      <div class="hr-personnel-stat">
+
+        <span class="hr-personnel-stat-label">
+          Balance
+        </span>
+
+        <strong
+          id="hrPersonnelBalance"
+          class="hr-personnel-stat-value"
+        >
+          0
+        </strong>
+
+      </div>
+
+    </div>
+
+    <div class="hr-personnel-actions">
+
+      <!-- HIRE -->
+      <section class="hr-personnel-action hr-personnel-hire">
+
+        <h3 class="hr-personnel-action-title">
+          Hire
+        </h3>
+
+        <div
+          class="hr-personnel-action-icon"
+          aria-hidden="true"
+        >
+          <svg viewBox="0 0 64 64">
+
+            <circle cx="32" cy="19" r="8"></circle>
+            <path d="M20 48v-7c0-7 5-12 12-12s12 5 12 12v7"></path>
+
+            <circle cx="13" cy="27" r="5"></circle>
+            <path d="M4 49v-7c0-6 3-10 9-10 4 0 7 2 9 5"></path>
+
+            <circle cx="51" cy="27" r="5"></circle>
+            <path d="M60 49v-7c0-6-3-10-9-10-4 0-7 2-9 5"></path>
+
+            <circle
+              class="hr-personnel-icon-hire"
+              cx="48"
+              cy="47"
+              r="10"
+            ></circle>
+
+            <path
+              class="hr-personnel-icon-hire"
+              d="M48 42v10M43 47h10"
+            ></path>
+
+          </svg>
+        </div>
+
+        <div class="hr-personnel-quantity">
+
+          <button
+            type="button"
+            data-personnel-hire-control
+            aria-label="Reduce hiring quantity"
+            onclick="window.changePersonnelQuantity('hire', -1)"
+          >
+            −
+          </button>
+
+          <span
+            id="hrPersonnelHireQuantity"
+            class="hr-personnel-quantity-value"
+          >
+            1
+          </span>
+
+          <button
+            type="button"
+            data-personnel-hire-control
+            aria-label="Increase hiring quantity"
+            onclick="window.changePersonnelQuantity('hire', 1)"
+          >
+            +
+          </button>
+
+        </div>
+
+        <p class="hr-personnel-projection">
+          Projected Staff
+          <strong id="hrPersonnelHireProjected">0</strong>
+        </p>
+
+        <button
+          type="button"
+          id="hrPersonnelConfirmHire"
+          class="hr-personnel-confirm hr-personnel-confirm-hire"
+          disabled
+        >
+          Confirm Hire
+        </button>
+
+      </section>
+
+      <!-- RELEASE -->
+      <section class="hr-personnel-action hr-personnel-release">
+
+        <h3 class="hr-personnel-action-title">
+          Release Personnel
+        </h3>
+
+        <div
+          class="hr-personnel-action-icon"
+          aria-hidden="true"
+        >
+          <svg viewBox="0 0 64 64">
+
+            <circle cx="32" cy="19" r="8"></circle>
+            <path d="M20 48v-7c0-7 5-12 12-12s12 5 12 12v7"></path>
+
+            <circle cx="13" cy="27" r="5"></circle>
+            <path d="M4 49v-7c0-6 3-10 9-10 4 0 7 2 9 5"></path>
+
+            <circle cx="51" cy="27" r="5"></circle>
+            <path d="M60 49v-7c0-6-3-10-9-10-4 0-7 2-9 5"></path>
+
+            <circle
+              class="hr-personnel-icon-release"
+              cx="48"
+              cy="47"
+              r="10"
+            ></circle>
+
+            <path
+              class="hr-personnel-icon-release"
+              d="M43 47h10"
+            ></path>
+
+          </svg>
+        </div>
+
+        <div class="hr-personnel-quantity">
+
+          <button
+            type="button"
+            data-personnel-release-control
+            aria-label="Reduce release quantity"
+            onclick="window.changePersonnelQuantity('release', -1)"
+          >
+            −
+          </button>
+
+          <span
+            id="hrPersonnelReleaseQuantity"
+            class="hr-personnel-quantity-value"
+          >
+            1
+          </span>
+
+          <button
+            type="button"
+            data-personnel-release-control
+            aria-label="Increase release quantity"
+            onclick="window.changePersonnelQuantity('release', 1)"
+          >
+            +
+          </button>
+
+        </div>
+
+        <p class="hr-personnel-projection">
+          Projected Staff
+          <strong id="hrPersonnelReleaseProjected">0</strong>
+        </p>
+
+        <button
+          type="button"
+          id="hrPersonnelConfirmRelease"
+          class="hr-personnel-confirm hr-personnel-confirm-release"
+          disabled
+        >
+          Confirm Release
         </button>
 
       </section>
@@ -2854,6 +3106,189 @@ window.closeHRMasterModal = function() {
   if (modal) {
     modal.style.display = "none";
   }
+};
+
+/* ============================================================
+   ACS OCC — PERSONNEL CONTROL VISUAL CONTROLLER
+   No backend mutations in this stage
+   ============================================================ */
+
+window.__ACS_HR_PERSONNEL_STATE = {
+  deptId: null,
+  hireQuantity: 1,
+  releaseQuantity: 1
+};
+
+window.renderPersonnelModal = function() {
+  const state = window.__ACS_HR_PERSONNEL_STATE;
+  const HR = window.ACS_HR_SERVER_STATE;
+  const dep = HR?.[state.deptId];
+
+  if (!dep) return false;
+
+  const staff = Math.max(
+    0,
+    Math.trunc(Number(dep.staff || 0))
+  );
+
+  const required = Math.max(
+    0,
+    Math.trunc(Number(dep.required || 0))
+  );
+
+  const balance = staff - required;
+  const isCEO = dep.id === "ceo";
+
+  state.hireQuantity = Math.max(
+    1,
+    Math.min(10000, Number(state.hireQuantity || 1))
+  );
+
+  state.releaseQuantity =
+    staff > 0
+      ? Math.max(
+          1,
+          Math.min(staff, Number(state.releaseQuantity || 1))
+        )
+      : 0;
+
+  document.getElementById("hrPersonnelDepartment").textContent =
+    dep.name || dep.id;
+
+  document.getElementById("hrPersonnelCurrent").textContent =
+    staff.toLocaleString();
+
+  document.getElementById("hrPersonnelRequired").textContent =
+    required.toLocaleString();
+
+  const balanceElement =
+    document.getElementById("hrPersonnelBalance");
+
+  balanceElement.textContent =
+    balance > 0
+      ? `+${balance}`
+      : String(balance);
+
+  balanceElement.classList.remove(
+    "is-positive",
+    "is-negative"
+  );
+
+  if (balance > 0) {
+    balanceElement.classList.add("is-positive");
+  } else if (balance < 0) {
+    balanceElement.classList.add("is-negative");
+  }
+
+  document.getElementById(
+    "hrPersonnelHireQuantity"
+  ).textContent = state.hireQuantity.toLocaleString();
+
+  document.getElementById(
+    "hrPersonnelReleaseQuantity"
+  ).textContent = state.releaseQuantity.toLocaleString();
+
+  document.getElementById(
+    "hrPersonnelHireProjected"
+  ).textContent = (
+    staff + state.hireQuantity
+  ).toLocaleString();
+
+  document.getElementById(
+    "hrPersonnelReleaseProjected"
+  ).textContent = Math.max(
+    0,
+    staff - state.releaseQuantity
+  ).toLocaleString();
+
+  document
+    .querySelectorAll("[data-personnel-hire-control]")
+    .forEach(button => {
+      button.disabled = isCEO;
+    });
+
+  document
+    .querySelectorAll("[data-personnel-release-control]")
+    .forEach(button => {
+      button.disabled = isCEO || staff <= 0;
+    });
+
+  return true;
+};
+
+window.openPersonnelModal = function(depId) {
+  const HR = window.ACS_HR_SERVER_STATE;
+  const modal = document.getElementById("hrPersonnelModal");
+
+  if (!HR || !HR[depId] || !modal) {
+    console.error(
+      "❌ PERSONNEL MODAL — Department or modal not found:",
+      depId
+    );
+    return;
+  }
+
+  window.__ACS_HR_PERSONNEL_STATE = {
+    deptId: depId,
+    hireQuantity: 1,
+    releaseQuantity:
+      Number(HR[depId].staff || 0) > 0 ? 1 : 0
+  };
+
+  if (!window.renderPersonnelModal()) return;
+
+  modal.style.display = "flex";
+  window.closeHRMasterModal();
+};
+
+window.closePersonnelModal = function() {
+  const modal = document.getElementById("hrPersonnelModal");
+  const depId =
+    window.__ACS_HR_PERSONNEL_STATE?.deptId;
+
+  if (modal) {
+    modal.style.display = "none";
+  }
+
+  if (depId) {
+    window.openHRMasterModal(depId);
+  }
+};
+
+window.changePersonnelQuantity = function(action, delta) {
+  const state = window.__ACS_HR_PERSONNEL_STATE;
+  const HR = window.ACS_HR_SERVER_STATE;
+  const dep = HR?.[state?.deptId];
+
+  if (!state || !dep || dep.id === "ceo") return;
+
+  const step = Math.trunc(Number(delta || 0));
+  const staff = Math.max(
+    0,
+    Math.trunc(Number(dep.staff || 0))
+  );
+
+  if (action === "hire") {
+    state.hireQuantity = Math.max(
+      1,
+      Math.min(
+        10000,
+        Number(state.hireQuantity || 1) + step
+      )
+    );
+  }
+
+  if (action === "release" && staff > 0) {
+    state.releaseQuantity = Math.max(
+      1,
+      Math.min(
+        staff,
+        Number(state.releaseQuantity || 1) + step
+      )
+    );
+  }
+
+  window.renderPersonnelModal();
 };
      
 /* ============================================================
