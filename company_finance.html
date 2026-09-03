@@ -1814,6 +1814,32 @@ function ACS_updateCapitalColor() {
   el.style.color = capital < 0 ? "#ff4d4d" : "#00ff80";
 
 }
+
+/* ============================================================
+   ACS FINANCE — PROFESSIONAL ACTIVITY LABELS
+   Visual translation only | Internal sources remain unchanged
+   ============================================================ */
+
+const ACS_FINANCE_ACTIVITY_LABELS = Object.freeze({
+  FLIGHT_REVENUE: "Passenger Revenue",
+  FLIGHT_FUEL: "Fuel",
+  FLIGHT_HANDLING: "Ground Handling",
+  FLIGHT_LANDING: "Landing Fees",
+  FLIGHT_NAVIGATION: "Navigation Charges",
+  FLIGHT_OVERFLIGHT: "Overflight Charges",
+  FLIGHT_PAX_TAXES: "Passenger Revenue Tax"
+});
+
+function ACS_getFinanceActivityLabel(source) {
+  const original =
+    String(source || "UNKNOWN").trim();
+
+  const canonical =
+    original.toUpperCase();
+
+  return ACS_FINANCE_ACTIVITY_LABELS[canonical]
+    || original;
+}
      
 function loadTransactionLog() {
 
@@ -1838,6 +1864,7 @@ function loadTransactionLog() {
   types.forEach(type => {
 
   const items =
+       
       type === "FINANCING"
         ? (
             Array.isArray(window.ACS_Finance?.bank?.loans)
@@ -1973,7 +2000,7 @@ function loadTransactionLog() {
 
         row.innerHTML = `
           <div class="activity-title">
-            ${item.source}
+            ${ACS_getFinanceActivityLabel(item.source)}
           </div>
 
           <div class="activity-meta">
