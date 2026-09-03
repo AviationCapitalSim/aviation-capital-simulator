@@ -2069,43 +2069,48 @@ if (balance < 0) {
 
 }
             
-    rows.innerHTML += `
+rows.innerHTML += `
   <tr>
     <td>${dep.name}</td>
-    <td class="staff">${staff}</td>
-    <td class="${requiredClass}">${requiredText}</td>
-    <td class="salary ${dep.salaryStatus === "lagging" ? "salary-lagging" : (dep.salaryStatus === "review" ? "salary-review" : "salary-ok")}">
-     $${dep.salary.toLocaleString()}</td>
-    <td class="morale morale-green" data-morale="${dep.morale}">
-    ${dep.morale}%
+
+    <td class="staff">
+      ${staff}
     </td>
 
-   <td>
+    <td class="${requiredClass}">
+      ${requiredText}
+    </td>
 
-  <div style="
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:12px;
-    width:100%;
-  ">
+    <td class="salary ${
+      dep.salaryStatus === "lagging"
+        ? "salary-lagging"
+        : dep.salaryStatus === "review"
+          ? "salary-review"
+          : "salary-ok"
+    }">
+      $${dep.salary.toLocaleString()}
+    </td>
 
-    ${dep.id === "ceo" ? `
+    <td
+      class="morale morale-green"
+      data-morale="${dep.morale}"
+    >
+      ${dep.morale}%
+    </td>
 
-<td>
-  <button
-    type="button"
-    class="btn hr-manage-btn"
-    onclick="window.openHRMasterModal('${dep.id}')"
-  >
-    Manage
-  </button>
-</td>
-
-</tr>
+    <td>
+      <button
+        type="button"
+        class="btn hr-manage-btn"
+        onclick="window.openHRMasterModal('${dep.id}')"
+      >
+        Manage
+      </button>
+    </td>
+  </tr>
 `;
-
-  });
+       
+});
 
 /* ============================================================
    🎯 APPLY MORALE COLORS — POST RENDER (UI ONLY)
