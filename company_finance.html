@@ -1439,6 +1439,49 @@ body {
       rgba(var(--acs-rail-rgb), 0.17)
       !important;
 }
+
+/* ============================================================
+   ACS FINANCING — LOAN STATUS COLORS
+   Visual only
+   ============================================================ */
+
+#companyFinanceRoot .acs-loan-status {
+  font-weight: 800;
+  letter-spacing: 0.055em;
+}
+
+/* Fully paid loan */
+#companyFinanceRoot
+.acs-loan-status[data-status="PAID"] {
+  color: #00f59a;
+  text-shadow:
+    0 0 8px rgba(0, 245, 154, 0.45);
+}
+
+/* Active financing */
+#companyFinanceRoot
+.acs-loan-status[data-status="ACTIVE"] {
+  color: #d8ad45;
+  text-shadow:
+    0 0 5px rgba(216, 173, 69, 0.20);
+}
+
+/* ============================================================
+   ACS LEASING — CONTRACT STATUS
+   Visual only
+   ============================================================ */
+
+#companyFinanceRoot .acs-lease-status {
+  font-weight: 800;
+  letter-spacing: 0.055em;
+}
+
+#companyFinanceRoot
+.acs-lease-status[data-status="ACTIVE"] {
+  color: #00f59a;
+  text-shadow:
+    0 0 8px rgba(0, 245, 154, 0.42);
+}
      
 </style>
 </head>
@@ -1746,6 +1789,7 @@ body {
 <!-- ============================================================
      ⏳ ACS TIME ENGINE V12 — 24/7 RECOVERY LAYER
      ============================================================ -->
+     
 <script src="acs_time_recovery.js"></script>
 <script src="time_engine.js"></script>
 
@@ -1782,6 +1826,7 @@ body {
 /* ============================================================
    ✅ FIX — SAFE NUMBER FORMAT (never crashes)
    ============================================================ */
+     
 function ACS_num(v){ 
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
@@ -2055,7 +2100,13 @@ function loadTransactionLog() {
           </div>
 
           <div class="activity-meta">
-            Status — ${item.status}
+            Status —
+            <span
+              class="acs-loan-status"
+              data-status="${item.status}"
+            >
+              ${item.status}
+            </span>
           </div>
 
           <div class="activity-meta">
