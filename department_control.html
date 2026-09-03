@@ -420,196 +420,413 @@ tr:nth-child(even) {
   box-shadow: 0 0 15px rgba(85,183,255,0.28);
 }
 
+/* ============================================================
+   ACS OCC — DEPARTMENT MANAGEMENT MASTER MODAL
+   ============================================================ */
+
 #hrMasterModal {
   display: none;
   position: fixed;
   inset: 0;
   z-index: 9000;
+
   align-items: center;
   justify-content: center;
-  padding: 28px;
-  background: rgba(1,7,18,0.84);
-  backdrop-filter: blur(8px);
+
+  padding: 24px;
+
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      rgba(22, 67, 112, 0.13),
+      transparent 42%
+    ),
+    rgba(1, 7, 18, 0.88);
+
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
+
+/* ============================================================
+   MASTER PANEL
+   ============================================================ */
 
 .hr-master-panel {
   position: relative;
-  width: min(1120px, 96vw);
-  padding: 34px 34px 38px;
+  width: min(860px, 92vw);
+  max-height: 78vh;
+  max-height: 78dvh;
+
+  box-sizing: border-box;
   overflow: hidden;
-  border: 1px solid rgba(255,179,0,0.72);
-  border-radius: 18px;
+
+  padding: 0 30px 28px;
+
+  border: 1px solid rgba(255, 179, 0, 0.88);
+  border-radius: 16px;
+
   background:
     radial-gradient(
-      circle at 84% 12%,
-      rgba(39,132,199,0.18),
-      transparent 31%
+      circle at 78% 8%,
+      rgba(38, 116, 180, 0.12),
+      transparent 34%
     ),
     linear-gradient(
       145deg,
-      rgba(13,35,69,0.99),
-      rgba(4,16,37,0.995) 72%
+      rgba(11, 31, 62, 0.995),
+      rgba(3, 14, 33, 0.998) 72%
     );
+
   box-shadow:
-    0 30px 90px rgba(0,0,0,0.72),
-    0 0 28px rgba(255,179,0,0.16),
-    inset 0 0 52px rgba(49,137,204,0.05);
+    0 28px 80px rgba(0, 0, 0, 0.68),
+    0 0 26px rgba(255, 179, 0, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
 }
+
+/* Technical inner frame */
 
 .hr-master-panel::before {
   content: "";
   position: absolute;
-  inset: 14px;
+  inset: 9px;
+
   pointer-events: none;
-  border: 1px solid rgba(85,183,255,0.08);
-  border-radius: 12px;
+
+  border: 1px solid rgba(65, 145, 210, 0.08);
+  border-radius: 11px;
 }
+
+/* Gold top signal */
 
 .hr-master-panel::after {
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 42%;
-  height: 3px;
+  top: -1px;
+  left: 18px;
+
+  width: 180px;
+  height: 2px;
+
   pointer-events: none;
+
   background: linear-gradient(
     90deg,
-    #ffb300,
-    rgba(255,179,0,0)
+    transparent,
+    #ffb300 22%,
+    rgba(255, 179, 0, 0.42) 72%,
+    transparent
   );
-  box-shadow: 0 0 14px rgba(255,179,0,0.48);
+
+  box-shadow: 0 0 12px rgba(255, 179, 0, 0.35);
 }
 
-.hr-master-close {
-  position: absolute;
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.hr-master-header {
+  position: relative;
   z-index: 2;
-  top: 18px;
-  right: 20px;
-  width: 42px;
-  height: 42px;
-  padding: 0;
-  color: rgba(226,237,255,0.78);
-  font-size: 1.12rem;
-  cursor: pointer;
-  border: 1px solid rgba(138,180,255,0.36);
-  border-radius: 9px;
-  background: rgba(7,24,48,0.82);
-}
 
-.hr-master-close:hover {
-  color: #ffffff;
-  border-color: #55b7ff;
-  box-shadow: 0 0 13px rgba(85,183,255,0.24);
+  min-height: 86px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+
+  border-bottom: 1px solid rgba(255, 179, 0, 0.72);
 }
 
 .hr-master-title {
-  position: relative;
-  z-index: 1;
-  margin: 4px 58px 30px 0;
+  margin: 0;
+
   font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
-  font-size: clamp(1.65rem, 3.2vw, 2.65rem);
+  font-size: 1.16rem;
   font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: 0.14em;
-  color: #ffb300;
+  line-height: 1.2;
+  letter-spacing: 0.13em;
+
+  color: #f2f6ff;
   text-transform: uppercase;
-  text-shadow:
-    0 0 10px rgba(255,179,0,0.30),
-    0 0 24px rgba(255,179,0,0.12);
+
+  text-shadow: 0 0 12px rgba(90, 181, 255, 0.12);
 }
+
+.hr-master-close {
+  flex: 0 0 auto;
+
+  width: 42px;
+  height: 42px;
+  padding: 0;
+
+  display: grid;
+  place-items: center;
+
+  appearance: none;
+  -webkit-appearance: none;
+
+  cursor: pointer;
+
+  color: #ffb300;
+  font-family: "Poppins", sans-serif;
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1;
+
+  border: 1px solid rgba(67, 150, 216, 0.55);
+  border-radius: 9px;
+
+  background: linear-gradient(
+    180deg,
+    rgba(10, 35, 67, 0.92),
+    rgba(4, 19, 41, 0.98)
+  );
+
+  box-shadow:
+    inset 0 0 14px rgba(67, 150, 216, 0.035),
+    0 0 0 rgba(0, 0, 0, 0);
+
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.hr-master-close:hover {
+  color: #ffd166;
+  border-color: rgba(255, 179, 0, 0.72);
+
+  background: linear-gradient(
+    180deg,
+    rgba(17, 47, 82, 0.96),
+    rgba(6, 24, 48, 0.99)
+  );
+
+  box-shadow: 0 0 14px rgba(255, 179, 0, 0.13);
+}
+
+.hr-master-close:focus-visible,
+.hr-master-open:focus-visible {
+  outline: 2px solid rgba(114, 210, 255, 0.95);
+  outline-offset: 3px;
+}
+
+/* ============================================================
+   MODULE GRID
+   ============================================================ */
 
 .hr-master-grid {
   position: relative;
-  z-index: 1;
+  z-index: 2;
+
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-  padding-top: 18px;
-  border-top: 1px solid rgba(255,179,0,0.24);
+  gap: 14px;
+
+  padding-top: 22px;
 }
+
+/* ============================================================
+   MODULE CARD
+   ============================================================ */
 
 .hr-master-card {
   position: relative;
-  min-height: 235px;
+
+  min-width: 0;
+  min-height: 210px;
+  box-sizing: border-box;
+
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: 24px 18px 18px;
-  border: 1px solid rgba(80,135,190,0.34);
-  border-radius: 14px;
-  background: linear-gradient(
-    180deg,
-    rgba(18,46,81,0.86),
-    rgba(6,21,44,0.96)
-  );
+  align-items: center;
+
+  padding: 18px 16px 14px;
+
+  overflow: hidden;
+
+  border: 1px solid rgba(58, 139, 204, 0.55);
+  border-radius: 10px;
+
+  background:
+    radial-gradient(
+      circle at 50% 20%,
+      rgba(38, 122, 188, 0.09),
+      transparent 48%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(10, 34, 66, 0.88),
+      rgba(4, 19, 41, 0.97)
+    );
+
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.03),
-    inset 0 0 30px rgba(65,151,218,0.035);
+    inset 0 1px 0 rgba(255, 255, 255, 0.025),
+    inset 0 0 24px rgba(55, 144, 210, 0.025);
+
+  transition:
+    transform 170ms ease,
+    border-color 170ms ease,
+    background 170ms ease,
+    box-shadow 170ms ease;
 }
 
 .hr-master-card::before {
   content: "";
   position: absolute;
   top: 0;
-  left: 18px;
-  right: 18px;
-  height: 2px;
+  left: 16px;
+  right: 16px;
+
+  height: 1px;
+
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(85,183,255,0.78),
+    rgba(92, 196, 255, 0.78),
     transparent
   );
 }
 
+.hr-master-card:hover {
+  transform: translateY(-2px);
+
+  border-color: rgba(82, 174, 237, 0.78);
+
+  background:
+    radial-gradient(
+      circle at 50% 20%,
+      rgba(44, 139, 207, 0.13),
+      transparent 50%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(12, 40, 76, 0.94),
+      rgba(5, 22, 46, 0.99)
+    );
+
+  box-shadow:
+    0 9px 22px rgba(0, 0, 0, 0.20),
+    inset 0 0 28px rgba(56, 151, 221, 0.035);
+}
+
+/* ============================================================
+   CUSTOM ACS OCC ICONS
+   ============================================================ */
+
+.hr-master-icon {
+  width: 76px;
+  height: 76px;
+  margin: 1px 0 13px;
+
+  color: #63c7f4;
+
+  filter: drop-shadow(0 0 7px rgba(70, 181, 239, 0.12));
+}
+
+.hr-master-icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+
+  overflow: visible;
+
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.45;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.hr-master-icon .hr-icon-gold {
+  stroke: #ffb300;
+}
+
+.hr-master-icon .hr-icon-fill-gold {
+  fill: rgba(255, 179, 0, 0.08);
+  stroke: #ffb300;
+}
+
+/* ============================================================
+   MODULE TITLE
+   ============================================================ */
+
 .hr-master-card-title {
-  margin: auto 0;
+  margin: 0 0 15px;
+
   font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
-  font-size: clamp(1rem, 1.8vw, 1.25rem);
+  font-size: 0.84rem;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  line-height: 1.2;
+  letter-spacing: 0.105em;
+
   color: #f2f6ff;
   text-align: center;
   text-transform: uppercase;
 }
 
+/* ============================================================
+   OPEN BUTTON
+   ============================================================ */
+
 .hr-master-open {
   width: 100%;
-  height: 46px;
-  color: #72d2ff;
-  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
+  height: 42px;
+  margin-top: auto;
+  padding: 0 12px;
+
+  appearance: none;
+  -webkit-appearance: none;
+
   cursor: pointer;
-  border: 1px solid rgba(85,183,255,0.64);
-  border-radius: 9px;
+
+  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.17em;
+
+  color: #68d0ff;
+
+  border: 1px solid rgba(58, 139, 204, 0.64);
+  border-radius: 8px;
+
   background: linear-gradient(
     180deg,
-    rgba(16,53,91,0.92),
-    rgba(7,26,51,0.98)
+    rgba(12, 45, 82, 0.92),
+    rgba(5, 24, 49, 0.98)
   );
+
+  box-shadow:
+    inset 0 0 15px rgba(82, 177, 235, 0.025),
+    0 0 0 rgba(0, 0, 0, 0);
+
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .hr-master-open:hover {
   color: #ffffff;
-  border-color: #55b7ff;
-  box-shadow: 0 0 14px rgba(85,183,255,0.24);
-}
+  border-color: rgba(91, 196, 249, 0.92);
 
-.hr-master-card:last-child {
-  border-color: rgba(255,179,0,0.38);
-}
-
-.hr-master-card:last-child::before {
   background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255,179,0,0.90),
-    transparent
+    180deg,
+    rgba(16, 58, 101, 0.98),
+    rgba(6, 29, 57, 1)
   );
+
+  box-shadow:
+    0 0 14px rgba(71, 181, 239, 0.16),
+    inset 0 0 18px rgba(82, 177, 235, 0.04);
 }
+
+/* ============================================================
+   TABLET
+   ============================================================ */
 
 @media (max-width: 900px) {
   #hrMasterModal {
@@ -617,47 +834,131 @@ tr:nth-child(even) {
   }
 
   .hr-master-panel {
-    padding: 28px 24px 30px;
+    width: min(680px, calc(100vw - 36px));
+    padding: 0 24px 24px;
+  }
+
+  .hr-master-header {
+    min-height: 78px;
   }
 
   .hr-master-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 13px;
+    padding-top: 18px;
   }
 
   .hr-master-card {
-    min-height: 190px;
+    min-height: 172px;
+    padding: 14px 15px 13px;
+  }
+
+  .hr-master-icon {
+    width: 58px;
+    height: 58px;
+    margin-bottom: 9px;
+  }
+
+  .hr-master-card-title {
+    margin-bottom: 11px;
   }
 }
 
+/* ============================================================
+   IPHONE / ANDROID
+   ============================================================ */
+
 @media (max-width: 560px) {
   #hrMasterModal {
+    padding: 10px;
+  }
+
+  .hr-master-panel {
+    width: 92vw;
+    max-height: 78vh;
+    max-height: 78dvh;
+
+    padding: 0 13px 14px;
+
+    overflow-y: auto;
+
+    border-radius: 13px;
+  }
+
+  .hr-master-header {
+    min-height: 65px;
+    gap: 10px;
+  }
+
+  .hr-master-title {
+    font-size: clamp(0.74rem, 3.5vw, 0.92rem);
+    letter-spacing: 0.085em;
+  }
+
+  .hr-master-close {
+    width: 35px;
+    height: 35px;
+
+    font-size: 1.05rem;
+    border-radius: 8px;
+  }
+
+  .hr-master-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+
+    padding-top: 13px;
+  }
+
+  .hr-master-card {
+    min-height: 142px;
+    padding: 11px 9px 9px;
+
+    border-radius: 9px;
+  }
+
+  .hr-master-icon {
+    width: 46px;
+    height: 46px;
+    margin: 0 0 7px;
+  }
+
+  .hr-master-card-title {
+    margin-bottom: 8px;
+
+    font-size: clamp(0.58rem, 2.65vw, 0.70rem);
+    letter-spacing: 0.07em;
+  }
+
+  .hr-master-open {
+    height: 36px;
+    padding: 0 6px;
+
+    font-size: 0.61rem;
+    letter-spacing: 0.13em;
+
+    border-radius: 7px;
+  }
+}
+
+/* ============================================================
+   VERY SMALL HEIGHTS
+   ============================================================ */
+
+@media (max-height: 540px) {
+  #hrMasterModal {
     align-items: flex-start;
-    padding: 12px;
     overflow-y: auto;
   }
 
   .hr-master-panel {
-    width: 100%;
-    margin: 10px 0;
-    padding: 24px 16px 22px;
-  }
-
-  .hr-master-title {
-    margin-bottom: 22px;
-    font-size: 1.35rem;
-    letter-spacing: 0.09em;
-  }
-
-  .hr-master-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .hr-master-card {
-    min-height: 145px;
+    margin: 8px 0;
+    overflow-y: auto;
   }
 }
        
 /* Total Payroll */
+       
 #totalPayroll {
   padding-top: 1.2rem;
   font-weight: bold;
@@ -1613,7 +1914,7 @@ tr:nth-child(even) {
 </table>
 
 <!-- ============================================================
-     ACS HR — DEPARTMENT MASTER MODAL
+     ACS OCC — DEPARTMENT MANAGEMENT MASTER MODAL
      ============================================================ -->
 
 <div
@@ -1624,23 +1925,60 @@ tr:nth-child(even) {
 >
   <div class="hr-master-panel">
 
-    <button
-      type="button"
-      class="hr-master-close"
-      aria-label="Close Department Management"
-      onclick="window.closeHRMasterModal()"
-    >
-      ✕
-    </button>
+    <header class="hr-master-header">
 
-    <h2 id="hrMasterTitle" class="hr-master-title">
-      Department Management
-    </h2>
+      <h2 id="hrMasterTitle" class="hr-master-title">
+        Department Management
+      </h2>
+
+      <button
+        type="button"
+        class="hr-master-close"
+        aria-label="Close Department Management"
+        onclick="window.closeHRMasterModal()"
+      >
+        ×
+      </button>
+
+    </header>
 
     <div class="hr-master-grid">
 
+      <!-- SALARY -->
       <section class="hr-master-card">
-        <h3 class="hr-master-card-title">Salary</h3>
+
+        <div class="hr-master-icon" aria-hidden="true">
+          <svg viewBox="0 0 64 64">
+
+            <rect x="11" y="7" width="29" height="47" rx="3"></rect>
+            <path d="M19 7V4h13v3"></path>
+
+            <path d="M17 18h9"></path>
+            <path d="M17 23h7"></path>
+
+            <path
+              class="hr-icon-gold"
+              d="M31 16c-4 0-6 2-6 5s2 4 6 5 6 2 6 5-2 5-6 5-6-2-6-5"
+            ></path>
+
+            <path class="hr-icon-gold" d="M31 12v28"></path>
+
+            <rect x="35" y="31" width="18" height="23" rx="2"></rect>
+            <path d="M39 36h10"></path>
+
+            <path d="M39 41h2"></path>
+            <path d="M45 41h2"></path>
+            <path d="M39 46h2"></path>
+            <path d="M45 46h2"></path>
+            <path d="M39 51h2"></path>
+            <path d="M45 51h2"></path>
+
+          </svg>
+        </div>
+
+        <h3 class="hr-master-card-title">
+          Salary
+        </h3>
 
         <button
           type="button"
@@ -1649,10 +1987,37 @@ tr:nth-child(even) {
         >
           Open
         </button>
+
       </section>
 
+      <!-- PERSONNEL -->
       <section class="hr-master-card">
-        <h3 class="hr-master-card-title">Personnel</h3>
+
+        <div class="hr-master-icon" aria-hidden="true">
+          <svg viewBox="0 0 64 64">
+
+            <circle cx="32" cy="18" r="8"></circle>
+            <path d="M19 51v-7c0-8 5-13 13-13s13 5 13 13v7"></path>
+            <path d="M25 33l7 6 7-6"></path>
+
+            <circle cx="12" cy="25" r="5"></circle>
+            <path d="M3 49v-8c0-6 3-10 9-10 4 0 7 2 9 5"></path>
+
+            <circle cx="52" cy="25" r="5"></circle>
+            <path d="M61 49v-8c0-6-3-10-9-10-4 0-7 2-9 5"></path>
+
+            <path class="hr-icon-gold" d="M25 15h14"></path>
+            <path class="hr-icon-gold" d="M28 12h8l3 3H25z"></path>
+
+            <path class="hr-icon-gold" d="M25 43h3"></path>
+            <path class="hr-icon-gold" d="M36 43h3"></path>
+
+          </svg>
+        </div>
+
+        <h3 class="hr-master-card-title">
+          Personnel
+        </h3>
 
         <button
           type="button"
@@ -1661,10 +2026,40 @@ tr:nth-child(even) {
         >
           Open
         </button>
+
       </section>
 
+      <!-- BONUS -->
       <section class="hr-master-card">
-        <h3 class="hr-master-card-title">Bonus</h3>
+
+        <div class="hr-master-icon" aria-hidden="true">
+          <svg viewBox="0 0 64 64">
+
+            <path d="M24 5h16l-3 16H27z"></path>
+            <path d="M27 21l-9 8"></path>
+            <path d="M37 21l9 8"></path>
+
+            <circle
+              class="hr-icon-fill-gold"
+              cx="32"
+              cy="39"
+              r="13"
+            ></circle>
+
+            <path
+              class="hr-icon-gold"
+              d="M32 30l2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"
+            ></path>
+
+            <path d="M19 31H7l7 6H5l11 7"></path>
+            <path d="M45 31h12l-7 6h9l-11 7"></path>
+
+          </svg>
+        </div>
+
+        <h3 class="hr-master-card-title">
+          Bonus
+        </h3>
 
         <button
           type="button"
@@ -1673,10 +2068,37 @@ tr:nth-child(even) {
         >
           Open
         </button>
+
       </section>
 
+      <!-- TRAINING -->
       <section class="hr-master-card">
-        <h3 class="hr-master-card-title">Training</h3>
+
+        <div class="hr-master-icon" aria-hidden="true">
+          <svg viewBox="0 0 64 64">
+
+            <rect x="12" y="10" width="34" height="46" rx="3"></rect>
+            <path d="M22 10V6h14v4"></path>
+
+            <path class="hr-icon-gold" d="M19 23l3 3 5-6"></path>
+            <path d="M31 23h9"></path>
+
+            <path class="hr-icon-gold" d="M19 34l3 3 5-6"></path>
+            <path d="M31 34h9"></path>
+
+            <circle cx="47" cy="45" r="11"></circle>
+
+            <path
+              class="hr-icon-gold"
+              d="M40 46l6-2 4-6 2 1-2 7 5 3-1 2-6-2-4 5-2-1 2-6z"
+            ></path>
+
+          </svg>
+        </div>
+
+        <h3 class="hr-master-card-title">
+          Training
+        </h3>
 
         <button
           type="button"
@@ -1685,6 +2107,7 @@ tr:nth-child(even) {
         >
           Open
         </button>
+
       </section>
 
     </div>
