@@ -3279,7 +3279,6 @@ function HR_prepareTableData(d) {
    ============================================================ */
 
 window.__ACS_HR_MASTER_DEPT_ID = null;
-
 window.openHRMasterModal = function(depId) {
   const HR = window.ACS_HR_SERVER_STATE;
   const modal = document.getElementById("hrMasterModal");
@@ -3292,20 +3291,18 @@ window.openHRMasterModal = function(depId) {
 
   window.__ACS_HR_MASTER_DEPT_ID = depId;
 
-  modal.classList.toggle(
-    "hr-master-ceo",
-    isCEO
-  );
-
   modal
     .querySelectorAll(".hr-master-card")
     .forEach(card => {
       const section =
-        card.querySelector(".hr-master-open")
+        card
+          .querySelector(".hr-master-open")
           ?.dataset.hrMasterSection;
 
-      card.hidden =
-        isCEO && section !== "salary";
+      card.style.display =
+        isCEO && section !== "salary"
+          ? "none"
+          : "flex";
     });
 
   modal.style.display = "flex";
