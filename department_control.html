@@ -3113,7 +3113,26 @@ window.openHRMasterModal = function(depId) {
     return;
   }
 
+  const isCEO = depId === "ceo";
+
   window.__ACS_HR_MASTER_DEPT_ID = depId;
+
+  modal.classList.toggle(
+    "hr-master-ceo",
+    isCEO
+  );
+
+  modal
+    .querySelectorAll(".hr-master-card")
+    .forEach(card => {
+      const section =
+        card.querySelector(".hr-master-open")
+          ?.dataset.hrMasterSection;
+
+      card.hidden =
+        isCEO && section !== "salary";
+    });
+
   modal.style.display = "flex";
 };
 
