@@ -1357,40 +1357,166 @@ tr:nth-child(even) {
 /* Confirm buttons */
 
 .hr-personnel-confirm {
+  position: relative;
+
   width: 100%;
   height: 42px;
   margin-top: auto;
+
   appearance: none;
   -webkit-appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+
+  cursor: pointer;
+
   font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.11em;
+
   border-radius: 8px;
+
+  transform: translateY(0) scale(1);
+
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease,
+    transform 90ms ease;
 }
+
+/* HIRE — normal */
 
 .hr-personnel-confirm-hire {
   color: #4be1aa;
+
   border: 1px solid rgba(69, 220, 164, 0.60);
+
   background: linear-gradient(
     180deg,
     rgba(12, 70, 62, 0.62),
     rgba(5, 36, 38, 0.88)
   );
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    inset 0 0 16px rgba(69, 220, 164, 0.025);
 }
+
+/* HIRE — pointer over */
+
+.hr-personnel-confirm-hire:hover:not(:disabled) {
+  color: #061f1b;
+
+  border-color: #52edb5;
+
+  background: linear-gradient(
+    180deg,
+    #55e9b3,
+    #31b98b
+  );
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 7px 16px rgba(30, 190, 139, 0.22),
+    0 0 16px rgba(69, 220, 164, 0.20),
+    inset 0 1px 0 rgba(255, 255, 255, 0.30);
+}
+
+/* HIRE — pressed */
+
+.hr-personnel-confirm-hire:active:not(:disabled) {
+  color: #031511;
+
+  background: linear-gradient(
+    180deg,
+    #2ca67c,
+    #45d8a3
+  );
+
+  transform: translateY(1px) scale(0.985);
+
+  box-shadow:
+    inset 0 4px 10px rgba(0, 0, 0, 0.34),
+    0 1px 4px rgba(69, 220, 164, 0.14);
+}
+
+/* RELEASE — normal */
 
 .hr-personnel-confirm-release {
   color: #ff806b;
+
   border: 1px solid rgba(255, 104, 82, 0.58);
+
   background: linear-gradient(
     180deg,
     rgba(84, 35, 42, 0.58),
     rgba(42, 20, 31, 0.88)
   );
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.025),
+    inset 0 0 16px rgba(255, 104, 82, 0.025);
 }
 
+/* RELEASE — pointer over */
+
+.hr-personnel-confirm-release:hover:not(:disabled) {
+  color: #210805;
+
+  border-color: #ff826e;
+
+  background: linear-gradient(
+    180deg,
+    #ff806a,
+    #d95042
+  );
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 7px 16px rgba(214, 65, 54, 0.22),
+    0 0 16px rgba(255, 104, 82, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+/* RELEASE — pressed */
+
+.hr-personnel-confirm-release:active:not(:disabled) {
+  color: #160503;
+
+  background: linear-gradient(
+    180deg,
+    #c9473b,
+    #f36a57
+  );
+
+  transform: translateY(1px) scale(0.985);
+
+  box-shadow:
+    inset 0 4px 10px rgba(0, 0, 0, 0.36),
+    0 1px 4px rgba(255, 104, 82, 0.12);
+}
+
+/* Keyboard focus */
+
+.hr-personnel-confirm:focus-visible {
+  outline: 2px solid rgba(114, 210, 255, 0.95);
+  outline-offset: 3px;
+}
+
+/* Disabled only while blocked or processing */
+
 .hr-personnel-confirm:disabled {
-  cursor: default;
+  cursor: not-allowed;
+
+  opacity: 0.42;
+
+  transform: none;
+  box-shadow: none;
 }
 
 /* Responsive */
