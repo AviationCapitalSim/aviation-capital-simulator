@@ -2091,18 +2091,40 @@ function loadBreakdown() {
     tone: "income"
   });
 
-  const investmentKeys = new Set([
-    "used_aircraft_purchase",
-    "new_aircraft_purchase"
-  ]);
+    const breakdownLabels = Object.freeze({
+    fuel: "Fuel",
+    ground_handling: "Ground Handling",
+    slot_fees: "Slot Fees",
+    overflight: "Overflight Charges",
+    navigation: "Navigation Charges",
+    "Passenger Revenue Tax": "Passenger Revenue Tax",
+    leasing: "Aircraft Lease-In",
+    salaries: "Salaries",
+    "Company Infrastructure": "Company Infrastructure",
+    maintenance: "Maintenance",
+    "Aircraft Insurance": "Aircraft Insurance",
+    depreciation: "Depreciation",
+    taxes: "Corporate Taxes",
+    penalties: "Penalties",
+    used_aircraft_purchase: "Used Aircraft Purchases",
+    new_aircraft_purchase: "New Aircraft Purchases"
+  });
 
   Object.keys(cost).forEach((key) => {
-  categories.push({
-    label: key,
-    value: Number(cost[key] || 0),
-    tone: "expense"
+    categories.push({
+      label: breakdownLabels[key] || key,
+      value: Number(cost[key] || 0),
+      tone: "expense"
+    });
+
+    if (key === "leasing") {
+      categories.push({
+        label: "Aircraft Lease-Out",
+        value: 0,
+        tone: "income"
+      });
+    }
   });
-});
 
   const loans =
     Array.isArray(f.bank?.loans)
