@@ -2374,7 +2374,15 @@ function loadLeasing() {
       <p>Lease Start: ${c.lease_start_date ? new Date(c.lease_start_date).toLocaleDateString("en-GB") : "-"}</p>
       <p>Lease End: ${c.lease_end_date ? new Date(c.lease_end_date).toLocaleDateString("en-GB") : "-"}</p>
       <p>Term: ${c.lease_years || "-"} years</p>
-      <p>Status: ${c.status || "-"}</p>
+      <p>
+        Status:
+        <span
+          class="acs-lease-status"
+          data-status="${String(c.status || "").toUpperCase()}"
+        >
+          ${c.status || "-"}
+        </span>
+      </p>
       <p style="margin-top:8px; color:#ffca5c;">
       This aircraft is leased. At contract end, it is not owned by the airline.
       Options: extend lease, buyout if available, or return to market.
