@@ -1357,6 +1357,88 @@ body {
 #companyFinanceRoot .activity-header strong {
   font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
 }
+
+/* ============================================================
+   ACS COMPANY FINANCE — TWIN-RAIL ACCORDIONS
+   Luxury category identity | Visual only
+   ============================================================ */
+
+#companyFinanceRoot .activity-header {
+  --acs-rail-color: #4da3ff;
+  --acs-rail-rgb: 77, 163, 255;
+
+  border-left:
+    4px solid var(--acs-rail-color) !important;
+
+  border-right:
+    2px solid var(--acs-rail-color) !important;
+
+  box-shadow:
+    inset 10px 0 18px
+      rgba(var(--acs-rail-rgb), 0.07),
+    inset -8px 0 16px
+      rgba(var(--acs-rail-rgb), 0.045),
+    0 0 14px
+      rgba(var(--acs-rail-rgb), 0.10)
+      !important;
+
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+/* Income — Emerald */
+#companyFinanceRoot .activity-header.income {
+  --acs-rail-color: #00f59a;
+  --acs-rail-rgb: 0, 245, 154;
+}
+
+/* Expense — Ruby */
+#companyFinanceRoot .activity-header.expense {
+  --acs-rail-color: #ff4d5e;
+  --acs-rail-rgb: 255, 77, 94;
+}
+
+/* Financing — Electric Blue */
+#companyFinanceRoot .activity-header.info {
+  --acs-rail-color: #4da3ff;
+  --acs-rail-rgb: 77, 163, 255;
+}
+
+/* Leasing Contracts — Violet */
+#companyFinanceRoot .activity-header.leasing {
+  --acs-rail-color: #9b5cff;
+  --acs-rail-rgb: 155, 92, 255;
+}
+
+/* Financial History — ACS Gold */
+#companyFinanceRoot
+#financeHistorySection
+.activity-header {
+  --acs-rail-color: #ffb300;
+  --acs-rail-rgb: 255, 179, 0;
+}
+
+/* Coordinated accordion arrow */
+#companyFinanceRoot
+.activity-header > div:last-child {
+  color: var(--acs-rail-color);
+  text-shadow:
+    0 0 9px
+    rgba(var(--acs-rail-rgb), 0.75);
+}
+
+/* Luxury hover */
+#companyFinanceRoot .activity-header:hover {
+  box-shadow:
+    inset 12px 0 22px
+      rgba(var(--acs-rail-rgb), 0.11),
+    inset -10px 0 20px
+      rgba(var(--acs-rail-rgb), 0.07),
+    0 0 18px
+      rgba(var(--acs-rail-rgb), 0.17)
+      !important;
+}
      
 </style>
 </head>
