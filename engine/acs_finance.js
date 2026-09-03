@@ -204,6 +204,9 @@ async function ACS_FINANCE_syncFromServer() {
         slot_fees: Number(f.cost_slots || 0),
         overflight: Number(f.cost_overflight || 0),
         navigation: Number(f.cost_navigation || 0),
+        "Passenger Revenue Tax": Number(
+          f.cost_flight_pax_taxes || 0
+        ),
         leasing: Number(
           f.cost_leasing_display ??
           f.cost_leasing ??
