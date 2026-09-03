@@ -956,6 +956,448 @@ tr:nth-child(even) {
     overflow-y: auto;
   }
 }
+
+/* ============================================================
+   ACS OCC — PERSONNEL CONTROL MODAL
+   ============================================================ */
+
+#hrPersonnelModal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9100;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      rgba(22, 67, 112, 0.13),
+      transparent 42%
+    ),
+    rgba(1, 7, 18, 0.88);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.hr-personnel-panel {
+  position: relative;
+  width: min(780px, 92vw);
+  max-height: 82vh;
+  max-height: 82dvh;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: 0 28px 26px;
+  border: 1px solid rgba(255, 179, 0, 0.88);
+  border-radius: 16px;
+  background:
+    radial-gradient(
+      circle at 78% 8%,
+      rgba(38, 116, 180, 0.12),
+      transparent 34%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(11, 31, 62, 0.995),
+      rgba(3, 14, 33, 0.998) 72%
+    );
+  box-shadow:
+    0 28px 80px rgba(0, 0, 0, 0.68),
+    0 0 26px rgba(255, 179, 0, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.hr-personnel-panel::before {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  pointer-events: none;
+  border: 1px solid rgba(65, 145, 210, 0.08);
+  border-radius: 11px;
+}
+
+.hr-personnel-panel::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 18px;
+  width: 180px;
+  height: 2px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #ffb300 22%,
+    rgba(255, 179, 0, 0.42) 72%,
+    transparent
+  );
+  box-shadow: 0 0 12px rgba(255, 179, 0, 0.35);
+}
+
+/* Header */
+
+.hr-personnel-header {
+  position: relative;
+  z-index: 2;
+  min-height: 94px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid rgba(255, 179, 0, 0.72);
+}
+
+.hr-personnel-heading {
+  min-width: 0;
+}
+
+.hr-personnel-title {
+  margin: 0;
+  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+  font-size: 1.18rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.13em;
+  color: #f2f6ff;
+  text-transform: uppercase;
+}
+
+.hr-personnel-department {
+  margin: 7px 0 0;
+  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  color: #54c5f5;
+  text-transform: uppercase;
+}
+
+.hr-personnel-close {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  color: #ffb300;
+  font-size: 1.25rem;
+  line-height: 1;
+  border: 1px solid rgba(67, 150, 216, 0.55);
+  border-radius: 9px;
+  background: linear-gradient(
+    180deg,
+    rgba(10, 35, 67, 0.92),
+    rgba(4, 19, 41, 0.98)
+  );
+}
+
+.hr-personnel-close:hover {
+  color: #ffd166;
+  border-color: rgba(255, 179, 0, 0.72);
+}
+
+/* Operational summary */
+
+.hr-personnel-summary {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding-top: 18px;
+}
+
+.hr-personnel-stat {
+  min-width: 0;
+  padding: 15px 10px 14px;
+  text-align: center;
+  border: 1px solid rgba(58, 139, 204, 0.54);
+  border-radius: 9px;
+  background: linear-gradient(
+    180deg,
+    rgba(12, 39, 73, 0.92),
+    rgba(5, 23, 47, 0.98)
+  );
+}
+
+.hr-personnel-stat-label {
+  display: block;
+  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+  font-size: 0.67rem;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  color: #a9c6e8;
+  text-transform: uppercase;
+}
+
+.hr-personnel-stat-value {
+  display: block;
+  margin-top: 8px;
+  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: #63d2ff;
+}
+
+.hr-personnel-stat-value.is-positive {
+  color: #42dca3;
+}
+
+.hr-personnel-stat-value.is-negative {
+  color: #ffb300;
+}
+
+/* Action modules */
+
+.hr-personnel-actions {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  padding-top: 16px;
+}
+
+.hr-personnel-action {
+  min-width: 0;
+  min-height: 270px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 18px 16px;
+  border: 1px solid rgba(58, 139, 204, 0.50);
+  border-radius: 10px;
+  background:
+    radial-gradient(
+      circle at 50% 20%,
+      rgba(38, 122, 188, 0.09),
+      transparent 48%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(10, 34, 66, 0.88),
+      rgba(4, 19, 41, 0.97)
+    );
+}
+
+.hr-personnel-action-title {
+  margin: 0;
+  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+  font-size: 0.87rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.hr-personnel-hire .hr-personnel-action-title {
+  color: #45dca4;
+}
+
+.hr-personnel-release .hr-personnel-action-title {
+  color: #ff775f;
+}
+
+/* Custom icons */
+
+.hr-personnel-action-icon {
+  width: 68px;
+  height: 68px;
+  margin: 13px 0 12px;
+  color: #63c7f4;
+}
+
+.hr-personnel-action-icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.55;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.hr-personnel-icon-hire {
+  stroke: #45dca4;
+}
+
+.hr-personnel-icon-release {
+  stroke: #ff775f;
+}
+
+/* Quantity */
+
+.hr-personnel-quantity {
+  width: 150px;
+  height: 38px;
+  display: grid;
+  grid-template-columns: 38px 1fr 38px;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(66, 149, 215, 0.58);
+  border-radius: 8px;
+  background: rgba(4, 20, 43, 0.86);
+}
+
+.hr-personnel-quantity button {
+  height: 100%;
+  padding: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  color: #72d2ff;
+  font-size: 1.12rem;
+  border: 0;
+  background: rgba(24, 69, 107, 0.30);
+}
+
+.hr-personnel-quantity button:hover:not(:disabled) {
+  color: #ffffff;
+  background: rgba(38, 104, 155, 0.48);
+}
+
+.hr-personnel-quantity button:disabled {
+  cursor: default;
+  color: rgba(159, 181, 207, 0.30);
+}
+
+.hr-personnel-quantity-value {
+  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-align: center;
+}
+
+/* Projection */
+
+.hr-personnel-projection {
+  margin: 12px 0 14px;
+  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #a9c6e8;
+  text-transform: uppercase;
+}
+
+.hr-personnel-projection strong {
+  margin-left: 5px;
+  color: #ffffff;
+}
+
+/* Confirm buttons */
+
+.hr-personnel-confirm {
+  width: 100%;
+  height: 42px;
+  margin-top: auto;
+  appearance: none;
+  -webkit-appearance: none;
+  font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  border-radius: 8px;
+}
+
+.hr-personnel-confirm-hire {
+  color: #4be1aa;
+  border: 1px solid rgba(69, 220, 164, 0.60);
+  background: linear-gradient(
+    180deg,
+    rgba(12, 70, 62, 0.62),
+    rgba(5, 36, 38, 0.88)
+  );
+}
+
+.hr-personnel-confirm-release {
+  color: #ff806b;
+  border: 1px solid rgba(255, 104, 82, 0.58);
+  background: linear-gradient(
+    180deg,
+    rgba(84, 35, 42, 0.58),
+    rgba(42, 20, 31, 0.88)
+  );
+}
+
+.hr-personnel-confirm:disabled {
+  cursor: default;
+}
+
+/* Responsive */
+
+@media (max-width: 640px) {
+  #hrPersonnelModal {
+    padding: 10px;
+  }
+
+  .hr-personnel-panel {
+    width: 92vw;
+    padding: 0 13px 14px;
+    overflow-y: auto;
+    border-radius: 13px;
+  }
+
+  .hr-personnel-header {
+    min-height: 76px;
+  }
+
+  .hr-personnel-title {
+    font-size: 0.88rem;
+    letter-spacing: 0.08em;
+  }
+
+  .hr-personnel-department {
+    font-size: 0.60rem;
+    letter-spacing: 0.07em;
+  }
+
+  .hr-personnel-close {
+    width: 35px;
+    height: 35px;
+  }
+
+  .hr-personnel-summary {
+    gap: 7px;
+    padding-top: 12px;
+  }
+
+  .hr-personnel-stat {
+    padding: 11px 5px 10px;
+  }
+
+  .hr-personnel-stat-label {
+    font-size: 0.50rem;
+    letter-spacing: 0.05em;
+  }
+
+  .hr-personnel-stat-value {
+    margin-top: 6px;
+    font-size: 1.10rem;
+  }
+
+  .hr-personnel-actions {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding-top: 10px;
+  }
+
+  .hr-personnel-action {
+    min-height: 210px;
+    padding: 14px 12px 12px;
+  }
+
+  .hr-personnel-action-icon {
+    width: 51px;
+    height: 51px;
+    margin: 8px 0;
+  }
+}
        
 /* Total Payroll */
        
