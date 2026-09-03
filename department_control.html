@@ -2691,12 +2691,85 @@ function openHire(id) {
 }
 
 function openSalary(id) {
+  const HR = ACS_HR_load();
+  const dep = HR?.[id];
+  const modal = document.getElementById("salaryModal");
+
+  if (!dep || !modal) {
+    console.error("❌ SALARY MODAL — Department or modal not found:", id);
+    return;
+  }
+
+  const currentSalary = Number(dep.salary || 0);
+  const staff = Number(dep.staff || 0);
+  const salaryPercent = Number(dep.salaryPercent || 100);
+
+  const marketSalary =
+    salaryPercent > 0
+      ? Math.round(currentSalary * (100 / salaryPercent))
+      : currentSalary;
+
+  const ratio =
+    marketSalary > 0
+      ? currentSalary / marketSalary
+      : 1;
+
   activeDept = id;
-  const hr = ACS_HR_load()[id];
-  document.getElementById("salaryDeptName").textContent = hr.name;
-  document.getElementById("salaryRange").value = 100;
-  document.getElementById("salaryValue").textContent = "100%";
-  document.getElementById("salaryModal").style.display = "flex";
+  window.__ACS_ACTIVE_SALARY_DEPT = id;
+
+  document.getElementById("sal_depName").textContent =
+    dep.name || id;
+
+  document.getElementById("sal_staff").textContent =
+    staff.toLocaleString();
+
+  document.getElementById("sal_current").textContent =
+    currentSalary.toLocaleString();
+
+  document.getElementById("sal_market").textContent =
+    marketSalary.toLocaleString();
+
+  const ratioElement = document.getElementById("sal_ratio");
+
+  ratioElement.textContent = ratio.toFixed(2) + "x";
+  ratioElement.classList.remove("ok", "warning", "danger");
+
+  if (ratio < 0.70) {
+    ratioElement.classList.add("danger");
+  } else if (ratio < 0.85) {
+    ratioElement.classList.add("warning");
+  } else {
+    ratioElement.classList.add("ok");
+  }
+
+  document.getElementById("sal_slider").value = "0";
+  document.getElementById("sal_percent_label").textContent = "0";
+
+  document.getElementById("sal_new").textContent =
+    currentSalary.toLocaleString();
+
+  document.getElementById("sal_payroll_delta").textContent =
+    "$0";
+
+  const moraleEffect =
+    document.getElementById("sal_morale_effect");
+
+  moraleEffect.textContent = "No change";
+  moraleEffect.classList.remove("good", "bad");
+  moraleEffect.classList.add("neutral");
+
+  const warning =
+    document.getElementById("sal_auto_warning");
+
+  if (warning) {
+    warning.style.display =
+      window.ACS_HR_AUTOMATION_FLAGS?.manualSalaryOverride === true
+        ? "block"
+        : "none";
+  }
+
+  modal.style.display = "flex";
+  window.closeHRMasterModal();
 }
 
 function openDismiss(id) {
