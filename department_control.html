@@ -1945,6 +1945,7 @@ tr:nth-child(even) {
     <div class="hr-master-grid">
 
       <!-- SALARY -->
+         
       <section class="hr-master-card">
 
         <div class="hr-master-icon" aria-hidden="true">
@@ -1992,6 +1993,7 @@ tr:nth-child(even) {
       </section>
 
       <!-- PERSONNEL -->
+         
       <section class="hr-master-card">
 
         <div class="hr-master-icon" aria-hidden="true">
@@ -2031,6 +2033,7 @@ tr:nth-child(even) {
       </section>
 
       <!-- BONUS -->
+         
       <section class="hr-master-card">
 
         <div class="hr-master-icon" aria-hidden="true">
@@ -2063,12 +2066,13 @@ tr:nth-child(even) {
         </h3>
 
         <button
-          type="button"
-          class="hr-master-open"
-          data-hr-master-section="bonus"
-        >
-          Open
-        </button>
+  type="button"
+  class="hr-master-open"
+  data-hr-master-section="bonus"
+  onclick="window.openBonusModal(window.__ACS_HR_MASTER_DEPT_ID)"
+>
+  Open
+</button>
 
       </section>
 
@@ -3134,8 +3138,15 @@ window.ACS_getBonusMoraleGain = function(percent) {
 
 window.openBonusModal = function(depId) {
   const HR = window.ACS_HR_SERVER_STATE;
+  const modal = document.getElementById("hrBonusModal");
 
-  if (!HR || !HR[depId]) return;
+  if (!HR || !HR[depId] || !modal) {
+    console.error(
+      "❌ BONUS MODAL — Department or modal not found:",
+      depId
+    );
+    return;
+  }
 
   const dep = HR[depId];
   const staff = Number(dep.staff || 0);
@@ -3147,18 +3158,26 @@ window.openBonusModal = function(depId) {
 
   window.__ACS_ACTIVE_BONUS_DEPT = depId;
 
-  document.getElementById("bonusDeptName").textContent = dep.name || depId;
-  document.getElementById("bonusCurrentMorale").textContent = `${Number(dep.morale || 100)}%`;
-  document.getElementById("bonusStaff").textContent = staff;
-  document.getElementById("bonusSalary").textContent = "$" + Number(dep.salary || 0).toLocaleString();
+  document.getElementById("bonusDeptName").textContent =
+    dep.name || depId;
+
+  document.getElementById("bonusCurrentMorale").textContent =
+    `${Number(dep.morale || 100)}%`;
+
+  document.getElementById("bonusStaff").textContent =
+    staff.toLocaleString();
+
+  document.getElementById("bonusSalary").textContent =
+    "$" + Number(dep.salary || 0).toLocaleString();
 
   document.getElementById("bonusPercent").value = "10";
 
   window.updateBonusPreview();
 
-  document.getElementById("hrBonusModal").style.display = "flex";
+  modal.style.display = "flex";
+  window.closeHRMasterModal();
 };
-
+     
 window.updateBonusPreview = function() {
   const depId = window.__ACS_ACTIVE_BONUS_DEPT;
   const HR = window.ACS_HR_SERVER_STATE;
