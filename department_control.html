@@ -826,7 +826,7 @@ white-space: nowrap;
 }
 
 /* ============================================================
-   MODULE GRID
+   MODULE GRID — BALANCED ACS OCC
    ============================================================ */
 
 .hr-master-grid {
@@ -835,8 +835,12 @@ white-space: nowrap;
 
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+  align-items: stretch;
+  justify-content: center;
   gap: 14px;
 
+  width: 100%;
   padding-top: 22px;
 }
 
@@ -873,8 +877,12 @@ white-space: nowrap;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-start;
 
+  height: 100%;
   padding: 18px 16px 14px;
+
+  text-align: center;
 
   overflow: hidden;
 
