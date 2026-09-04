@@ -212,10 +212,16 @@ async function ACS_FINANCE_syncFromServer() {
           f.cost_leasing ??
           0
         ),
-         salaries: Number(f.cost_hr || 0),
-        "Company Infrastructure": Number(
-          f.cost_company_infrastructure || 0
-        ),
+        salaries: Number(f.cost_hr || 0),
+
+"Training Qualification": Number(
+  f.cost_training_qualification || 0
+),
+
+"Company Infrastructure": Number(
+  f.cost_company_infrastructure || 0
+),
+         
         maintenance: Number(f.cost_maintenance || 0),
         "Aircraft Insurance": Number(
           f.cost_insurance_display ??
