@@ -1016,10 +1016,18 @@ async function ACS_HR_loadFromServer(){
             ? null
             : Number(dep.captain_salary),
 
-        firstOfficerSalary:
+                firstOfficerSalary:
           dep.first_officer_salary === null
             ? null
-            : Number(dep.first_officer_salary)
+            : Number(dep.first_officer_salary),
+
+        activeTrainingQuantity: Number(
+          dep.active_training_quantity || 0
+        ),
+
+        transferableQuantity: Number(
+          dep.transferable_quantity || 0
+        )
       };
 
     });
