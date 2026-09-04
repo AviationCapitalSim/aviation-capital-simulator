@@ -3958,12 +3958,22 @@ window.quotePilotTraining = async function() {
         data.quote.training_hours || 24
       )} Hrs.`;
 
+        const HR =
+      window.ACS_HR_SERVER_STATE || {};
+
+    const sourceName =
+      HR[state.sourceDeptId]?.name ||
+      state.sourceDeptId;
+
+    const targetName =
+      HR[state.targetDeptId]?.name ||
+      state.targetDeptId;
+
     document.getElementById(
       "hrTrainingMessage"
     ).textContent =
       `${data.quote.training_type}: ` +
-      `${data.quote.source_dept_name} → ` +
-      `${data.quote.target_dept_name}`;
+      `${sourceName} → ${targetName}`;
 
   } catch (error) {
     document.getElementById(
