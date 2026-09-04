@@ -55,11 +55,11 @@ const ACS_HR_DEPARTMENTS = [
 { id: "ground", name: "Ground Handling", base: "ground", initial: 0 },
 { id: "routes", name: "Route Strategies Department", base: "flight_ops", initial: 1 },
 
-{ id: "pilots_small",  name: "Pilots (Small A/C)",  base: "pilot_small",  initial: 0 },
-{ id: "pilots_medium", name: "Pilots (Medium A/C)", base: "pilot_medium", initial: 0 },
-{ id: "pilots_large",  name: "Pilots (Large A/C)",  base: "pilot_large",  initial: 0 },
-{ id: "pilots_vlarge", name: "Pilots (Very Large A/C)", base: "pilot_vlarge", initial: 0 },
-
+{ id: "pilots_small",  name: "Flight Crew — Light Fleet",    base: "pilot_small",  initial: 0 },
+{ id: "pilots_medium", name: "Flight Crew — Regional Fleet", base: "pilot_medium", initial: 0 },
+{ id: "pilots_large",  name: "Flight Crew — Mainline Fleet", base: "pilot_large",  initial: 0 },
+{ id: "pilots_vlarge", name: "Flight Crew — Heavy Fleet",    base: "pilot_vlarge", initial: 0 },
+   
 { id: "cabin", name: "Cabin Crew", base: "cabin", initial: 0 }
 
 ];
