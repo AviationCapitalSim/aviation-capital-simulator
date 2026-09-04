@@ -343,6 +343,41 @@ white-space: nowrap;
   box-shadow: none;
   text-shadow: none;
 }
+
+
+/* ============================================================
+   ACS OCC — PILOT TRAINING HEADER ALIGNMENT
+   ============================================================ */
+
+#hrTrainingModal .hr-personnel-header {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 42px;
+  align-items: center;
+  gap: 16px;
+}
+
+#hrTrainingModal .hr-personnel-heading {
+  grid-column: 2;
+  min-width: 0;
+  text-align: center;
+}
+
+#hrTrainingModal .hr-personnel-close {
+  grid-column: 3;
+  justify-self: end;
+}
+
+#hrTrainingModal .hr-personnel-title {
+  color: #f0a52b;
+  text-align: center;
+  text-shadow: none;
+}
+
+#hrTrainingModal .hr-personnel-department {
+  color: rgba(237, 244, 255, 0.78);
+  text-align: center;
+  text-shadow: none;
+}
        
 /* ============================================================
    ACS OCC — PILOT TRAINING MODAL
@@ -362,21 +397,48 @@ white-space: nowrap;
 
 .hr-training-field {
   min-width: 0;
+  min-height: 106px;
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
   padding: 18px;
+
   border: 1px solid rgba(58, 139, 204, 0.50);
   border-radius: 10px;
+
   background: rgba(4, 19, 41, 0.90);
 }
 
 .hr-training-label {
   display: block;
+  width: 100%;
   margin-bottom: 12px;
+
   color: #a9c6e8;
   font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
   font-size: 0.67rem;
   font-weight: 700;
+  line-height: 1.25;
   letter-spacing: 0.10em;
+
+  text-align: center;
   text-transform: uppercase;
+}
+
+/* Center the pilot quantity control inside its card. */
+
+#hrTrainingModal .hr-training-field:nth-child(2) {
+  align-items: center;
+  text-align: center;
+}
+
+#hrTrainingModal .hr-training-field:nth-child(2)
+.hr-personnel-quantity {
+  margin-right: auto;
+  margin-left: auto;
 }
 
 .hr-training-select {
@@ -1270,23 +1332,39 @@ white-space: nowrap;
   border-color: rgba(255, 179, 0, 0.72);
 }
 
-/* Operational summary */
+/* ============================================================
+   OPERATIONAL SUMMARY — BALANCED ACS OCC
+   ============================================================ */
 
 .hr-personnel-summary {
   position: relative;
   z-index: 2;
+
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+  align-items: stretch;
   gap: 12px;
+
   padding-top: 18px;
 }
 
 .hr-personnel-stat {
   min-width: 0;
-  padding: 15px 10px 14px;
+  min-height: 112px;
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding: 16px;
   text-align: center;
+
   border: 1px solid rgba(58, 139, 204, 0.54);
   border-radius: 9px;
+
   background: linear-gradient(
     180deg,
     rgba(12, 39, 73, 0.92),
@@ -1296,21 +1374,31 @@ white-space: nowrap;
 
 .hr-personnel-stat-label {
   display: block;
+  width: 100%;
+
   font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
-  font-size: 0.67rem;
+  font-size: 0.64rem;
   font-weight: 600;
-  letter-spacing: 0.10em;
+  line-height: 1.25;
+  letter-spacing: 0.09em;
+
   color: #a9c6e8;
+  text-align: center;
   text-transform: uppercase;
 }
 
 .hr-personnel-stat-value {
   display: block;
-  margin-top: 8px;
+  width: 100%;
+  margin-top: 10px;
+
   font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
-  font-size: 1.55rem;
+  font-size: 1.25rem;
   font-weight: 700;
+  line-height: 1.25;
+
   color: #63d2ff;
+  text-align: center;
 }
 
 .hr-personnel-stat-value.is-positive {
@@ -1321,6 +1409,14 @@ white-space: nowrap;
   color: #ffb300;
 }
 
+/* Origin contains longer fleet names and requires a smaller scale. */
+
+#hrTrainingSource {
+  font-size: clamp(0.82rem, 1.35vw, 1rem);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+       
 /* Action modules */
 
 .hr-personnel-actions {
