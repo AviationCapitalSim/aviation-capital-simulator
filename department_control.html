@@ -1417,12 +1417,33 @@ white-space: nowrap;
   color: #ffb300;
 }
 
-/* Origin contains longer fleet names and requires a smaller scale. */
+/* ============================================================
+   PILOT TRAINING — SUMMARY VALUE COLORS
+   ============================================================ */
+
+/* Origin fleet — bright operational white */
 
 #hrTrainingSource {
+  color: #ffffff;
   font-size: clamp(0.82rem, 1.35vw, 1rem);
   line-height: 1.35;
   overflow-wrap: anywhere;
+
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.12);
+}
+
+/* Transferable surplus — ACS gold */
+
+#hrTrainingAvailable {
+  color: #f0a52b;
+  text-shadow: none;
+}
+
+/* Training duration — operational green */
+
+#hrTrainingDuration {
+  color: #42dca3;
+  text-shadow: none;
 }
        
 /* Action modules */
