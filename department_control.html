@@ -305,10 +305,48 @@ tr:nth-child(even) {
 }
        
 /* Staff, Salary, Morale colors */
-/* Staff, Salary, Morale colors */
+       
 .staff { color: #00e28a; font-weight: 600; }
 .salary { color: #ff6464; font-weight: 600; }
 .morale { color: #8ae2ff; font-weight: 600; }
+
+.hr-training-cell {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.hr-training-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 105px;
+  height: 30px;
+  padding: 0 14px;
+
+  border: 1px solid #f0a52b;
+  border-radius: 999px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(44, 46, 53, 0.96),
+      rgba(24, 28, 36, 0.96)
+    );
+
+  color: #ffb347;
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+
+  box-shadow:
+    0 0 10px rgba(255, 171, 48, 0.62),
+    inset 0 0 10px rgba(255, 171, 48, 0.08);
+
+  text-shadow: 0 0 8px rgba(255, 179, 71, 0.45);
+}
 
 /* ============================================================
    🟥 REQUIRED INDICATOR — OPERATIONS CORE (Qatar Luxury)
@@ -3291,7 +3329,13 @@ function HR_prepareTableData(d) {
         efficiency: efficiency,
         salary: d.salary || 0,
         payroll: d.payroll || 0,
-        morale: d.morale || 0
+        morale: d.morale || 0,
+        activeTrainingQuantity: Number(
+            d.activeTrainingQuantity || 0
+        ),
+        transferableQuantity: Number(
+            d.transferableQuantity || 0
+        )
     };
 }
 
@@ -3691,6 +3735,7 @@ window.confirmPersonnelRelease = async function() {
    ============================================================ */
 
 function loadDepartments() {
+     
   const rows = document.getElementById("departmentRows");
   if (!rows) return;
 
@@ -3727,6 +3772,24 @@ const depts = ACS_HR_DEPARTMENTS
     const dep = HR_prepareTableData(d);
 
     const staff = Number(dep.staff || 0);
+
+    const isPilotDepartment =
+      String(dep.id || "").startsWith("pilots_");
+
+    const activeTrainingQuantity =
+      Number(dep.activeTrainingQuantity || 0);
+
+    const trainingChip =
+      isPilotDepartment && activeTrainingQuantity > 0
+        ? `
+          <span
+            class="hr-training-chip"
+            title="${activeTrainingQuantity} pilot(s) in training"
+          >
+            TRAINING
+          </span>
+        `
+        : "";
 
     // 🔧 Required balance real desde PostgreSQL/Railway
        
@@ -3796,6 +3859,10 @@ rows.innerHTML += `
       data-morale="${dep.morale}"
     >
       ${dep.morale}%
+    </td>
+
+    <td class="hr-training-cell">
+      ${trainingChip}
     </td>
 
     <td>
@@ -4263,8 +4330,15 @@ async function ACS_HR_syncFromServer() {
         bonus: Number(dep.bonus || 0),
 
         salaryPercent: Number(dep.salary_percent || 100),
-        salaryDecade: Number(dep.salary_decade || 1940)
-      };
+        salaryDecade: Number(dep.salary_decade || 1940),
+
+        activeTrainingQuantity: Number(
+          dep.active_training_quantity || 0
+        ),
+
+        transferableQuantity: Number(
+          dep.transferable_quantity || 0
+        )
 
     });
 
