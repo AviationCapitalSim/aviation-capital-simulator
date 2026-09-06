@@ -3651,52 +3651,54 @@ function marketOperatorLabel(operator) {
   );
 }
 
-const marketAirlineFallbackColors = Object.freeze([
-  "#50c878",
-  "#4a9eff",
-  "#ffb300",
-  "#a874ff",
-  "#ff6b6b",
-  "#33c7c7",
-  "#f28c28",
-  "#e85aad",
-  "#8ac926",
-  "#5f7fff",
-  "#d4a84f",
-  "#00b4d8"
-]);
-
 function marketAirlineColor(operator) {
-  const airline = operator?.airline || {};
-  const canonicalHex = String(
-    airline.color_hex || ""
-  ).trim();
-
-  if (/^#[0-9a-f]{6}$/i.test(canonicalHex)) {
-    return canonicalHex;
-  }
-
-  if (/^#[0-9a-f]{3}$/i.test(canonicalHex)) {
-    return canonicalHex;
-  }
-
-  const canonicalIndex = Number(
-    airline.color_index
+  const airlineId = Math.abs(
+    integerValue(
+      operator?.airline?.airline_id
+    )
   );
 
-  const airlineId = integerValue(
-    airline.airline_id
-  );
+  const stableSeed =
+    airlineId > 0
+      ? airlineId
+      : 1;
 
-  const stableIndex = Number.isFinite(canonicalIndex)
-    ? Math.abs(Math.trunc(canonicalIndex))
-    : Math.abs(airlineId);
+  const goldenAngle =
+    137.50776405003785;
 
-  return marketAirlineFallbackColors[
-    stableIndex % marketAirlineFallbackColors.length
+  const hue =
+    (stableSeed * goldenAngle) % 360;
+
+  const saturationLevels = [
+    78,
+    84,
+    90
   ];
-}
 
+  const lightnessLevels = [
+    52,
+    59,
+    66
+  ];
+
+  const saturation =
+    saturationLevels[
+      stableSeed % saturationLevels.length
+    ];
+
+  const lightness =
+    lightnessLevels[
+      Math.floor(stableSeed / saturationLevels.length) %
+      lightnessLevels.length
+    ];
+
+  return (
+    `hsl(${hue.toFixed(1)}, ` +
+    `${saturation}%, ` +
+    `${lightness}%)`
+  );
+}
+         
 function summarizeAirportMarketOperators(operators) {
   const grouped = new Map();
 
