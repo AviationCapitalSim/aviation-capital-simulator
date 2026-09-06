@@ -504,20 +504,30 @@
     }
 
     .route-table thead th {
-      position: sticky;
-      top: 0;
-      z-index: 2;
-      padding: 0.75rem 0.65rem;
-      color: var(--route-gold);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-      background: rgba(11, 30, 63, 0.98);
-      text-align: center;
-      white-space: nowrap;
-      font-size: 0.72rem;
-      font-weight: 800;
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
-    }
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 0.75rem 0.65rem;
+  color: var(--route-gold);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(11, 30, 63, 0.98);
+  text-align: center;
+  white-space: nowrap;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.route-table-head-secondary {
+  display: block;
+  margin-top: 0.18rem;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.1;
+}
 
     .route-table tbody tr:nth-child(even) {
       background: rgba(255, 255, 255, 0.018);
@@ -2042,7 +2052,10 @@
               <th scope="col">Flights</th>
               <th scope="col">Aircraft</th>
               <th scope="col">Freq.</th>
-              <th scope="col">Pax · 7d</th>
+              <th scope="col">
+               Pax Flow
+              <span class="route-table-head-secondary">7D · OUT / IN</span>
+              </th>
               <th scope="col">LF</th>
               <th scope="col">Route Image</th>
               <th scope="col">Weekly Demand</th>
@@ -3269,10 +3282,17 @@ function populateAircraftFilter() {
       }
 
       function createRouteRow(route) {
-        const row = document.createElement("tr");
-        const routeId = integerValue(route.route_plan_id);
-        const current = combinedCurrentPeriod(route);
+  const row = document.createElement("tr");
+  const routeId = integerValue(route.route_plan_id);
+  const current = combinedCurrentPeriod(route);
 
+  const outboundPassengers = integerValue(
+    route?.performance?.outbound?.last_7_days?.passengers
+  );
+
+  const inboundPassengers = integerValue(
+    route?.performance?.return?.last_7_days?.passengers
+  );
         const routeCell = createCell(
           row,
           `${textValue(route.origin)} ⇄ ${textValue(route.destination)}`,
@@ -3314,9 +3334,10 @@ function populateAircraftFilter() {
         );
 
         createCell(
-          row,
-          formatInteger(current.passengers)
-        );
+  row,
+  `${formatInteger(outboundPassengers)} / ${formatInteger(inboundPassengers)}`,
+  `${formatInteger(current.passengers)} TOTAL`
+);
 
         createCell(
           row,
