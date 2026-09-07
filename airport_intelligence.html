@@ -1546,6 +1546,262 @@
 
     }
 
+
+    /* ============================================================
+       AIRPORT INTELLIGENCE — CONSOLIDATED WORKSPACE
+       Uses the existing visual authority without changing global UI.
+       ============================================================ */
+
+    .ai-workspace-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(390px, 0.8fr);
+      align-items: end;
+      gap: 44px;
+      margin: 18px 0 26px;
+    }
+
+    .ai-workspace-title span,
+    .ai-block-title span,
+    .ai-kpi span,
+    .ai-cost-item span,
+    .ai-route-cta span {
+      font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.13em;
+    }
+
+    .ai-workspace-title > span {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--ai-gold);
+      font-size: 0.62rem;
+      font-weight: 700;
+    }
+
+    .ai-workspace-title > span::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--ai-green);
+      box-shadow: 0 0 13px var(--ai-green);
+    }
+
+    .ai-workspace-title h1 {
+      margin: 12px 0 0;
+      color: #f7f8fb;
+      font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+      font-size: clamp(2rem, 4vw, 3.7rem);
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      line-height: 1.02;
+      text-transform: uppercase;
+      text-shadow: 0 0 22px rgba(255, 255, 255, 0.07);
+    }
+
+    .ai-workspace-title h1 em {
+      color: rgba(190, 206, 226, 0.57);
+      font-style: normal;
+    }
+
+    .ai-single-selector label {
+      display: block;
+      margin: 0 0 8px 2px;
+      color: var(--ai-gold);
+      font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+      font-size: 0.57rem;
+      font-weight: 700;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .ai-selector-meta {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      color: rgba(205, 220, 237, 0.48);
+      font-family: monospace;
+      font-size: 0.64rem;
+    }
+
+    .ai-identity-panel,
+    .ai-kpi,
+    .ai-data-panel,
+    .ai-route-cta {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--ai-border);
+      background: linear-gradient(145deg, rgba(12, 31, 57, 0.58), rgba(4, 16, 34, 0.35));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.045), 0 16px 44px rgba(0,0,0,0.13);
+      backdrop-filter: blur(18px) saturate(135%);
+      -webkit-backdrop-filter: blur(18px) saturate(135%);
+    }
+
+    .ai-identity-panel::before,
+    .ai-data-panel::before,
+    .ai-route-cta::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 8%;
+      width: 42%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.24), transparent);
+    }
+
+    .ai-identity-panel {
+      display: flex;
+      justify-content: space-between;
+      border-left: 3px solid var(--ai-gold);
+    }
+
+    .ai-identity-main {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      padding: 24px 26px;
+    }
+
+    .ai-code-box {
+      width: 82px;
+      height: 76px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--ai-border-gold);
+      background: rgba(255, 179, 0, 0.055);
+    }
+
+    .ai-code-box strong {
+      color: var(--ai-gold);
+      font-family: "Orbitron", "Eurostile", "Exo 2", sans-serif;
+      font-size: 1.7rem;
+      text-shadow: 0 0 14px rgba(255,179,0,0.28);
+    }
+
+    .ai-code-box span {
+      color: var(--ai-muted);
+      font-family: monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.13em;
+    }
+
+    .ai-identity-copy p {
+      margin: 0 0 5px;
+      color: var(--ai-gold);
+      font-family: monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .ai-identity-copy h2 {
+      margin: 0 0 6px;
+      color: var(--ai-text);
+      font-size: 1.35rem;
+    }
+
+    .ai-identity-copy span { color: var(--ai-muted); font-size: 0.75rem; }
+
+    .ai-facts { display: flex; border-left: 1px solid var(--ai-border); }
+    .ai-fact { min-width: 145px; padding: 22px 18px; border-right: 1px solid var(--ai-border); display: flex; flex-direction: column; justify-content: center; }
+    .ai-fact span { color: var(--ai-muted); font-size: 0.66rem; }
+    .ai-fact strong { margin-top: 5px; color: var(--ai-text); font-family: monospace; font-size: 0.8rem; }
+
+    .ai-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); }
+    .ai-kpi { min-height: 120px; padding: 23px 25px; border-top: 0; border-right: 0; }
+    .ai-kpi:last-child { border-right: 1px solid var(--ai-border); }
+    .ai-kpi span { color: var(--ai-muted); font-size: 0.56rem; font-weight: 700; }
+    .ai-kpi strong { display: block; margin-top: 11px; color: var(--ai-text); font-family: "Orbitron", sans-serif; font-size: 1.55rem; }
+    .ai-kpi small { display: block; margin-top: 5px; color: rgba(205,220,237,0.42); font-size: 0.65rem; }
+
+    .ai-two-columns { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 13px; margin-top: 13px; }
+    .ai-data-panel { min-width: 0; }
+    .ai-block-title { display: flex; align-items: end; justify-content: space-between; padding: 20px 21px 15px; }
+    .ai-block-title span { display: block; margin-bottom: 5px; color: var(--ai-gold); font-size: 0.55rem; font-weight: 700; }
+    .ai-block-title h2 { margin: 0; color: var(--ai-text); font-size: 1rem; }
+    .ai-block-title small { color: rgba(205,220,237,0.44); font-family: monospace; font-size: 0.6rem; }
+
+    .ai-slot-body { display: grid; grid-template-columns: 145px 1fr; gap: 25px; align-items: center; padding: 6px 22px 23px; }
+    .ai-slot-ring { --slot: 0%; aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; background: conic-gradient(var(--ai-gold) var(--slot), rgba(74,167,255,0.12) 0); }
+    .ai-slot-ring::before { content: ""; width: calc(100% - 24px); height: calc(100% - 24px); border-radius: 50%; background: rgba(5,20,39,0.91); }
+    .ai-slot-ring div { position: absolute; text-align: center; }
+    .ai-slot-ring strong { display: block; font-family: "Orbitron", sans-serif; font-size: 1.35rem; }
+    .ai-slot-ring span { color: var(--ai-muted); font-family: monospace; font-size: 0.54rem; }
+    .ai-slot-track { height: 4px; background: rgba(74,167,255,0.12); }
+    .ai-slot-track i { display: block; width: 0; height: 100%; background: linear-gradient(90deg, var(--ai-blue), var(--ai-gold)); transition: width .35s ease; }
+    .ai-slot-values { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-top: 18px; }
+    .ai-slot-values div,.ai-operation-grid div { padding: 13px; border: 1px solid rgba(91,158,255,0.13); background: rgba(7,24,46,0.39); }
+    .ai-slot-values span,.ai-operation-grid span { color: var(--ai-muted); font-size: 0.62rem; }
+    .ai-slot-values strong,.ai-operation-grid strong { display: block; margin-top: 5px; font-family: monospace; font-size: 0.82rem; }
+    .ai-operation-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; padding: 4px 21px 21px; }
+
+    .ai-cost-grid { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--ai-border); }
+    .ai-cost-item { padding: 18px 21px; border-right: 1px solid var(--ai-border); }
+    .ai-cost-item span { color: var(--ai-muted); font-size: 0.54rem; }
+    .ai-cost-item strong { display: block; margin-top: 6px; font-family: monospace; font-size: 0.86rem; }
+
+    .ai-list { border-top: 1px solid var(--ai-border); }
+    .operator-row { display: grid; grid-template-columns: 32px 1.2fr 1fr 45px 86px 1fr; gap: 12px; align-items: center; min-height: 65px; padding: 0 21px; border-bottom: 1px solid rgba(91,158,255,0.1); }
+    .operator-rank { color: rgba(205,220,237,0.35); font-family: monospace; font-size: 0.6rem; }
+    .operator-name strong { display: block; font-size: 0.73rem; }
+    .operator-name small { color: var(--ai-muted); font-family: monospace; font-size: 0.57rem; }
+    .operator-bar { height: 3px; background: rgba(74,167,255,0.12); }
+    .operator-bar i { display: block; height: 100%; background: var(--ai-gold); }
+    .operator-row > strong { font-family: monospace; font-size: 0.68rem; }
+    .operator-row > span { color: var(--ai-muted); font-size: 0.63rem; }
+    .aircraft-chips { display: flex; gap: 4px; flex-wrap: wrap; }
+    .aircraft-chips i { padding: 3px 5px; border: 1px solid var(--ai-border); color: var(--ai-muted); font-family: monospace; font-size: 0.54rem; font-style: normal; }
+
+    .destination-row { display: grid; grid-template-columns: 32px 1.5fr 0.65fr 0.65fr 0.5fr; align-items: center; min-height: 60px; padding: 0 21px; border-bottom: 1px solid rgba(91,158,255,0.1); }
+    .destination-row > span { color: var(--ai-muted); font-size: 0.64rem; }
+    .destination-row > div strong { display: flex; align-items: center; font-family: monospace; font-size: 0.72rem; }
+    .destination-row > div strong i { width: 22px; height: 1px; margin: 0 8px; background: rgba(205,220,237,0.34); }
+    .destination-row > div small { display: block; margin-top: 3px; color: var(--ai-muted); font-size: 0.6rem; }
+    .destination-row > strong { color: var(--ai-green); font-family: monospace; font-size: 0.72rem; }
+    .empty-state { padding: 36px; color: var(--ai-muted); text-align: center; font-size: 0.72rem; }
+
+    .ai-route-cta { display: flex; align-items: center; justify-content: space-between; margin-top: 13px; padding: 22px 24px; border-color: var(--ai-border-gold); }
+    .ai-route-cta span { color: var(--ai-gold); font-size: 0.55rem; font-weight: 700; }
+    .ai-route-cta h2 { margin: 6px 0 0; font-size: 1.05rem; }
+    .ai-create-route-btn { min-width: 190px; height: 44px; border: 1px solid rgba(255,179,0,0.58); border-radius: 10px; background: linear-gradient(180deg,#ffc53a,#ffad00); color: #081426; font-family: "Orbitron", sans-serif; font-size: 0.66rem; font-weight: 800; letter-spacing: 0.08em; cursor: pointer; box-shadow: 0 0 20px rgba(255,179,0,0.13); }
+    .ai-create-route-btn:disabled { opacity: .35; cursor: not-allowed; }
+    .ai-status-line { margin-top: 12px; color: var(--ai-muted); font-family: monospace; font-size: 0.62rem; text-align: right; }
+    .ai-status-line[data-kind="loading"] { color: var(--ai-gold); }
+    .ai-status-line[data-kind="error"] { color: var(--ai-red); }
+
+    @media (max-width: 1020px) {
+      .ai-workspace-head { grid-template-columns: 1fr; }
+      .ai-identity-panel { flex-direction: column; }
+      .ai-facts { border-top: 1px solid var(--ai-border); border-left: 0; overflow-x: auto; }
+      .ai-fact { flex: 1; }
+      .ai-kpi-grid { grid-template-columns: 1fr 1fr; }
+      .ai-two-columns { grid-template-columns: 1fr; }
+      .operator-row { grid-template-columns: 28px 1fr 1fr 42px; }
+      .operator-row > span:nth-of-type(2), .aircraft-chips { display: none; }
+    }
+
+    @media (max-width: 620px) {
+      .airport-intelligence-center { padding-right: 14px; padding-left: 14px; }
+      .ai-workspace-title h1 { font-size: 2rem; }
+      .ai-identity-main { align-items: flex-start; padding: 18px 14px; }
+      .ai-code-box { width: 68px; height: 66px; flex: 0 0 68px; }
+      .ai-fact { min-width: 128px; padding: 16px 13px; }
+      .ai-kpi-grid { grid-template-columns: 1fr; }
+      .ai-kpi { min-height: 98px; }
+      .ai-slot-body { grid-template-columns: 1fr; }
+      .ai-slot-ring { width: 145px; margin: auto; }
+      .ai-cost-grid { grid-template-columns: 1fr 1fr; }
+      .operator-row { grid-template-columns: 25px 1fr 50px; padding: 10px 13px; }
+      .operator-bar, .operator-row > span { display: none; }
+      .destination-row { grid-template-columns: 25px 1fr 50px; padding: 10px 13px; }
+      .destination-row > span:nth-of-type(2), .destination-row > span:nth-of-type(3) { display: none; }
+      .ai-route-cta { align-items: stretch; flex-direction: column; gap: 17px; }
+      .ai-create-route-btn { width: 100%; }
+    }
+
   </style>
 </head>
 
@@ -1604,439 +1860,76 @@
        AIRPORT INTELLIGENCE
        ============================================================ -->
 
+
   <main class="acs-main airport-intelligence-center">
-
-
-    <!-- PAGE TITLE -->
-
-    <section
-      class="acs-page-title"
-      aria-labelledby="airportIntelligenceTitle"
-    >
-
-      <div
-        class="acs-page-title-main"
-        id="airportIntelligenceTitle"
-      >
-        AIRPORT INTELLIGENCE
+    <section class="ai-workspace-head">
+      <div class="ai-workspace-title">
+        <span>AIRPORT INTELLIGENCE</span>
+        <h1>ONE AIRPORT.<br><em>THE COMPLETE PICTURE.</em></h1>
       </div>
-
-      <div class="acs-page-title-sub">
-        AIRPORT & NETWORK INFORMATION
-      </div>
-
-      <div class="acs-page-title-tag">
-        Explore airport infrastructure, airline activity and network presence.
-      </div>
-
-    </section>
-
-
-    <!-- AIRPORT SELECTOR -->
-
-    <section
-      class="ai-selector"
-      aria-label="Airport selection"
-    >
-
-      <div class="ai-field">
-        <label for="aiContinentSelect">
-          Continent
-        </label>
-
-        <select
-          class="ai-select"
-          id="aiContinentSelect"
-        >
-          <option value="">
-            Select continent
-          </option>
+      <div class="ai-single-selector">
+        <label for="airportSelect">SELECT AIRPORT</label>
+        <select class="ai-select" id="airportSelect" disabled>
+          <option value="">Loading airports...</option>
         </select>
+        <div class="ai-selector-meta">
+          <span id="airportCount">—</span>
+          <span id="simulationClock">—</span>
+        </div>
       </div>
-
-
-      <div class="ai-field">
-        <label for="aiCountrySelect">
-          Country
-        </label>
-
-        <select
-          class="ai-select"
-          id="aiCountrySelect"
-          disabled
-        >
-          <option value="">
-            Select country
-          </option>
-        </select>
-      </div>
-
-
-      <div class="ai-field">
-        <label for="aiAirportSelect">
-          Airport
-        </label>
-
-        <select
-          class="ai-select"
-          id="aiAirportSelect"
-          disabled
-        >
-          <option value="">
-            Select airport
-          </option>
-        </select>
-      </div>
-
     </section>
 
-
-    <!-- AIRPORT HERO -->
-
-    <section
-      class="ai-hero"
-      aria-label="Airport profile"
-    >
-
-      <div class="ai-hero-top">
-
-        <div>
-
-          <div class="ai-hero-codes">
-
-            <strong
-              class="ai-icao"
-              id="aiAirportIcao"
-            >
-              ----
-            </strong>
-
-            <span
-              class="ai-iata"
-              id="aiAirportIata"
-            >
-              ---
-            </span>
-
-          </div>
-
-          <div
-            class="ai-airport-name"
-            id="aiAirportName"
-          >
-            Select an airport
-          </div>
-
-          <div
-            class="ai-airport-location"
-            id="aiAirportLocation"
-          >
-            Airport profile awaiting selection
-          </div>
-
-        </div>
-
-
-        <div
-          class="ai-era-chip"
-          id="aiEraChip"
-        >
-          ACTIVE
-        </div>
-
+    <section class="ai-identity-panel">
+      <div class="ai-identity-main">
+        <div class="ai-code-box"><strong id="airportIata">—</strong><span id="airportIcao">—</span></div>
+        <div class="ai-identity-copy"><p id="airportLocation">—</p><h2 id="airportName">Select an airport</h2><span>Complete airport and network information</span></div>
       </div>
-
-
-      <!-- QUICK INFO -->
-
-      <div class="ai-quick-grid">
-
-        <div class="ai-quick-card">
-          <span>Runway</span>
-          <strong id="aiQuickRunway">-- M</strong>
-        </div>
-
-        <div class="ai-quick-card">
-          <span>Elevation</span>
-          <strong id="aiQuickElevation">-- FT</strong>
-        </div>
-
-        <div class="ai-quick-card">
-          <span>Airlines</span>
-          <strong id="aiQuickAirlines">--</strong>
-        </div>
-
-        <div class="ai-quick-card">
-          <span>Routes</span>
-          <strong id="aiQuickRoutes">--</strong>
-        </div>
-
+      <div class="ai-facts">
+        <div class="ai-fact"><span>Longest runway</span><strong id="runwayValue">—</strong></div>
+        <div class="ai-fact"><span>Elevation</span><strong id="elevationValue">—</strong></div>
+        <div class="ai-fact"><span>Open hours</span><strong id="hoursValue">—</strong></div>
+        <div class="ai-fact"><span>Aircraft limit</span><strong id="aircraftLimitValue">—</strong></div>
       </div>
-
-
-      <!-- VISUAL PROFILE -->
-
-      <div class="ai-profile-strip">
-
-        <div class="ai-profile-row">
-
-          <span>
-            Runway
-          </span>
-
-          <div class="ai-profile-track">
-            <div
-              class="ai-profile-fill"
-              id="aiRunwayBar"
-            ></div>
-          </div>
-
-          <span
-            class="ai-profile-value"
-            id="aiRunwayValue"
-          >
-            -- M
-          </span>
-
-        </div>
-
-
-        <div class="ai-profile-row">
-
-          <span>
-            Traffic
-          </span>
-
-          <div class="ai-profile-track">
-            <div
-              class="ai-profile-fill"
-              id="aiTrafficBar"
-            ></div>
-          </div>
-
-          <span
-            class="ai-profile-value"
-            id="aiTrafficValue"
-          >
-            -- FLIGHTS / WEEK
-          </span>
-
-        </div>
-
-
-        <div class="ai-profile-row">
-
-          <span>
-            Operators
-          </span>
-
-          <div class="ai-profile-track">
-            <div
-              class="ai-profile-fill"
-              id="aiOperatorsBar"
-            ></div>
-          </div>
-
-          <span
-            class="ai-profile-value"
-            id="aiOperatorsValue"
-          >
-            -- AIRLINES
-          </span>
-
-        </div>
-
-
-        <div class="ai-profile-row">
-
-          <span>
-            Destinations
-          </span>
-
-          <div class="ai-profile-track">
-            <div
-              class="ai-profile-fill"
-              id="aiDestinationsBar"
-            ></div>
-          </div>
-
-          <span
-            class="ai-profile-value"
-            id="aiDestinationsValue"
-          >
-            --
-          </span>
-
-        </div>
-
-      </div>
-
     </section>
 
-
-    <!-- MAIN AREAS -->
-
-    <nav
-      class="ai-main-nav"
-      aria-label="Airport intelligence sections"
-    >
-
-      <div
-        class="ai-main-card active"
-        data-ai-section="airport"
-      >
-
-        <strong>
-          Airport Activity
-        </strong>
-
-        <span>
-          Passenger movement, slots and airport operating capacity.
-        </span>
-
-        <small>
-          View Activity
-        </small>
-
-      </div>
-
-
-      <div
-        class="ai-main-card"
-        data-ai-section="operations"
-      >
-
-        <strong>
-          Operations
-        </strong>
-
-        <span>
-          Current flights, served destinations and airport activity.
-        </span>
-
-        <small>
-          View Operations
-        </small>
-
-      </div>
-
-
-      <div
-        class="ai-main-card"
-        data-ai-section="airlines"
-      >
-
-        <strong>
-          Airlines
-        </strong>
-
-        <span>
-          Airlines operating the airport and their network presence.
-        </span>
-
-        <small>
-          View Airlines
-        </small>
-
-      </div>
-
-
-      <div
-        class="ai-main-card"
-        data-ai-section="costs"
-      >
-
-        <strong>
-          Costs
-        </strong>
-
-        <span>
-          Airport charges and known operating costs.
-        </span>
-
-        <small>
-          View Costs
-        </small>
-
-      </div>
-
-    </nav>
-
-
-    <!-- ACTIVE CONTENT -->
-
-    <section
-      class="ai-content-panel"
-      aria-label="Selected airport intelligence section"
-    >
-
-      <header class="ai-content-header">
-
-        <h2 id="aiContentTitle">
-          Airport Activity
-        </h2>
-
-        <span id="aiContentMeta">
-          Awaiting Airport Selection
-        </span>
-
-      </header>
-
-
-      <div
-        class="ai-content-placeholder"
-        id="aiContentBody"
-      >
-
-        <div class="ai-content-item">
-          <span>Passenger Movement</span>
-          <strong id="aiAirportPaxMovement">-- PAX / YEAR</strong>
-        </div>
-
-        <div class="ai-content-item">
-          <span>Available Slots</span>
-          <strong id="aiAirportAvailableSlots">--</strong>
-        </div>
-
-        <div class="ai-content-item">
-          <span>Used Slots</span>
-          <strong id="aiAirportUsedSlots">--</strong>
-        </div>
-
-        <div class="ai-content-item">
-          <span>Airport Capacity</span>
-          <strong id="aiAirportCapacity">-- MOVEMENTS</strong>
-        </div>
-
-      </div>
-
-      <div class="ai-create-route-cta">
-
-        <span class="ai-create-route-label">
-          Continue to
-        </span>
-
-        <button
-          type="button"
-          class="ai-create-route-btn"
-          id="aiCreateRouteBtn"
-        >
-          CREATE ROUTE
-        </button>
-
-      </div>
-
+    <section class="ai-kpi-grid">
+      <article class="ai-kpi"><span>Passenger movement</span><strong id="passengersValue">—</strong><small>Current month to date</small></article>
+      <article class="ai-kpi"><span>Weekly flights</span><strong id="weeklyFlightsValue">—</strong><small>Scheduled passenger network</small></article>
+      <article class="ai-kpi"><span>Destinations</span><strong id="destinationsValue">—</strong><small>Active city pairs</small></article>
+      <article class="ai-kpi"><span>Active airlines</span><strong id="activeAirlinesValue">—</strong><small>Current operations</small></article>
     </section>
 
+    <section class="ai-two-columns">
+      <article class="ai-data-panel">
+        <header class="ai-block-title"><div><span>AIRPORT CAPACITY</span><h2>Slot utilization</h2></div><small id="slotUtilizationValue">—</small></header>
+        <div class="ai-slot-body">
+          <div class="ai-slot-ring" id="slotGauge"><div><strong id="slotsAvailableValue">—</strong><span>AVAILABLE</span></div></div>
+          <div><div class="ai-slot-track"><i id="slotUtilizationBar"></i></div><div class="ai-slot-values"><div><span>Used</span><strong id="slotsUsedValue">—</strong></div><div><span>Capacity</span><strong id="slotsCapacityValue">—</strong></div><div><span>Movements</span><strong id="movementsValue">—</strong></div></div></div>
+        </div>
+      </article>
+      <article class="ai-data-panel">
+        <header class="ai-block-title"><div><span>LIVE OPERATIONS</span><h2>Current activity</h2></div></header>
+        <div class="ai-operation-grid"><div><span>Active flights</span><strong id="activeFlightsValue">—</strong></div><div><span>Airlines active now</span><strong id="currentActiveAirlinesValue">—</strong></div><div><span>Network destinations</span><strong id="networkDestinationsValue">—</strong></div><div><span>Weekly schedule</span><strong id="networkWeeklyFlightsValue">—</strong></div></div>
+      </article>
+    </section>
 
-    <div
-      class="ai-status-line"
-      id="aiStatusLine"
-    >
-      Airport intelligence workspace ready — no operational changes
-    </div>
+    <section class="ai-data-panel" style="margin-top:13px">
+      <header class="ai-block-title"><div><span>AIRPORT ECONOMICS</span><h2>Cost snapshot</h2></div></header>
+      <div class="ai-cost-grid"><div class="ai-cost-item"><span>Landing fee</span><strong id="landingFeeValue">—</strong></div><div class="ai-cost-item"><span>Slot cost</span><strong id="slotCostValue">—</strong></div><div class="ai-cost-item"><span>Passenger charge</span><strong id="ticketFeeValue">—</strong></div><div class="ai-cost-item"><span>Passenger growth</span><strong id="growthValue">—</strong></div></div>
+    </section>
 
+    <section class="ai-data-panel" style="margin-top:13px">
+      <header class="ai-block-title"><div><span>COMPETITION</span><h2>Operator presence</h2></div><small>SHARE · WEEKLY ACTIVITY · FLEET</small></header>
+      <div id="operatorList" class="ai-list"><div class="empty-state">Select an airport</div></div>
+    </section>
 
+    <section class="ai-data-panel" style="margin-top:13px">
+      <header class="ai-block-title"><div><span>NETWORK</span><h2>Served destinations</h2></div><small>AIRLINES · ROUTES · WEEKLY FLIGHTS</small></header>
+      <div id="destinationList" class="ai-list"><div class="empty-state">Select an airport</div></div>
+    </section>
+
+    <section class="ai-route-cta"><div><span>ROUTE PLANNING</span><h2>Continue with this airport selected.</h2></div><button type="button" class="ai-create-route-btn" id="createRouteButton" disabled>CREATE ROUTE</button></section>
+    <div class="ai-status-line" id="airportStatus" data-kind="ready">Loading airport database...</div>
   </main>
 
 
@@ -2086,240 +1979,8 @@
   </footer>
 
 
-  <!-- ============================================================
-       SIMPLE VISUAL TAB PREVIEW
-       ------------------------------------------------------------
-       UI only.
-       No backend authority.
-       No calculations.
-       ============================================================ -->
-
   <script>
-
-    const aiCards =
-      document.querySelectorAll(".ai-main-card");
-
-    const aiContentTitle =
-      document.getElementById("aiContentTitle");
-
-    const aiContentMeta =
-      document.getElementById("aiContentMeta");
-
-    const aiContentBody =
-      document.getElementById("aiContentBody");
-
-
-    const AI_SECTION_PREVIEW = {
-
-      airport: {
-        title: "Airport Activity",
-        meta: "Awaiting Airport Selection",
-        items: [
-          ["Passenger Movement", "-- PAX / YEAR"],
-          ["Available Slots", "--"],
-          ["Used Slots", "--"],
-          ["Airport Capacity", "-- MOVEMENTS"]
-        ]
-      },
-
-      operations: {
-        title: "Operations",
-        meta: "Current Operations",
-        items: [
-          ["Weekly Flights", "--"],
-          ["Destinations", "--"],
-          ["Active Routes", "--"],
-          ["Current Operations", "--"]
-        ]
-      },
-
-      airlines: {
-        title: "Airlines",
-        meta: "Airport Operators",
-        items: [
-          ["Operators", "--"],
-          ["Routes", "--"],
-          ["Weekly Flights", "--"],
-          ["Aircraft Types", "--"]
-        ]
-      },
-
-      costs: {
-        title: "Costs",
-        meta: "Airport Charges",
-        items: [
-          ["Landing Fee", "$--"],
-          ["Slot Fee", "$--"],
-          ["Handling", "$--"],
-          ["Passenger Charges", "$--"]
-        ]
-      }
-
-    };
-
-
-    function AI_renderSectionPreview(sectionKey) {
-
-      const section =
-        AI_SECTION_PREVIEW[sectionKey];
-
-      if (!section) return;
-
-      aiContentTitle.textContent =
-        section.title;
-
-      aiContentMeta.textContent =
-        section.meta;
-
-      aiContentBody.innerHTML =
-        section.items
-          .map(
-            ([label, value]) => `
-              <div class="ai-content-item">
-                <span>${label}</span>
-                <strong>${value}</strong>
-              </div>
-            `
-          )
-          .join("");
-
-      AI_syncCreateRouteCTA(sectionKey);
-
-    }
-
-
-
-    function AI_syncCreateRouteCTA(sectionKey) {
-
-      let existingCta =
-        document.querySelector(".ai-create-route-cta");
-
-      if (sectionKey !== "airport") {
-
-        if (existingCta) {
-          existingCta.remove();
-        }
-
-        return;
-      }
-
-      if (existingCta) {
-        return;
-      }
-
-      existingCta =
-        document.createElement("div");
-
-      existingCta.className =
-        "ai-create-route-cta";
-
-      existingCta.innerHTML = `
-        <span class="ai-create-route-label">
-          Continue to
-        </span>
-
-        <button
-          type="button"
-          class="ai-create-route-btn"
-          id="aiCreateRouteBtn"
-        >
-          CREATE ROUTE
-        </button>
-      `;
-
-      document
-        .querySelector(".ai-content-panel")
-        ?.appendChild(existingCta);
-
-    }
-
-
-    function AI_getContinentRouteTarget(continentValue) {
-
-      const key =
-        String(continentValue || "")
-          .trim()
-          .toLowerCase()
-          .replace(/[_-]+/g, " ")
-          .replace(/\s+/g, " ");
-
-      const targets = {
-        "africa": "airport_list_africa.html",
-        "europe": "airport_list_europe.html",
-        "asia": "airport_list_asia.html",
-        "north america": "airport_list_north_america.html",
-        "south america": "airport_list_south_america.html",
-        "oceania": "airport_list_oceania.html"
-      };
-
-      return targets[key] || null;
-
-    }
-
-
-    document.addEventListener("click", event => {
-
-      const btn =
-        event.target.closest("#aiCreateRouteBtn");
-
-      if (!btn) return;
-
-      const continentSelect =
-        document.getElementById("aiContinentSelect");
-
-      const selectedContinent =
-        continentSelect?.value || "";
-
-      const target =
-        AI_getContinentRouteTarget(
-          selectedContinent
-        );
-
-      if (!target) {
-
-        alert(
-          "⚠️ Select a continent before continuing to Create Route."
-        );
-
-        return;
-      }
-
-      window.location.href =
-        target;
-
-    });
-
-
-    aiCards.forEach(card => {
-
-      card.addEventListener("click", () => {
-
-        aiCards.forEach(item =>
-          item.classList.remove("active")
-        );
-
-        card.classList.add("active");
-
-        AI_renderSectionPreview(
-          card.dataset.aiSection
-        );
-
-      });
-
-    });
-
-
-    function handleLogout() {
-
-      alert(
-        "👋 Session closed. Your fleet awaits your command!"
-      );
-
-      window.location.href =
-        "login.html";
-
-    }
-
+    function handleLogout() { window.location.href = "login.html"; }
   </script>
 
 
