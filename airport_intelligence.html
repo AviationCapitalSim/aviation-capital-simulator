@@ -1,0 +1,1849 @@
+<!-- ============================================================
+     ACS OCC — AIRPORT INTELLIGENCE v2.0
+     DATE: 07 SEPTEMBER 2026
+     ------------------------------------------------------------
+     Visual airport & network exploration workspace.
+
+     PURPOSE
+     - Present airport information clearly.
+     - Present current ACS network activity.
+     - Present airport costs and infrastructure.
+     - No recommendations.
+     - No route scoring.
+     - No automatic strategy.
+     - No operational writes.
+
+     PLAYER AUTHORITY
+     - ACS presents information.
+     - The player interprets.
+     - The player evaluates.
+     - The player decides.
+     ============================================================ -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Airport Intelligence - Aviation Capital Simulator</title>
+
+  <!-- ACS GLOBAL STYLE AUTHORITY -->
+  <link rel="stylesheet" href="styles.css?v=3.1">
+
+  <!-- ACS FAVICONS -->
+  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+  <link rel="apple-touch-icon" href="acs_logo_180.png">
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+
+    /* ============================================================
+       ACS OCC — AIRPORT INTELLIGENCE VISUAL AUTHORITY v2.0
+       Visual family: Route Planning / Fuel Center / ACS OCC
+       ============================================================ */
+
+    .airport-intelligence-page {
+      --ai-gold: #ffb300;
+      --ai-blue: #4aa7ff;
+      --ai-green: #55e39a;
+      --ai-red: #ff667a;
+
+      --ai-text: #f3f7fc;
+      --ai-muted: rgba(205, 220, 237, 0.68);
+
+      --ai-border: rgba(91, 158, 255, 0.24);
+      --ai-border-gold: rgba(255, 179, 0, 0.28);
+
+      --ai-surface: rgba(255, 255, 255, 0.015);
+      --ai-surface-2: rgba(6, 20, 42, 0.72);
+    }
+
+
+    /* ============================================================
+       MAIN
+       ============================================================ */
+
+    .airport-intelligence-center {
+      width: min(1380px, 100%);
+      box-sizing: border-box;
+
+      margin: 0 auto;
+      padding: 110px 2rem 70px;
+    }
+
+
+    /* ============================================================
+       PAGE TITLE
+       ============================================================ */
+
+    .airport-intelligence-page .acs-page-title {
+      width: 100%;
+      max-width: 940px;
+
+      box-sizing: border-box;
+
+      margin: 18px auto 36px;
+      padding: 18px 24px 18px;
+
+      text-align: center;
+    }
+
+    .airport-intelligence-page .acs-page-title-main {
+      color: #f7f8fb;
+
+      font-family:
+        "Orbitron",
+        "Eurostile",
+        "Exo 2",
+        sans-serif;
+
+      font-size: 31px;
+      font-weight: 700;
+
+      letter-spacing: 0.28em;
+      line-height: 1;
+
+      text-transform: uppercase;
+
+      text-shadow:
+        0 1px 0 rgba(0, 0, 0, 0.85),
+        0 0 10px rgba(255, 255, 255, 0.18),
+        0 0 22px rgba(255, 255, 255, 0.08);
+    }
+
+    .airport-intelligence-page .acs-page-title-sub {
+      position: relative;
+
+      display: inline-block;
+
+      margin-top: 11px;
+
+      color: var(--ai-gold);
+
+      font-family:
+        "Orbitron",
+        "Eurostile",
+        "Exo 2",
+        sans-serif;
+
+      font-size: 14px;
+      font-weight: 700;
+
+      letter-spacing: 0.34em;
+
+      text-transform: uppercase;
+
+      text-shadow:
+        0 0 8px rgba(255, 179, 0, 0.34),
+        0 0 16px rgba(255, 179, 0, 0.16);
+    }
+
+    .airport-intelligence-page .acs-page-title-sub::before,
+    .airport-intelligence-page .acs-page-title-sub::after {
+      content: "";
+
+      position: absolute;
+      top: 50%;
+
+      width: 72px;
+      height: 2px;
+
+      background:
+        linear-gradient(
+          to right,
+          transparent,
+          #ffb300,
+          transparent
+        );
+
+      opacity: 0.78;
+    }
+
+    .airport-intelligence-page .acs-page-title-sub::before {
+      right: 100%;
+      margin-right: 16px;
+    }
+
+    .airport-intelligence-page .acs-page-title-sub::after {
+      left: 100%;
+      margin-left: 16px;
+    }
+
+    .airport-intelligence-page .acs-page-title-tag {
+      margin-top: 10px;
+
+      color: rgba(220, 226, 238, 0.80);
+
+      font-size: 12.5px;
+      font-weight: 500;
+
+      letter-spacing: 0.12em;
+    }
+
+
+    /* ============================================================
+       AIRPORT SELECTOR
+       ============================================================ */
+
+    .ai-selector {
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+      gap: 12px;
+
+      padding: 18px;
+
+      border: 1px solid var(--ai-border);
+      border-radius: 16px;
+
+      background: var(--ai-surface);
+    }
+
+    .ai-field {
+      min-width: 0;
+    }
+
+    .ai-field label {
+      display: block;
+
+      margin: 0 0 7px 2px;
+
+      color: var(--ai-gold);
+
+      font-family:
+        "Orbitron",
+        "Eurostile",
+        "Exo 2",
+        sans-serif;
+
+      font-size: 0.57rem;
+      font-weight: 700;
+
+      letter-spacing: 0.13em;
+
+      text-transform: uppercase;
+    }
+
+    .ai-select {
+      width: 100%;
+      height: 42px;
+
+      box-sizing: border-box;
+
+      padding: 0 34px 0 12px;
+
+      border: 1px solid var(--ai-border);
+      border-radius: 10px;
+
+      outline: none;
+
+      background: rgba(5, 20, 39, 0.75);
+
+      color: var(--ai-text);
+
+      font-family:
+        "Orbitron",
+        "Eurostile",
+        "Exo 2",
+        sans-serif;
+
+      font-size: 0.67rem;
+      font-weight: 600;
+
+      letter-spacing: 0.03em;
+    }
+
+    .ai-select:focus {
+      border-color: rgba(255, 179, 0, 0.58);
+
+      box-shadow:
+        0 0 0 2px rgba(255, 179, 0, 0.06);
+    }
+
+    .ai-select:disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
+    }
+
+
+    /* ============================================================
+       AIRPORT HERO
+       ============================================================ */
+
+    .ai-hero {
+      position: relative;
+
+      margin-top: 18px;
+      padding: 22px;
+
+      overflow: hidden;
+
+      border: 1px solid var(--ai-border-gold);
+      border-radius: 18px;
+
+      background:
+        radial-gradient(
+          circle at 82% 20%,
+          rgba(74, 167, 255, 0.09),
+          transparent 36%
+        ),
+        rgba(255, 255, 255, 0.012);
+    }
+
+    .ai-hero::before {
+      content: "";
+
+      position: absolute;
+
+      top: -1px;
+      left: 22px;
+
+      width: 220px;
+      height: 2px;
+
+      background:
+        linear-gradient(
+          90deg,
+          transparent,
+          var(--ai-gold) 22%,
+          rgba(255, 179, 0, 0.36) 72%,
+          transparent
+        );
+
+      box-shadow:
+        0 0 12px rgba(255, 179, 0, 0.23);
+    }
+
+    .ai-hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+
+      gap: 20px;
+
+      flex-wrap: wrap;
+    }
+
+    .ai-hero-codes {
+      display: flex;
+      align-items: baseline;
+
+      gap: 12px;
+
+      flex-wrap: wrap;
+    }
+
+    .ai-icao {
+      color: var(--ai-text);
+
+      font-family:
+        "Orbitron",
+        "Eurostile",
+        "Exo 2",
+        sans-serif;
+
+      font-size: 2rem;
+      font-weight: 800;
+
+      letter-spacing: 0.11em;
+    }
+
+    .ai-iata {
+      color: var(--ai-gold);
+
+      font-family:
+        "Orbitron",
+        "Eurostile",
+        "Exo 2",
+        sans-serif;
+
+      font-size: 0.88rem;
+      font-weight: 700;
+
+      letter-spacing: 0.12em;
+    }
+
+    .ai-airport-name {
+      margin-top: 9px;
+
+      color: rgba(244, 248, 252, 0.94);
+
+      font-family:
+        "Orbitron",
+        "Eurostile",
+        "Exo 2",
+        sans-serif;
+
+      font-size: 1rem;
+      font-weight: 700;
+
+      letter-spacing: 0.05em;
+    }
+
+    .ai-airport-location {
+      margin-top: 6px;
+
+      color: var(--ai-muted);
+
+      font-size: 0.7rem;
+      letter-spacing: 0.07em;
+    }
+
+    .ai-era-chip {
+      flex: 0 0 auto;
+
+      padding: 7px 11px;
+
+      border: 1px solid rgba(74, 167, 255, 0.28);
+      border-radius: 999px;
+
+      background: rgba(5, 20, 39, 0.50);
+
+      color: #9fd0ff;
+
+      font-family:
+        "Orbitron",
+        "Eurostile",
+        "Exo 2",
+        sans-serif;
+
+      font-size: 0.54rem;
+      font-weight: 700;
+
+      letter-spacing: 0.08em;
+
+      text-transform: uppercase;
+    }
+
+
+    /* ============================================================
+       QUICK NUMBERS
+       ============================================================ */
+
+    .ai-quick-grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+      gap: 10px;
+
+      margin-top: 20px;
+    }
+
+    .ai-quick-card {
+      min-width: 0;
+
+      padding: 15px 13px;
+
+      border: 1px solid rgba(91, 158, 255, 0.20);
+      border-radius: 12px;
+
+      background: rgba(5, 20, 39, 0.30);
+
+      text-align: center;
+    }
+
+    .ai-quick-card span {
+      display: block;
+
+      color: var(--ai-muted);
+
+      font-size: 0.51rem;
+      font-weight: 700;
+
+      letter-spacing: 0.09em;
+
+      text-transform: uppercase;
+    }
+
+    .ai-quick-card strong {
+      display: block;
+
+      margin-top: 7px;
+
+      color: var(--ai-text);
+
+      font-family:
+        "Orbitron",
+        "Eurostile",
+        "Exo 2",
+        sans-serif;
+
+      font-size: 0.76rem;
+      font-weight: 700;
+
+      letter-spacing: 0.035em;
+
+      font-variant-numeric: tabular-nums;
+    }
+
+
+    /* ============================================================
+       PROFILE STRIP
+       ============================================================ */
+
+    .ai-profile-strip {
+      display: grid;
+      gap: 11px;
+
+      margin-top: 18px;
+      padding-top: 16px;
+
+      border-top:
+        1px solid rgba(91, 158, 255, 0.12);
+    }
+
+    .ai-profile-row {
+      display: grid;
+
+      grid-template-columns:
+        110px
+        minmax(0, 1fr)
+        150px;
+
+      gap: 12px;
+
+      align-items: center;
+    }
+
+    .ai-profile-row span {
+      color: var(--ai-muted);
+
+      font-size: 0.56rem;
+      font-weight: 700;
+
+      letter-spacing: 0.08em;
+
+      text-transform: uppercase;
+    }
+
+    .ai-profile-track {
+      height: 7px;
+
+      overflow: hidden;
+
+      border: 1px solid rgba(74, 167, 255, 0.16);
+      border-radius: 999px;
+
+      background: rgba(0, 0, 0, 0.18);
+    }
+
+    .ai-profile-fill {
+      width: 0%;
+      height: 100%;
+
+      border-radius: inherit;
+
+      background:
+        linear-gradient(
+          90deg,
+          rgba(74, 167, 255, 0.82),
+          rgba(255, 179, 0, 0.86)
+        );
+    }
+
+    .ai-profile-value {
+      color: var(--ai-text) !important;
+
+      font-family:
+        "Orbitron",
+        "Eurostile",
+        "Exo 2",
+        sans-serif;
+
+      font-size: 0.63rem !important;
+      font-weight: 700 !important;
+
+      letter-spacing: 0.035em !important;
+
+      text-align: right;
+    }
+
+
+    /* ============================================================
+       FOUR MAIN AREAS
+       ============================================================ */
+
+    .ai-main-nav {
+      display: grid;
+
+      grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+      gap: 12px;
+
+      margin-top: 18px;
+    }
+
+    .ai-main-card {
+      position: relative;
+
+      min-height: 128px;
+
+      box-sizing: border-box;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+
+      gap: 18px;
+
+      padding: 17px;
+
+      overflow: hidden;
+
+      border: 1px solid var(--ai-border);
+      border-radius: 14px;
+
+      background: var(--ai-surface);
+
+      cursor: pointer;
+
+      transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background 0.18s ease,
+        box-shadow 0.18s ease;
+    }
+
+    .ai-main-card:hover {
+      transform: translateY(-2px);
+
+      border-color: rgba(74, 167, 255, 0.46);
+
+      background:
+        rgba(74, 167, 255, 0.025);
+
+      box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.18);
+    }
+
+    .ai-main-card.active {
+      border-color: rgba(255, 179, 0, 0.44);
+
+      background:
+        rgba(255, 179, 0, 0.025);
+
+      box-shadow:
+        inset 0 0 18px rgba(255, 179, 0, 0.025);
+    }
+
+    .ai-main-card.active::before {
+      content: "";
+
+      position: absolute;
+
+      top: 0;
+      left: 16px;
+      right: 16px;
+
+      height: 2px;
+
+      background:
+        linear-gradient(
+          90deg,
+          transparent,
+          var(--ai-gold),
+          transparent
+        );
+    }
+
+    .ai-main-card strong {
+      color: var(--ai-text);
+
+      font-family:
+        "Orbitron",
+        "Eurostile",
+        "Exo 2",
+        sans-serif;
+
+      font-size: 0.78rem;
+      font-weight: 700;
+
+      letter-spacing: 0.10em;
+
+      text-transform: uppercase;
+    }
+
+    .ai-main-card span {
+      color: var(--ai-muted);
+
+      font-size: 0.62rem;
+      line-height: 1.48;
+    }
+
+    .ai-main-card small {
+      color: var(--ai-blue);
+
+      font-family:
+        "Orbitron",
+        "Eurostile",
+        "Exo 2",
+        sans-serif;
+
+      font-size: 0.51rem;
+      font-weight: 700;
+
+      letter-spacing: 0.08em;
+
+      text-transform: uppercase;
+    }
+
+
+    /* ============================================================
+       CONTENT PANEL
+       ============================================================ */
+
+    .ai-content-panel {
+      margin-top: 14px;
+      padding: 20px;
+
+      border: 1px solid var(--ai-border);
+      border-radius: 15px;
+
+      background: var(--ai-surface);
+    }
+
+    .ai-content-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      gap: 12px;
+
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+
+      border-bottom:
+        1px solid rgba(91, 158, 255, 0.12);
+    }
+
+    .ai-content-header h2 {
+      margin: 0;
+
+      color: var(--ai-gold);
+
+      font-family:
+        "Orbitron",
+        "Eurostile",
+        "Exo 2",
+        sans-serif;
+
+      font-size: 0.80rem;
+      font-weight: 700;
+
+      letter-spacing: 0.12em;
+
+      text-transform: uppercase;
+    }
+
+    .ai-content-header span {
+      color: var(--ai-muted);
+
+      font-size: 0.56rem;
+      letter-spacing: 0.08em;
+
+      text-transform: uppercase;
+    }
+
+    .ai-content-placeholder {
+      display: grid;
+
+      grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+      gap: 10px;
+    }
+
+    .ai-content-item {
+      min-width: 0;
+
+      padding: 14px;
+
+      border: 1px solid rgba(91, 158, 255, 0.14);
+      border-radius: 10px;
+
+      background: rgba(5, 20, 39, 0.24);
+    }
+
+    .ai-content-item span {
+      display: block;
+
+      color: var(--ai-muted);
+
+      font-size: 0.52rem;
+      font-weight: 700;
+
+      letter-spacing: 0.08em;
+
+      text-transform: uppercase;
+    }
+
+    .ai-content-item strong {
+      display: block;
+
+      margin-top: 7px;
+
+      color: var(--ai-text);
+
+      font-family:
+        "Orbitron",
+        "Eurostile",
+        "Exo 2",
+        sans-serif;
+
+      font-size: 0.69rem;
+      font-weight: 700;
+
+      letter-spacing: 0.035em;
+    }
+
+
+    /* ============================================================
+       NETWORK VISUAL
+       ============================================================ */
+
+    .ai-network-panel {
+      margin-top: 14px;
+      padding: 20px;
+
+      border: 1px solid var(--ai-border);
+      border-radius: 15px;
+
+      background:
+        radial-gradient(
+          circle at 50% 45%,
+          rgba(28, 91, 147, 0.10),
+          transparent 42%
+        ),
+        rgba(255, 255, 255, 0.008);
+    }
+
+    .ai-network-stage {
+      position: relative;
+
+      min-height: 250px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      overflow: hidden;
+
+      border: 1px solid rgba(91, 158, 255, 0.12);
+      border-radius: 12px;
+
+      background:
+        linear-gradient(
+          rgba(91, 158, 255, 0.045) 1px,
+          transparent 1px
+        ),
+        linear-gradient(
+          90deg,
+          rgba(91, 158, 255, 0.045) 1px,
+          transparent 1px
+        );
+
+      background-size:
+        52px 52px;
+    }
+
+    .ai-network-placeholder {
+      max-width: 430px;
+
+      padding: 24px;
+
+      text-align: center;
+    }
+
+    .ai-network-placeholder strong {
+      display: block;
+
+      color: var(--ai-blue);
+
+      font-family:
+        "Orbitron",
+        "Eurostile",
+        "Exo 2",
+        sans-serif;
+
+      font-size: 0.75rem;
+      font-weight: 700;
+
+      letter-spacing: 0.11em;
+
+      text-transform: uppercase;
+    }
+
+    .ai-network-placeholder span {
+      display: block;
+
+      margin-top: 8px;
+
+      color: var(--ai-muted);
+
+      font-size: 0.66rem;
+      line-height: 1.55;
+    }
+
+
+    /* ============================================================
+       STATUS LINE
+       ============================================================ */
+
+    .ai-status-line {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      gap: 9px;
+
+      margin-top: 16px;
+
+      color: var(--ai-muted);
+
+      font-size: 0.60rem;
+      letter-spacing: 0.08em;
+
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .ai-status-line::before {
+      content: "";
+
+      width: 6px;
+      height: 6px;
+
+      border-radius: 50%;
+
+      background: var(--ai-blue);
+
+      box-shadow:
+        0 0 8px rgba(74, 167, 255, 0.65);
+    }
+
+
+    /* ============================================================
+       SUPPORT BUTTON
+       ============================================================ */
+
+    .airport-intelligence-page .support-btn,
+    .airport-intelligence-page .support-btn:visited {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      min-height: 32px;
+      box-sizing: border-box;
+
+      padding: 6px 14px;
+
+      border: 1px solid rgba(74, 167, 255, 0.42);
+      border-radius: 8px;
+
+      background: rgba(74, 167, 255, 0.08);
+
+      color: #8fc8ff;
+
+      font-family:
+        "Orbitron",
+        "Eurostile",
+        "Exo 2",
+        sans-serif;
+
+      font-size: 0.68rem;
+      font-weight: 700;
+
+      letter-spacing: 0.05em;
+
+      text-decoration: none;
+    }
+
+
+    /* ============================================================
+       FOOTER
+       ============================================================ */
+
+    .acs-footer {
+      width: 100%;
+
+      box-sizing: border-box;
+
+      padding: 18px 20px;
+
+      text-align: center;
+      white-space: nowrap;
+
+      font-family: "Segoe UI", sans-serif;
+
+      font-size: .85rem;
+      font-weight: 500;
+
+      color: rgba(255,255,255,.88);
+
+      border-top:
+        1px solid rgba(138,180,255,.18);
+
+      background:
+        rgba(3,10,24,.28);
+    }
+
+    .acs-footer-separator {
+      margin: 0 8px;
+
+      color: rgba(255,255,255,.38);
+    }
+
+    .acs-footer-link,
+    .acs-footer-link:visited {
+      color: #FFB300;
+
+      text-decoration: none;
+
+      font-weight: 600;
+    }
+
+
+    /* ============================================================
+       TABLET
+       ============================================================ */
+
+    @media (max-width: 1000px) {
+
+      .ai-main-nav {
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
+      }
+
+      .ai-content-placeholder {
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
+      }
+
+    }
+
+
+    /* ============================================================
+       MOBILE
+       ============================================================ */
+
+    @media (max-width: 760px) {
+
+      .airport-intelligence-center {
+        padding:
+          110px
+          14px
+          50px;
+      }
+
+      .airport-intelligence-page .acs-page-title-main {
+        font-size: 25px;
+        letter-spacing: 0.18em;
+      }
+
+      .airport-intelligence-page .acs-page-title-sub {
+        font-size: 11px;
+        letter-spacing: 0.23em;
+      }
+
+      .airport-intelligence-page .acs-page-title-tag {
+        font-size: 10.5px;
+      }
+
+      .airport-intelligence-page .acs-page-title-sub::before,
+      .airport-intelligence-page .acs-page-title-sub::after {
+        width: 36px;
+      }
+
+      .ai-selector {
+        grid-template-columns: 1fr;
+      }
+
+      .ai-quick-grid {
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
+      }
+
+      .ai-profile-row {
+        grid-template-columns:
+          82px
+          minmax(0, 1fr)
+          105px;
+      }
+
+      .ai-main-nav {
+        grid-template-columns: 1fr;
+      }
+
+      .ai-content-placeholder {
+        grid-template-columns: 1fr;
+      }
+
+      .acs-footer {
+        overflow-x: auto;
+
+        padding: 16px 14px;
+
+        font-size: .76rem;
+
+        -webkit-overflow-scrolling: touch;
+      }
+
+    }
+
+
+    /* ============================================================
+       SMALL MOBILE
+       ============================================================ */
+
+    @media (max-width: 520px) {
+
+      .airport-intelligence-page .acs-page-title-main {
+        font-size: 21px;
+        letter-spacing: 0.12em;
+      }
+
+      .airport-intelligence-page .acs-page-title-sub::before,
+      .airport-intelligence-page .acs-page-title-sub::after {
+        display: none;
+      }
+
+      .ai-quick-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .ai-profile-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+
+      .ai-profile-value {
+        text-align: left;
+      }
+
+      .ai-icao {
+        font-size: 1.55rem;
+      }
+
+    }
+
+  </style>
+</head>
+
+
+<body class="airport-intelligence-page">
+
+
+  <!-- ============================================================
+       ACS GLOBAL HEADER
+       ============================================================ -->
+
+  <header class="acs-header">
+
+    <div class="acs-logo">
+      <img src="acs_logo.png" alt="ACS Logo">
+      <h1>Aviation Capital Simulator</h1>
+    </div>
+
+    <nav class="acs-nav" aria-label="ACS main navigation">
+      <a href="dashboard.html">Main</a>
+      <a href="bank.html">Bank</a>
+      <a href="aircraft.html">Aircraft</a>
+      <a href="routes.html" class="active">Routes</a>
+      <a href="hr.html">HR</a>
+    </nav>
+
+    <div class="acs-right">
+
+      <a
+        href="support.html"
+        class="support-btn"
+      >
+        Support
+      </a>
+
+      <a
+        class="logout-btn"
+        onclick="handleLogout()"
+      >
+        Logout
+      </a>
+
+      <div
+        id="acs-clock"
+        class="acs-clock-header"
+      >
+        00:00 — 01 JAN 1940
+      </div>
+
+    </div>
+
+  </header>
+
+
+  <!-- ============================================================
+       AIRPORT INTELLIGENCE
+       ============================================================ -->
+
+  <main class="acs-main airport-intelligence-center">
+
+
+    <!-- PAGE TITLE -->
+
+    <section
+      class="acs-page-title"
+      aria-labelledby="airportIntelligenceTitle"
+    >
+
+      <div
+        class="acs-page-title-main"
+        id="airportIntelligenceTitle"
+      >
+        AIRPORT INTELLIGENCE
+      </div>
+
+      <div class="acs-page-title-sub">
+        AIRPORT & NETWORK INFORMATION
+      </div>
+
+      <div class="acs-page-title-tag">
+        Explore airport infrastructure, airline activity and network presence.
+      </div>
+
+    </section>
+
+
+    <!-- AIRPORT SELECTOR -->
+
+    <section
+      class="ai-selector"
+      aria-label="Airport selection"
+    >
+
+      <div class="ai-field">
+        <label for="aiContinentSelect">
+          Continent
+        </label>
+
+        <select
+          class="ai-select"
+          id="aiContinentSelect"
+        >
+          <option value="">
+            Select continent
+          </option>
+        </select>
+      </div>
+
+
+      <div class="ai-field">
+        <label for="aiCountrySelect">
+          Country
+        </label>
+
+        <select
+          class="ai-select"
+          id="aiCountrySelect"
+          disabled
+        >
+          <option value="">
+            Select country
+          </option>
+        </select>
+      </div>
+
+
+      <div class="ai-field">
+        <label for="aiAirportSelect">
+          Airport
+        </label>
+
+        <select
+          class="ai-select"
+          id="aiAirportSelect"
+          disabled
+        >
+          <option value="">
+            Select airport
+          </option>
+        </select>
+      </div>
+
+    </section>
+
+
+    <!-- AIRPORT HERO -->
+
+    <section
+      class="ai-hero"
+      aria-label="Airport profile"
+    >
+
+      <div class="ai-hero-top">
+
+        <div>
+
+          <div class="ai-hero-codes">
+
+            <strong
+              class="ai-icao"
+              id="aiAirportIcao"
+            >
+              ----
+            </strong>
+
+            <span
+              class="ai-iata"
+              id="aiAirportIata"
+            >
+              ---
+            </span>
+
+          </div>
+
+          <div
+            class="ai-airport-name"
+            id="aiAirportName"
+          >
+            Select an airport
+          </div>
+
+          <div
+            class="ai-airport-location"
+            id="aiAirportLocation"
+          >
+            Airport profile awaiting selection
+          </div>
+
+        </div>
+
+
+        <div
+          class="ai-era-chip"
+          id="aiEraChip"
+        >
+          ACS ERA — ----
+        </div>
+
+      </div>
+
+
+      <!-- QUICK INFO -->
+
+      <div class="ai-quick-grid">
+
+        <div class="ai-quick-card">
+          <span>Runway</span>
+          <strong id="aiQuickRunway">-- M</strong>
+        </div>
+
+        <div class="ai-quick-card">
+          <span>Elevation</span>
+          <strong id="aiQuickElevation">-- FT</strong>
+        </div>
+
+        <div class="ai-quick-card">
+          <span>Airlines</span>
+          <strong id="aiQuickAirlines">--</strong>
+        </div>
+
+        <div class="ai-quick-card">
+          <span>Routes</span>
+          <strong id="aiQuickRoutes">--</strong>
+        </div>
+
+      </div>
+
+
+      <!-- VISUAL PROFILE -->
+
+      <div class="ai-profile-strip">
+
+        <div class="ai-profile-row">
+
+          <span>
+            Runway
+          </span>
+
+          <div class="ai-profile-track">
+            <div
+              class="ai-profile-fill"
+              id="aiRunwayBar"
+            ></div>
+          </div>
+
+          <span
+            class="ai-profile-value"
+            id="aiRunwayValue"
+          >
+            -- M
+          </span>
+
+        </div>
+
+
+        <div class="ai-profile-row">
+
+          <span>
+            Traffic
+          </span>
+
+          <div class="ai-profile-track">
+            <div
+              class="ai-profile-fill"
+              id="aiTrafficBar"
+            ></div>
+          </div>
+
+          <span
+            class="ai-profile-value"
+            id="aiTrafficValue"
+          >
+            -- FLIGHTS / WEEK
+          </span>
+
+        </div>
+
+
+        <div class="ai-profile-row">
+
+          <span>
+            Operators
+          </span>
+
+          <div class="ai-profile-track">
+            <div
+              class="ai-profile-fill"
+              id="aiOperatorsBar"
+            ></div>
+          </div>
+
+          <span
+            class="ai-profile-value"
+            id="aiOperatorsValue"
+          >
+            -- AIRLINES
+          </span>
+
+        </div>
+
+
+        <div class="ai-profile-row">
+
+          <span>
+            Destinations
+          </span>
+
+          <div class="ai-profile-track">
+            <div
+              class="ai-profile-fill"
+              id="aiDestinationsBar"
+            ></div>
+          </div>
+
+          <span
+            class="ai-profile-value"
+            id="aiDestinationsValue"
+          >
+            --
+          </span>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- MAIN AREAS -->
+
+    <nav
+      class="ai-main-nav"
+      aria-label="Airport intelligence sections"
+    >
+
+      <div
+        class="ai-main-card active"
+        data-ai-section="airport"
+      >
+
+        <strong>
+          Airport
+        </strong>
+
+        <span>
+          Infrastructure, runway, elevation and airport profile.
+        </span>
+
+        <small>
+          View Airport
+        </small>
+
+      </div>
+
+
+      <div
+        class="ai-main-card"
+        data-ai-section="operations"
+      >
+
+        <strong>
+          Operations
+        </strong>
+
+        <span>
+          Current flights, served destinations and airport activity.
+        </span>
+
+        <small>
+          View Operations
+        </small>
+
+      </div>
+
+
+      <div
+        class="ai-main-card"
+        data-ai-section="airlines"
+      >
+
+        <strong>
+          Airlines
+        </strong>
+
+        <span>
+          ACS carriers operating the airport and their network presence.
+        </span>
+
+        <small>
+          View Airlines
+        </small>
+
+      </div>
+
+
+      <div
+        class="ai-main-card"
+        data-ai-section="costs"
+      >
+
+        <strong>
+          Costs
+        </strong>
+
+        <span>
+          Airport charges and known operating costs.
+        </span>
+
+        <small>
+          View Costs
+        </small>
+
+      </div>
+
+    </nav>
+
+
+    <!-- ACTIVE CONTENT -->
+
+    <section
+      class="ai-content-panel"
+      aria-label="Selected airport intelligence section"
+    >
+
+      <header class="ai-content-header">
+
+        <h2 id="aiContentTitle">
+          Airport
+        </h2>
+
+        <span id="aiContentMeta">
+          Current ACS Era
+        </span>
+
+      </header>
+
+
+      <div
+        class="ai-content-placeholder"
+        id="aiContentBody"
+      >
+
+        <div class="ai-content-item">
+          <span>Runway</span>
+          <strong id="aiAirportPanelRunway">-- M</strong>
+        </div>
+
+        <div class="ai-content-item">
+          <span>Elevation</span>
+          <strong id="aiAirportPanelElevation">-- FT</strong>
+        </div>
+
+        <div class="ai-content-item">
+          <span>Airport Class</span>
+          <strong id="aiAirportPanelClass">--</strong>
+        </div>
+
+        <div class="ai-content-item">
+          <span>Infrastructure</span>
+          <strong id="aiAirportPanelInfrastructure">--</strong>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- NETWORK VISUAL -->
+
+    <section
+      class="ai-network-panel"
+      aria-label="Airport network view"
+    >
+
+      <header class="ai-content-header">
+
+        <h2>
+          Network View
+        </h2>
+
+        <span>
+          ACS Routes
+        </span>
+
+      </header>
+
+
+      <div class="ai-network-stage">
+
+        <div class="ai-network-placeholder">
+
+          <strong>
+            AIRPORT NETWORK
+          </strong>
+
+          <span>
+            Current ACS destinations will be visualized here after
+            the Airport Intelligence engine is connected.
+          </span>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <div
+      class="ai-status-line"
+      id="aiStatusLine"
+    >
+      Airport intelligence workspace ready — no operational changes
+    </div>
+
+
+  </main>
+
+
+  <!-- ============================================================
+       FOOTER
+       ============================================================ -->
+
+  <footer class="acs-footer">
+
+    <span>
+      © 2026 Aviation Capital Simulator. All rights reserved.
+    </span>
+
+    <span class="acs-footer-separator">
+      •
+    </span>
+
+    <a
+      href="mailto:aviationcapitalsim@gmail.com"
+      class="acs-footer-link"
+    >
+      aviationcapitalsim@gmail.com
+    </a>
+
+    <span class="acs-footer-separator">
+      •
+    </span>
+
+    <a
+      href="privacy.html"
+      class="acs-footer-link"
+    >
+      Privacy Policy
+    </a>
+
+    <span class="acs-footer-separator">
+      •
+    </span>
+
+    <a
+      href="terms.html"
+      class="acs-footer-link"
+    >
+      Terms of Service
+    </a>
+
+  </footer>
+
+
+  <!-- ============================================================
+       SIMPLE VISUAL TAB PREVIEW
+       ------------------------------------------------------------
+       UI only.
+       No backend authority.
+       No calculations.
+       ============================================================ -->
+
+  <script>
+
+    const aiCards =
+      document.querySelectorAll(".ai-main-card");
+
+    const aiContentTitle =
+      document.getElementById("aiContentTitle");
+
+    const aiContentMeta =
+      document.getElementById("aiContentMeta");
+
+    const aiContentBody =
+      document.getElementById("aiContentBody");
+
+
+    const AI_SECTION_PREVIEW = {
+
+      airport: {
+        title: "Airport",
+        meta: "Current ACS Era",
+        items: [
+          ["Runway", "-- M"],
+          ["Elevation", "-- FT"],
+          ["Airport Class", "--"],
+          ["Infrastructure", "--"]
+        ]
+      },
+
+      operations: {
+        title: "Operations",
+        meta: "Current ACS Activity",
+        items: [
+          ["Weekly Flights", "--"],
+          ["Destinations", "--"],
+          ["Active Routes", "--"],
+          ["Current Operations", "--"]
+        ]
+      },
+
+      airlines: {
+        title: "Airlines",
+        meta: "ACS Network Presence",
+        items: [
+          ["Operators", "--"],
+          ["Routes", "--"],
+          ["Weekly Flights", "--"],
+          ["Aircraft Types", "--"]
+        ]
+      },
+
+      costs: {
+        title: "Costs",
+        meta: "Airport Charges",
+        items: [
+          ["Landing Fee", "$--"],
+          ["Slot Fee", "$--"],
+          ["Handling", "$--"],
+          ["Passenger Charges", "$--"]
+        ]
+      }
+
+    };
+
+
+    function AI_renderSectionPreview(sectionKey) {
+
+      const section =
+        AI_SECTION_PREVIEW[sectionKey];
+
+      if (!section) return;
+
+      aiContentTitle.textContent =
+        section.title;
+
+      aiContentMeta.textContent =
+        section.meta;
+
+      aiContentBody.innerHTML =
+        section.items
+          .map(
+            ([label, value]) => `
+              <div class="ai-content-item">
+                <span>${label}</span>
+                <strong>${value}</strong>
+              </div>
+            `
+          )
+          .join("");
+
+    }
+
+
+    aiCards.forEach(card => {
+
+      card.addEventListener("click", () => {
+
+        aiCards.forEach(item =>
+          item.classList.remove("active")
+        );
+
+        card.classList.add("active");
+
+        AI_renderSectionPreview(
+          card.dataset.aiSection
+        );
+
+      });
+
+    });
+
+
+    function handleLogout() {
+
+      alert(
+        "👋 Session closed. Your fleet awaits your command!"
+      );
+
+      window.location.href =
+        "login.html";
+
+    }
+
+  </script>
+
+
+  <!-- ============================================================
+       ACS AUTHORITIES
+       ------------------------------------------------------------
+       Visual structure only.
+       No Airport Intelligence backend engine connected yet.
+       No PostgreSQL writes.
+       No localStorage authority.
+       ============================================================ -->
+
+  <script src="engine/acs_auth_guard.js"></script>
+  <script src="acs_time_recovery.js"></script>
+  <script src="time_engine.js"></script>
+
+</body>
+</html>
