@@ -3239,10 +3239,24 @@ window.confirmRoute = async function () {
     const data = await res.json();
 
     if (!res.ok || !data || data.ok !== true) {
-      console.error("EDIT ROUTE failed:", data);
-      alert("⛔ Update failed: " + (data?.error || data?.details || "Unknown error"));
-      return;
-    }
+
+  console.error("EDIT ROUTE failed:", data);
+
+  if (data?.error === "ROUTE_EDIT_BLOCKED_BY_ACTIVE_FLIGHT") {
+    alert(
+      "⚠️ This route is currently operating.\n\n" +
+      "Please wait until the active flight is completed before editing the route."
+    );
+    return;
+  }
+
+  alert(
+    "⛔ Update failed: " +
+    (data?.error || data?.details || "Unknown error")
+  );
+
+  return;
+}
 
     alert("✅ Route updated.");
     window.location.href = "schedule_table.html";
