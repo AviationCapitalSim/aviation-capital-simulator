@@ -340,6 +340,58 @@
       : icao;
   }
 
+/* ============================================================
+   AIRLINE BASE — GLOBAL DISPLAY
+   ============================================================ */
+
+function AI_airlineBaseInfo(
+  airline,
+  selectedIcao
+) {
+
+  const baseIcao =
+    AI_upper(
+      airline?.base_icao
+    );
+
+  if (!baseIcao) {
+
+    return {
+      isBase: false,
+      label: "BASE —"
+    };
+  }
+
+
+  if (
+    baseIcao ===
+    AI_upper(
+      selectedIcao
+    )
+  ) {
+
+    return {
+      isBase: true,
+      label: "BASE AIRLINE"
+    };
+  }
+
+
+  const baseCity =
+    AI_text(
+      airline?.base_city
+    );
+
+
+  return {
+    isBase: false,
+
+    label:
+      baseCity
+        ? `BASE ${baseIcao} · ${baseCity}`
+        : `BASE ${baseIcao}`
+  };
+}
 
   /* ============================================================
      NETWORK / AIRPORT NORMALIZATION
@@ -1313,15 +1365,19 @@
       );
 
     if (
-      !body ||
-      !title ||
-      !meta
-    ) {
-      return;
-    }
+  !body ||
+  !title ||
+  !meta
+) {
+  return;
+}
 
-    const snapshot =
-      AI_STATE.snapshot;
+body.classList.remove(
+  "ai-airlines-grid"
+);
+
+const snapshot =
+  AI_STATE.snapshot;
 
     if (!snapshot) {
 
@@ -1627,88 +1683,301 @@
 
 
   function AI_renderAirlinesSection(
-    snapshot,
-    title,
-    meta,
-    body
-  ) {
+  snapshot,
+  title,
+  meta,
+  body
+) {
 
-    const airlines =
-      Array.isArray(
-        snapshot?.network
-          ?.airlines
-      )
-        ? snapshot.network.airlines
-        : [];
+  const airlines =
+    Array.isArray(
+      snapshot?.network?.airlines
+    )
+      ? [
+          ...snapshot.network.airlines
+        ]
+      : [];
 
-    title.textContent =
-      "Airlines";
 
-    meta.textContent =
-      "NETWORK PRESENCE";
+  const selectedIcao =
+    AI_upper(
+      snapshot?.airport?.icao
+    );
 
-    if (!airlines.length) {
 
-      body.innerHTML =
-        AI_contentItem(
-          "Operators",
-          "0",
-          "No active passenger-network operators"
-        );
+  title.textContent =
+    "Airlines";
 
-      return;
-    }
+  meta.textContent =
+    "AIRPORT OPERATORS";
+
+
+  body.classList.add(
+    "ai-airlines-grid"
+  );
+
+
+  if (!airlines.length) {
 
     body.innerHTML =
-      airlines
-        .map(
-          airline => {
+      AI_contentItem(
+        "Operators",
+        "0",
+        "No airlines currently operating at this airport"
+      );
 
-            const carrier =
-              AI_text(
-                airline?.airline_name
-              )
-              ||
+    return;
+  }
+
+
+  /*
+   * Airport base airline first.
+   * Remaining operators ordered by weekly activity.
+   */
+
+  airlines.sort(
+    (a, b) => {
+
+      const aBase =
+        AI_upper(
+          a?.base_icao
+        ) === selectedIcao;
+
+      const bBase =
+        AI_upper(
+          b?.base_icao
+        ) === selectedIcao;
+
+
+      if (
+        aBase !== bBase
+      ) {
+
+        return aBase
+          ? -1
+          : 1;
+      }
+
+
+      const flightDifference =
+        AI_integer(
+          b?.weekly_flights
+        )
+        -
+        AI_integer(
+          a?.weekly_flights
+        );
+
+
+      if (
+        flightDifference !== 0
+      ) {
+
+        return flightDifference;
+      }
+
+
+      return AI_text(
+        a?.airline_name
+      ).localeCompare(
+        AI_text(
+          b?.airline_name
+        ),
+        "en",
+        {
+          sensitivity: "base"
+        }
+      );
+    }
+  );
+
+
+  body.innerHTML =
+    airlines
+      .map(
+        airline => {
+
+          const carrier =
+            AI_text(
+              airline?.airline_name
+            )
+            ||
+            AI_upper(
+              airline?.icao
+            )
+            ||
+            `AIRLINE ${AI_integer(
+              airline?.airline_id
+            )}`;
+
+
+          const codes =
+            [
+              AI_upper(
+                airline?.iata
+              ),
+
               AI_upper(
                 airline?.icao
               )
-              ||
-              `AIRLINE ${AI_integer(
-                airline?.airline_id
-              )}`;
+            ]
+              .filter(Boolean)
+              .join(" / ");
 
-            const aircraft =
-              Array.isArray(
-                airline?.aircraft_types
-              )
-                ? airline.aircraft_types
-                    .filter(Boolean)
-                    .join(" · ")
-                : "";
 
-            const summary =
-              [
-                `${AI_formatInteger(
-                  airline?.routes
-                )} route(s)`,
-                `${AI_formatInteger(
-                  airline?.weekly_flights
-                )} flights/week`,
-                `${AI_formatInteger(
-                  airline?.destinations
-                )} destination(s)`
-              ]
-              .join(" · ");
-
-            return AI_contentItem(
-              carrier,
-              summary,
-              aircraft
+          const base =
+            AI_airlineBaseInfo(
+              airline,
+              selectedIcao
             );
-          }
-        )
-        .join("");
-  }
+
+
+          /*
+           * IMPORTANT:
+           * Aircraft names arrive from the backend authority.
+           * Airport Intelligence does NOT classify,
+           * translate or maintain aircraft-specific rules.
+           */
+
+          const aircraft =
+            Array.isArray(
+              airline?.aircraft_types
+            )
+              ? Array.from(
+                  new Set(
+                    airline.aircraft_types
+                      .map(
+                        model =>
+                          AI_text(model)
+                      )
+                      .filter(Boolean)
+                  )
+                )
+              : [];
+
+
+          const aircraftHtml =
+            aircraft.length
+
+              ? aircraft
+                  .map(
+                    model => `
+                      <span class="ai-aircraft-chip">
+                        ${AI_escapeHtml(model)}
+                      </span>
+                    `
+                  )
+                  .join("")
+
+              : `
+                  <span class="ai-aircraft-chip">
+                    —
+                  </span>
+                `;
+
+
+          return `
+            <article
+              class="ai-airline-card${base.isBase ? " is-base" : ""}"
+            >
+
+              <div class="ai-airline-top">
+
+                <div class="ai-airline-identity">
+
+                  <strong class="ai-airline-name">
+                    ${AI_escapeHtml(
+                      carrier
+                    )}
+                  </strong>
+
+                  <span class="ai-airline-codes">
+                    ${AI_escapeHtml(
+                      codes || "—"
+                    )}
+                  </span>
+
+                </div>
+
+
+                <span
+                  class="ai-airline-base${base.isBase ? " is-base" : ""}"
+                >
+                  ${AI_escapeHtml(
+                    base.label
+                  )}
+                </span>
+
+              </div>
+
+
+              <div class="ai-airline-primary">
+
+                <strong>
+                  ${AI_formatInteger(
+                    airline?.weekly_flights
+                  )}
+                </strong>
+
+                <span>
+                  WEEKLY FLIGHTS
+                </span>
+
+              </div>
+
+
+              <div class="ai-airline-stats">
+
+                <div>
+
+                  <strong>
+                    ${AI_formatInteger(
+                      airline?.routes
+                    )}
+                  </strong>
+
+                  <span>
+                    ROUTES
+                  </span>
+
+                </div>
+
+
+                <div>
+
+                  <strong>
+                    ${AI_formatInteger(
+                      airline?.destinations
+                    )}
+                  </strong>
+
+                  <span>
+                    DESTINATIONS
+                  </span>
+
+                </div>
+
+              </div>
+
+
+              <div class="ai-airline-aircraft">
+
+                <span class="ai-airline-aircraft-label">
+                  AIRCRAFT
+                </span>
+
+                <div class="ai-aircraft-list">
+                  ${aircraftHtml}
+                </div>
+
+              </div>
+
+            </article>
+          `;
+        }
+      )
+      .join("");
+}
 
 
   function AI_renderCostsSection(
@@ -1760,102 +2029,6 @@
       .join("");
   }
 
-
-  /* ============================================================
-     NETWORK VIEW
-     ============================================================ */
-
-  function AI_renderNetwork(
-    snapshot
-  ) {
-
-    const stage =
-      document.querySelector(
-        ".ai-network-stage"
-      );
-
-    if (!stage) return;
-
-    const airport =
-      snapshot?.airport || {};
-
-    const destinations =
-      Array.isArray(
-        snapshot?.network
-          ?.destinations
-      )
-        ? snapshot.network.destinations
-        : [];
-
-    const icao =
-      AI_upper(
-        airport?.icao
-      );
-
-    if (!destinations.length) {
-
-      stage.innerHTML = `
-        <div class="ai-network-placeholder">
-          <strong>
-            ${AI_escapeHtml(
-              icao || "AIRPORT NETWORK"
-            )}
-          </strong>
-
-          <span>
-            No active passenger-network destinations are currently recorded.
-          </span>
-        </div>
-      `;
-
-      return;
-    }
-
-    const destinationText =
-      destinations
-        .map(
-          destination => {
-
-            const label =
-              AI_text(
-                destination?.label
-              )
-              ||
-              AI_upper(
-                destination?.icao
-              );
-
-            const weekly =
-              AI_integer(
-                destination
-                  ?.weekly_flights
-              );
-
-            return `${label} · ${weekly} flights/week`;
-          }
-        )
-        .join("   •   ");
-
-    stage.innerHTML = `
-      <div class="ai-network-placeholder">
-
-        <strong>
-          ${AI_escapeHtml(
-            icao
-          )} NETWORK
-        </strong>
-
-        <span>
-          ${AI_escapeHtml(
-            destinationText
-          )}
-        </span>
-
-      </div>
-    `;
-  }
-
-
   /* ============================================================
      COMPLETE SNAPSHOT RENDER
      ============================================================ */
@@ -1878,10 +2051,6 @@
 
     AI_renderSection(
       AI_STATE.activeSection
-    );
-
-    AI_renderNetwork(
-      snapshot
     );
   }
 
@@ -1980,74 +2149,24 @@
     AI_renderSection(
       AI_STATE.activeSection
     );
-
-    AI_resetNetwork();
   }
-
-
-  function AI_resetNetwork() {
-
-    const stage =
-      document.querySelector(
-        ".ai-network-stage"
-      );
-
-    if (!stage) return;
-
-    stage.innerHTML = `
-      <div class="ai-network-placeholder">
-
-        <strong>
-          AIRPORT NETWORK
-        </strong>
-
-        <span>
-          Select an airport to view its current destinations.
-        </span>
-
-      </div>
-    `;
-  }
-
 
   function AI_renderSnapshotError() {
 
-    AI_setText(
-      "aiQuickAirlines",
-      "—"
-    );
+  AI_setText(
+    "aiQuickAirlines",
+    "—"
+  );
 
-    AI_setText(
-      "aiQuickRoutes",
-      "—"
-    );
+  AI_setText(
+    "aiQuickRoutes",
+    "—"
+  );
 
-    AI_renderSection(
-      AI_STATE.activeSection
-    );
-
-    const stage =
-      document.querySelector(
-        ".ai-network-stage"
-      );
-
-    if (stage) {
-
-      stage.innerHTML = `
-        <div class="ai-network-placeholder">
-
-          <strong>
-            AIRPORT INTELLIGENCE UNAVAILABLE
-          </strong>
-
-          <span>
-            The selected airport snapshot could not be loaded.
-          </span>
-
-        </div>
-      `;
-    }
-  }
+  AI_renderSection(
+    AI_STATE.activeSection
+  );
+}
 
 
   /* ============================================================
