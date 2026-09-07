@@ -1,5 +1,5 @@
 /* ============================================================
-   ACS OCC — AIRPORT INTELLIGENCE FRONTEND ENGINE v1.0
+   ACS OCC — AIRPORT INTELLIGENCE FRONTEND ENGINE v1.1
    ------------------------------------------------------------
    File:
      engine/acs_airport_intelligence.js
@@ -257,21 +257,6 @@
   }
 
 
-  function AI_formatEra(value) {
-
-    const text =
-      AI_text(value);
-
-    if (!text) {
-      return "CURRENT ACS ERA";
-    }
-
-    return text
-      .replace(/_/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-  }
-
 
   function AI_countryDisplayName(
     countryCode,
@@ -482,7 +467,7 @@
   async function AI_loadCatalog() {
 
     AI_setStatus(
-      "Loading ACS airport authority..."
+      "Loading airport database..."
     );
 
     const data =
@@ -506,9 +491,9 @@
     AI_populateContinents();
 
     AI_setStatus(
-      `Airport authority loaded — ${AI_formatInteger(
+      `Airport database ready — ${AI_formatInteger(
         AI_STATE.catalog.length
-      )} airports available in the current ACS period`
+      )} airports available`
     );
   }
 
@@ -1016,9 +1001,7 @@
 
     AI_setText(
       "aiEraChip",
-      airport?.sim_year
-        ? `ACS ${airport.sim_year}`
-        : "CURRENT ACS ERA"
+      AI_upper(airport?.airport_status) || "ACTIVE"
     );
   }
 
@@ -1077,17 +1060,9 @@
         .join(", ")
     );
 
-    const eraLabel =
-      AI_formatEra(
-        snapshot?.era
-          ?.era_label
-      );
-
     AI_setText(
       "aiEraChip",
-      snapshot?.sim_year
-        ? `${snapshot.sim_year} · ${eraLabel}`
-        : eraLabel
+      AI_upper(airport?.airport_status) || "ACTIVE"
     );
   }
 
@@ -1556,9 +1531,7 @@
       "Airport Activity";
 
     meta.textContent =
-      snapshot?.sim_year
-        ? `ACS ${snapshot.sim_year} · Current Month`
-        : "Current ACS Month";
+      "CURRENT MONTH";
 
     body.innerHTML =
       [
@@ -1567,7 +1540,7 @@
           `${AI_formatInteger(
             pax?.passengers
           )} PAX`,
-          "Current ACS month to date"
+          "Month to date"
         ),
 
         AI_contentItem(
@@ -1614,7 +1587,7 @@
       "Operations";
 
     meta.textContent =
-      "Current ACS Activity";
+      "CURRENT OPERATIONS";
 
     body.innerHTML =
       [
@@ -1672,7 +1645,7 @@
       "Airlines";
 
     meta.textContent =
-      "ACS Network Presence";
+      "NETWORK PRESENCE";
 
     if (!airlines.length) {
 
@@ -1752,9 +1725,7 @@
       "Costs";
 
     meta.textContent =
-      snapshot?.sim_year
-        ? `Airport Charges · ACS ${snapshot.sim_year}`
-        : "Airport Charges";
+      "AIRPORT CHARGES";
 
     body.innerHTML =
       [
@@ -1780,16 +1751,10 @@
         ),
 
         AI_contentItem(
-          "Cost Authority",
+          "Open Hours",
           AI_text(
-            costs?.source
-          )
-            .replace(
-              /_/g,
-              " "
-            )
-            ||
-            "—"
+            snapshot?.airport?.open_hrs
+          ) || "—"
         )
       ]
       .join("");
@@ -1838,7 +1803,7 @@
           </strong>
 
           <span>
-            No active ACS passenger-network destinations are currently recorded.
+            No active passenger-network destinations are currently recorded.
           </span>
         </div>
       `;
@@ -1949,7 +1914,7 @@
 
     AI_setText(
       "aiEraChip",
-      "CURRENT ACS ERA"
+      "ACTIVE"
     );
 
     AI_setText(
@@ -2037,7 +2002,7 @@
         </strong>
 
         <span>
-          Select an airport to view its current ACS destinations.
+          Select an airport to view its current destinations.
         </span>
 
       </div>
@@ -2228,7 +2193,7 @@
       );
 
       AI_setStatus(
-        `Airport catalog unavailable — ${err?.message || "UNKNOWN_ERROR"}`
+        `Airport database unavailable — ${err?.message || "UNKNOWN_ERROR"}`
       );
     }
   }
