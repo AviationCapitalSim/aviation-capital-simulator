@@ -1616,15 +1616,6 @@
       text-transform: uppercase;
     }
 
-    .ai-selector-meta {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 8px;
-      color: rgba(205, 220, 237, 0.48);
-      font-family: monospace;
-      font-size: 0.64rem;
-    }
-
     .ai-identity-panel,
     .ai-kpi,
     .ai-data-panel,
@@ -1882,15 +1873,16 @@
         </select>
       </div>
       <div class="ai-field">
-        <label for="airportSelect">Airport</label>
-        <select class="ai-select" id="airportSelect" disabled>
-          <option value="">Select airport</option>
-        </select>
-        <div class="ai-selector-meta">
-          <span id="airportCount">—</span>
-          <span id="simulationClock">—</span>
-        </div>
-      </div>
+  <label for="airportSelect">Airport</label>
+
+  <select
+    class="ai-select"
+    id="airportSelect"
+    disabled
+  >
+    <option value="">Select airport</option>
+  </select>
+</div>
     </section>
 
     <section class="ai-identity-panel">
@@ -2013,9 +2005,12 @@
   "use strict";
 
   const API_BASE = "https://api.aviationcapitalsim.com";
-  const CATALOG_URL = `${API_BASE}/v1/airport-intelligence/catalog`;
-  const SNAPSHOT_URL = icao =>
-    `${API_BASE}/v1/airport-intelligence/${encodeURIComponent(icao)}`;
+
+const CATALOG_URL =
+  `${API_BASE}/v1/airports/catalog?limit=5000`;
+
+const SNAPSHOT_URL = icao =>
+  `${API_BASE}/v1/airport-intelligence/${encodeURIComponent(icao)}`;
 
   const state = {
     airports: [],
@@ -2105,8 +2100,40 @@
   }
 
   function airportCountryName(airport) {
-    return text(airport.country || airport.region || airport.country_code);
+  const regionName =
+    text(airport.region);
+
+  if (regionName) {
+    return regionName;
   }
+
+  const countryCode =
+    upper(
+      airport.country_code ||
+      airport.country
+    );
+
+  if (/^[A-Z]{2}$/.test(countryCode)) {
+    try {
+      const displayNames =
+        new Intl.DisplayNames(
+          ["en"],
+          {
+            type: "region"
+          }
+        );
+
+      return (
+        displayNames.of(countryCode) ||
+        countryCode
+      );
+    } catch (error) {
+      return countryCode;
+    }
+  }
+
+  return countryCode || "—";
+}
 
   function populateContinents() {
     const select = get("aiContinentSelect");
@@ -2171,35 +2198,35 @@
   }
 
   async function loadCatalog() {
-    setStatus("Loading available airports…", "loading");
-    const data = await fetchJson(CATALOG_URL);
-    if (!Array.isArray(data.airports)) {
-      throw new Error("AIRPORT_CATALOG_INVALID");
-    }
-    state.airports = data.airports;
-    populateContinents();
-    setText("simulationClock", formatSimulationTime(data.current_sim_time));
-    setText("airportCount", `${formatInteger(data.count)} airports available`);
-    setStatus(
-      state.airports.length
-        ? "Select a continent to begin"
-        : "No airports are available on the current simulation date"
+  setStatus(
+    "Loading available airports…",
+    "loading"
+  );
+
+  const data =
+    await fetchJson(CATALOG_URL);
+
+  if (!Array.isArray(data.airports)) {
+    throw new Error(
+      "AIRPORT_CATALOG_INVALID"
     );
   }
 
-  function formatSimulationTime(value) {
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return "Simulation time unavailable";
-    return new Intl.DateTimeFormat("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-      timeZone: "UTC"
-    }).format(date).toUpperCase();
-  }
+  /*
+   * El backend ya entrega solamente los aeropuertos disponibles
+   * en el periodo actual de PostgreSQL.
+   */
+  state.airports =
+    data.airports;
+
+  populateContinents();
+
+  setStatus(
+    state.airports.length
+      ? "Select a continent to begin"
+      : "No airports are available in the current simulation period"
+  );
+}
 
   async function selectAirport(icao) {
     const normalized = upper(icao);
