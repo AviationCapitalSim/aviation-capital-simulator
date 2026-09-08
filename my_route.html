@@ -4226,10 +4226,31 @@ function renderTicketControl() {
     const row =
       state.ticketRows.get(serviceClass) || {};
 
-    const pending =
+    /*
+     * Adjustment already stored in PostgreSQL.
+     * This forms part of the current fare.
+     */
+    const baseAdjustment =
+      numberValue(
+        state.ticketOriginal[serviceClass]
+      );
+
+    /*
+     * New unsaved change selected by the user.
+     * This is what the modal must display.
+     */
+    const pendingAdjustment =
       numberValue(
         state.ticketPending[serviceClass]
       );
+
+    const finalAdjustment = Math.max(
+      -20,
+      Math.min(
+        20,
+        baseAdjustment + pendingAdjustment
+      )
+    );
 
     const referenceMin =
       numberValue(
@@ -4243,26 +4264,26 @@ function renderTicketControl() {
 
     const adjustedMin =
       referenceMin *
-      (1 + pending / 100);
+      (1 + finalAdjustment / 100);
 
     const adjustedMax =
       referenceMax *
-      (1 + pending / 100);
+      (1 + finalAdjustment / 100);
 
-  
     elements.ticketNew[
       serviceClass
-    ].textContent = `${pending}%`;
+    ].textContent =
+      `${pendingAdjustment}%`;
 
     elements.ticketRange[
-  serviceClass
-].textContent =
-  referenceMin > 0
-    ? formatFareMoney(adjustedMin)
-    : "—";
+      serviceClass
+    ].textContent =
+      referenceMin > 0
+        ? formatFareMoney(adjustedMin)
+        : "—";
   }
 }
-
+         
 async function loadTicketControl() {
   if (state.ticketLoading) return;
 
@@ -4318,12 +4339,17 @@ async function loadTicketControl() {
       );
 
       state.ticketOriginal[
-        serviceClass
-      ] = value;
+  serviceClass
+] = value;
 
-      state.ticketPending[
-        serviceClass
-      ] = value;
+/*
+ * The saved adjustment already forms part
+ * of the current fare. There is no new
+ * pending adjustment when the modal opens.
+ */
+state.ticketPending[
+  serviceClass
+] = 0;
     }
 
     renderTicketControl();
@@ -4405,22 +4431,35 @@ function changeTicketAdjustment(
   serviceClass,
   step
 ) {
-  const current =
+  const baseAdjustment =
+    numberValue(
+      state.ticketOriginal[
+        serviceClass
+      ]
+    );
+
+  const currentPending =
     numberValue(
       state.ticketPending[
         serviceClass
       ]
     );
 
-  state.ticketPending[
-    serviceClass
-  ] = Math.max(
+  const nextFinalAdjustment = Math.max(
     -20,
     Math.min(
       20,
-      current + step
+      baseAdjustment +
+      currentPending +
+      step
     )
   );
+
+  state.ticketPending[
+    serviceClass
+  ] =
+    nextFinalAdjustment -
+    baseAdjustment;
 
   renderTicketControl();
 }
@@ -4433,6 +4472,32 @@ async function saveTicketControl() {
     return;
   }
 
+  const adjustments = {};
+
+for (const serviceClass of [
+  "Y",
+  "C",
+  "F"
+]) {
+  adjustments[serviceClass] =
+    Math.max(
+      -20,
+      Math.min(
+        20,
+        numberValue(
+          state.ticketOriginal[
+            serviceClass
+          ]
+        ) +
+        numberValue(
+          state.ticketPending[
+            serviceClass
+          ]
+        )
+      )
+    );
+}
+     
   state.ticketSaving = true;
   elements.ticketSave.disabled = true;
 
@@ -4451,8 +4516,7 @@ async function saveTicketControl() {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          adjustments:
-            state.ticketPending
+           adjustments
         })
       }
     );
@@ -5012,10 +5076,22 @@ elements.ticketCancel.addEventListener(
 elements.ticketReset.addEventListener(
   "click",
   () => {
+    /*
+     * Reset returns every class to the
+     * historical reference fare: 0%.
+     */
     state.ticketPending = {
-      Y: 0,
-      C: 0,
-      F: 0
+      Y: -numberValue(
+        state.ticketOriginal.Y
+      ),
+
+      C: -numberValue(
+        state.ticketOriginal.C
+      ),
+
+      F: -numberValue(
+        state.ticketOriginal.F
+      )
     };
 
     renderTicketControl();
