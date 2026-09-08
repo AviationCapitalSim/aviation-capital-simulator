@@ -463,60 +463,30 @@ async function pushLog(entry){
 
 }
 
-window.ACS_registerIncome = async function(payload){
+/* ============================================================
+   ACS OCC — LEGACY FLIGHT INCOME BRIDGE DISABLED
+   ------------------------------------------------------------
+   Preserved as a compatibility stub for old UI consumers.
 
-  if (!payload || typeof payload.revenue !== "number") return;
+   It performs:
+   - no fetch
+   - no finance write
+   - no local fallback
+   - no settlement
+   ============================================================ */
 
-  const airlineId =
-    window.ACS_SERVER_SESSION?.airline_id ||
-    window.ACS_activeUser?.airline_id;
+window.ACS_registerIncome =
+async function ACS_registerIncomeDisabled() {
 
-  if (!airlineId) {
-    console.warn("NO AIRLINE ID");
-    return;
-  }
+  console.warn(
+    "ACS OCC: legacy frontend flight settlement is disabled."
+  );
 
-  try {
-
-    const res = await fetch(
-      "https://api.aviationcapitalsim.com/v1/finance/flight-event",
-      {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          airline_id: Number(airlineId),
-          revenue: payload.revenue,
-          cost_fuel: payload.costs?.fuel || 0,
-          cost_handling: payload.costs?.handling || 0,
-          cost_slot: payload.costs?.slot || 0,
-          cost_navigation: payload.costs?.navigation || 0,
-          cost_overflight: payload.costs?.overflight || 0
-        })
-      }
-    );
-
-    const data = await res.json();
-
-    if (!data?.ok) {
-      console.warn("FLIGHT EVENT FAILED", data);
-      return;
-    }
-
-    await ACS_FINANCE_syncFromServer();
-
-    window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
-
-    console.log("✅ FINANCE SYNC AFTER FLIGHT OK");
-
-  } catch(err) {
-
-    console.warn("FLIGHT EVENT ERROR", err);
-
-  }
-
+  return {
+    ok: false,
+    disabled: true,
+    authority: "POSTGRESQL_FLIGHT_SETTLEMENT_V2"
+  };
 };
    
 /* ============================================================
@@ -742,49 +712,22 @@ if (typeof registerTimeListener === "function") {
 }
    
 /* ============================================================
-   🟧 F9 — ECONOMICS → FINANCE BRIDGE (HARD DEDUP)
+   ACS OCC — FRONTEND FLIGHT FINANCE BRIDGE RETIRED
    ------------------------------------------------------------
-   ✔ One eventId → one ledger entry
-   ✔ Multi-tab safe
-   ✔ Refresh safe
-   ✔ Canonical protection layer
+   ACS_FLIGHT_ECONOMICS remains available for:
+   - route statistics
+   - KPI refresh
+   - visual telemetry
+
+   Financial consumption is intentionally not registered here.
+   PostgreSQL flight settlement is the only authority.
    ============================================================ */
 
-const ACS_FIN_EVENT_DEDUP = new Set();
+window.__ACS_LEGACY_FLIGHT_FINANCE_BRIDGE_DISABLED__ = true;
 
-window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
-
-  const eco = e.detail;
-  if (!eco || !eco.eventId) return;
-
-  if(ACS_FIN_EVENT_DEDUP.has(eco.eventId)) return;
-  ACS_FIN_EVENT_DEDUP.add(eco.eventId);
-   
-  window.ACS_registerIncome({
-    type: "FLIGHT",
-    source: `FLIGHT ${eco.origin} → ${eco.destination}`,
-    revenue: Number(eco.revenue || 0),
-    costTotal: Number(eco.costTotal || 0),
-    profit: Number(eco.profit || 0),
-
-    costs:{
-      fuel: Number(eco.fuelCost || 0),
-      handling: Number(eco.handlingCost || 0),
-      slot: Number(eco.slotCost || 0),
-      overflight: Number(eco.overflightCost || 0),
-      navigation: Number(eco.navigationCost || 0)
-    },
-
-    meta:{
-      eventId: eco.eventId,
-      flightId: eco.flightId,
-      aircraftId: eco.aircraftId,
-      year: eco.year,
-      distanceNM: eco.distanceNM
-    }
-  });
-
-});
+console.log(
+  "🟢 ACS OCC flight finance authority: PostgreSQL settlement V2"
+);
 
 })();
 
