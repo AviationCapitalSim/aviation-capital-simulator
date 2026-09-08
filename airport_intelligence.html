@@ -1716,7 +1716,7 @@
     .ai-block-title small { color: rgba(205,220,237,0.44); font-family: monospace; font-size: 0.6rem; }
 
     .ai-slot-body { display: grid; grid-template-columns: 145px 1fr; gap: 25px; align-items: center; padding: 6px 22px 23px; }
-    .ai-slot-ring { --slot: 0%; aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; background: conic-gradient(var(--ai-gold) var(--slot), rgba(74,167,255,0.12) 0); }
+    .ai-slot-ring { position: relative; aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; background: var(--pax-gradient, conic-gradient(rgba(74,167,255,0.12) 0 100%)); box-shadow: 0 0 26px rgba(74,167,255,0.08); transition: background .35s ease; }
     .ai-slot-ring::before { content: ""; width: calc(100% - 24px); height: calc(100% - 24px); border-radius: 50%; background: rgba(5,20,39,0.91); }
     .ai-slot-ring div { position: absolute; text-align: center; }
     .ai-slot-ring strong { display: block; font-family: "Orbitron", sans-serif; font-size: 1.35rem; }
@@ -1727,6 +1727,9 @@
     .ai-slot-values div,.ai-operation-grid div { padding: 13px; border: 1px solid rgba(91,158,255,0.13); background: rgba(7,24,46,0.39); }
     .ai-slot-values span,.ai-operation-grid span { color: var(--ai-muted); font-size: 0.62rem; }
     .ai-slot-values strong,.ai-operation-grid strong { display: block; margin-top: 5px; font-family: monospace; font-size: 0.82rem; }
+    .ai-slot-values small { display: block; margin-top: 5px; color: var(--ai-gold); font-family: monospace; font-size: 0.62rem; }
+    .ai-slot-values div:nth-child(2) small { color: var(--ai-blue); }
+    .ai-slot-values div:nth-child(3) small { color: var(--ai-green); }
     .ai-operation-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; padding: 4px 21px 21px; }
 
     .ai-cost-grid { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--ai-border); }
@@ -1968,12 +1971,12 @@
     </section>
 
     <section class="ai-data-panel" style="margin-top:13px">
-      <header class="ai-block-title"><div><span>AIRPORT ECONOMICS</span><h2>Cost snapshot</h2></div></header>
-      <div class="ai-cost-grid"><div class="ai-cost-item"><span>Landing fee</span><strong id="landingFeeValue">—</strong></div><div class="ai-cost-item"><span>Slot cost</span><strong id="slotCostValue">—</strong></div><div class="ai-cost-item"><span>Passenger charge</span><strong id="ticketFeeValue">—</strong></div><div class="ai-cost-item"><span>Passenger growth</span><strong id="growthValue">—</strong></div></div>
+      <header class="ai-block-title"><div><span>AIRPORT ECONOMICS</span><h2>Costs and slot availability</h2></div></header>
+      <div class="ai-cost-grid"><div class="ai-cost-item"><span>Landing fee</span><strong id="landingFeeValue">—</strong></div><div class="ai-cost-item"><span>Slot cost</span><strong id="slotCostValue">—</strong></div><div class="ai-cost-item"><span>Passenger charge</span><strong id="ticketFeeValue">—</strong></div><div class="ai-cost-item"><span>Passenger growth</span><strong id="growthValue">—</strong></div><div class="ai-cost-item"><span>Slot capacity</span><strong id="slotsCapacityValue">—</strong></div><div class="ai-cost-item"><span>Used slots</span><strong id="slotsUsedValue">—</strong></div><div class="ai-cost-item"><span>Available slots</span><strong id="slotsAvailableValue">—</strong></div><div class="ai-cost-item"><span>Slot utilization</span><strong id="slotUtilizationValue">—</strong></div></div>
     </section>
 
     <section class="ai-data-panel" style="margin-top:13px">
-      <header class="ai-block-title"><div><span>COMPETITION</span><h2>Operator presence</h2></div><small>SHARE · WEEKLY ACTIVITY · FLEET</small></header>
+      <header class="ai-block-title"><div><span>AIRLINE ACTIVITY</span><h2>Operators at this airport</h2></div><small>SHARE · WEEKLY ACTIVITY · FLEET</small></header>
       <div id="operatorList" class="ai-list"><div class="empty-state">Select an airport</div></div>
     </section>
 
@@ -2321,10 +2324,59 @@ const SNAPSHOT_URL = icao =>
     if (select) select.disabled = Boolean(loading);
   }
 
+  function renderPassengerProfile(profile) {
+    const economy = Math.max(0, number(profile.economy_y));
+    const business = Math.max(0, number(profile.business_c));
+    const first = Math.max(0, number(profile.first_f));
+    const calculatedTotal = economy + business + first;
+    const total = number(profile.total) > 0
+      ? number(profile.total)
+      : calculatedTotal;
+
+    const economyPct = total > 0 ? economy / total * 100 : 0;
+    const businessPct = total > 0 ? business / total * 100 : 0;
+    const firstPct = total > 0 ? first / total * 100 : 0;
+    const formatShare = value => total > 0 ? `${value.toFixed(1)}%` : "—";
+
+    setText("paxTotalValue", total > 0 ? formatInteger(total) : "—");
+    setText("paxYValue", total > 0 ? `${formatInteger(economy)} PAX` : "—");
+    setText("paxCValue", total > 0 ? `${formatInteger(business)} PAX` : "—");
+    setText("paxFValue", total > 0 ? `${formatInteger(first)} PAX` : "—");
+    setText("paxYPct", formatShare(economyPct));
+    setText("paxCPct", formatShare(businessPct));
+    setText("paxFPct", formatShare(firstPct));
+    setText("paxCenterValue", formatShare(economyPct));
+
+    const gauge = get("paxGauge");
+    if (!gauge) return;
+
+    if (total <= 0) {
+      gauge.style.removeProperty("--pax-gradient");
+      return;
+    }
+
+    const economyEnd = economyPct;
+    const businessEnd = economyPct + businessPct;
+
+    gauge.style.setProperty(
+      "--pax-gradient",
+      `conic-gradient(
+        var(--ai-gold) 0 ${economyEnd}%,
+        var(--ai-blue) ${economyEnd}% ${businessEnd}%,
+        var(--ai-green) ${businessEnd}% 100%
+      )`
+    );
+  }
+
   function renderSnapshot(snapshot) {
     const airport = snapshot.airport || {};
     const activity = snapshot.activity || {};
     const movement = activity.passenger_movement || {};
+    const passengerProfile = activity.passenger_profile || {
+      economy_y: airport.demand_y,
+      business_c: airport.demand_c,
+      first_f: airport.demand_f
+    };
     const slots = activity.slots || {};
     const network = activity.scheduled_network || {};
     const operations = activity.current_operations || {};
@@ -2334,7 +2386,6 @@ const SNAPSHOT_URL = icao =>
     setText("airportIcao", airport.icao);
     setText("airportName", airport.display_label || airport.city);
     setText("airportLocation", [airport.continent, airport.country].filter(Boolean).join(" · "));
-    setText("simulationClock", formatSimulationTime(snapshot.current_sim_time));
 
     setText("runwayValue", `${formatInteger(airport.runway_m)} m`);
     setText("elevationValue", `${formatInteger(airport.elevation_ft)} ft`);
@@ -2351,14 +2402,12 @@ const SNAPSHOT_URL = icao =>
     setText("networkDestinationsValue", formatInteger(network.destinations));
     setText("networkWeeklyFlightsValue", formatInteger(network.weekly_flights));
 
+    renderPassengerProfile(passengerProfile);
+
     setText("slotsUsedValue", formatInteger(slots.used));
     setText("slotsAvailableValue", formatInteger(slots.available));
     setText("slotsCapacityValue", formatInteger(slots.capacity));
     setText("slotUtilizationValue", `${number(slots.utilization_pct).toFixed(1)}%`);
-    const slotBar = get("slotUtilizationBar");
-    if (slotBar) slotBar.style.width = `${Math.max(0, Math.min(100, number(slots.utilization_pct)))}%`;
-    const slotGauge = get("slotGauge");
-    if (slotGauge) slotGauge.style.setProperty("--slot", `${Math.max(0, Math.min(100, number(slots.utilization_pct)))}%`);
 
     setText("landingFeeValue", formatMoney(costs.landing_fee_usd));
     setText("slotCostValue", formatMoney(costs.slot_cost_usd));
@@ -2436,12 +2485,12 @@ const SNAPSHOT_URL = icao =>
       "movementsValue", "weeklyFlightsValue", "destinationsValue", "activeFlightsValue",
       "activeAirlinesValue", "slotsUsedValue", "slotsAvailableValue", "slotsCapacityValue",
       "currentActiveAirlinesValue", "networkDestinationsValue", "networkWeeklyFlightsValue",
-      "slotUtilizationValue", "landingFeeValue", "slotCostValue", "ticketFeeValue",
+      "slotUtilizationValue", "paxTotalValue", "paxCenterValue", "paxYValue", "paxYPct",
+      "paxCValue", "paxCPct", "paxFValue", "paxFPct",
+      "landingFeeValue", "slotCostValue", "ticketFeeValue",
       "growthValue"].forEach(id => setText(id, "—"));
-    const slotBar = get("slotUtilizationBar");
-    if (slotBar) slotBar.style.width = "0%";
-    const slotGauge = get("slotGauge");
-    if (slotGauge) slotGauge.style.setProperty("--slot", "0%");
+    const paxGauge = get("paxGauge");
+    if (paxGauge) paxGauge.style.removeProperty("--pax-gradient");
     const operatorList = get("operatorList");
     const destinationList = get("destinationList");
     if (operatorList) operatorList.innerHTML = '<div class="empty-state">Select an airport</div>';
