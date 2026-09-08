@@ -1906,13 +1906,61 @@
     </section>
 
     <section class="ai-two-columns">
-      <article class="ai-data-panel">
-        <header class="ai-block-title"><div><span>AIRPORT CAPACITY</span><h2>Slot utilization</h2></div><small id="slotUtilizationValue">—</small></header>
-        <div class="ai-slot-body">
-          <div class="ai-slot-ring" id="slotGauge"><div><strong id="slotsAvailableValue">—</strong><span>AVAILABLE</span></div></div>
-          <div><div class="ai-slot-track"><i id="slotUtilizationBar"></i></div><div class="ai-slot-values"><div><span>Used</span><strong id="slotsUsedValue">—</strong></div><div><span>Capacity</span><strong id="slotsCapacityValue">—</strong></div><div><span>Movements</span><strong id="movementsValue">—</strong></div></div></div>
+
+  <article class="ai-data-panel">
+
+    <header class="ai-block-title">
+      <div>
+        <span>PASSENGER PROFILE</span>
+        <h2>PAX demand by cabin</h2>
+      </div>
+
+      <small>
+        <span id="paxTotalValue">—</span>
+        TOTAL PAX
+      </small>
+    </header>
+
+    <div class="ai-slot-body">
+
+      <div
+        class="ai-slot-ring"
+        id="paxGauge"
+      >
+        <div>
+          <strong id="paxCenterValue">
+            —
+          </strong>
+
+          <span>Y SHARE</span>
         </div>
-      </article>
+      </div>
+
+      <div class="ai-slot-values">
+
+        <div>
+          <span>Economy · Y</span>
+          <strong id="paxYValue">—</strong>
+          <small id="paxYPct">—</small>
+        </div>
+
+        <div>
+          <span>Business · C</span>
+          <strong id="paxCValue">—</strong>
+          <small id="paxCPct">—</small>
+        </div>
+
+        <div>
+          <span>First · F</span>
+          <strong id="paxFValue">—</strong>
+          <small id="paxFPct">—</small>
+        </div>
+
+      </div>
+
+    </div>
+
+  </article>
       <article class="ai-data-panel">
         <header class="ai-block-title"><div><span>LIVE OPERATIONS</span><h2>Current activity</h2></div></header>
         <div class="ai-operation-grid"><div><span>Active flights</span><strong id="activeFlightsValue">—</strong></div><div><span>Airlines active now</span><strong id="currentActiveAirlinesValue">—</strong></div><div><span>Network destinations</span><strong id="networkDestinationsValue">—</strong></div><div><span>Weekly schedule</span><strong id="networkWeeklyFlightsValue">—</strong></div></div>
