@@ -2907,6 +2907,7 @@ const ACS_AIRLINE_TYPE_ACCESS =
 let ACS_baseContext = null;
 let ACS_airlineTypeOptions = [];
 let ACS_selectedAirlineType = "";
+let ACS_airlineTypeInfoViewed = false;
 
 function ACS_formatInfrastructureMoney(value) {
   const amount = Number(value || 0);
@@ -2922,6 +2923,7 @@ function ACS_formatInfrastructureMoney(value) {
 }
 
 function ACS_renderAirlineTypeSelector() {
+     
   const optionMap =
     new Map(
       ACS_airlineTypeOptions.map(
@@ -2955,7 +2957,9 @@ function ACS_renderAirlineTypeSelector() {
       ACS_selectedAirlineType ===
       airlineType;
 
-    button.disabled = !available;
+    button.disabled =
+    !available ||
+    !ACS_airlineTypeInfoViewed;
 
     button.classList.toggle(
       "is-selected",
@@ -3212,6 +3216,10 @@ function ACS_closeAirlineTypeInfo() {
   overlay.hidden = true;
 
   document.body.style.overflow = "";
+
+  ACS_airlineTypeInfoViewed = true;
+
+  ACS_renderAirlineTypeSelector();
 
   document
     .getElementById(
