@@ -1491,6 +1491,1174 @@
 .route-planning-page .support-btn:active {
   transform: translateY(0);
 }
+
+/* ============================================================
+   ACS OCC — ROUTE PLANNING / AIRPORT INTELLIGENCE
+   ------------------------------------------------------------
+   Integrated airport intelligence workspace.
+   Visual authority only.
+   No operational writes.
+   ============================================================ */
+
+
+.rp-airport-intelligence {
+  margin-top: 38px;
+
+  --rp-ai-red: #ff667a;
+}
+
+
+/* ============================================================
+   SECTION HEADER
+   ============================================================ */
+
+.rp-ai-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  gap: 24px;
+
+  margin-bottom: 18px;
+  padding-top: 28px;
+
+  border-top:
+    1px solid rgba(91, 158, 255, 0.18);
+}
+
+
+.rp-ai-header-copy {
+  min-width: 0;
+}
+
+
+.rp-ai-kicker {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: var(--rp-gold);
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 0.58rem;
+  font-weight: 700;
+
+  letter-spacing: 0.16em;
+
+  text-transform: uppercase;
+}
+
+
+.rp-ai-header h2 {
+  margin: 0;
+
+  color: var(--rp-text);
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 1.25rem;
+  font-weight: 700;
+
+  letter-spacing: 0.07em;
+
+  text-transform: uppercase;
+}
+
+
+.rp-ai-header p {
+  margin: 7px 0 0;
+
+  color: var(--rp-muted);
+
+  font-size: 0.68rem;
+  letter-spacing: 0.045em;
+}
+
+
+/* ============================================================
+   ORIGIN / DESTINATION SWITCH
+   ============================================================ */
+
+.rp-ai-switch {
+  flex: 0 0 auto;
+
+  display: flex;
+
+  gap: 6px;
+
+  padding: 4px;
+
+  border:
+    1px solid rgba(91, 158, 255, 0.22);
+
+  border-radius: 10px;
+
+  background:
+    rgba(5, 20, 39, 0.58);
+}
+
+
+.rp-ai-switch button {
+  min-width: 108px;
+  height: 34px;
+
+  padding: 0 14px;
+
+  border:
+    1px solid transparent;
+
+  border-radius: 7px;
+
+  background: transparent;
+
+  color:
+    rgba(205, 220, 237, 0.58);
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 0.55rem;
+  font-weight: 700;
+
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease;
+}
+
+
+.rp-ai-switch button.active {
+  border-color:
+    rgba(255, 179, 0, 0.36);
+
+  background:
+    rgba(255, 179, 0, 0.08);
+
+  color:
+    var(--rp-gold);
+}
+
+
+.rp-ai-switch button:disabled {
+  opacity: 0.36;
+  cursor: not-allowed;
+}
+
+
+/* ============================================================
+   COMMON INTELLIGENCE PANELS
+   ============================================================ */
+
+.rp-ai-identity,
+.rp-ai-kpi,
+.rp-ai-panel {
+  position: relative;
+
+  overflow: hidden;
+
+  border:
+    1px solid rgba(91, 158, 255, 0.20);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(12, 31, 57, 0.52),
+      rgba(4, 16, 34, 0.30)
+    );
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+
+.rp-ai-identity::before,
+.rp-ai-panel::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 8%;
+
+  width: 42%;
+  height: 1px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.20),
+      transparent
+    );
+}
+
+
+/* ============================================================
+   AIRPORT IDENTITY
+   ============================================================ */
+
+.rp-ai-identity {
+  display: flex;
+  justify-content: space-between;
+
+  min-width: 0;
+
+  border-left:
+    3px solid var(--rp-gold);
+}
+
+
+.rp-ai-identity-main {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 20px;
+
+  padding: 23px 25px;
+}
+
+
+.rp-ai-code-box {
+  width: 82px;
+  height: 74px;
+
+  flex: 0 0 82px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  border:
+    1px solid rgba(255, 179, 0, 0.30);
+
+  background:
+    rgba(255, 179, 0, 0.045);
+}
+
+
+.rp-ai-code-box strong {
+  color: var(--rp-gold);
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 1.65rem;
+  font-weight: 800;
+
+  letter-spacing: 0.05em;
+
+  text-shadow:
+    0 0 14px rgba(255, 179, 0, 0.24);
+}
+
+
+.rp-ai-code-box span {
+  margin-top: 3px;
+
+  color: var(--rp-muted);
+
+  font-family: monospace;
+
+  font-size: 0.60rem;
+
+  letter-spacing: 0.12em;
+}
+
+
+.rp-ai-identity-copy {
+  min-width: 0;
+}
+
+
+.rp-ai-identity-copy p {
+  margin: 0 0 5px;
+
+  color: var(--rp-gold);
+
+  font-family: monospace;
+
+  font-size: 0.61rem;
+
+  letter-spacing: 0.10em;
+
+  text-transform: uppercase;
+}
+
+
+.rp-ai-identity-copy h3 {
+  margin: 0;
+
+  overflow: hidden;
+
+  color: var(--rp-text);
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 1.18rem;
+  font-weight: 700;
+
+  text-overflow: ellipsis;
+}
+
+
+.rp-ai-identity-copy span {
+  display: block;
+
+  margin-top: 6px;
+
+  color: var(--rp-muted);
+
+  font-size: 0.68rem;
+}
+
+
+/* ============================================================
+   AIRPORT FACTS
+   ============================================================ */
+
+.rp-ai-facts {
+  display: flex;
+
+  border-left:
+    1px solid rgba(91, 158, 255, 0.18);
+}
+
+
+.rp-ai-fact {
+  min-width: 135px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  padding: 19px 16px;
+
+  border-right:
+    1px solid rgba(91, 158, 255, 0.14);
+}
+
+
+.rp-ai-fact span {
+  color: var(--rp-muted);
+
+  font-size: 0.54rem;
+  font-weight: 700;
+
+  letter-spacing: 0.06em;
+
+  text-transform: uppercase;
+}
+
+
+.rp-ai-fact strong {
+  margin-top: 6px;
+
+  color: var(--rp-text);
+
+  font-family: monospace;
+
+  font-size: 0.78rem;
+}
+
+
+/* ============================================================
+   KPI GRID
+   ============================================================ */
+
+.rp-ai-kpi-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  margin-top: 12px;
+}
+
+
+.rp-ai-kpi {
+  min-width: 0;
+  min-height: 102px;
+
+  padding: 20px 22px;
+
+  border-right: 0;
+}
+
+
+.rp-ai-kpi:last-child {
+  border-right:
+    1px solid rgba(91, 158, 255, 0.20);
+}
+
+
+.rp-ai-kpi span {
+  display: block;
+
+  color: var(--rp-muted);
+
+  font-size: 0.53rem;
+  font-weight: 700;
+
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
+}
+
+
+.rp-ai-kpi strong {
+  display: block;
+
+  margin-top: 10px;
+
+  color: var(--rp-text);
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 1.35rem;
+  font-weight: 700;
+
+  font-variant-numeric: tabular-nums;
+}
+
+
+.rp-ai-kpi small {
+  display: block;
+
+  margin-top: 5px;
+
+  color:
+    rgba(205, 220, 237, 0.42);
+
+  font-size: 0.60rem;
+}
+
+
+/* ============================================================
+   TWO COLUMN AREA
+   ============================================================ */
+
+.rp-ai-two-columns {
+  display: grid;
+
+  grid-template-columns:
+    1.15fr 0.85fr;
+
+  gap: 12px;
+
+  margin-top: 12px;
+}
+
+
+/* ============================================================
+   PANEL HEADERS
+   ============================================================ */
+
+.rp-ai-panel {
+  min-width: 0;
+}
+
+
+.rp-ai-panel-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding: 18px 20px 14px;
+}
+
+
+.rp-ai-panel-header span {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: var(--rp-gold);
+
+  font-size: 0.53rem;
+  font-weight: 700;
+
+  letter-spacing: 0.09em;
+
+  text-transform: uppercase;
+}
+
+
+.rp-ai-panel-header h3 {
+  margin: 0;
+
+  color: var(--rp-text);
+
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+
+.rp-ai-panel-header small {
+  color:
+    rgba(205, 220, 237, 0.44);
+
+  font-family: monospace;
+
+  font-size: 0.57rem;
+
+  letter-spacing: 0.04em;
+}
+
+
+/* ============================================================
+   PASSENGER PROFILE
+   ============================================================ */
+
+.rp-ai-pax-body {
+  display: grid;
+
+  grid-template-columns:
+    138px 1fr;
+
+  gap: 22px;
+
+  align-items: center;
+
+  padding: 5px 20px 21px;
+}
+
+
+.rp-ai-pax-ring {
+  position: relative;
+
+  width: 138px;
+
+  aspect-ratio: 1;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  background:
+    var(
+      --rp-ai-pax-gradient,
+      conic-gradient(
+        rgba(74, 167, 255, 0.12)
+        0 100%
+      )
+    );
+
+  box-shadow:
+    0 0 24px rgba(74, 167, 255, 0.07);
+}
+
+
+.rp-ai-pax-ring::before {
+  content: "";
+
+  width:
+    calc(100% - 22px);
+
+  height:
+    calc(100% - 22px);
+
+  border-radius: 50%;
+
+  background:
+    rgba(5, 20, 39, 0.94);
+}
+
+
+.rp-ai-pax-ring div {
+  position: absolute;
+
+  text-align: center;
+}
+
+
+.rp-ai-pax-ring strong {
+  display: block;
+
+  color: var(--rp-text);
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 1.25rem;
+}
+
+
+.rp-ai-pax-ring span {
+  display: block;
+
+  margin-top: 4px;
+
+  color: var(--rp-muted);
+
+  font-family: monospace;
+
+  font-size: 0.52rem;
+}
+
+
+.rp-ai-pax-values {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 7px;
+}
+
+
+.rp-ai-pax-values div {
+  padding: 12px;
+
+  border:
+    1px solid rgba(91, 158, 255, 0.13);
+
+  background:
+    rgba(7, 24, 46, 0.36);
+}
+
+
+.rp-ai-pax-values span {
+  display: block;
+
+  color: var(--rp-muted);
+
+  font-size: 0.58rem;
+}
+
+
+.rp-ai-pax-values strong {
+  display: block;
+
+  margin-top: 5px;
+
+  color: var(--rp-text);
+
+  font-family: monospace;
+
+  font-size: 0.80rem;
+}
+
+
+.rp-ai-pax-values small {
+  display: block;
+
+  margin-top: 4px;
+
+  color: var(--rp-gold);
+
+  font-family: monospace;
+
+  font-size: 0.58rem;
+}
+
+
+/* ============================================================
+   CURRENT OPERATIONS
+   ============================================================ */
+
+.rp-ai-operation-grid {
+  display: grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap: 7px;
+
+  padding: 4px 20px 20px;
+}
+
+
+.rp-ai-operation-grid div {
+  padding: 13px;
+
+  border:
+    1px solid rgba(91, 158, 255, 0.13);
+
+  background:
+    rgba(7, 24, 46, 0.36);
+}
+
+
+.rp-ai-operation-grid span {
+  display: block;
+
+  color: var(--rp-muted);
+
+  font-size: 0.58rem;
+}
+
+
+.rp-ai-operation-grid strong {
+  display: block;
+
+  margin-top: 5px;
+
+  color: var(--rp-text);
+
+  font-family: monospace;
+
+  font-size: 0.81rem;
+}
+
+
+/* ============================================================
+   AIRPORT ECONOMICS
+   ============================================================ */
+
+.rp-ai-cost-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  border-top:
+    1px solid rgba(91, 158, 255, 0.18);
+}
+
+
+.rp-ai-cost-item {
+  min-width: 0;
+
+  padding: 17px 19px;
+
+  border-right:
+    1px solid rgba(91, 158, 255, 0.16);
+}
+
+
+.rp-ai-cost-item:nth-child(4n) {
+  border-right: 0;
+}
+
+
+.rp-ai-cost-item span {
+  display: block;
+
+  color: var(--rp-muted);
+
+  font-size: 0.53rem;
+  font-weight: 700;
+
+  letter-spacing: 0.06em;
+
+  text-transform: uppercase;
+}
+
+
+.rp-ai-cost-item strong {
+  display: block;
+
+  margin-top: 6px;
+
+  color: var(--rp-text);
+
+  font-family: monospace;
+
+  font-size: 0.83rem;
+}
+
+
+/* ============================================================
+   AIRLINES / DESTINATIONS LISTS
+   ============================================================ */
+
+.rp-ai-list {
+  border-top:
+    1px solid rgba(91, 158, 255, 0.18);
+}
+
+
+.rp-ai-empty {
+  padding: 32px;
+
+  color: var(--rp-muted);
+
+  font-size: 0.68rem;
+
+  text-align: center;
+}
+
+
+.rp-ai-operator-row {
+  display: grid;
+
+  grid-template-columns:
+    32px
+    1.2fr
+    1fr
+    45px
+    86px
+    1fr;
+
+  gap: 12px;
+
+  align-items: center;
+
+  min-height: 62px;
+
+  padding: 0 20px;
+
+  border-bottom:
+    1px solid rgba(91, 158, 255, 0.09);
+}
+
+
+.rp-ai-operator-rank {
+  color:
+    rgba(205, 220, 237, 0.35);
+
+  font-family: monospace;
+
+  font-size: 0.58rem;
+}
+
+
+.rp-ai-operator-name strong {
+  display: block;
+
+  color: var(--rp-text);
+
+  font-size: 0.70rem;
+}
+
+
+.rp-ai-operator-name small {
+  display: block;
+
+  margin-top: 3px;
+
+  color: var(--rp-muted);
+
+  font-family: monospace;
+
+  font-size: 0.55rem;
+}
+
+
+.rp-ai-operator-bar {
+  height: 3px;
+
+  background:
+    rgba(74, 167, 255, 0.12);
+}
+
+
+.rp-ai-operator-bar i {
+  display: block;
+
+  height: 100%;
+
+  background: var(--rp-gold);
+}
+
+
+.rp-ai-aircraft-chips {
+  display: flex;
+
+  gap: 4px;
+
+  flex-wrap: wrap;
+}
+
+
+.rp-ai-aircraft-chips i {
+  padding: 3px 5px;
+
+  border:
+    1px solid rgba(91, 158, 255, 0.20);
+
+  color: var(--rp-muted);
+
+  font-family: monospace;
+
+  font-size: 0.52rem;
+
+  font-style: normal;
+}
+
+
+.rp-ai-destination-row {
+  display: grid;
+
+  grid-template-columns:
+    32px
+    1.5fr
+    0.65fr
+    0.65fr
+    0.5fr;
+
+  gap: 10px;
+
+  align-items: center;
+
+  min-height: 58px;
+
+  padding: 0 20px;
+
+  border-bottom:
+    1px solid rgba(91, 158, 255, 0.09);
+}
+
+
+.rp-ai-destination-row > span {
+  color: var(--rp-muted);
+
+  font-size: 0.61rem;
+}
+
+
+.rp-ai-destination-row > strong {
+  color: var(--rp-green);
+
+  font-family: monospace;
+
+  font-size: 0.70rem;
+}
+
+
+/* ============================================================
+   STATUS
+   ============================================================ */
+
+.rp-ai-status {
+  display: flex;
+
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 8px;
+
+  margin-top: 11px;
+
+  color: var(--rp-muted);
+
+  font-family: monospace;
+
+  font-size: 0.59rem;
+
+  letter-spacing: 0.05em;
+}
+
+
+.rp-ai-status::before {
+  content: "";
+
+  width: 6px;
+  height: 6px;
+
+  flex: 0 0 auto;
+
+  border-radius: 50%;
+
+  background: var(--rp-blue);
+
+  box-shadow:
+    0 0 8px rgba(74, 167, 255, 0.58);
+}
+
+
+.rp-ai-status[data-kind="loading"] {
+  color: var(--rp-gold);
+}
+
+
+.rp-ai-status[data-kind="loading"]::before {
+  background: var(--rp-gold);
+}
+
+
+.rp-ai-status[data-kind="error"] {
+  color: var(--rp-ai-red);
+}
+
+
+.rp-ai-status[data-kind="error"]::before {
+  background: var(--rp-ai-red);
+}
+
+
+/* ============================================================
+   AIRPORT INTELLIGENCE — RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1100px) {
+
+  .rp-ai-header {
+    align-items: flex-start;
+  }
+
+  .rp-ai-identity {
+    flex-direction: column;
+  }
+
+  .rp-ai-facts {
+    overflow-x: auto;
+
+    border-top:
+      1px solid rgba(91, 158, 255, 0.18);
+
+    border-left: 0;
+  }
+
+  .rp-ai-fact {
+    flex: 1;
+  }
+
+  .rp-ai-two-columns {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+
+@media (max-width: 760px) {
+
+  .rp-ai-header {
+    flex-direction: column;
+  }
+
+  .rp-ai-switch {
+    width: 100%;
+
+    box-sizing: border-box;
+  }
+
+  .rp-ai-switch button {
+    flex: 1;
+
+    min-width: 0;
+  }
+
+  .rp-ai-identity-main {
+    align-items: flex-start;
+
+    padding: 17px 14px;
+  }
+
+  .rp-ai-code-box {
+    width: 68px;
+    height: 64px;
+
+    flex-basis: 68px;
+  }
+
+  .rp-ai-code-box strong {
+    font-size: 1.35rem;
+  }
+
+  .rp-ai-fact {
+    min-width: 122px;
+
+    padding: 15px 12px;
+  }
+
+  .rp-ai-kpi-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .rp-ai-cost-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .rp-ai-cost-item:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .rp-ai-pax-body {
+    grid-template-columns: 1fr;
+  }
+
+  .rp-ai-pax-ring {
+    margin: auto;
+  }
+
+  .rp-ai-operator-row {
+    grid-template-columns:
+      25px
+      1fr
+      50px;
+
+    padding: 10px 13px;
+  }
+
+  .rp-ai-operator-bar,
+  .rp-ai-operator-row > span,
+  .rp-ai-aircraft-chips {
+    display: none;
+  }
+
+  .rp-ai-destination-row {
+    grid-template-columns:
+      25px
+      1fr
+      50px;
+
+    padding: 10px 13px;
+  }
+
+  .rp-ai-destination-row > span:nth-of-type(2),
+  .rp-ai-destination-row > span:nth-of-type(3) {
+    display: none;
+  }
+
+}
+
+
+@media (max-width: 520px) {
+
+  .rp-ai-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rp-ai-pax-values {
+    grid-template-columns: 1fr;
+  }
+
+  .rp-ai-operation-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
        
 </style>
      
@@ -2125,7 +3293,694 @@
       Planning workspace ready — no operational changes
     </div>
 
+<!-- ============================================================
+     ACS OCC — AIRPORT INTELLIGENCE
+     Integrated into Route Planning
+     ------------------------------------------------------------
+     Information authority only.
+     No operational writes.
+     ============================================================ -->
 
+<section
+  class="rp-airport-intelligence"
+  id="rpAirportIntelligence"
+  aria-label="Airport intelligence"
+>
+
+
+  <!-- ==========================================================
+       HEADER
+       ========================================================== -->
+
+  <header class="rp-ai-header">
+
+    <div class="rp-ai-header-copy">
+
+      <span class="rp-ai-kicker">
+        Airport Intelligence
+      </span>
+
+      <h2>
+        Airport &amp; Network Information
+      </h2>
+
+      <p>
+        Infrastructure, passenger activity, costs,
+        slots and network presence.
+      </p>
+
+    </div>
+
+
+    <!-- ORIGIN / DESTINATION -->
+
+    <div
+      class="rp-ai-switch"
+      role="group"
+      aria-label="Airport intelligence target"
+    >
+
+      <button
+        type="button"
+        id="rpAiOriginButton"
+        disabled
+      >
+        Origin
+      </button>
+
+      <button
+        type="button"
+        id="rpAiDestinationButton"
+        class="active"
+        disabled
+      >
+        Destination
+      </button>
+
+    </div>
+
+  </header>
+
+
+
+  <!-- ==========================================================
+       AIRPORT IDENTITY
+       ========================================================== -->
+
+  <section class="rp-ai-identity">
+
+    <div class="rp-ai-identity-main">
+
+      <div class="rp-ai-code-box">
+
+        <strong id="rpAiAirportIata">
+          —
+        </strong>
+
+        <span id="rpAiAirportIcao">
+          —
+        </span>
+
+      </div>
+
+
+      <div class="rp-ai-identity-copy">
+
+        <p id="rpAiAirportLocation">
+          —
+        </p>
+
+        <h3 id="rpAiAirportName">
+          Select a destination
+        </h3>
+
+        <span id="rpAiAirportDescription">
+          Airport intelligence will load from the selected route.
+        </span>
+
+      </div>
+
+    </div>
+
+
+    <div class="rp-ai-facts">
+
+      <div class="rp-ai-fact">
+
+        <span>
+          Longest runway
+        </span>
+
+        <strong id="rpAiRunwayValue">
+          —
+        </strong>
+
+      </div>
+
+
+      <div class="rp-ai-fact">
+
+        <span>
+          Elevation
+        </span>
+
+        <strong id="rpAiElevationValue">
+          —
+        </strong>
+
+      </div>
+
+
+      <div class="rp-ai-fact">
+
+        <span>
+          Open hours
+        </span>
+
+        <strong id="rpAiHoursValue">
+          —
+        </strong>
+
+      </div>
+
+
+      <div class="rp-ai-fact">
+
+        <span>
+          Aircraft limit
+        </span>
+
+        <strong id="rpAiAircraftLimitValue">
+          —
+        </strong>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- ==========================================================
+       AIRPORT KPI
+       ========================================================== -->
+
+  <section class="rp-ai-kpi-grid">
+
+    <article class="rp-ai-kpi">
+
+      <span>
+        Passenger movement
+      </span>
+
+      <strong id="rpAiPassengersValue">
+        —
+      </strong>
+
+      <small>
+        Current month to date
+      </small>
+
+    </article>
+
+
+    <article class="rp-ai-kpi">
+
+      <span>
+        Weekly flights
+      </span>
+
+      <strong id="rpAiWeeklyFlightsValue">
+        —
+      </strong>
+
+      <small>
+        Scheduled passenger network
+      </small>
+
+    </article>
+
+
+    <article class="rp-ai-kpi">
+
+      <span>
+        Destinations
+      </span>
+
+      <strong id="rpAiDestinationsValue">
+        —
+      </strong>
+
+      <small>
+        Active city pairs
+      </small>
+
+    </article>
+
+
+    <article class="rp-ai-kpi">
+
+      <span>
+        Active airlines
+      </span>
+
+      <strong id="rpAiActiveAirlinesValue">
+        —
+      </strong>
+
+      <small>
+        Current operations
+      </small>
+
+    </article>
+
+  </section>
+
+
+
+  <!-- ==========================================================
+       PASSENGER PROFILE + LIVE OPERATIONS
+       ========================================================== -->
+
+  <section class="rp-ai-two-columns">
+
+
+    <!-- PASSENGER PROFILE -->
+
+    <article class="rp-ai-panel">
+
+      <header class="rp-ai-panel-header">
+
+        <div>
+
+          <span>
+            Passenger Profile
+          </span>
+
+          <h3>
+            PAX demand by cabin
+          </h3>
+
+        </div>
+
+        <small>
+          <span id="rpAiPaxTotalValue">—</span>
+          TOTAL PAX
+        </small>
+
+      </header>
+
+
+      <div class="rp-ai-pax-body">
+
+        <div
+          class="rp-ai-pax-ring"
+          id="rpAiPaxGauge"
+        >
+
+          <div>
+
+            <strong id="rpAiPaxCenterValue">
+              —
+            </strong>
+
+            <span>
+              Y SHARE
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <div class="rp-ai-pax-values">
+
+
+          <div>
+
+            <span>
+              Economy · Y
+            </span>
+
+            <strong id="rpAiPaxYValue">
+              —
+            </strong>
+
+            <small id="rpAiPaxYPct">
+              —
+            </small>
+
+          </div>
+
+
+          <div>
+
+            <span>
+              Business · C
+            </span>
+
+            <strong id="rpAiPaxCValue">
+              —
+            </strong>
+
+            <small id="rpAiPaxCPct">
+              —
+            </small>
+
+          </div>
+
+
+          <div>
+
+            <span>
+              First · F
+            </span>
+
+            <strong id="rpAiPaxFValue">
+              —
+            </strong>
+
+            <small id="rpAiPaxFPct">
+              —
+            </small>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </article>
+
+
+
+    <!-- LIVE OPERATIONS -->
+
+    <article class="rp-ai-panel">
+
+      <header class="rp-ai-panel-header">
+
+        <div>
+
+          <span>
+            Live Operations
+          </span>
+
+          <h3>
+            Current activity
+          </h3>
+
+        </div>
+
+      </header>
+
+
+      <div class="rp-ai-operation-grid">
+
+
+        <div>
+
+          <span>
+            Active flights
+          </span>
+
+          <strong id="rpAiActiveFlightsValue">
+            —
+          </strong>
+
+        </div>
+
+
+        <div>
+
+          <span>
+            Airlines active now
+          </span>
+
+          <strong id="rpAiCurrentActiveAirlinesValue">
+            —
+          </strong>
+
+        </div>
+
+
+        <div>
+
+          <span>
+            Network destinations
+          </span>
+
+          <strong id="rpAiNetworkDestinationsValue">
+            —
+          </strong>
+
+        </div>
+
+
+        <div>
+
+          <span>
+            Weekly schedule
+          </span>
+
+          <strong id="rpAiNetworkWeeklyFlightsValue">
+            —
+          </strong>
+
+        </div>
+
+      </div>
+
+    </article>
+
+  </section>
+
+
+
+  <!-- ==========================================================
+       AIRPORT ECONOMICS
+       ========================================================== -->
+
+  <section
+    class="rp-ai-panel"
+    style="margin-top:12px"
+  >
+
+    <header class="rp-ai-panel-header">
+
+      <div>
+
+        <span>
+          Airport Economics
+        </span>
+
+        <h3>
+          Costs and slot availability
+        </h3>
+
+      </div>
+
+    </header>
+
+
+    <div class="rp-ai-cost-grid">
+
+
+      <div class="rp-ai-cost-item">
+
+        <span>
+          Landing fee
+        </span>
+
+        <strong id="rpAiLandingFeeValue">
+          —
+        </strong>
+
+      </div>
+
+
+      <div class="rp-ai-cost-item">
+
+        <span>
+          Slot cost
+        </span>
+
+        <strong id="rpAiSlotCostValue">
+          —
+        </strong>
+
+      </div>
+
+
+      <div class="rp-ai-cost-item">
+
+        <span>
+          Passenger charge
+        </span>
+
+        <strong id="rpAiTicketFeeValue">
+          —
+        </strong>
+
+      </div>
+
+
+      <div class="rp-ai-cost-item">
+
+        <span>
+          Passenger growth
+        </span>
+
+        <strong id="rpAiGrowthValue">
+          —
+        </strong>
+
+      </div>
+
+
+      <div class="rp-ai-cost-item">
+
+        <span>
+          Slot capacity
+        </span>
+
+        <strong id="rpAiSlotsCapacityValue">
+          —
+        </strong>
+
+      </div>
+
+
+      <div class="rp-ai-cost-item">
+
+        <span>
+          Used slots
+        </span>
+
+        <strong id="rpAiSlotsUsedValue">
+          —
+        </strong>
+
+      </div>
+
+
+      <div class="rp-ai-cost-item">
+
+        <span>
+          Available slots
+        </span>
+
+        <strong id="rpAiSlotsAvailableValue">
+          —
+        </strong>
+
+      </div>
+
+
+      <div class="rp-ai-cost-item">
+
+        <span>
+          Slot utilization
+        </span>
+
+        <strong id="rpAiSlotUtilizationValue">
+          —
+        </strong>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- ==========================================================
+       AIRLINE ACTIVITY
+       ========================================================== -->
+
+  <section
+    class="rp-ai-panel"
+    style="margin-top:12px"
+  >
+
+    <header class="rp-ai-panel-header">
+
+      <div>
+
+        <span>
+          Airline Activity
+        </span>
+
+        <h3>
+          Operators at this airport
+        </h3>
+
+      </div>
+
+      <small>
+        SHARE · WEEKLY ACTIVITY · FLEET
+      </small>
+
+    </header>
+
+
+    <div
+      class="rp-ai-list"
+      id="rpAiOperatorList"
+    >
+
+      <div class="rp-ai-empty">
+        Select a destination to load airport activity.
+      </div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- ==========================================================
+       NETWORK
+       ========================================================== -->
+
+  <section
+    class="rp-ai-panel"
+    style="margin-top:12px"
+  >
+
+    <header class="rp-ai-panel-header">
+
+      <div>
+
+        <span>
+          Network
+        </span>
+
+        <h3>
+          Served destinations
+        </h3>
+
+      </div>
+
+      <small>
+        AIRLINES · ROUTES · WEEKLY FLIGHTS
+      </small>
+
+    </header>
+
+
+    <div
+      class="rp-ai-list"
+      id="rpAiDestinationList"
+    >
+
+      <div class="rp-ai-empty">
+        Select a destination to load airport network.
+      </div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- ==========================================================
+       INTELLIGENCE STATUS
+       ========================================================== -->
+
+  <div
+    class="rp-ai-status"
+    id="rpAiStatus"
+    data-kind="ready"
+  >
+    Airport intelligence awaiting route selection
+  </div>
+
+
+</section>
+       
   </main>
 
 
