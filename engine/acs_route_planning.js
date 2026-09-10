@@ -1855,117 +1855,370 @@ function RP_AI_updateControls() {
      ============================================================ */
 
   async function RP_loadAircraftCatalog() {
-    const select =
-      RP_get("rpAircraftSelect");
 
-    RP_resetSelect(
-      select,
-      "Loading aircraft...",
-      true
+  const select =
+    RP_get("rpAircraftSelect");
+
+  const manufacturerSelect =
+    RP_get("rpAircraftManufacturer");
+
+  const searchInput =
+    RP_get("rpAircraftSearch");
+
+
+  RP_resetSelect(
+    select,
+    "Loading aircraft...",
+    true
+  );
+
+
+  RP_resetSelect(
+    manufacturerSelect,
+    "Loading manufacturers...",
+    true
+  );
+
+
+  if (searchInput) {
+    searchInput.value = "";
+    searchInput.disabled = true;
+  }
+
+
+  const year =
+    RP_STATE.simYear;
+
+
+  if (!Number.isInteger(year)) {
+    throw new Error(
+      "ACS_SIMULATION_YEAR_UNAVAILABLE"
+    );
+  }
+
+
+  const data =
+    await RP_fetchJson(
+      `${RP_API_BASE}/v1/route-planning/aircraft?year=${encodeURIComponent(year)}`
     );
 
-    const year =
-      RP_STATE.simYear;
 
-    if (!Number.isInteger(year)) {
-      throw new Error(
-        "ACS_SIMULATION_YEAR_UNAVAILABLE"
-      );
-    }
+  const aircraft =
+    Array.isArray(data?.aircraft)
+      ? data.aircraft
+      : [];
 
-    const data =
-      await RP_fetchJson(
-        `${RP_API_BASE}/v1/route-planning/aircraft?year=${encodeURIComponent(year)}`
-      );
 
-    const aircraft =
-      Array.isArray(data?.aircraft)
-        ? data.aircraft
-        : [];
+  RP_STATE.aircraftCatalog =
+    aircraft;
 
-    RP_STATE.aircraftCatalog =
-      aircraft;
 
-    RP_resetSelect(
-      select,
-      "Select aircraft",
-      aircraft.length === 0
-    );
+  RP_populateAircraftManufacturers();
 
-    aircraft.forEach(ac => {
-      const modelKey =
-        String(
-          ac.model_key ||
-          ""
-        ).trim();
 
-      if (!modelKey) {
-        return;
-      }
+  if (searchInput) {
+    searchInput.disabled =
+      aircraft.length === 0;
+  }
 
-      const manufacturer =
-        String(
-          ac.manufacturer ||
-          ""
-        ).trim();
 
-      const model =
-        String(
-          ac.model ||
-          ac.aircraft_name ||
-          modelKey
-        ).trim();
+  RP_renderAircraftCatalog();
 
-      const label =
-        manufacturer &&
-        !model
-          .toUpperCase()
-          .startsWith(
-            manufacturer.toUpperCase()
+
+  return aircraft;
+}
+
+
+/* ============================================================
+   AIRCRAFT MANUFACTURER FILTER
+   ============================================================ */
+
+function RP_populateAircraftManufacturers() {
+
+  const select =
+    RP_get("rpAircraftManufacturer");
+
+
+  if (!select) {
+    return;
+  }
+
+
+  const manufacturers =
+    [
+      ...new Set(
+        RP_STATE.aircraftCatalog
+          .map(aircraft =>
+            String(
+              aircraft.manufacturer ||
+              ""
+            ).trim()
           )
-          ? `${manufacturer} ${model}`
-          : model;
+          .filter(Boolean)
+      )
+    ]
+      .sort((a, b) =>
+        a.localeCompare(b)
+      );
+
+
+  RP_resetSelect(
+    select,
+    "All manufacturers",
+    manufacturers.length === 0
+  );
+
+
+  manufacturers.forEach(
+    manufacturer => {
 
       RP_appendOption(
         select,
-        modelKey,
-        label,
-        {
-          catalogId: ac.id,
-          modelKey,
-          manufacturer,
-          model,
-          aircraftName:
-            ac.aircraft_name || "",
-          seats:
-            ac.seats ?? "",
-          rangeNm:
-            ac.range_nm ?? "",
-          speedKts:
-            ac.speed_kts ?? "",
-mtowKg:
-  ac.mtow_kg ?? "",
-oewKg:
-  ac.oew_kg ?? "",
-fuelBurnKgph:
-  ac.fuel_burn_kgph ?? "",
-requiredRunwayM:
-  ac.required_runway_m ?? "",
-engines:
-  ac.engines ?? "",
-          category:
-            ac.aircraft_category ?? "",
-          productionStartYear:
-            ac.production_start_year ?? "",
-          firstDeliveryYear:
-            ac.first_delivery_year ?? ""
-        }
+        manufacturer,
+        manufacturer
       );
-    });
 
-    return aircraft;
+    }
+  );
+}
+
+
+/* ============================================================
+   AIRCRAFT CATALOG FILTER + RENDER
+   ============================================================ */
+
+function RP_renderAircraftCatalog() {
+
+  const select =
+    RP_get("rpAircraftSelect");
+
+  const searchInput =
+    RP_get("rpAircraftSearch");
+
+  const manufacturerSelect =
+    RP_get("rpAircraftManufacturer");
+
+
+  if (!select) {
+    return;
   }
 
+
+  const search =
+    String(
+      searchInput?.value || ""
+    )
+      .trim()
+      .toUpperCase();
+
+
+  const manufacturerFilter =
+    String(
+      manufacturerSelect?.value || ""
+    )
+      .trim()
+      .toUpperCase();
+
+
+  const filteredAircraft =
+    RP_STATE.aircraftCatalog.filter(
+      aircraft => {
+
+        const manufacturer =
+          String(
+            aircraft.manufacturer ||
+            ""
+          )
+            .trim();
+
+
+        const model =
+          String(
+            aircraft.model ||
+            aircraft.aircraft_name ||
+            aircraft.model_key ||
+            ""
+          )
+            .trim();
+
+
+        const aircraftName =
+          String(
+            aircraft.aircraft_name ||
+            ""
+          )
+            .trim();
+
+
+        const modelKey =
+          String(
+            aircraft.model_key ||
+            ""
+          )
+            .trim();
+
+
+        const matchesManufacturer =
+          !manufacturerFilter ||
+          manufacturer
+            .toUpperCase() ===
+            manufacturerFilter;
+
+
+        const searchableText =
+          [
+            manufacturer,
+            model,
+            aircraftName,
+            modelKey
+          ]
+            .join(" ")
+            .toUpperCase();
+
+
+        const matchesSearch =
+          !search ||
+          searchableText.includes(search);
+
+
+        return (
+          matchesManufacturer &&
+          matchesSearch
+        );
+      }
+    );
+
+
+  const selectedModelKey =
+    String(
+      RP_STATE.selectedAircraft
+        ?.model_key ||
+      ""
+    ).trim();
+
+
+  RP_resetSelect(
+    select,
+    filteredAircraft.length
+      ? "Select aircraft"
+      : "No aircraft found",
+    filteredAircraft.length === 0
+  );
+
+
+  filteredAircraft.forEach(ac => {
+
+    const modelKey =
+      String(
+        ac.model_key ||
+        ""
+      ).trim();
+
+
+    if (!modelKey) {
+      return;
+    }
+
+
+    const manufacturer =
+      String(
+        ac.manufacturer ||
+        ""
+      ).trim();
+
+
+    const model =
+      String(
+        ac.model ||
+        ac.aircraft_name ||
+        modelKey
+      ).trim();
+
+
+    const label =
+      manufacturer &&
+      !model
+        .toUpperCase()
+        .startsWith(
+          manufacturer.toUpperCase()
+        )
+        ? `${manufacturer} ${model}`
+        : model;
+
+
+    RP_appendOption(
+      select,
+      modelKey,
+      label,
+      {
+        catalogId:
+          ac.id,
+
+        modelKey,
+
+        manufacturer,
+
+        model,
+
+        aircraftName:
+          ac.aircraft_name || "",
+
+        seats:
+          ac.seats ?? "",
+
+        rangeNm:
+          ac.range_nm ?? "",
+
+        speedKts:
+          ac.speed_kts ?? "",
+
+        mtowKg:
+          ac.mtow_kg ?? "",
+
+        oewKg:
+          ac.oew_kg ?? "",
+
+        fuelBurnKgph:
+          ac.fuel_burn_kgph ?? "",
+
+        requiredRunwayM:
+          ac.required_runway_m ?? "",
+
+        engines:
+          ac.engines ?? "",
+
+        category:
+          ac.aircraft_category ?? "",
+
+        productionStartYear:
+          ac.production_start_year ?? "",
+
+        firstDeliveryYear:
+          ac.first_delivery_year ?? ""
+      }
+    );
+
+  });
+
+
+  if (
+    selectedModelKey &&
+    filteredAircraft.some(
+      aircraft =>
+        String(
+          aircraft.model_key ||
+          ""
+        ).trim() ===
+        selectedModelKey
+    )
+  ) {
+
+    select.value =
+      selectedModelKey;
+
+  }
+}
+   
 /* ============================================================
    AIRCRAFT SELECTION + LOAD SCENARIO
    ============================================================ */
@@ -3386,11 +3639,18 @@ function RP_calculateRouteStudy() {
      ============================================================ */
    
 function RP_bindEvents() {
+   
   const aircraftSelect =
-    RP_get("rpAircraftSelect");
+  RP_get("rpAircraftSelect");
 
-  const continentSelect =
-    RP_get("rpContinentSelect");
+const aircraftSearch =
+  RP_get("rpAircraftSearch");
+
+const aircraftManufacturer =
+  RP_get("rpAircraftManufacturer");
+
+const continentSelect =
+  RP_get("rpContinentSelect");
 
   const countrySelect =
     RP_get("rpCountrySelect");
@@ -3410,13 +3670,28 @@ function RP_bindEvents() {
   const airportIntelligenceDestination =
   RP_get("rpAiDestinationButton");   
 
-  if (aircraftSelect) {
-    aircraftSelect.addEventListener(
-      "change",
-      RP_handleAircraftChange
-    );
-  }
+ if (aircraftSelect) {
+  aircraftSelect.addEventListener(
+    "change",
+    RP_handleAircraftChange
+  );
+}
 
+
+if (aircraftSearch) {
+  aircraftSearch.addEventListener(
+    "input",
+    RP_renderAircraftCatalog
+  );
+}
+
+
+if (aircraftManufacturer) {
+  aircraftManufacturer.addEventListener(
+    "change",
+    RP_renderAircraftCatalog
+  );
+}
 
   if (continentSelect) {
     continentSelect.addEventListener(
