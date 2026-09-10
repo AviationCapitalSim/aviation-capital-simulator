@@ -414,7 +414,86 @@
       cursor: not-allowed;
     }
 
+  /* ============================================================
+   AIRCRAFT CATALOG FILTERS
+   ============================================================ */
 
+.rp-aircraft-filters {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1fr);
+
+  gap: 8px;
+
+  margin-bottom: 9px;
+}
+
+
+.rp-aircraft-search {
+  width: 100%;
+  height: 42px;
+
+  box-sizing: border-box;
+
+  padding: 0 12px;
+
+  border:
+    1px solid var(--rp-border);
+
+  border-radius: 10px;
+
+  outline: none;
+
+  background:
+    rgba(5, 20, 39, 0.72);
+
+  color:
+    var(--rp-text);
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 0.68rem;
+  font-weight: 600;
+
+  letter-spacing: 0.035em;
+}
+
+
+.rp-aircraft-search::placeholder {
+  color:
+    rgba(205, 220, 237, 0.34);
+}
+
+
+.rp-aircraft-search:focus {
+  border-color:
+    rgba(255, 179, 0, 0.58);
+
+  box-shadow:
+    0 0 0 2px
+    rgba(255, 179, 0, 0.06);
+}
+
+
+.rp-aircraft-catalog-field {
+  display: block;
+}
+
+
+@media (max-width: 720px) {
+
+  .rp-aircraft-filters {
+    grid-template-columns: 1fr;
+  }
+
+}
+       
     /* ============================================================
        MAP WORKSPACE
        ============================================================ */
@@ -2860,28 +2939,62 @@
 
       <div class="rp-control-group rp-aircraft-group">
 
-        <span class="rp-section-label">
-          Aircraft
-        </span>
+  <span class="rp-section-label">
+    Aircraft
+  </span>
 
-        <label class="rp-field">
+  <div class="rp-aircraft-filters">
 
-          <span>Aircraft catalog</span>
+    <label class="rp-field">
 
-          <select
-            class="rp-select"
-            id="rpAircraftSelect"
-          >
-            <option value="">
-              Select aircraft
-            </option>
-          </select>
+      <span>Search aircraft</span>
 
-        </label>
+      <input
+        type="search"
+        class="rp-aircraft-search"
+        id="rpAircraftSearch"
+        placeholder="Type model or aircraft..."
+        autocomplete="off"
+        spellcheck="false"
+      >
 
-      </div>
+    </label>
 
 
+    <label class="rp-field">
+
+      <span>Manufacturer</span>
+
+      <select
+        class="rp-select"
+        id="rpAircraftManufacturer"
+      >
+        <option value="">
+          All manufacturers
+        </option>
+      </select>
+
+    </label>
+
+  </div>
+
+
+  <label class="rp-field rp-aircraft-catalog-field">
+
+    <span>Aircraft catalog</span>
+
+    <select
+      class="rp-select"
+      id="rpAircraftSelect"
+    >
+      <option value="">
+        Select aircraft
+      </option>
+    </select>
+
+  </label>
+
+</div>
     </section>
 
 
