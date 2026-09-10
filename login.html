@@ -1564,6 +1564,56 @@ button {
 const ACS_API_URL = "https://api.aviationcapitalsim.com/v1/auth/login";
 
 /* ============================================================
+   ACS GLOBAL LOGIN ENTRY — SESSION CLEANUP
+   Any previous authenticated ACS session is closed before login.
+   ============================================================ */
+
+async function ACS_CLOSE_PREVIOUS_SESSION() {
+
+  try {
+
+    const response = await fetch(
+      "https://api.aviationcapitalsim.com/v1/auth/logout",
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Accept": "application/json"
+        }
+      }
+    );
+
+    /*
+      401 / no active session is acceptable here.
+      It simply means there was nothing to close.
+    */
+
+    if (response.ok) {
+
+      const result = await response.json().catch(() => null);
+
+      console.log(
+        "🚪 PREVIOUS ACS SESSION CLOSED:",
+        result
+      );
+    }
+
+  } catch (error) {
+
+    console.warn(
+      "ACS SESSION CLEANUP:",
+      error
+    );
+  }
+}
+
+/* ============================================================
+   CLEAN SESSION WHEN LOGIN PAGE OPENS
+   ============================================================ */
+
+ACS_CLOSE_PREVIOUS_SESSION();
+
+/* ============================================================
    === HANDLE LOGIN ============================================
    ============================================================ */
   
