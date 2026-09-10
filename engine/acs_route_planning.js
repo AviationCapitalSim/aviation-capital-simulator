@@ -55,23 +55,30 @@ const RP_API_BASE =
      ============================================================ */
 
    const RP_STATE = {
-    simTime: null,
-    simYear: null,
+  simTime: null,
+  simYear: null,
 
-    company: null,
+  company: null,
 
-    origin: null,
-    destination: null,
+  origin: null,
+  destination: null,
 
-    continents: [],
-    countries: [],
-    airports: [],
+  continents: [],
+  countries: [],
+  airports: [],
 
-    aircraftCatalog: [],
-    selectedAircraft: null,
+  aircraftCatalog: [],
+  selectedAircraft: null,
 
-    passengers: 0
-  };
+  passengers: 0,
+
+  airportIntelligence: {
+    target: "destination",
+    selectedIcao: "",
+    snapshot: null,
+    controller: null
+  }
+};
 
     let RP_MAP = null;
   let RP_ORIGIN_MARKER = null;
@@ -687,7 +694,952 @@ const RP_API_BASE =
     return data;
   }
 
+  /* ============================================================
+   AIRPORT INTELLIGENCE — INTEGRATED ENGINE
+   ------------------------------------------------------------
+   Existing backend authority:
+   /v1/airport-intelligence/:icao
+   ============================================================ */
 
+function RP_AI_text(value) {
+  return String(value ?? "").trim();
+}
+
+function RP_AI_upper(value) {
+  return RP_AI_text(value).toUpperCase();
+}
+
+function RP_AI_number(value) {
+  const number = Number(value);
+
+  return Number.isFinite(number)
+    ? number
+    : 0;
+}
+
+function RP_AI_integer(value) {
+  return Math.trunc(
+    RP_AI_number(value)
+  );
+}
+
+function RP_AI_formatInteger(value) {
+  return new Intl.NumberFormat(
+    "en-US",
+    {
+      maximumFractionDigits: 0
+    }
+  ).format(
+    RP_AI_integer(value)
+  );
+}
+
+function RP_AI_formatMoney(value) {
+  const number = Number(value);
+
+  if (!Number.isFinite(number)) {
+    return "—";
+  }
+
+  return new Intl.NumberFormat(
+    "en-US",
+    {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0
+    }
+  ).format(number);
+}
+
+function RP_AI_formatPercent(value) {
+  const number = Number(value);
+
+  if (!Number.isFinite(number)) {
+    return "—";
+  }
+
+  const percent =
+    Math.abs(number) <= 1
+      ? number * 100
+      : number;
+
+  return `${percent.toFixed(
+    Number.isInteger(percent)
+      ? 0
+      : 1
+  )}%`;
+}
+
+function RP_AI_escapeHtml(value) {
+  return RP_AI_text(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function RP_AI_setStatus(
+  message,
+  kind = "ready"
+) {
+  const node =
+    RP_get("rpAiStatus");
+
+  if (!node) {
+    return;
+  }
+
+  node.textContent =
+    message ||
+    "Airport intelligence ready";
+
+  node.dataset.kind =
+    kind;
+}
+
+
+/* ============================================================
+   AIRPORT INTELLIGENCE — RESET
+   ============================================================ */
+
+function RP_AI_resetView() {
+
+  [
+    "rpAiAirportIata",
+    "rpAiAirportIcao",
+    "rpAiAirportLocation",
+    "rpAiRunwayValue",
+    "rpAiElevationValue",
+    "rpAiHoursValue",
+    "rpAiAircraftLimitValue",
+
+    "rpAiPassengersValue",
+    "rpAiWeeklyFlightsValue",
+    "rpAiDestinationsValue",
+    "rpAiActiveAirlinesValue",
+
+    "rpAiPaxTotalValue",
+    "rpAiPaxCenterValue",
+    "rpAiPaxYValue",
+    "rpAiPaxYPct",
+    "rpAiPaxCValue",
+    "rpAiPaxCPct",
+    "rpAiPaxFValue",
+    "rpAiPaxFPct",
+
+    "rpAiActiveFlightsValue",
+    "rpAiCurrentActiveAirlinesValue",
+    "rpAiNetworkDestinationsValue",
+    "rpAiNetworkWeeklyFlightsValue",
+
+    "rpAiLandingFeeValue",
+    "rpAiSlotCostValue",
+    "rpAiTicketFeeValue",
+    "rpAiGrowthValue",
+
+    "rpAiSlotsCapacityValue",
+    "rpAiSlotsUsedValue",
+    "rpAiSlotsAvailableValue",
+    "rpAiSlotUtilizationValue"
+  ].forEach(id =>
+    RP_setText(id, "—")
+  );
+
+  RP_setText(
+    "rpAiAirportName",
+    "Select a destination"
+  );
+
+  RP_setText(
+    "rpAiAirportDescription",
+    "Airport intelligence will load from the selected route."
+  );
+
+  const gauge =
+    RP_get("rpAiPaxGauge");
+
+  if (gauge) {
+    gauge.style.setProperty(
+      "--rp-ai-pax-gradient",
+      "conic-gradient(rgba(74,167,255,0.12) 0 100%)"
+    );
+  }
+
+  const operators =
+    RP_get("rpAiOperatorList");
+
+  if (operators) {
+    operators.innerHTML = `
+      <div class="rp-ai-empty">
+        Select a destination to load airport activity.
+      </div>
+    `;
+  }
+
+  const destinations =
+    RP_get("rpAiDestinationList");
+
+  if (destinations) {
+    destinations.innerHTML = `
+      <div class="rp-ai-empty">
+        Select a destination to load airport network.
+      </div>
+    `;
+  }
+
+  RP_STATE.airportIntelligence.selectedIcao = "";
+  RP_STATE.airportIntelligence.snapshot = null;
+
+  RP_AI_setStatus(
+    "Airport intelligence awaiting route selection"
+  );
+}
+
+
+/* ============================================================
+   AIRPORT INTELLIGENCE — PASSENGER PROFILE
+   ============================================================ */
+
+function RP_AI_renderPassengerProfile(
+  profile = {}
+) {
+
+  const economy =
+    RP_AI_integer(
+      profile.economy_y
+    );
+
+  const business =
+    RP_AI_integer(
+      profile.business_c
+    );
+
+  const first =
+    RP_AI_integer(
+      profile.first_f
+    );
+
+  const reportedTotal =
+    RP_AI_integer(
+      profile.total
+    );
+
+  const calculatedTotal =
+    economy +
+    business +
+    first;
+
+  const total =
+    reportedTotal > 0
+      ? reportedTotal
+      : calculatedTotal;
+
+  const economyPct =
+    total > 0
+      ? economy / total * 100
+      : 0;
+
+  const businessPct =
+    total > 0
+      ? business / total * 100
+      : 0;
+
+  const firstPct =
+    total > 0
+      ? first / total * 100
+      : 0;
+
+  RP_setText(
+    "rpAiPaxTotalValue",
+    RP_AI_formatInteger(total)
+  );
+
+  RP_setText(
+    "rpAiPaxCenterValue",
+    `${economyPct.toFixed(0)}%`
+  );
+
+  RP_setText(
+    "rpAiPaxYValue",
+    RP_AI_formatInteger(economy)
+  );
+
+  RP_setText(
+    "rpAiPaxYPct",
+    `${economyPct.toFixed(1)}%`
+  );
+
+  RP_setText(
+    "rpAiPaxCValue",
+    RP_AI_formatInteger(business)
+  );
+
+  RP_setText(
+    "rpAiPaxCPct",
+    `${businessPct.toFixed(1)}%`
+  );
+
+  RP_setText(
+    "rpAiPaxFValue",
+    RP_AI_formatInteger(first)
+  );
+
+  RP_setText(
+    "rpAiPaxFPct",
+    `${firstPct.toFixed(1)}%`
+  );
+
+  const gauge =
+    RP_get("rpAiPaxGauge");
+
+  if (gauge) {
+
+    const yEnd =
+      economyPct;
+
+    const cEnd =
+      economyPct +
+      businessPct;
+
+    gauge.style.setProperty(
+      "--rp-ai-pax-gradient",
+      `
+        conic-gradient(
+          #ffb300 0 ${yEnd}%,
+          #4aa7ff ${yEnd}% ${cEnd}%,
+          #55e39a ${cEnd}% 100%
+        )
+      `
+    );
+  }
+}
+
+
+/* ============================================================
+   AIRPORT INTELLIGENCE — OPERATORS
+   ============================================================ */
+
+function RP_AI_renderOperators(
+  airlines,
+  selectedIcao
+) {
+
+  const host =
+    RP_get("rpAiOperatorList");
+
+  if (!host) {
+    return;
+  }
+
+  if (
+    !Array.isArray(airlines) ||
+    !airlines.length
+  ) {
+
+    host.innerHTML = `
+      <div class="rp-ai-empty">
+        No scheduled operators
+      </div>
+    `;
+
+    return;
+  }
+
+  const sorted =
+    [...airlines].sort(
+      (a, b) =>
+        RP_AI_integer(
+          b.weekly_flights
+        ) -
+        RP_AI_integer(
+          a.weekly_flights
+        )
+    );
+
+  const totalFlights =
+    sorted.reduce(
+      (sum, airline) =>
+        sum +
+        RP_AI_integer(
+          airline.weekly_flights
+        ),
+      0
+    ) || 1;
+
+  host.innerHTML =
+    sorted.map(
+      (airline, index) => {
+
+        const weeklyFlights =
+          RP_AI_integer(
+            airline.weekly_flights
+          );
+
+        const share =
+          Math.round(
+            weeklyFlights /
+            totalFlights *
+            100
+          );
+
+        const isBase =
+          RP_AI_upper(
+            airline.base_icao
+          ) ===
+          RP_AI_upper(
+            selectedIcao
+          );
+
+        const aircraft =
+          Array.isArray(
+            airline.aircraft_types
+          )
+            ? airline.aircraft_types
+                .slice(0, 3)
+                .map(
+                  type =>
+                    `<i>${RP_AI_escapeHtml(type)}</i>`
+                )
+                .join("")
+            : "";
+
+        return `
+          <article class="rp-ai-operator-row">
+
+            <span class="rp-ai-operator-rank">
+              ${String(index + 1).padStart(2, "0")}
+            </span>
+
+            <div class="rp-ai-operator-name">
+
+              <strong>
+                ${RP_AI_escapeHtml(
+                  airline.airline_name ||
+                  airline.icao ||
+                  "Airline"
+                )}
+              </strong>
+
+              <small>
+                ${RP_AI_escapeHtml(
+                  [
+                    airline.iata,
+                    airline.icao
+                  ]
+                    .filter(Boolean)
+                    .join(" / ")
+                )}
+                ${isBase ? " · BASE" : ""}
+              </small>
+
+            </div>
+
+            <div class="rp-ai-operator-bar">
+              <i style="width:${share}%"></i>
+            </div>
+
+            <strong>
+              ${share}%
+            </strong>
+
+            <span>
+              ${RP_AI_formatInteger(
+                weeklyFlights
+              )} flights
+            </span>
+
+            <div class="rp-ai-aircraft-chips">
+              ${aircraft || "—"}
+            </div>
+
+          </article>
+        `;
+      }
+    ).join("");
+}
+
+
+/* ============================================================
+   AIRPORT INTELLIGENCE — DESTINATIONS
+   ============================================================ */
+
+function RP_AI_renderDestinations(
+  destinations,
+  origin
+) {
+
+  const host =
+    RP_get("rpAiDestinationList");
+
+  if (!host) {
+    return;
+  }
+
+  if (
+    !Array.isArray(destinations) ||
+    !destinations.length
+  ) {
+
+    host.innerHTML = `
+      <div class="rp-ai-empty">
+        No active destinations
+      </div>
+    `;
+
+    return;
+  }
+
+  host.innerHTML =
+    destinations.map(
+      (destination, index) => `
+        <article class="rp-ai-destination-row">
+
+          <span>
+            ${String(index + 1).padStart(2, "0")}
+          </span>
+
+          <div>
+
+            <strong>
+              ${RP_AI_escapeHtml(origin)}
+              →
+              ${RP_AI_escapeHtml(
+                destination.iata ||
+                destination.icao
+              )}
+            </strong>
+
+            <small>
+              ${RP_AI_escapeHtml(
+                destination.city ||
+                destination.label ||
+                ""
+              )}
+            </small>
+
+          </div>
+
+          <span>
+            ${RP_AI_formatInteger(
+              destination.airlines
+            )} airlines
+          </span>
+
+          <span>
+            ${RP_AI_formatInteger(
+              destination.routes
+            )} routes
+          </span>
+
+          <strong>
+            ${RP_AI_formatInteger(
+              destination.weekly_flights
+            )}
+          </strong>
+
+        </article>
+      `
+    ).join("");
+}
+
+
+/* ============================================================
+   AIRPORT INTELLIGENCE — SNAPSHOT
+   ============================================================ */
+
+function RP_AI_renderSnapshot(snapshot) {
+
+  const airport =
+    snapshot?.airport || {};
+
+  const activity =
+    snapshot?.activity || {};
+
+  const movement =
+    activity.passenger_movement || {};
+
+  const passengerProfile =
+    activity.passenger_profile || {};
+
+  const slots =
+    activity.slots || {};
+
+  const network =
+    activity.scheduled_network || {};
+
+  const operations =
+    activity.current_operations || {};
+
+  const costs =
+    snapshot?.costs || {};
+
+  RP_setText(
+    "rpAiAirportIata",
+    airport.iata ||
+    airport.icao ||
+    "—"
+  );
+
+  RP_setText(
+    "rpAiAirportIcao",
+    airport.icao
+  );
+
+  RP_setText(
+    "rpAiAirportName",
+    airport.display_label ||
+    airport.city ||
+    airport.icao
+  );
+
+  RP_setText(
+    "rpAiAirportLocation",
+    [
+      airport.continent,
+      airport.country
+    ]
+      .filter(Boolean)
+      .join(" · ")
+  );
+
+  RP_setText(
+    "rpAiAirportDescription",
+    "Complete airport and network information"
+  );
+
+  RP_setText(
+    "rpAiRunwayValue",
+    `${RP_AI_formatInteger(
+      airport.runway_m
+    )} m`
+  );
+
+  RP_setText(
+    "rpAiElevationValue",
+    `${RP_AI_formatInteger(
+      airport.elevation_ft
+    )} ft`
+  );
+
+  RP_setText(
+    "rpAiHoursValue",
+    airport.open_hrs
+  );
+
+  RP_setText(
+    "rpAiAircraftLimitValue",
+    airport.aircraft_limit
+  );
+
+  RP_setText(
+    "rpAiPassengersValue",
+    RP_AI_formatInteger(
+      movement.passengers
+    )
+  );
+
+  RP_setText(
+    "rpAiWeeklyFlightsValue",
+    RP_AI_formatInteger(
+      network.weekly_flights
+    )
+  );
+
+  RP_setText(
+    "rpAiDestinationsValue",
+    RP_AI_formatInteger(
+      network.destinations
+    )
+  );
+
+  RP_setText(
+    "rpAiActiveAirlinesValue",
+    RP_AI_formatInteger(
+      operations.active_airlines
+    )
+  );
+
+  RP_setText(
+    "rpAiActiveFlightsValue",
+    RP_AI_formatInteger(
+      operations.active_flights
+    )
+  );
+
+  RP_setText(
+    "rpAiCurrentActiveAirlinesValue",
+    RP_AI_formatInteger(
+      operations.active_airlines
+    )
+  );
+
+  RP_setText(
+    "rpAiNetworkDestinationsValue",
+    RP_AI_formatInteger(
+      network.destinations
+    )
+  );
+
+  RP_setText(
+    "rpAiNetworkWeeklyFlightsValue",
+    RP_AI_formatInteger(
+      network.weekly_flights
+    )
+  );
+
+  RP_setText(
+    "rpAiLandingFeeValue",
+    RP_AI_formatMoney(
+      costs.landing_fee_usd
+    )
+  );
+
+  RP_setText(
+    "rpAiSlotCostValue",
+    RP_AI_formatMoney(
+      costs.slot_cost_usd
+    )
+  );
+
+  RP_setText(
+    "rpAiTicketFeeValue",
+    RP_AI_formatPercent(
+      costs.ticket_fee_percent
+    )
+  );
+
+  RP_setText(
+    "rpAiGrowthValue",
+    RP_AI_formatPercent(
+      costs.pax_growth_factor
+    )
+  );
+
+  RP_setText(
+    "rpAiSlotsCapacityValue",
+    RP_AI_formatInteger(
+      slots.capacity
+    )
+  );
+
+  RP_setText(
+    "rpAiSlotsUsedValue",
+    RP_AI_formatInteger(
+      slots.used
+    )
+  );
+
+  RP_setText(
+    "rpAiSlotsAvailableValue",
+    RP_AI_formatInteger(
+      slots.available
+    )
+  );
+
+  RP_setText(
+    "rpAiSlotUtilizationValue",
+    `${RP_AI_number(
+      slots.utilization_pct
+    ).toFixed(1)}%`
+  );
+
+  RP_AI_renderPassengerProfile(
+    passengerProfile
+  );
+
+  RP_AI_renderOperators(
+    snapshot?.network?.airlines || [],
+    airport.icao
+  );
+
+  RP_AI_renderDestinations(
+    snapshot?.network?.destinations || [],
+    airport.iata ||
+    airport.icao ||
+    ""
+  );
+}
+
+
+/* ============================================================
+   AIRPORT INTELLIGENCE — LOAD
+   ============================================================ */
+
+async function RP_AI_loadAirport(icao) {
+
+  const normalized =
+    RP_AI_upper(icao);
+
+  if (!normalized) {
+
+    RP_STATE.airportIntelligence.controller
+      ?.abort();
+
+    RP_AI_resetView();
+
+    return;
+  }
+
+  RP_STATE.airportIntelligence.controller
+    ?.abort();
+
+  const controller =
+    new AbortController();
+
+  RP_STATE.airportIntelligence.controller =
+    controller;
+
+  RP_STATE.airportIntelligence.selectedIcao =
+    normalized;
+
+  RP_AI_setStatus(
+    `Loading ${normalized} airport intelligence`,
+    "loading"
+  );
+
+  try {
+
+    const snapshot =
+      await RP_fetchJson(
+        `${RP_API_BASE}/v1/airport-intelligence/${encodeURIComponent(normalized)}`,
+        {
+          method: "GET",
+          cache: "no-store",
+          signal: controller.signal,
+          headers: {
+            Accept: "application/json"
+          }
+        }
+      );
+
+    if (
+      RP_STATE.airportIntelligence
+        .selectedIcao !== normalized
+    ) {
+      return;
+    }
+
+    if (
+      !snapshot ||
+      snapshot.ok !== true
+    ) {
+      throw new Error(
+        snapshot?.error ||
+        "AIRPORT_INTELLIGENCE_INVALID"
+      );
+    }
+
+    RP_STATE.airportIntelligence.snapshot =
+      snapshot;
+
+    RP_AI_renderSnapshot(
+      snapshot
+    );
+
+    RP_AI_setStatus(
+      `${normalized} airport intelligence loaded`
+    );
+
+  } catch (error) {
+
+    if (
+      error?.name ===
+      "AbortError"
+    ) {
+      return;
+    }
+
+    RP_STATE.airportIntelligence.snapshot =
+      null;
+
+    RP_AI_resetView();
+
+    if (
+      error?.message ===
+      "AIRPORT_NOT_AVAILABLE_IN_CURRENT_SIM_PERIOD"
+    ) {
+
+      RP_AI_setStatus(
+        "Airport unavailable in current simulation period",
+        "error"
+      );
+
+    } else {
+
+      RP_AI_setStatus(
+        "Airport intelligence unavailable",
+        "error"
+      );
+    }
+  }
+}
+
+
+/* ============================================================
+   AIRPORT INTELLIGENCE — TARGET
+   ============================================================ */
+
+function RP_AI_setTarget(target) {
+
+  const normalized =
+    target === "origin"
+      ? "origin"
+      : "destination";
+
+  RP_STATE.airportIntelligence.target =
+    normalized;
+
+  const originButton =
+    RP_get("rpAiOriginButton");
+
+  const destinationButton =
+    RP_get("rpAiDestinationButton");
+
+  originButton?.classList.toggle(
+    "active",
+    normalized === "origin"
+  );
+
+  destinationButton?.classList.toggle(
+    "active",
+    normalized === "destination"
+  );
+
+  const airport =
+    normalized === "origin"
+      ? RP_STATE.origin
+      : RP_STATE.destination;
+
+  RP_AI_loadAirport(
+    airport?.icao || ""
+  );
+}
+
+
+function RP_AI_updateControls() {
+
+  const originButton =
+    RP_get("rpAiOriginButton");
+
+  const destinationButton =
+    RP_get("rpAiDestinationButton");
+
+  if (originButton) {
+    originButton.disabled =
+      !Boolean(
+        RP_STATE.origin?.icao
+      );
+  }
+
+  if (destinationButton) {
+    destinationButton.disabled =
+      !Boolean(
+        RP_STATE.destination?.icao
+      );
+  }
+}
+   
   /* ============================================================
      SELECT HELPERS
      ============================================================ */
@@ -2297,44 +3249,55 @@ function RP_calculateRouteStudy() {
 
 
   function RP_handleAirportChange() {
-    const icao =
-      String(
-        RP_get("rpAirportSelect")
-          ?.value || ""
-      )
-        .trim()
-        .toUpperCase();
 
-    if (!icao) {
-      RP_STATE.destination = null;
+  const icao =
+    String(
+      RP_get("rpAirportSelect")
+        ?.value || ""
+    )
+      .trim()
+      .toUpperCase();
 
-      RP_setText(
-        "rpRouteDestination",
-        "--"
-      );
+  if (!icao) {
 
-      RP_calculateRouteStudy();
-      return;
-    }
-
-    RP_STATE.destination =
-      RP_STATE.airports.find(
-        airport =>
-          String(
-            airport.icao || ""
-          )
-            .trim()
-            .toUpperCase() === icao
-      ) || null;
+    RP_STATE.destination = null;
 
     RP_setText(
       "rpRouteDestination",
-      RP_STATE.destination?.icao || "--"
+      "--"
     );
 
     RP_calculateRouteStudy();
+
+    RP_AI_updateControls();
+    RP_AI_resetView();
+
+    return;
   }
 
+  RP_STATE.destination =
+    RP_STATE.airports.find(
+      airport =>
+        String(
+          airport.icao || ""
+        )
+          .trim()
+          .toUpperCase() === icao
+    ) || null;
+
+  RP_setText(
+    "rpRouteDestination",
+    RP_STATE.destination?.icao || "--"
+  );
+
+  RP_calculateRouteStudy();
+
+  RP_AI_updateControls();
+
+  RP_AI_setTarget(
+    "destination"
+  );
+}
 
   function RP_prepareDestinationSelectors() {
     RP_resetSelect(
@@ -2441,6 +3404,11 @@ function RP_bindEvents() {
   const passengersPlus =
     RP_get("rpPassengersPlus");
 
+  const airportIntelligenceOrigin =
+  RP_get("rpAiOriginButton");
+
+  const airportIntelligenceDestination =
+  RP_get("rpAiDestinationButton");   
 
   if (aircraftSelect) {
     aircraftSelect.addEventListener(
@@ -2483,11 +3451,34 @@ function RP_bindEvents() {
 
 
   if (passengersPlus) {
-    passengersPlus.addEventListener(
-      "click",
-      () => RP_changePassengers(1)
-    );
-  }
+  passengersPlus.addEventListener(
+    "click",
+    () => RP_changePassengers(1)
+  );
+}
+
+
+if (airportIntelligenceOrigin) {
+  airportIntelligenceOrigin.addEventListener(
+    "click",
+    () =>
+      RP_AI_setTarget(
+        "origin"
+      )
+  );
+}
+
+
+if (airportIntelligenceDestination) {
+  airportIntelligenceDestination.addEventListener(
+    "click",
+    () =>
+      RP_AI_setTarget(
+        "destination"
+      )
+  );
+}
+
 }
 
 /* ============================================================
@@ -2539,20 +3530,23 @@ function RP_bindEvents() {
 
       await RP_loadAircraftCatalog();
 
-      console.log(
-        "🟦 ROUTE PLANNING AIRCRAFT CATALOG:",
-        {
-          year: RP_STATE.simYear,
-          count:
-            RP_STATE.aircraftCatalog.length
-        }
-      );
+console.log(
+  "🟦 ROUTE PLANNING AIRCRAFT CATALOG:",
+  {
+    year: RP_STATE.simYear,
+    count:
+      RP_STATE.aircraftCatalog.length
+  }
+);
 
-      RP_updatePlanningStatus();
+RP_AI_resetView();
+RP_AI_updateControls();
 
-      console.log(
-        "🟢 ACS OCC ROUTE PLANNING READY"
-      );
+RP_updatePlanningStatus();
+
+console.log(
+  "🟢 ACS OCC ROUTE PLANNING READY"
+);
 
     } catch (error) {
       console.error(
