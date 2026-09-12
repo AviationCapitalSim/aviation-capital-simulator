@@ -2211,11 +2211,7 @@ function apLatLng(icao) {
       return `
   <div style="font-size:12px; line-height:1.3;">
     <strong>${model} ${reg}</strong><br>
-    <strong>${item.flightNumber || "—"}</strong>
-    ${item.airlineCallsign
-      ? ` <span style="color:#5aa9ff;">· ${item.airlineCallsign}</span>`
-      : ""
-    }<br>
+    <strong>${item.flightNumber || "—"}</strong>${item.airlineCallsign ? " · " + item.airlineCallsign : ""}<br>
     ${item.originICAO || "—"} → ${item.destinationICAO || "—"}<br>
     <strong>${item.state || "—"}</strong>
     ${extra}
