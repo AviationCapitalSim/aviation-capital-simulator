@@ -215,7 +215,9 @@ async function ACS_FINANCE_syncFromServer() {
         salaries: Number(f.cost_hr || 0),
 
 "Training Qualification": Number(
-  f.cost_training_qualification || 0
+  f.cost_training_qualification_display ??
+  f.cost_training_qualification ??
+  0
 ),
 
 "Company Infrastructure": Number(
