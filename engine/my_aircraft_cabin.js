@@ -407,35 +407,118 @@
     }, 0);
   }
 
-  function maximumSeatsForClass(cabinClass) {
-    const capacity = aircraftCapacity(activeAircraft);
-    const availableSpace = Math.max(
-      0,
-      capacity - spaceUsedExcluding(cabinClass)
-    );
-    const factor = productFactor(
+ function maximumSeatsForClass(cabinClass) {
+  const capacity = aircraftCapacity(activeAircraft);
+
+  const factor = productFactor(
+    cabinClass,
+    draft[cabinClass].product
+  );
+
+  if (capacity <= 0 || factor <= 0) {
+    return 0;
+  }
+
+  /*
+    Y is the automatic balancing class.
+
+    For Business / First:
+    Economy does NOT block adding premium seats.
+    Only the OTHER premium class consumes protected space.
+
+    For Economy:
+    C + F consume space first and Y receives the remainder.
+  */
+
+  let protectedSpace = 0;
+
+  if (cabinClass === "Y") {
+    protectedSpace =
+      spaceUsedByClass("C") +
+      spaceUsedByClass("F");
+  } else if (cabinClass === "C") {
+    protectedSpace =
+      spaceUsedByClass("F");
+  } else if (cabinClass === "F") {
+    protectedSpace =
+      spaceUsedByClass("C");
+  }
+
+  const availableSpace =
+    Math.max(0, capacity - protectedSpace);
+
+  return Math.max(
+    0,
+    Math.floor(availableSpace / factor)
+  );
+}
+
+function clampSeats(cabinClass, requestedSeats) {
+  return Math.min(
+    maximumSeatsForClass(cabinClass),
+    Math.max(0, safeInteger(requestedSeats))
+  );
+}
+
+function fitEconomyToCabin(previousDraft) {
+  const capacity = aircraftCapacity(activeAircraft);
+
+  if (!activeAircraft || !draft || capacity <= 0) {
+    return false;
+  }
+
+  const economyFactor = productFactor(
+    "Y",
+    draft.Y.product
+  );
+
+  if (economyFactor <= 0) {
+    draft = previousDraft;
+    return false;
+  }
+
+  const premiumSpaceUsed =
+    spaceUsedByClass("C") +
+    spaceUsedByClass("F");
+
+  const availableEconomySpace =
+    capacity - premiumSpaceUsed;
+
+  /*
+    C + F alone may never exceed aircraft capacity.
+    Restore previous valid configuration if they do.
+  */
+
+  if (availableEconomySpace < 0) {
+    draft = previousDraft;
+    return false;
+  }
+
+  draft.Y.seats = Math.max(
+    0,
+    Math.floor(
+      availableEconomySpace /
+      economyFactor
+    )
+  );
+
+  return true;
+}
+
+function normalizeDraftCapacity() {
+  for (const cabinClass of ["F", "C"]) {
+    draft[cabinClass].seats = clampSeats(
       cabinClass,
-      draft[cabinClass].product
-    );
-
-    return Math.max(0, Math.floor(availableSpace / factor));
-  }
-
-  function clampSeats(cabinClass, requestedSeats) {
-    return Math.min(
-      maximumSeatsForClass(cabinClass),
-      Math.max(0, safeInteger(requestedSeats))
+      draft[cabinClass].seats
     );
   }
 
-  function normalizeDraftCapacity() {
-    for (const cabinClass of ["F", "C", "Y"]) {
-      draft[cabinClass].seats = clampSeats(
-        cabinClass,
-        draft[cabinClass].seats
-      );
-    }
+  const previousDraft = clone(draft);
+
+  if (!fitEconomyToCabin(previousDraft)) {
+    draft = previousDraft;
   }
+}
 
   function isFactoryDefault() {
     if (!activeAircraft || !draft) return false;
@@ -802,38 +885,65 @@
 
     render();
   }
+function changeSeatCount(cabinClass, requestedSeats) {
+  if (!CABIN_CLASSES.includes(cabinClass)) return;
 
-  function changeSeatCount(cabinClass, requestedSeats) {
-    if (!CABIN_CLASSES.includes(cabinClass)) return;
+  const previousDraft = clone(draft);
 
-    draft[cabinClass].seats = clampSeats(
-      cabinClass,
-      requestedSeats
-    );
+  draft[cabinClass].seats = clampSeats(
+    cabinClass,
+    requestedSeats
+  );
 
-    draft.configurationType = "CUSTOM";
-    render();
+  /*
+    C / F automatically consume or release Economy space.
+
+    Manual Economy changes remain player-controlled.
+  */
+
+  if (cabinClass !== "Y") {
+    if (!fitEconomyToCabin(previousDraft)) {
+      draft = previousDraft;
+      render();
+      return;
+    }
   }
 
-  function changeProduct(cabinClass, productCode) {
-    if (!CABIN_CLASSES.includes(cabinClass)) return;
+  draft.configurationType = "CUSTOM";
+  render();
+}
 
-    const product = getProduct(cabinClass, productCode);
-    if (!product) return;
+function changeProduct(cabinClass, productCode) {
+  if (!CABIN_CLASSES.includes(cabinClass)) return;
 
-    draft[cabinClass].product = product.code;
+  const product = getProduct(
+    cabinClass,
+    productCode
+  );
 
-    /*
-      Recalculate against the complete space available to this class.
-      This makes product changes reversible:
-      Smart -> Classic reduces seats;
-      Classic -> Smart restores all seats that fit again.
-    */
-    draft[cabinClass].seats = maximumSeatsForClass(cabinClass);
-    draft.configurationType = "CUSTOM";
+  if (!product) return;
 
+  const previousDraft = clone(draft);
+
+  draft[cabinClass].product =
+    product.code;
+
+  /*
+    Any product change may alter the cabin-space factor.
+
+    Preserve the selected C/F seat count and rebalance Economy,
+    exactly as Buy New does.
+  */
+
+  if (!fitEconomyToCabin(previousDraft)) {
+    draft = previousDraft;
     render();
+    return;
   }
+
+  draft.configurationType = "CUSTOM";
+  render();
+}
 
   document.addEventListener("click", event => {
     const layoutButton = event.target.closest("[data-mac-layout]");
