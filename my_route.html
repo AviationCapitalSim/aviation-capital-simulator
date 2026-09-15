@@ -566,6 +566,158 @@
       white-space: nowrap;
     }
 
+    /* ============================================================
+   ACS ROUTE CENTER — DAILY MARKET Y / C / F
+   ============================================================ */
+
+.route-daily-market {
+  min-width: 230px;
+  display: grid;
+  gap: 5px;
+  padding: 1px 0;
+}
+
+.route-daily-market-total {
+  color: #ffffff;
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.route-daily-market-direction {
+  margin-top: -2px;
+  color: var(--route-muted);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.route-market-class-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 1px;
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.62rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.route-market-class {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.route-market-class[data-cabin="Y"] {
+  color: #4da3ff;
+}
+
+.route-market-class[data-cabin="C"] {
+  color: #ffb300;
+}
+
+.route-market-class[data-cabin="F"] {
+  color: #c86bff;
+}
+
+.route-market-class[data-disabled="true"] {
+  color: rgba(255, 255, 255, 0.36);
+}
+
+.route-market-separator {
+  color: rgba(255, 255, 255, 0.22);
+}
+
+.route-market-meters {
+  display: grid;
+  gap: 3px;
+  margin-top: 1px;
+}
+
+.route-market-meter {
+  display: grid;
+  grid-template-columns: 13px minmax(72px, 1fr) 38px;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.route-market-meter-label {
+  font-family: "Orbitron", sans-serif;
+  font-size: 0.56rem;
+  font-weight: 900;
+  text-align: left;
+}
+
+.route-market-meter-label[data-cabin="Y"] {
+  color: #4da3ff;
+}
+
+.route-market-meter-label[data-cabin="C"] {
+  color: #ffb300;
+}
+
+.route-market-meter-label[data-cabin="F"] {
+  color: #c86bff;
+}
+
+.route-market-meter-track {
+  position: relative;
+  width: 100%;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.route-market-meter-fill {
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  transition: width 0.25s ease;
+}
+
+.route-market-meter-fill[data-cabin="Y"] {
+  background: #4da3ff;
+  box-shadow: 0 0 7px rgba(77, 163, 255, 0.45);
+}
+
+.route-market-meter-fill[data-cabin="C"] {
+  background: #ffb300;
+  box-shadow: 0 0 7px rgba(255, 179, 0, 0.42);
+}
+
+.route-market-meter-fill[data-cabin="F"] {
+  background: #c86bff;
+  box-shadow: 0 0 7px rgba(200, 107, 255, 0.45);
+}
+
+.route-market-meter-value {
+  color: #dce6f3;
+  font-size: 0.56rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.route-market-meter[data-disabled="true"] {
+  opacity: 0.36;
+}
+
+.route-market-meter[data-disabled="true"] .route-market-meter-fill {
+  width: 0 !important;
+  background: rgba(255, 255, 255, 0.22);
+  box-shadow: none;
+}
+       
     .route-registration-btn {
       padding: 0;
       color: #8ab4ff;
@@ -1938,7 +2090,8 @@
         animation-duration: 0.01ms !important;
       }
     }
-  </style>
+      
+</style>
 </head>
 
 <body>
@@ -2058,7 +2211,10 @@
               </th>
               <th scope="col">LF</th>
               <th scope="col">Route Image</th>
-              <th scope="col">Weekly Demand</th>
+              <th scope="col">
+                Daily Market
+              <span class="route-table-head-secondary">OUT / RETURN · Y / C / F</span>
+              </th>
               <th scope="col">Route Result</th>
               <th scope="col">View</th>
             </tr>
@@ -3281,7 +3437,244 @@ function populateAircraftFilter() {
         return cell;
       }
 
-      function createRouteRow(route) {
+function createDailyMarketCell(row, route) {
+  const cell = document.createElement("td");
+  const wrapper = document.createElement("div");
+
+  wrapper.className = "route-daily-market";
+
+  const outboundDemand =
+    route?.demand?.outbound || {};
+
+  const returnDemand =
+    route?.demand?.return || {};
+
+  const outboundPerformance =
+    route?.performance?.outbound?.last_7_days || {};
+
+  const returnPerformance =
+    route?.performance?.return?.last_7_days || {};
+
+  /*
+   * ==========================================================
+   * DAILY MARKET TOTAL — OUT / RETURN
+   * ==========================================================
+   */
+
+  const total = document.createElement("div");
+  total.className = "route-daily-market-total";
+
+  const outboundDailyTotal =
+    numberValue(outboundDemand.average_daily);
+
+  const returnDailyTotal =
+    numberValue(returnDemand.average_daily);
+
+  total.textContent =
+    `${formatInteger(Math.round(outboundDailyTotal))}`
+    + ` / `
+    + `${formatInteger(Math.round(returnDailyTotal))}`;
+
+  const direction = document.createElement("div");
+  direction.className = "route-daily-market-direction";
+  direction.textContent = "OUT / RETURN";
+
+  /*
+   * ==========================================================
+   * CABIN MARKET — Y / C / F
+   * ==========================================================
+   */
+
+  const classLine = document.createElement("div");
+  classLine.className = "route-market-class-line";
+
+  const cabins = [
+    { key: "Y" },
+    { key: "C" },
+    { key: "F" }
+  ];
+
+  cabins.forEach((cabin, index) => {
+    if (index > 0) {
+      const separator = document.createElement("span");
+      separator.className = "route-market-separator";
+      separator.textContent = "│";
+      classLine.append(separator);
+    }
+
+    const cabinKey =
+      cabin.key.toLowerCase();
+
+    const outboundDaily =
+      numberValue(
+        outboundDemand[`daily_${cabinKey}`]
+      );
+
+    const returnDaily =
+      numberValue(
+        returnDemand[`daily_${cabinKey}`]
+      );
+
+    const item =
+      document.createElement("span");
+
+    item.className =
+      "route-market-class";
+
+    item.dataset.cabin =
+      cabin.key;
+
+    item.textContent =
+      `${cabin.key} `
+      + `${formatInteger(Math.round(outboundDaily))}`
+      + `/`
+      + `${formatInteger(Math.round(returnDaily))}`;
+
+    classLine.append(item);
+  });
+
+  /*
+   * ==========================================================
+   * MARKET CAPTURE METERS — Y / C / F
+   * ==========================================================
+   */
+
+  const meters =
+    document.createElement("div");
+
+  meters.className =
+    "route-market-meters";
+
+  cabins.forEach(cabin => {
+    const cabinKey =
+      cabin.key.toLowerCase();
+
+    /*
+     * Weekly market authority for both directions.
+     */
+    const weeklyMarket =
+      numberValue(
+        outboundDemand[`weekly_${cabinKey}`]
+      )
+      +
+      numberValue(
+        returnDemand[`weekly_${cabinKey}`]
+      );
+
+    /*
+     * Actual passengers captured during the last 7 ACS days.
+     */
+    const captured =
+      numberValue(
+        outboundPerformance[`captured_${cabinKey}`]
+      )
+      +
+      numberValue(
+        returnPerformance[`captured_${cabinKey}`]
+      );
+
+    const captureRate =
+      weeklyMarket > 0
+        ? captured / weeklyMarket
+        : 0;
+
+    /*
+     * The visual bar cannot exceed 100%.
+     * The numeric value remains the real calculated percentage.
+     */
+    const boundedCaptureRate =
+      Math.max(
+        0,
+        Math.min(1, captureRate)
+      );
+
+    const meter =
+      document.createElement("div");
+
+    meter.className =
+      "route-market-meter";
+
+    meter.dataset.cabin =
+      cabin.key;
+
+    const label =
+      document.createElement("span");
+
+    label.className =
+      "route-market-meter-label";
+
+    label.dataset.cabin =
+      cabin.key;
+
+    label.textContent =
+      cabin.key;
+
+    const track =
+      document.createElement("div");
+
+    track.className =
+      "route-market-meter-track";
+
+    const fill =
+      document.createElement("div");
+
+    fill.className =
+      "route-market-meter-fill";
+
+    fill.dataset.cabin =
+      cabin.key;
+
+    fill.style.width =
+      `${(boundedCaptureRate * 100).toFixed(1)}%`;
+
+    const value =
+      document.createElement("span");
+
+    value.className =
+      "route-market-meter-value";
+
+    value.textContent =
+      formatPercent(captureRate);
+
+    meter.title =
+      `${cabin.key} Market Capture · `
+      + `${formatInteger(captured)} captured / `
+      + `${formatInteger(weeklyMarket)} market passengers `
+      + `during the last 7 ACS days`;
+
+    track.append(fill);
+
+    meter.append(
+      label,
+      track,
+      value
+    );
+
+    meters.append(meter);
+  });
+
+  /*
+   * ==========================================================
+   * FINAL CELL
+   * ==========================================================
+   */
+
+  wrapper.append(
+    total,
+    direction,
+    classLine,
+    meters
+  );
+
+  cell.append(wrapper);
+
+  row.append(cell);
+
+  return cell;
+}
+         
+function createRouteRow(route) {
+           
   const row = document.createElement("tr");
   const routeId = integerValue(route.route_plan_id);
   const current = combinedCurrentPeriod(route);
@@ -3382,11 +3775,7 @@ function populateAircraftFilter() {
             + ` · Held: ${formatInteger(routeImage.held_flights_90d)}`;
         }
            
-        createCell(
-          row,
-          `${formatInteger(route.demand?.outbound?.weekly_total)} / ${formatInteger(route.demand?.return?.weekly_total)}`,
-          "Outbound / Return"
-        );
+        createDailyMarketCell(row, route);
 
         const resultCell = document.createElement("td");
         const resultButton = document.createElement("button");
