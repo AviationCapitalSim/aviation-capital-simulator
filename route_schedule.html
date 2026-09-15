@@ -3242,18 +3242,20 @@ window.confirmRoute = async function () {
 
   console.error("EDIT ROUTE failed:", data);
 
-  if (data?.error === "ROUTE_EDIT_BLOCKED_BY_ACTIVE_FLIGHT") {
-    alert(
-      "⚠️ This route is currently operating.\n\n" +
-      "Please wait until the active flight is completed before editing the route."
-    );
-    return;
-  }
-
+  if (
+  data?.error === "ROUTE_EDIT_BLOCKED_BY_ACTIVE_FLIGHT" ||
+  data?.error === "ROUTE_EDIT_BLOCKED_BY_UNSETTLED_FLIGHT"
+) {
   alert(
-    "⛔ Update failed: " +
-    (data?.error || data?.details || "Unknown error")
+    "Route cannot be edited while a flight is active"
   );
+  return;
+}
+
+alert(
+  "⛔ Update failed: " +
+  (data?.details || data?.error || "Unknown error")
+);
 
   return;
 }
