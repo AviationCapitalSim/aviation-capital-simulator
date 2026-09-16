@@ -2058,11 +2058,23 @@ function loadTransactionLog() {
                 Number(a.totalAmount || 0)
             );
 
-    const totalType = items.reduce(
-      (sum, item) =>
-        sum + Number(item.totalAmount || 0),
-      0
-    );
+    const totalType =
+  type === "FINANCING"
+    ? items
+        .filter(item =>
+          item.status === "ACTIVE" &&
+          Number(item.remaining || 0) > 0
+        )
+        .reduce(
+          (sum, item) =>
+            sum + Number(item.remaining || 0),
+          0
+        )
+    : items.reduce(
+        (sum, item) =>
+          sum + Number(item.totalAmount || 0),
+        0
+      );
 
     const wrapper =
       document.createElement("div");
