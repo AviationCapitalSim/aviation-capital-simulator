@@ -2020,35 +2020,39 @@ function loadTransactionLog() {
                 Number(loan?.monthlyPayment || 0);
 
               return {
-                type: "FINANCING",
+  type: "FINANCING",
 
-                source:
-                  `BANK LOAN — ${
-                    loan?.ref || `LOAN #${loan?.id}`
-                  }`,
+  source:
+    `BANK LOAN — ${
+      loan?.ref || `LOAN #${loan?.id}`
+    }`,
 
-                totalAmount: originalAmount,
-                originalAmount,
-                monthlyPayment,
-                remaining,
+  totalAmount: originalAmount,
+  originalAmount,
+  monthlyPayment,
+  remaining,
 
-                principalRepaid:
-                  Math.max(
-                    0,
-                    originalAmount - remaining
-                  ),
+  openedSimTime:
+    loan?.openedSimTime || null,
 
-                status:
-                  String(loan?.status || "UNKNOWN")
-                    .trim()
-                    .toUpperCase()
-              };
+  principalRepaid:
+    Math.max(
+      0,
+      originalAmount - remaining
+    ),
 
+  status:
+    String(loan?.status || "UNKNOWN")
+      .trim()
+      .toUpperCase()
+};
+                 
             })
             .sort(
-              (a, b) =>
-                b.originalAmount - a.originalAmount
-            )
+  (a, b) =>
+    Number(b.openedSimTime || 0) -
+    Number(a.openedSimTime || 0)
+)
 
         : activity
             .filter(item => item.type === type)
