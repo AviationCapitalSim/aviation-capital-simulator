@@ -3724,6 +3724,18 @@ function ACS_scheduleFleetStatus(row) {
   const maintenanceStatus =
     ACS_scheduleText(row?.maintenance_status).toUpperCase();
 
+    const operationalStatus =
+  ACS_scheduleText(
+    row?.operational_status
+  ).toUpperCase();
+
+if (
+  operationalStatus ===
+  "CABIN_MAINTENANCE"
+) {
+  return "Maintenance Cabin";
+}
+
   if (
     maintenanceStatus === "D" ||
     maintenanceStatus === "D-CHECK" ||
