@@ -1445,10 +1445,17 @@ draft = normalizeDraftShape(
       );
 
     cabinStateByAircraft.delete(
-      key
-    );
+  key
+);
 
-    close();
+close();
+
+if (
+  typeof window.ACS_refreshMyAircraftFleet ===
+  "function"
+) {
+  await window.ACS_refreshMyAircraftFleet();
+}
 
   } catch (error) {
     console.error(
