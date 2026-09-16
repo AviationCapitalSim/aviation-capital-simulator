@@ -181,6 +181,19 @@ scrapQuote: null
     };
   }
 
+  /* ============================================================
+   ACS CABIN MAINTENANCE — DISPLAY AUTHORITY
+   ============================================================ */
+
+if (operational === "CABIN_MAINTENANCE") {
+  return {
+    key: "CABIN_MAINTENANCE",
+    label: "MAINTENANCE CABIN",
+    className: "status-maintenance",
+    sub: "CABIN RECONFIGURATION"
+  };
+}
+     
   /*
     ACS / Airbus OCC priority:
     D > C > B > A > ACTIVE
@@ -5711,6 +5724,25 @@ function bindPendingDeliveryModal() {
 
   document.addEventListener("DOMContentLoaded", initMyAircraft);
 
+/* ============================================================
+   ACS MY AIRCRAFT — LIVE FLEET REFRESH
+   ------------------------------------------------------------
+   Reload PostgreSQL fleet authority and repaint immediately.
+   ============================================================ */
+
+async function ACS_refreshMyAircraftFleet() {
+  await loadFleetFromBackend();
+
+  ACS_MY_AIRCRAFT.filteredFleet =
+    [...ACS_MY_AIRCRAFT.fleet];
+
+  populateFilters();
+  renderFleetOverview();
+  renderFleetTable();
+
+  return ACS_MY_AIRCRAFT.fleet;
+}
+   
   /* ============================================================
      🟦 GLOBAL EXPORTS FOR EXISTING INLINE HTML HANDLERS
      ============================================================ */
@@ -5721,6 +5753,11 @@ window.closeAssetPanel = closeAssetPanel;
 window.closeRegModal = closeRegModal;
 window.closeServiceCDControlModal = closeServiceCDControlModal;
 window.saveRegistration = saveRegistration;
-window.ACS_MY_AIRCRAFT = ACS_MY_AIRCRAFT;
+
+window.ACS_refreshMyAircraftFleet =
+  ACS_refreshMyAircraftFleet;
+
+window.ACS_MY_AIRCRAFT =
+  ACS_MY_AIRCRAFT;
 
 })();
