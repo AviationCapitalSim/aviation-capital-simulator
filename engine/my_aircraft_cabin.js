@@ -822,12 +822,71 @@ function normalizeDraftCapacity() {
     activeAircraft = aircraft;
 
     const key = aircraftStateKey(aircraft);
-    const savedState = cabinStateByAircraft.get(key);
+const savedState = cabinStateByAircraft.get(key);
 
-    draft = normalizeDraftShape(
-      aircraft,
-      savedState || makeFactoryDefault(aircraft)
-    );
+const railwayState =
+  aircraft?.y_product ||
+  aircraft?.c_product ||
+  aircraft?.f_product
+    ? {
+        seatLayout:
+          Array.isArray(aircraft?.seat_layout)
+            ? aircraft.seat_layout
+            : [...allowedLayouts(aircraft)[0]],
+
+        Y: {
+          product:
+            aircraft?.y_product ||
+            "Y_SMART",
+
+          seats:
+            safeInteger(
+              aircraft?.y_seats,
+              aircraftCapacity(aircraft)
+            )
+        },
+
+        C: {
+          product:
+            aircraft?.c_product ||
+            "C_SMART",
+
+          seats:
+            safeInteger(
+              aircraft?.c_seats,
+              0
+            )
+        },
+
+        F: {
+          product:
+            aircraft?.f_product ||
+            "F_SILVER",
+
+          seats:
+            safeInteger(
+              aircraft?.f_seats,
+              0
+            )
+        },
+
+        configurationType:
+          String(
+            aircraft?.cabin_configuration_source || ""
+          )
+            .toUpperCase()
+            .includes("FACTORY")
+              ? "FACTORY_DEFAULT"
+              : "CUSTOM"
+      }
+    : null;
+
+draft = normalizeDraftShape(
+  aircraft,
+  savedState ||
+  railwayState ||
+  makeFactoryDefault(aircraft)
+);
 
     normalizeDraftCapacity();
 
@@ -849,22 +908,151 @@ function normalizeDraftCapacity() {
     }
   }
 
-  function applyConfiguration() {
-    if (!activeAircraft || !draft) return;
+  async function applyConfiguration() {
+  if (!activeAircraft || !draft) return;
 
-    const validation = validateDraft();
-    if (!validation.valid) return;
+  const validation = validateDraft();
+  if (!validation.valid) return;
 
-    const key = aircraftStateKey(activeAircraft);
+  const aircraftId = Number(
+    activeAircraft?.id ||
+    activeAircraft?.aircraft_id
+  );
 
-    draft.configurationType = isFactoryDefault()
-      ? "FACTORY_DEFAULT"
-      : "CUSTOM";
-
-    cabinStateByAircraft.set(key, clone(draft));
-    close();
+  if (
+    !Number.isInteger(aircraftId) ||
+    aircraftId <= 0
+  ) {
+    console.error(
+      "MY AIRCRAFT CABIN: invalid aircraft id",
+      activeAircraft
+    );
+    return;
   }
 
+  const key = aircraftStateKey(activeAircraft);
+
+  draft.configurationType = isFactoryDefault()
+    ? "FACTORY_DEFAULT"
+    : "CUSTOM";
+
+  const applyButton = byId("macCabinApply");
+
+  if (applyButton) {
+    applyButton.disabled = true;
+    applyButton.textContent = "SAVING...";
+  }
+
+  try {
+    const response = await fetch(
+      `https://api.aviationcapitalsim.com/v1/aircraft/fleet/${aircraftId}/cabin`,
+      {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          configuration_type:
+            draft.configurationType,
+
+          Y: {
+            product: draft.Y.product,
+            seats: draft.Y.seats
+          },
+
+          C: {
+            product: draft.C.product,
+            seats: draft.C.seats
+          },
+
+          F: {
+            product: draft.F.product,
+            seats: draft.F.seats
+          }
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data?.ok) {
+      throw new Error(
+        data?.error ||
+        "CABIN_SAVE_FAILED"
+      );
+    }
+
+    cabinStateByAircraft.set(
+      key,
+      clone(draft)
+    );
+
+    if (data?.cabin) {
+      activeAircraft.y_product =
+        data.cabin.y_product;
+
+      activeAircraft.y_seats =
+        Number(data.cabin.y_seats || 0);
+
+      activeAircraft.c_product =
+        data.cabin.c_product;
+
+      activeAircraft.c_seats =
+        Number(data.cabin.c_seats || 0);
+
+      activeAircraft.f_product =
+        data.cabin.f_product;
+
+      activeAircraft.f_seats =
+        Number(data.cabin.f_seats || 0);
+
+      activeAircraft.cabin_configuration_source =
+        data.cabin.cabin_configuration_source;
+
+      activeAircraft.cabin_rules_version =
+        data.cabin.cabin_rules_version;
+
+      activeAircraft.cabin_capacity_units =
+        data.cabin.cabin_capacity_units;
+
+      activeAircraft.cabin_configured_at =
+        data.cabin.cabin_configured_at;
+    }
+
+    close();
+
+  } catch (error) {
+    console.error(
+      "MY AIRCRAFT CABIN SAVE FAILED:",
+      error
+    );
+
+    const status = byId("macCabinStatus");
+
+    if (status) {
+      status.classList.add("is-invalid");
+      status.innerHTML = `
+        <div>
+          Cabin configuration could not be saved.
+        </div>
+        <small>
+          ${String(
+            error?.message ||
+            "CABIN_SAVE_FAILED"
+          )}
+        </small>
+      `;
+    }
+
+  } finally {
+    if (applyButton) {
+      applyButton.disabled = false;
+      applyButton.textContent =
+        "APPLY CONFIGURATION";
+    }
+  }
+}
   function resetFactoryDefault() {
     if (!activeAircraft) return;
 
