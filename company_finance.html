@@ -1965,8 +1965,17 @@ function ACS_getFinanceActivityLabel(source) {
   const canonical =
     original.toUpperCase();
 
-  return ACS_FINANCE_ACTIVITY_LABELS[canonical]
-    || original;
+  const mapped =
+    ACS_FINANCE_ACTIVITY_LABELS[canonical];
+
+  if (mapped) {
+    return mapped;
+  }
+
+  return original
+    .replace(/_/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
      
 function loadTransactionLog() {
