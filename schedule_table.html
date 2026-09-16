@@ -3282,6 +3282,21 @@ function ACS_getAircraftStatusBadge(ac) {
       ac.maintenanceControlReason
     ).toUpperCase();
 
+  const operationalStatus =
+  ACS_scheduleText(
+    ac.operationalStatus
+  ).toUpperCase();
+
+if (
+  operationalStatus ===
+  "CABIN_MAINTENANCE"
+) {
+  return {
+    label: "MAINTENANCE CABIN",
+    class: "badge-ccheck"
+  };
+}
+
   if (
     dStatus === "IN_PROGRESS" ||
     reason === "D_CHECK"
