@@ -42,6 +42,45 @@
     ])
   });
 
+  /* ============================================================
+   ACS CABIN RECONFIGURATION — QUOTE AUTHORITY v1.0
+   ------------------------------------------------------------
+   • Reference installation prices = 2026 USD
+   • Historical factor follows ACS simulation year
+   • Quote only — no charge and no maintenance order yet
+   ============================================================ */
+
+const CABIN_INSTALLATION_PRICES = Object.freeze({
+  Y_SMART: 1500,
+  Y_CLASSIC: 2000,
+  Y_COMFORT: 2750,
+  Y_PLUS: 3500,
+
+  C_SMART: 6000,
+  C_EXECUTIVE: 8000,
+  C_PREMIER: 10500,
+  C_SUPERIOR: 13000,
+
+  F_SILVER: 16000,
+  F_GOLD: 20000,
+  F_PLATINUM: 25000,
+  F_DIAMOND: 32000
+});
+
+const CABIN_HISTORICAL_FACTORS = Object.freeze([
+  Object.freeze({ from: 1940, to: 1945, factor: 0.08 }),
+  Object.freeze({ from: 1946, to: 1955, factor: 0.12 }),
+  Object.freeze({ from: 1956, to: 1961, factor: 0.18 }),
+  Object.freeze({ from: 1962, to: 1969, factor: 0.24 }),
+  Object.freeze({ from: 1970, to: 1979, factor: 0.30 }),
+  Object.freeze({ from: 1980, to: 1989, factor: 0.42 }),
+  Object.freeze({ from: 1990, to: 1999, factor: 0.58 }),
+  Object.freeze({ from: 2000, to: 2005, factor: 0.70 }),
+  Object.freeze({ from: 2006, to: 2015, factor: 0.82 }),
+  Object.freeze({ from: 2016, to: 2020, factor: 0.92 }),
+  Object.freeze({ from: 2021, to: 2026, factor: 1.00 })
+]);
+   
   const LAYOUTS_BY_CATEGORY = Object.freeze({
     SMALL: Object.freeze([
       Object.freeze([2, 2])
@@ -391,6 +430,269 @@
     return normalized;
   }
 
+  /* ============================================================
+   ACS CABIN RECONFIGURATION — LIVE QUOTE
+   ============================================================ */
+
+function currentSimulationYear() {
+  const clock = byId("acs-clock");
+
+  const match =
+    String(clock?.textContent || "")
+      .match(/\b(19|20)\d{2}\b/);
+
+  if (!match) return null;
+
+  const year = Number(match[0]);
+
+  return Number.isInteger(year)
+    ? year
+    : null;
+}
+
+function historicalCostFactor(year) {
+  const record =
+    CABIN_HISTORICAL_FACTORS.find(
+      item =>
+        year >= item.from &&
+        year <= item.to
+    );
+
+  return record
+    ? Number(record.factor)
+    : null;
+}
+
+function activeCabinConfiguration(aircraft) {
+  const factoryDefault =
+    makeFactoryDefault(aircraft);
+
+  return {
+    Y: {
+      product:
+        aircraft?.y_product ||
+        factoryDefault.Y.product,
+
+      seats:
+        safeInteger(
+          aircraft?.y_seats,
+          factoryDefault.Y.seats
+        )
+    },
+
+    C: {
+      product:
+        aircraft?.c_product ||
+        factoryDefault.C.product,
+
+      seats:
+        safeInteger(
+          aircraft?.c_seats,
+          factoryDefault.C.seats
+        )
+    },
+
+    F: {
+      product:
+        aircraft?.f_product ||
+        factoryDefault.F.product,
+
+      seats:
+        safeInteger(
+          aircraft?.f_seats,
+          factoryDefault.F.seats
+        )
+    }
+  };
+}
+
+function durationHoursFromCWU(cwu) {
+  if (cwu <= 0) return 0;
+  if (cwu <= 10) return 12;
+  if (cwu <= 25) return 24;
+  if (cwu <= 50) return 48;
+  if (cwu <= 100) return 72;
+  if (cwu <= 180) return 96;
+  if (cwu <= 280) return 120;
+  if (cwu <= 400) return 144;
+
+  return 168;
+}
+
+function categoryDurationFactor(aircraft) {
+  const category =
+    normalizeCategory(aircraft);
+
+  if (category === "SMALL") return 0.80;
+  if (category === "MEDIUM") return 0.90;
+  if (category === "EXTRA_LARGE") return 1.20;
+
+  return 1.00;
+}
+
+function calculateCabinReconfigurationQuote() {
+  if (!activeAircraft || !draft) {
+    return null;
+  }
+
+  const current =
+    activeCabinConfiguration(
+      activeAircraft
+    );
+
+  const simYear =
+    currentSimulationYear();
+
+  const historicalFactor =
+    historicalCostFactor(simYear);
+
+  let referenceCost = 0;
+  let workloadCWU = 0;
+  let seatsInstalled = 0;
+
+  for (const cabinClass of CABIN_CLASSES) {
+    const oldCabin =
+      current[cabinClass];
+
+    const newCabin =
+      draft[cabinClass];
+
+    const oldSeats =
+      safeInteger(oldCabin.seats);
+
+    const newSeats =
+      safeInteger(newCabin.seats);
+
+    const productChanged =
+      oldCabin.product !==
+      newCabin.product;
+
+    let installedSeats = 0;
+    let removedSeats = 0;
+
+    if (productChanged) {
+      installedSeats = newSeats;
+      removedSeats = oldSeats;
+    } else {
+      installedSeats =
+        Math.max(
+          0,
+          newSeats - oldSeats
+        );
+
+      removedSeats =
+        Math.max(
+          0,
+          oldSeats - newSeats
+        );
+    }
+
+    seatsInstalled += installedSeats;
+
+    referenceCost +=
+      installedSeats *
+      Number(
+        CABIN_INSTALLATION_PRICES[
+          newCabin.product
+        ] || 0
+      );
+
+    workloadCWU +=
+      (
+        removedSeats *
+        productFactor(
+          cabinClass,
+          oldCabin.product
+        ) *
+        0.50
+      );
+
+    workloadCWU +=
+      (
+        installedSeats *
+        productFactor(
+          cabinClass,
+          newCabin.product
+        )
+      );
+  }
+
+  const baseDurationHours =
+    durationHoursFromCWU(
+      workloadCWU
+    );
+
+  const durationHours =
+    workloadCWU > 0
+      ? Math.ceil(
+          baseDurationHours *
+          categoryDurationFactor(
+            activeAircraft
+          )
+        )
+      : 0;
+
+  const historicalCost =
+    historicalFactor === null
+      ? null
+      : Math.round(
+          referenceCost *
+          historicalFactor
+        );
+
+  return {
+    simYear,
+    historicalFactor,
+    referenceCost,
+    historicalCost,
+    workloadCWU:
+      Math.round(workloadCWU * 100) / 100,
+    durationHours,
+    seatsInstalled
+  };
+}
+
+function formatCabinMoney(value) {
+  if (!Number.isFinite(Number(value))) {
+    return "—";
+  }
+
+  return Number(value)
+    .toLocaleString(
+      "en-US",
+      {
+        style: "currency",
+        currency: "USD",
+        maximumFractionDigits: 0
+      }
+    );
+}
+
+function formatCabinDuration(hours) {
+  const totalHours =
+    safeInteger(hours);
+
+  if (totalHours <= 0) {
+    return "0 h";
+  }
+
+  const days =
+    Math.floor(totalHours / 24);
+
+  const remainingHours =
+    totalHours % 24;
+
+  if (days <= 0) {
+    return `${remainingHours} h`;
+  }
+
+  if (remainingHours <= 0) {
+    return `${days} day${days === 1 ? "" : "s"}`;
+  }
+
+  return `${days}d ${remainingHours}h`;
+}
+   
   function spaceUsedByClass(cabinClass) {
     const selection = draft[cabinClass];
 
@@ -775,31 +1077,115 @@ function normalizeDraftCapacity() {
   }
 
   function renderStatus() {
-    const status = byId("macCabinStatus");
-    const applyButton = byId("macCabinApply");
+  const status = byId("macCabinStatus");
+  const applyButton = byId("macCabinApply");
 
-    if (!status || !applyButton) return;
+  if (!status || !applyButton) return;
 
-    const validation = validateDraft();
-    const factoryDefault = isFactoryDefault();
+  const validation =
+    validateDraft();
 
-    status.classList.toggle("is-invalid", !validation.valid);
-    status.classList.toggle("is-factory-default", factoryDefault);
+  const factoryDefault =
+    isFactoryDefault();
 
-    status.innerHTML = `
-      <div>${validation.message}</div>
-      ${validation.valid ? `
-        <small>
-          ${factoryDefault
+  const quote =
+    validation.valid
+      ? calculateCabinReconfigurationQuote()
+      : null;
+
+  status.classList.toggle(
+    "is-invalid",
+    !validation.valid
+  );
+
+  status.classList.toggle(
+    "is-factory-default",
+    factoryDefault
+  );
+
+  status.innerHTML = `
+    <div>
+      ${validation.message}
+    </div>
+
+    ${validation.valid ? `
+      <small>
+        ${
+          factoryDefault
             ? "FACTORY DEFAULT CABIN CONFIGURATION"
-            : "CUSTOM CABIN CONFIGURATION"}
-        </small>
-      ` : ""}
-    `;
+            : "CUSTOM CABIN CONFIGURATION"
+        }
+      </small>
 
-    applyButton.disabled = !validation.valid;
-  }
+      <div
+        style="
+          margin-top:14px;
+          padding:12px 14px;
+          border:1px solid rgba(99,207,255,.28);
+          border-radius:8px;
+          background:rgba(8,35,55,.55);
+        "
+      >
+        <div
+          style="
+            margin-bottom:9px;
+            color:#63cfff;
+            font-weight:800;
+            letter-spacing:.08em;
+          "
+        >
+          CABIN RECONFIGURATION
+        </div>
 
+        <div
+          style="
+            display:flex;
+            justify-content:space-between;
+            gap:16px;
+            margin:5px 0;
+          "
+        >
+          <span>Estimated Downtime</span>
+          <strong>
+            ${formatCabinDuration(
+              quote?.durationHours || 0
+            )}
+          </strong>
+        </div>
+
+        <div
+          style="
+            display:flex;
+            justify-content:space-between;
+            gap:16px;
+            margin:5px 0;
+          "
+        >
+          <span>
+            Estimated Cost
+            ${
+              quote?.simYear
+                ? ` (${quote.simYear})`
+                : ""
+            }
+          </span>
+
+          <strong
+            style="color:#ffb300;"
+          >
+            ${formatCabinMoney(
+              quote?.historicalCost
+            )}
+          </strong>
+        </div>
+      </div>
+    ` : ""}
+  `;
+
+  applyButton.disabled =
+    !validation.valid;
+}
+   
   function render() {
     if (!activeAircraft || !draft) return;
 
