@@ -1297,13 +1297,16 @@ draft = normalizeDraftShape(
   async function applyConfiguration() {
   if (!activeAircraft || !draft) return;
 
-  const validation = validateDraft();
+  const validation =
+    validateDraft();
+
   if (!validation.valid) return;
 
-  const aircraftId = Number(
-    activeAircraft?.id ||
-    activeAircraft?.aircraft_id
-  );
+  const aircraftId =
+    Number(
+      activeAircraft?.id ||
+      activeAircraft?.aircraft_id
+    );
 
   if (
     !Number.isInteger(aircraftId) ||
@@ -1313,132 +1316,204 @@ draft = normalizeDraftShape(
       "MY AIRCRAFT CABIN: invalid aircraft id",
       activeAircraft
     );
+
     return;
   }
 
-  const key = aircraftStateKey(activeAircraft);
+  draft.configurationType =
+    isFactoryDefault()
+      ? "FACTORY_DEFAULT"
+      : "CUSTOM";
 
-  draft.configurationType = isFactoryDefault()
-    ? "FACTORY_DEFAULT"
-    : "CUSTOM";
-
-  const applyButton = byId("macCabinApply");
+  const applyButton =
+    byId("macCabinApply");
 
   if (applyButton) {
     applyButton.disabled = true;
-    applyButton.textContent = "SAVING...";
+    applyButton.textContent =
+      "STARTING...";
   }
 
   try {
-    const response = await fetch(
-      `https://api.aviationcapitalsim.com/v1/aircraft/fleet/${aircraftId}/cabin`,
-      {
-        method: "PUT",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          configuration_type:
-            draft.configurationType,
+    const response =
+      await fetch(
+        `https://api.aviationcapitalsim.com/v1/aircraft/fleet/${aircraftId}/cabin-maintenance/start`,
+        {
+          method: "POST",
 
-          Y: {
-            product: draft.Y.product,
-            seats: draft.Y.seats
+          credentials:
+            "include",
+
+          headers: {
+            "Content-Type":
+              "application/json"
           },
 
-          C: {
-            product: draft.C.product,
-            seats: draft.C.seats
-          },
+          body:
+            JSON.stringify({
+              Y: {
+                product:
+                  draft.Y.product,
 
-          F: {
-            product: draft.F.product,
-            seats: draft.F.seats
-          }
-        })
-      }
-    );
+                seats:
+                  draft.Y.seats
+              },
 
-    const data = await response.json();
+              C: {
+                product:
+                  draft.C.product,
 
-    if (!response.ok || !data?.ok) {
-      throw new Error(
-        data?.error ||
-        "CABIN_SAVE_FAILED"
+                seats:
+                  draft.C.seats
+              },
+
+              F: {
+                product:
+                  draft.F.product,
+
+                seats:
+                  draft.F.seats
+              }
+            })
+        }
       );
+
+    const data =
+      await response.json();
+
+    if (
+      !response.ok ||
+      !data?.ok
+    ) {
+      const error =
+        new Error(
+          data?.error ||
+          "CABIN_MAINTENANCE_START_FAILED"
+        );
+
+      error.details =
+        data?.details ||
+        null;
+
+      error.capital =
+        data?.capital;
+
+      error.required =
+        data?.required;
+
+      throw error;
     }
 
-    cabinStateByAircraft.set(
-      key,
-      clone(draft)
+    /*
+      IMPORTANT:
+
+      Do NOT write draft Y/C/F into activeAircraft here.
+
+      The requested configuration lives in
+      aircraft_cabin_maintenance while work is active.
+
+      aircraft_fleet keeps the CURRENT installed cabin
+      until acs_complete_due_cabin_maintenance()
+      completes the work.
+    */
+
+    if (data?.aircraft) {
+      activeAircraft.status =
+        data.aircraft.status ??
+        activeAircraft.status;
+
+      activeAircraft.operational_status =
+        data.aircraft.operational_status ??
+        activeAircraft.operational_status;
+
+      activeAircraft.maintenance_status =
+        data.aircraft.maintenance_status ??
+        activeAircraft.maintenance_status;
+    }
+
+    /*
+      Remove any page-session preview authority.
+
+      Reopening Cabin Configuration must continue
+      showing the actually installed Railway cabin,
+      not the future requested configuration.
+    */
+
+    const key =
+      aircraftStateKey(
+        activeAircraft
+      );
+
+    cabinStateByAircraft.delete(
+      key
     );
-
-    if (data?.cabin) {
-      activeAircraft.y_product =
-        data.cabin.y_product;
-
-      activeAircraft.y_seats =
-        Number(data.cabin.y_seats || 0);
-
-      activeAircraft.c_product =
-        data.cabin.c_product;
-
-      activeAircraft.c_seats =
-        Number(data.cabin.c_seats || 0);
-
-      activeAircraft.f_product =
-        data.cabin.f_product;
-
-      activeAircraft.f_seats =
-        Number(data.cabin.f_seats || 0);
-
-      activeAircraft.cabin_configuration_source =
-        data.cabin.cabin_configuration_source;
-
-      activeAircraft.cabin_rules_version =
-        data.cabin.cabin_rules_version;
-
-      activeAircraft.cabin_capacity_units =
-        data.cabin.cabin_capacity_units;
-
-      activeAircraft.cabin_configured_at =
-        data.cabin.cabin_configured_at;
-    }
 
     close();
 
   } catch (error) {
     console.error(
-      "MY AIRCRAFT CABIN SAVE FAILED:",
+      "MY AIRCRAFT CABIN MAINTENANCE START FAILED:",
       error
     );
 
-    const status = byId("macCabinStatus");
+    const status =
+      byId("macCabinStatus");
 
     if (status) {
-      status.classList.add("is-invalid");
+      status.classList.add(
+        "is-invalid"
+      );
+
+      let message =
+        String(
+          error?.message ||
+          "CABIN_MAINTENANCE_START_FAILED"
+        );
+
+      if (
+        message ===
+        "INSUFFICIENT_CAPITAL_FOR_CABIN_MAINTENANCE"
+      ) {
+        const capital =
+          Number(
+            error?.capital || 0
+          );
+
+        const required =
+          Number(
+            error?.required || 0
+          );
+
+        message =
+          `Insufficient capital. Available ${formatCabinMoney(
+            capital
+          )} — Required ${formatCabinMoney(
+            required
+          )}.`;
+      }
+
       status.innerHTML = `
         <div>
-          Cabin configuration could not be saved.
+          Cabin reconfiguration could not be started.
         </div>
+
         <small>
-          ${String(
-            error?.message ||
-            "CABIN_SAVE_FAILED"
-          )}
+          ${message}
         </small>
       `;
     }
 
   } finally {
     if (applyButton) {
-      applyButton.disabled = false;
+      applyButton.disabled =
+        false;
+
       applyButton.textContent =
         "APPLY CONFIGURATION";
     }
   }
 }
+   
   function resetFactoryDefault() {
     if (!activeAircraft) return;
 
