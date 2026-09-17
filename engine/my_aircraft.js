@@ -5803,30 +5803,16 @@ function ACS_formatMaintenanceDateTime(value) {
     return "—";
   }
 
-  const datePart =
-    date
-      .toLocaleDateString(
-        "en-GB",
-        {
-          day: "2-digit",
-          month: "short",
-          year: "numeric"
-        }
-      )
-      .toUpperCase();
-
-  const timePart =
-    date
-      .toLocaleTimeString(
-        "en-GB",
-        {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false
-        }
-      );
-
-  return `${datePart} · ${timePart}`;
+  return date
+    .toLocaleDateString(
+      "en-GB",
+      {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+      }
+    )
+    .toUpperCase();
 }
 
 
@@ -5857,42 +5843,23 @@ function ACS_formatMaintenanceRemaining(
     return "—";
   }
 
-  let remainingMs =
+  const remainingMs =
     ready - current;
 
   if (remainingMs <= 0) {
     return "READY";
   }
 
-  const totalMinutes =
-    Math.ceil(
-      remainingMs / 60000
-    );
-
   const days =
-    Math.floor(
-      totalMinutes / 1440
+    Math.ceil(
+      remainingMs /
+      (24 * 60 * 60 * 1000)
     );
 
-  const hours =
-    Math.floor(
-      (totalMinutes % 1440) / 60
-    );
-
-  const minutes =
-    totalMinutes % 60;
-
-  if (days > 0) {
-    return `${days}d ${hours}h`;
-  }
-
-  if (hours > 0) {
-    return `${hours}h ${minutes}m`;
-  }
-
-  return `${minutes}m`;
+  return days === 1
+    ? "1 DAY"
+    : `${days} DAYS`;
 }
-
 
 /* ============================================================
    RENDER MAINTENANCE MODAL
@@ -5956,10 +5923,18 @@ function renderMaintenanceStatusModal() {
     )
   );
 
-  setText(
-    "maintenanceType",
-    page.maintenance_type
-  );
+    const maintenanceTypeElement =
+    $("maintenanceType");
+
+  if (maintenanceTypeElement) {
+    maintenanceTypeElement.textContent =
+      page.maintenance_type;
+
+    maintenanceTypeElement.className =
+      page.maintenance_type === "D-CHECK"
+        ? "maintenance-type-d"
+        : "maintenance-type-warning";
+  }
 
   setText(
     "maintenanceStarted",
