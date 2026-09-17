@@ -879,82 +879,165 @@ async function resolveCompletedMaintenanceEvents() {
    ============================================================ */
 
   function renderFleetOverview() {
-    const fleet = Array.isArray(ACS_MY_AIRCRAFT.fleet)
+  const fleet =
+    Array.isArray(ACS_MY_AIRCRAFT.fleet)
       ? ACS_MY_AIRCRAFT.fleet
       : [];
 
-    const pendingOrders =
-  Array.isArray(ACS_MY_AIRCRAFT.pendingOrders)
-    ? ACS_MY_AIRCRAFT.pendingOrders
-    : [];
+  const pendingOrders =
+    Array.isArray(ACS_MY_AIRCRAFT.pendingOrders)
+      ? ACS_MY_AIRCRAFT.pendingOrders
+      : [];
 
-const pendingOrdersCount = pendingOrders.reduce(
-  (total, order) =>
-    total + Math.max(1, safeNumber(order.quantity, 1)),
-  0
-);
+  const pendingOrdersCount =
+    pendingOrders.reduce(
+      (total, order) =>
+        total +
+        Math.max(
+          1,
+          safeNumber(order.quantity, 1)
+        ),
+      0
+    );
 
-const pendingFleetCount = fleet.filter(
-  aircraft =>
-    normalizeStatus(aircraft.status) === "PENDING_DELIVERY"
-).length;
+  const pendingFleetCount =
+    fleet.filter(
+      aircraft =>
+        normalizeStatus(
+          aircraft.status
+        ) === "PENDING_DELIVERY"
+    ).length;
 
-const pendingDeliveryCount =
-  pendingOrdersCount + pendingFleetCount;
+  const pendingDeliveryCount =
+    pendingOrdersCount +
+    pendingFleetCount;
 
-const counts = {
-  totalFleet: fleet.length,
-  active: 0,
-  pendingDelivery: pendingDeliveryCount,
-  maintenance: 0,
-  leased: 0
-};
+  const counts = {
+    totalFleet: fleet.length,
+    active: 0,
+    pendingDelivery: pendingDeliveryCount,
+    maintenance: 0,
+    leased: 0
+  };
 
-    for (const aircraft of fleet) {
-      const status = normalizeStatus(aircraft.status);
-      const operational = normalizeStatus(aircraft.operational_status);
-      const ownership = normalizeStatus(aircraft.ownership_type);
-      const maintenanceControl = normalizeStatus(aircraft.maintenance_control_status);
+  for (const aircraft of fleet) {
+    const status =
+      normalizeStatus(
+        aircraft.status
+      );
 
-      const statusInfo = resolveFleetStatus(aircraft);
+    const ownership =
+      normalizeStatus(
+        aircraft.ownership_type
+      );
 
-      const isCommercialListing =
-        status === "FOR_SALE" ||
-        status === "FOR_LEASE" ||
-        status === "FOR_SALE_OR_LEASE";
+    const statusInfo =
+      resolveFleetStatus(aircraft);
 
-      if (
-        !isCommercialListing &&
-        (
-          status === "MAINTENANCE" ||
-          status === "IN_MAINTENANCE" ||
-          operational === "IN_MAINTENANCE" ||
-          maintenanceControl === "MAINTENANCE_REQUIRED" ||
-          statusInfo.key === "MAINTENANCE" ||
-          statusInfo.key === "MAINTENANCE_REQUIRED"
-        )
-      ) {
-        counts.maintenance += 1;
-      }
+    const activeCDType =
+      normalizeStatus(
+        aircraft.active_cd_check_type
+      );
 
-      if (ownership === "LEASED") {
-        counts.leased += 1;
-      }
+    const activeCDStatus =
+      normalizeStatus(
+        aircraft.active_cd_event_status
+      );
+
+    const activeCabinStatus =
+      normalizeStatus(
+        aircraft.active_cabin_status
+      );
+
+    const isCommercialListing =
+      status === "FOR_SALE" ||
+      status === "FOR_LEASE" ||
+      status === "FOR_SALE_OR_LEASE";
+
+    /*
+      ACTIVE CARD
+
+      Uses the same resolved fleet status already
+      used by My Aircraft table display.
+    */
+    if (
+      statusInfo.key === "ACTIVE"
+    ) {
+      counts.active += 1;
     }
 
-    setText("foTotalFleetValue", counts.totalFleet);
-    setText("foActiveValue", counts.active);
-    setText("foPendingDeliveryValue", counts.pendingDelivery);
-    setText("foMaintenanceValue", counts.maintenance);
-    setText("foLeasedValue", counts.leased);
+    /*
+      MAINTENANCE CARD
 
-    console.log("🟦 ACS OCC FLEET OVERVIEW UPDATED:", {
+      Count only real active:
+      - C Check
+      - D Check
+      - Cabin Maintenance
+
+      Commercial listings never count here.
+    */
+    const hasActiveCDMaintenance =
+      activeCDStatus === "IN_PROGRESS" &&
+      (
+        activeCDType === "C_CHECK" ||
+        activeCDType === "D_CHECK"
+      );
+
+    const hasActiveCabinMaintenance =
+      activeCabinStatus === "IN_PROGRESS";
+
+    if (
+      !isCommercialListing &&
+      (
+        hasActiveCDMaintenance ||
+        hasActiveCabinMaintenance
+      )
+    ) {
+      counts.maintenance += 1;
+    }
+
+    if (
+      ownership === "LEASED"
+    ) {
+      counts.leased += 1;
+    }
+  }
+
+  setText(
+    "foTotalFleetValue",
+    counts.totalFleet
+  );
+
+  setText(
+    "foActiveValue",
+    counts.active
+  );
+
+  setText(
+    "foPendingDeliveryValue",
+    counts.pendingDelivery
+  );
+
+  setText(
+    "foMaintenanceValue",
+    counts.maintenance
+  );
+
+  setText(
+    "foLeasedValue",
+    counts.leased
+  );
+
+  console.log(
+    "🟦 ACS OCC FLEET OVERVIEW UPDATED:",
+    {
       backend_authority: true,
       localStorage: false,
       counts
-    });
-  }
-
+    }
+  );
+}
+   
   /* ============================================================
      🟦 FILTERS
      ============================================================ */
