@@ -937,17 +937,6 @@ const counts = {
         counts.maintenance += 1;
       }
 
-      if (
-        status === "MAINTENANCE" ||
-        status === "IN_MAINTENANCE" ||
-        operational === "IN_MAINTENANCE" ||
-        maintenanceControl === "MAINTENANCE_REQUIRED" ||
-        statusInfo.key === "MAINTENANCE" ||
-        statusInfo.key === "MAINTENANCE_REQUIRED"
-      ) {
-        counts.maintenance += 1;
-      }
-
       if (ownership === "LEASED") {
         counts.leased += 1;
       }
