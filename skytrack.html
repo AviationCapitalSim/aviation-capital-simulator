@@ -1271,7 +1271,7 @@ function ACS_ST_isMyAirlineFlight(item) {
 function ACS_ST_getMyLiveTraffic(snapshot) {
   if (!Array.isArray(snapshot)) return [];
 
-  const maintenanceStates = new Set([
+   const maintenanceStates = new Set([
     "A_CHECK",
     "B_CHECK",
     "C_CHECK",
@@ -1280,6 +1280,7 @@ function ACS_ST_getMyLiveTraffic(snapshot) {
     "B_CHECK_OVERDUE",
     "C_CHECK_OVERDUE",
     "D_CHECK_OVERDUE",
+    "CABIN_MAINTENANCE",
     "MAINTENANCE",
     "MAINTENANCE_REQUIRED",
     "UNSERVICEABLE"
