@@ -918,13 +918,23 @@ const counts = {
 
       const statusInfo = resolveFleetStatus(aircraft);
 
+      const isCommercialListing =
+        status === "FOR_SALE" ||
+        status === "FOR_LEASE" ||
+        status === "FOR_SALE_OR_LEASE";
+
       if (
-        statusInfo.key === "ACTIVE" &&
-        status === "ACTIVE" &&
-        operational === "AVAILABLE" &&
-        maintenanceControl !== "MAINTENANCE_REQUIRED"
+        !isCommercialListing &&
+        (
+          status === "MAINTENANCE" ||
+          status === "IN_MAINTENANCE" ||
+          operational === "IN_MAINTENANCE" ||
+          maintenanceControl === "MAINTENANCE_REQUIRED" ||
+          statusInfo.key === "MAINTENANCE" ||
+          statusInfo.key === "MAINTENANCE_REQUIRED"
+        )
       ) {
-        counts.active += 1;
+        counts.maintenance += 1;
       }
 
       if (
