@@ -878,7 +878,7 @@ async function resolveCompletedMaintenanceEvents() {
    - Leased
    ============================================================ */
 
-  function renderFleetOverview() {
+function renderFleetOverview() {
   const fleet =
     Array.isArray(ACS_MY_AIRCRAFT.fleet)
       ? ACS_MY_AIRCRAFT.fleet
@@ -912,20 +912,45 @@ async function resolveCompletedMaintenanceEvents() {
     pendingOrdersCount +
     pendingFleetCount;
 
+  /*
+    ============================================================
+    MAINTENANCE CARD — SAME AUTHORITY AS MAINTENANCE MODAL
+    ============================================================
+
+    ACS_buildMaintenanceAircraftPages() already resolves:
+
+    - Active C Check
+    - Active D Check
+    - Active Cabin Maintenance
+
+    Commercial listings are excluded from the dashboard card.
+  */
+
+  const maintenanceCount =
+    ACS_buildMaintenanceAircraftPages()
+      .filter(page => {
+        const status =
+          normalizeStatus(
+            page?.aircraft?.status
+          );
+
+        return (
+          status !== "FOR_SALE" &&
+          status !== "FOR_LEASE" &&
+          status !== "FOR_SALE_OR_LEASE"
+        );
+      })
+      .length;
+
   const counts = {
     totalFleet: fleet.length,
     active: 0,
     pendingDelivery: pendingDeliveryCount,
-    maintenance: 0,
+    maintenance: maintenanceCount,
     leased: 0
   };
 
   for (const aircraft of fleet) {
-    const status =
-      normalizeStatus(
-        aircraft.status
-      );
-
     const ownership =
       normalizeStatus(
         aircraft.ownership_type
@@ -934,31 +959,8 @@ async function resolveCompletedMaintenanceEvents() {
     const statusInfo =
       resolveFleetStatus(aircraft);
 
-    const activeCDType =
-      normalizeStatus(
-        aircraft.active_cd_check_type
-      );
-
-    const activeCDStatus =
-      normalizeStatus(
-        aircraft.active_cd_event_status
-      );
-
-    const activeCabinStatus =
-      normalizeStatus(
-        aircraft.active_cabin_status
-      );
-
-    const isCommercialListing =
-      status === "FOR_SALE" ||
-      status === "FOR_LEASE" ||
-      status === "FOR_SALE_OR_LEASE";
-
     /*
       ACTIVE CARD
-
-      Uses the same resolved fleet status already
-      used by My Aircraft table display.
     */
     if (
       statusInfo.key === "ACTIVE"
@@ -967,35 +969,8 @@ async function resolveCompletedMaintenanceEvents() {
     }
 
     /*
-      MAINTENANCE CARD
-
-      Count only real active:
-      - C Check
-      - D Check
-      - Cabin Maintenance
-
-      Commercial listings never count here.
+      LEASED CARD
     */
-    const hasActiveCDMaintenance =
-      activeCDStatus === "IN_PROGRESS" &&
-      (
-        activeCDType === "C_CHECK" ||
-        activeCDType === "D_CHECK"
-      );
-
-    const hasActiveCabinMaintenance =
-      activeCabinStatus === "IN_PROGRESS";
-
-    if (
-      !isCommercialListing &&
-      (
-        hasActiveCDMaintenance ||
-        hasActiveCabinMaintenance
-      )
-    ) {
-      counts.maintenance += 1;
-    }
-
     if (
       ownership === "LEASED"
     ) {
