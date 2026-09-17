@@ -50,6 +50,9 @@ orders: [],
 pendingOrders: [],
 pendingOrderIndex: 0,
 
+maintenanceAircraft: [],
+maintenanceAircraftIndex: 0,
+
 selectedAircraft: null,
 
 saleQuote: null,
@@ -5651,7 +5654,607 @@ function bindPendingDeliveryModal() {
     }
   });
 }
- 
+
+/* ============================================================
+   🟨 AIRCRAFT MAINTENANCE STATUS MODAL
+   ------------------------------------------------------------
+   My Aircraft presentation only.
+
+   Includes:
+   - C-CHECK
+   - D-CHECK
+   - CABIN MAINTENANCE
+
+   Excludes:
+   - A-CHECK
+   - B-CHECK
+   - overdue / required states without active event
+
+   PostgreSQL / backend remains authority.
+   ============================================================ */
+
+function ACS_buildMaintenanceAircraftPages() {
+  const fleet =
+    Array.isArray(ACS_MY_AIRCRAFT.fleet)
+      ? ACS_MY_AIRCRAFT.fleet
+      : [];
+
+  const pages = [];
+
+  for (const aircraft of fleet) {
+
+    const activeCDType =
+      normalizeStatus(
+        aircraft.active_cd_check_type
+      );
+
+    const activeCDStatus =
+      normalizeStatus(
+        aircraft.active_cd_event_status
+      );
+
+    const activeCabinStatus =
+      normalizeStatus(
+        aircraft.active_cabin_status
+      );
+
+    /*
+      Active C / D event.
+    */
+    if (
+      activeCDStatus === "IN_PROGRESS" &&
+      (
+        activeCDType === "C_CHECK" ||
+        activeCDType === "D_CHECK"
+      )
+    ) {
+      pages.push({
+        aircraft,
+        maintenance_type:
+          activeCDType === "C_CHECK"
+            ? "C-CHECK"
+            : "D-CHECK",
+
+        maintenance_status:
+          "IN PROGRESS",
+
+        started_at:
+          aircraft.active_cd_started_at,
+
+        ready_at:
+          aircraft.active_cd_ready_at,
+
+        current_sim_time:
+          aircraft.current_sim_time
+      });
+
+      continue;
+    }
+
+    /*
+      Active Cabin Maintenance.
+    */
+    if (
+      activeCabinStatus === "IN_PROGRESS"
+    ) {
+      pages.push({
+        aircraft,
+        maintenance_type:
+          "CABIN MAINTENANCE",
+
+        maintenance_status:
+          "IN PROGRESS",
+
+        started_at:
+          aircraft.active_cabin_started_at,
+
+        ready_at:
+          aircraft.active_cabin_ready_at,
+
+        current_sim_time:
+          aircraft.current_sim_time
+      });
+    }
+  }
+
+  /*
+    Earliest READY aircraft first.
+  */
+  pages.sort((pageA, pageB) => {
+    const dateA =
+      new Date(
+        pageA.ready_at || 0
+      ).getTime();
+
+    const dateB =
+      new Date(
+        pageB.ready_at || 0
+      ).getTime();
+
+    const safeDateA =
+      Number.isFinite(dateA)
+        ? dateA
+        : Number.MAX_SAFE_INTEGER;
+
+    const safeDateB =
+      Number.isFinite(dateB)
+        ? dateB
+        : Number.MAX_SAFE_INTEGER;
+
+    return safeDateA - safeDateB;
+  });
+
+  return pages;
+}
+
+
+/* ============================================================
+   MAINTENANCE DATE / TIME DISPLAY
+   Presentation only.
+   ============================================================ */
+
+function ACS_formatMaintenanceDateTime(value) {
+  if (!value) return "—";
+
+  const date =
+    new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "—";
+  }
+
+  const datePart =
+    date
+      .toLocaleDateString(
+        "en-GB",
+        {
+          day: "2-digit",
+          month: "short",
+          year: "numeric"
+        }
+      )
+      .toUpperCase();
+
+  const timePart =
+    date
+      .toLocaleTimeString(
+        "en-GB",
+        {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false
+        }
+      );
+
+  return `${datePart} · ${timePart}`;
+}
+
+
+/* ============================================================
+   MAINTENANCE REMAINING DISPLAY
+   Uses backend ACS current_sim_time only.
+   Does not control maintenance completion.
+   ============================================================ */
+
+function ACS_formatMaintenanceRemaining(
+  readyAt,
+  currentSimTime
+) {
+  if (!readyAt || !currentSimTime) {
+    return "—";
+  }
+
+  const ready =
+    new Date(readyAt).getTime();
+
+  const current =
+    new Date(currentSimTime).getTime();
+
+  if (
+    !Number.isFinite(ready) ||
+    !Number.isFinite(current)
+  ) {
+    return "—";
+  }
+
+  let remainingMs =
+    ready - current;
+
+  if (remainingMs <= 0) {
+    return "READY";
+  }
+
+  const totalMinutes =
+    Math.ceil(
+      remainingMs / 60000
+    );
+
+  const days =
+    Math.floor(
+      totalMinutes / 1440
+    );
+
+  const hours =
+    Math.floor(
+      (totalMinutes % 1440) / 60
+    );
+
+  const minutes =
+    totalMinutes % 60;
+
+  if (days > 0) {
+    return `${days}d ${hours}h`;
+  }
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+
+  return `${minutes}m`;
+}
+
+
+/* ============================================================
+   RENDER MAINTENANCE MODAL
+   ============================================================ */
+
+function renderMaintenanceStatusModal() {
+  const pages =
+    ACS_buildMaintenanceAircraftPages();
+
+  ACS_MY_AIRCRAFT.maintenanceAircraft =
+    pages;
+
+  if (!pages.length) {
+    closeMaintenanceStatusModal();
+    return;
+  }
+
+  ACS_MY_AIRCRAFT
+    .maintenanceAircraftIndex =
+      Math.min(
+        Math.max(
+          ACS_MY_AIRCRAFT
+            .maintenanceAircraftIndex,
+          0
+        ),
+        pages.length - 1
+      );
+
+  const index =
+    ACS_MY_AIRCRAFT
+      .maintenanceAircraftIndex;
+
+  const page =
+    pages[index];
+
+  const aircraft =
+    page.aircraft;
+
+  if (!aircraft) {
+    closeMaintenanceStatusModal();
+    return;
+  }
+
+  setText(
+    "maintenanceStatusSummary",
+    `${pages.length} aircraft in maintenance · Aircraft ${index + 1} of ${pages.length}`
+  );
+
+  setText(
+    "maintenanceRegistration",
+    getRegistrationDisplay(
+      aircraft
+    )
+  );
+
+  setText(
+    "maintenanceModel",
+    safeText(
+      aircraft.aircraft_name ||
+      aircraft.catalog_aircraft_name
+    )
+  );
+
+  setText(
+    "maintenanceType",
+    page.maintenance_type
+  );
+
+  setText(
+    "maintenanceStarted",
+    ACS_formatMaintenanceDateTime(
+      page.started_at
+    )
+  );
+
+  setText(
+    "maintenanceReady",
+    ACS_formatMaintenanceDateTime(
+      page.ready_at
+    )
+  );
+
+  setText(
+    "maintenanceRemaining",
+    ACS_formatMaintenanceRemaining(
+      page.ready_at,
+      page.current_sim_time
+    )
+  );
+
+  const statusElement =
+    $("maintenanceEventStatus");
+
+  if (statusElement) {
+    statusElement.textContent =
+      page.maintenance_status;
+
+    statusElement.className =
+      "pending-occ-status pending-occ-status-waiting";
+  }
+
+  /*
+    Same aircraft image authority used by My Aircraft / Pending.
+  */
+  const image =
+    $("maintenanceAircraftImage");
+
+  if (image) {
+    const imageAircraft =
+      normalizeMyAircraftImageObject(
+        aircraft
+      );
+
+    window.ACS_setAircraftImage(
+      image,
+      imageAircraft
+    );
+
+    image.alt =
+      safeText(
+        aircraft.aircraft_name,
+        "Aircraft in maintenance"
+      );
+  }
+
+  const previousButton =
+    $("maintenancePreviousButton");
+
+  const nextButton =
+    $("maintenanceNextButton");
+
+  const navigation =
+    $("maintenanceStatusNavigation");
+
+  if (previousButton) {
+    previousButton.disabled =
+      index === 0;
+  }
+
+  if (nextButton) {
+    nextButton.disabled =
+      index ===
+      pages.length - 1;
+  }
+
+  if (navigation) {
+    navigation.style.display =
+      "grid";
+  }
+
+  setText(
+    "maintenancePageIndicator",
+    `${index + 1} OF ${pages.length}`
+  );
+}
+
+
+/* ============================================================
+   OPEN / CLOSE
+   ============================================================ */
+
+function openMaintenanceStatusModal() {
+  const pages =
+    ACS_buildMaintenanceAircraftPages();
+
+  if (!pages.length) {
+    return;
+  }
+
+  ACS_MY_AIRCRAFT
+    .maintenanceAircraftIndex = 0;
+
+  const modal =
+    $("maintenanceStatusModal");
+
+  if (!modal) return;
+
+  renderMaintenanceStatusModal();
+
+  modal.style.display =
+    "flex";
+
+  modal.setAttribute(
+    "aria-hidden",
+    "false"
+  );
+
+  document.body.classList.add(
+    "pending-modal-open"
+  );
+}
+
+function closeMaintenanceStatusModal() {
+  const modal =
+    $("maintenanceStatusModal");
+
+  if (!modal) return;
+
+  modal.style.display =
+    "none";
+
+  modal.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+
+  document.body.classList.remove(
+    "pending-modal-open"
+  );
+}
+
+
+/* ============================================================
+   PREV / NEXT
+   ============================================================ */
+
+function changeMaintenanceStatusPage(
+  direction
+) {
+  const pages =
+    ACS_buildMaintenanceAircraftPages();
+
+  if (pages.length < 2) {
+    return;
+  }
+
+  const nextIndex =
+    ACS_MY_AIRCRAFT
+      .maintenanceAircraftIndex +
+    Number(direction);
+
+  if (
+    nextIndex < 0 ||
+    nextIndex >= pages.length
+  ) {
+    return;
+  }
+
+  ACS_MY_AIRCRAFT
+    .maintenanceAircraftIndex =
+      nextIndex;
+
+  renderMaintenanceStatusModal();
+}
+
+
+/* ============================================================
+   BIND MAINTENANCE CARD + MODAL
+   ============================================================ */
+
+function bindMaintenanceStatusModal() {
+  const card =
+    $("foMaintenance");
+
+  const modal =
+    $("maintenanceStatusModal");
+
+  const closeButton =
+    $("maintenanceStatusClose");
+
+  const previousButton =
+    $("maintenancePreviousButton");
+
+  const nextButton =
+    $("maintenanceNextButton");
+
+  if (card) {
+    card.setAttribute(
+      "role",
+      "button"
+    );
+
+    card.setAttribute(
+      "tabindex",
+      "0"
+    );
+
+    card.setAttribute(
+      "aria-label",
+      "Open aircraft maintenance status"
+    );
+
+    card.addEventListener(
+      "click",
+      openMaintenanceStatusModal
+    );
+
+    card.addEventListener(
+      "keydown",
+      event => {
+        if (
+          event.key === "Enter" ||
+          event.key === " "
+        ) {
+          event.preventDefault();
+          openMaintenanceStatusModal();
+        }
+      }
+    );
+  }
+
+  if (closeButton) {
+    closeButton.addEventListener(
+      "click",
+      closeMaintenanceStatusModal
+    );
+  }
+
+  if (previousButton) {
+    previousButton.addEventListener(
+      "click",
+      () => {
+        changeMaintenanceStatusPage(-1);
+      }
+    );
+  }
+
+  if (nextButton) {
+    nextButton.addEventListener(
+      "click",
+      () => {
+        changeMaintenanceStatusPage(1);
+      }
+    );
+  }
+
+  if (modal) {
+    modal.addEventListener(
+      "click",
+      event => {
+        if (event.target === modal) {
+          closeMaintenanceStatusModal();
+        }
+      }
+    );
+  }
+
+  document.addEventListener(
+    "keydown",
+    event => {
+      const isOpen =
+        $("maintenanceStatusModal")
+          ?.style.display ===
+        "flex";
+
+      if (!isOpen) return;
+
+      if (event.key === "Escape") {
+        closeMaintenanceStatusModal();
+      }
+
+      if (event.key === "ArrowLeft") {
+        changeMaintenanceStatusPage(-1);
+      }
+
+      if (event.key === "ArrowRight") {
+        changeMaintenanceStatusPage(1);
+      }
+    }
+  );
+}
+   
   /* ============================================================
      🟦 INIT
      ============================================================ */
@@ -5686,6 +6289,7 @@ function bindPendingDeliveryModal() {
       populateFilters();
       bindFilters();
       bindPendingDeliveryModal();
+      bindMaintenanceStatusModal();
       renderFleetOverview();
       renderFleetTable();
 
