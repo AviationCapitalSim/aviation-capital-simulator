@@ -3002,11 +3002,13 @@ html body .order-book-table tbody tr:hover {
   border-radius: 10px;
 }
 
-#pendingPreviousButton {
+#pendingPreviousButton,
+#maintenancePreviousButton {
   justify-self: start;
 }
 
-#pendingNextButton {
+#pendingNextButton,
+#maintenanceNextButton {
   justify-self: end;
 }
 
@@ -6607,6 +6609,133 @@ body.aircraft-scrap-modal-open {
         NEXT ▶
       </button>
     </footer>
+  </section>
+</div>
+
+<!-- ============================================================
+     🟨 AIRCRAFT MAINTENANCE STATUS — MODAL
+     ============================================================ -->
+
+<div
+  id="maintenanceStatusModal"
+  class="pending-occ-overlay"
+  style="display:none;"
+  aria-hidden="true"
+>
+  <section
+    class="pending-occ-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="maintenanceStatusTitle"
+  >
+    <header class="pending-occ-header">
+      <div>
+        <h2 id="maintenanceStatusTitle">
+          Aircraft Maintenance Status
+        </h2>
+
+        <div
+          id="maintenanceStatusSummary"
+          class="pending-occ-summary"
+        >
+          —
+        </div>
+      </div>
+
+      <button
+        id="maintenanceStatusClose"
+        class="pending-occ-close"
+        type="button"
+        aria-label="Close aircraft maintenance status"
+      >
+        ×
+      </button>
+    </header>
+
+    <div class="pending-occ-content">
+
+      <div class="pending-occ-information">
+
+        <div class="pending-occ-field">
+          <span>Registration</span>
+          <strong id="maintenanceRegistration">—</strong>
+        </div>
+
+        <div class="pending-occ-field">
+          <span>Model</span>
+          <strong id="maintenanceModel">—</strong>
+        </div>
+
+        <div class="pending-occ-field">
+          <span>Maintenance Type</span>
+          <strong id="maintenanceType">—</strong>
+        </div>
+
+        <div class="pending-occ-field">
+          <span>Started</span>
+          <strong id="maintenanceStarted">—</strong>
+        </div>
+
+        <div class="pending-occ-field pending-occ-status-field">
+          <span>Status</span>
+
+          <strong
+            id="maintenanceEventStatus"
+            class="pending-occ-status pending-occ-status-waiting"
+          >
+            —
+          </strong>
+        </div>
+
+        <div class="pending-occ-field">
+          <span>Remaining</span>
+          <strong id="maintenanceRemaining">—</strong>
+        </div>
+
+      </div>
+
+      <div class="pending-occ-image-frame">
+        <img
+          id="maintenanceAircraftImage"
+          alt="Aircraft in maintenance"
+        />
+      </div>
+
+    </div>
+
+    <div class="pending-occ-delivery-date">
+      <span>Ready</span>
+      <strong id="maintenanceReady">—</strong>
+    </div>
+
+    <footer
+      id="maintenanceStatusNavigation"
+      class="pending-occ-navigation"
+    >
+      <button
+        id="maintenancePreviousButton"
+        class="pending-occ-nav-button"
+        type="button"
+      >
+        ◀ PREV
+      </button>
+
+      <span
+        id="maintenancePageIndicator"
+        class="pending-occ-page"
+      >
+        1 OF 1
+      </span>
+
+      <button
+        id="maintenanceNextButton"
+        class="pending-occ-nav-button"
+        type="button"
+      >
+        NEXT ▶
+      </button>
+    </footer>
+
   </section>
 </div>
   
