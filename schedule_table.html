@@ -6077,168 +6077,252 @@ else {
     }
 
 
-    const leftPct =
-      (weekStartMin / 10080) * 100;
-
-
-    const widthPct =
-      (durationMin / 10080) * 100;
-
-
-    const chip =
-      document.createElement("span");
-
-
-    chip.style.left =
-      `${leftPct}%`;
-
-    chip.style.width =
-      `${widthPct}%`;
-
-
     /* --------------------------------------------------------
-       FLIGHT
-       -------------------------------------------------------- */
+   ACS OCC — WEEKLY WRAP SEGMENTS
+   --------------------------------------------------------
+   Normal case:
+   one segment inside 0..10080.
 
-    if (it.type === "flight") {
+   Sunday → Monday:
+   split the SAME operational item into:
+   1) Sunday remainder
+   2) Monday continuation
 
-      chip.className =
-        "acs-timeline-block acs-timeline-flight";
+   Presentation only.
+   Same item ID / block ID / modal / authority.
+   -------------------------------------------------------- */
 
-      chip.dataset.id =
-        it.id;
+const weekEndMin =
+  10080;
 
-      chip.dataset.blockId =
-        it.blockId || "";
-
-      chip.dataset.type =
-        "flight";
-
-
-      const labelOut =
-        it.labelOut ||
-        it.flightLabelOut ||
-        it.flightNumberOut ||
-        "—";
+const itemEndMin =
+  weekStartMin +
+  durationMin;
 
 
-      const labelIn =
-        it.labelIn ||
-        it.flightLabelIn ||
-        it.flightNumberIn ||
-        "—";
+const renderSegments = [];
 
 
-      chip.textContent =
-        `${labelOut} / ${labelIn}`;
+/* --------------------------------------------------------
+   NORMAL SEGMENT
+   -------------------------------------------------------- */
 
+const firstSegmentEnd =
+  Math.min(
+    itemEndMin,
+    weekEndMin
+  );
 
-      chip.onclick = () => {
+const firstSegmentDuration =
+  firstSegmentEnd -
+  weekStartMin;
 
-        window.selectedFlight = {
-          data: it,
-          element: chip
-        };
+if (firstSegmentDuration > 0) {
 
-        openFlightModal(
-          it,
-          chip
-        );
-      };
-
-
-      flightLane.appendChild(
-        chip
-      );
-    }
-
-
-    /* --------------------------------------------------------
-       A-CHECK
-       -------------------------------------------------------- */
-
-    if (
-      it.type === "service" &&
-      it.serviceType === "A"
-    ) {
-
-      chip.className =
-        "acs-timeline-block acs-timeline-a";
-
-      chip.dataset.id =
-        it.id;
-
-      chip.dataset.type =
-        "service";
-
-      chip.textContent =
-        "A";
-
-
-      chip.onclick = (e) => {
-
-        e.preventDefault();
-        e.stopPropagation();
-
-        window.ACS_SELECTED_SERVICE =
-          it;
-
-        openMaintenanceInfoModal(
-          it,
-          ac
-        );
-      };
-
-
-      flightLane.appendChild(
-        chip
-      );
-    }
-
-
-    /* --------------------------------------------------------
-       B-CHECK
-       -------------------------------------------------------- */
-
-    if (
-      it.type === "service" &&
-      it.serviceType === "B"
-    ) {
-
-      chip.className =
-        "acs-timeline-block acs-timeline-b";
-
-      chip.dataset.id =
-        it.id;
-
-      chip.dataset.type =
-        "service";
-
-      chip.textContent =
-        "B-CHECK";
-
-
-      chip.onclick = (e) => {
-
-        e.preventDefault();
-        e.stopPropagation();
-
-        window.ACS_SELECTED_SERVICE =
-          it;
-
-        openMaintenanceInfoModal(
-          it,
-          ac
-        );
-      };
-
-
-      bCheckLane.appendChild(
-        chip
-      );
-    }
-
+  renderSegments.push({
+    startMin: weekStartMin,
+    durationMin: firstSegmentDuration
   });
+}
+
+
+/* --------------------------------------------------------
+   SUNDAY → MONDAY WRAP
+   -------------------------------------------------------- */
+
+if (itemEndMin > weekEndMin) {
+
+  const wrappedDuration =
+    itemEndMin -
+    weekEndMin;
+
+  if (wrappedDuration > 0) {
+
+    renderSegments.push({
+      startMin: 0,
+      durationMin: Math.min(
+        wrappedDuration,
+        weekEndMin
+      )
+    });
+  }
+}
+
+
+/* --------------------------------------------------------
+   RENDER ALL VISUAL SEGMENTS
+   -------------------------------------------------------- */
+
+renderSegments.forEach(segment => {
+
+  const leftPct =
+    (
+      segment.startMin /
+      weekEndMin
+    ) * 100;
+
+
+  const widthPct =
+    (
+      segment.durationMin /
+      weekEndMin
+    ) * 100;
+
+
+  const chip =
+    document.createElement("span");
+
+
+  chip.style.left =
+    `${leftPct}%`;
+
+  chip.style.width =
+    `${widthPct}%`;
+
+
+  /* --------------------------------------------------------
+     FLIGHT
+     -------------------------------------------------------- */
+
+  if (it.type === "flight") {
+
+    chip.className =
+      "acs-timeline-block acs-timeline-flight";
+
+    chip.dataset.id =
+      it.id;
+
+    chip.dataset.blockId =
+      it.blockId || "";
+
+    chip.dataset.type =
+      "flight";
+
+
+    const labelOut =
+      it.labelOut ||
+      it.flightLabelOut ||
+      it.flightNumberOut ||
+      "—";
+
+
+    const labelIn =
+      it.labelIn ||
+      it.flightLabelIn ||
+      it.flightNumberIn ||
+      "—";
+
+
+    chip.textContent =
+      `${labelOut} / ${labelIn}`;
+
+
+    chip.onclick = () => {
+
+      window.selectedFlight = {
+        data: it,
+        element: chip
+      };
+
+      openFlightModal(
+        it,
+        chip
+      );
+    };
+
+
+    flightLane.appendChild(
+      chip
+    );
+  }
+
+
+  /* --------------------------------------------------------
+     A-CHECK
+     -------------------------------------------------------- */
+
+  if (
+    it.type === "service" &&
+    it.serviceType === "A"
+  ) {
+
+    chip.className =
+      "acs-timeline-block acs-timeline-a";
+
+    chip.dataset.id =
+      it.id;
+
+    chip.dataset.type =
+      "service";
+
+    chip.textContent =
+      "A";
+
+
+    chip.onclick = (e) => {
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      window.ACS_SELECTED_SERVICE =
+        it;
+
+      openMaintenanceInfoModal(
+        it,
+        ac
+      );
+    };
+
+
+    flightLane.appendChild(
+      chip
+    );
+  }
+
+
+  /* --------------------------------------------------------
+     B-CHECK
+     -------------------------------------------------------- */
+
+  if (
+    it.type === "service" &&
+    it.serviceType === "B"
+  ) {
+
+    chip.className =
+      "acs-timeline-block acs-timeline-b";
+
+    chip.dataset.id =
+      it.id;
+
+    chip.dataset.type =
+      "service";
+
+    chip.textContent =
+      "B-CHECK";
+
+
+    chip.onclick = (e) => {
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      window.ACS_SELECTED_SERVICE =
+        it;
+
+      openMaintenanceInfoModal(
+        it,
+        ac
+      );
+    };
+
+
+    bCheckLane.appendChild(
+      chip
+    );
+  }
+
+});
 
 
     weekTd.appendChild(
