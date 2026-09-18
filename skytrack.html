@@ -2240,19 +2240,52 @@ snapshot = ACS_ST_applyTrafficFilter(snapshot);
 
 centerMapOnce(snapshot);
 
-      const visibleIds = new Set(
+const visibleIds = new Set(
   snapshot.map(item => String(item.aircraftId))
 );
 
+/* ============================================================
+   ACS OCC — FILTER VISUAL CLEANUP
+   ------------------------------------------------------------
+   GLOBAL → MY AIRLINE must remove both:
+   - aircraft marker
+   - aircraft trace
+
+   Visual cleanup only.
+   No snapshot mutation.
+   No backend mutation.
+   No refresh-rate changes.
+   ============================================================ */
+
 Object.keys(markers).forEach(id => {
   if (!visibleIds.has(String(id))) {
-    if (map.hasLayer(markers[id])) {
+
+    if (
+      markers[id] &&
+      map.hasLayer(markers[id])
+    ) {
       map.removeLayer(markers[id]);
     }
+
     delete markers[id];
   }
-});       
-      snapshot.forEach(item => {
+});
+
+Object.keys(traces).forEach(id => {
+  if (!visibleIds.has(String(id))) {
+
+    if (
+      traces[id] &&
+      map.hasLayer(traces[id])
+    ) {
+      map.removeLayer(traces[id]);
+    }
+
+    delete traces[id];
+  }
+});
+       
+snapshot.forEach(item => {
 
 /* ============================================================
    SKYTRACK VISIBLE AIRCRAFT COUNTER
