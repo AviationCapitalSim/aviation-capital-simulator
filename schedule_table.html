@@ -5711,15 +5711,19 @@ else {
          */
 
         const candidates = [
-          {
-            start: itemStartAbs,
-            end: itemEndAbs
-          },
-          {
-            start: itemStartAbs + 10080,
-            end: itemEndAbs + 10080
-          }
-        ];
+  {
+    start: itemStartAbs - 10080,
+    end: itemEndAbs - 10080
+  },
+  {
+    start: itemStartAbs,
+    end: itemEndAbs
+  },
+  {
+    start: itemStartAbs + 10080,
+    end: itemEndAbs + 10080
+  }
+];
 
 
         const visibleCandidate =
