@@ -12,10 +12,13 @@ async function ACS_REQUIRE_AUTH() {
 
     try {
 
-      const res = await fetch("https://api.aviationcapitalsim.com/v1/session", {
-        method: "GET",
-        credentials: "include"
-      });
+      const res = await fetch(
+        "https://api.aviationcapitalsim.com/v1/session",
+        {
+          method: "GET",
+          credentials: "include"
+        }
+      );
 
       const data = await res.json();
 
@@ -35,16 +38,21 @@ async function ACS_REQUIRE_AUTH() {
       attempts++;
 
       if (attempts < MAX_ATTEMPTS) {
-        console.warn(`🔁 Retry session check (${attempts})`);
-        await new Promise(r => setTimeout(r, 300));
+
+        console.warn(
+          `🔁 Retry session check (${attempts})`
+        );
+
+        await new Promise(
+          r => setTimeout(r, 300)
+        );
+
         return checkSession();
       }
 
       console.warn("🚫 NO SESSION");
 
-}
-
-return false;
+      return false;
     }
   }
 
