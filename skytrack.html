@@ -2117,80 +2117,42 @@ function apLatLng(icao) {
       );
 
     if (
-  Number.isFinite(Number(item.__snapshotNowAbsMin)) &&
-  Number.isFinite(Number(item.__snapshotReceivedAt)) &&
-  Number.isFinite(Number(item.depAbsMin)) &&
-  Number.isFinite(Number(item.arrAbsMin))
-) {
-  const WEEK_MINUTES = 10080;
-
-  const depAbsMin =
-    Number(item.depAbsMin);
-
-  let arrAbsMin =
-    Number(item.arrAbsMin);
-
-  let snapshotNowAbsMin =
-    Number(item.__snapshotNowAbsMin);
-
-  /*
-    ACS WEEK WRAP
-    Example:
-      Saturday departure = 10020
-      Sunday arrival     = 360
-
-    Sunday belongs to the following ACS week,
-    therefore arrival becomes 10440.
-  */
-  if (arrAbsMin < depAbsMin) {
-    arrAbsMin += WEEK_MINUTES;
-
-    /*
-      After ACS crosses Saturday -> Sunday,
-      now_abs_min returns to the beginning
-      of the weekly scale.
-
-      While this flight is still EN_ROUTE,
-      move the current time into the same
-      continuous timeline as departure/arrival.
-    */
-    if (snapshotNowAbsMin < depAbsMin) {
-      snapshotNowAbsMin += WEEK_MINUTES;
-    }
-  }
-
-  if (arrAbsMin > depAbsMin) {
-    const elapsedRealSeconds =
-      Math.max(
-        0,
-        (
-          Date.now() -
-          Number(item.__snapshotReceivedAt)
-        ) / 1000
-      );
-
-    const visualNowAbsMin =
-      snapshotNowAbsMin +
-      elapsedRealSeconds;
-
-    progress =
-      Math.max(
-        0,
-        Math.min(
-          1,
+      Number.isFinite(Number(item.__snapshotNowAbsMin)) &&
+      Number.isFinite(Number(item.__snapshotReceivedAt)) &&
+      Number.isFinite(Number(item.depAbsMin)) &&
+      Number.isFinite(Number(item.arrAbsMin)) &&
+      Number(item.arrAbsMin) > Number(item.depAbsMin)
+    ) {
+      const elapsedRealSeconds =
+        Math.max(
+          0,
           (
-            visualNowAbsMin -
-            depAbsMin
-          ) /
-          (
-            arrAbsMin -
-            depAbsMin
+            Date.now() -
+            Number(item.__snapshotReceivedAt)
+          ) / 1000
+        );
+
+      const visualNowAbsMin =
+        Number(item.__snapshotNowAbsMin) +
+        elapsedRealSeconds;
+
+      progress =
+        Math.max(
+          0,
+          Math.min(
+            1,
+            (
+              visualNowAbsMin -
+              Number(item.depAbsMin)
+            ) /
+            (
+              Number(item.arrAbsMin) -
+              Number(item.depAbsMin)
+            )
           )
-        )
-      );
-  }
-}
-     
+        );
+    }
+
     return [
       Number(origin.latitude) +
         (
