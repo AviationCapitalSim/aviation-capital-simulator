@@ -566,6 +566,53 @@
       white-space: nowrap;
     }
 
+/* ============================================================
+   ACS OCC — AIRCRAFT OPERATIONAL STATE
+   Active / Heavy Maintenance only
+   ============================================================ */
+
+.route-aircraft-ops-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  margin-top: 5px;
+
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.route-aircraft-ops-dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  border-radius: 50%;
+}
+
+.route-aircraft-ops-state[data-state="ACTIVE"] {
+  color: var(--route-green);
+}
+
+.route-aircraft-ops-state[data-state="ACTIVE"]
+.route-aircraft-ops-dot {
+  background: var(--route-green);
+  box-shadow: 0 0 6px rgba(80, 200, 120, 0.55);
+}
+
+.route-aircraft-ops-state[data-state="MAINTENANCE"] {
+  color: var(--route-gold);
+}
+
+.route-aircraft-ops-state[data-state="MAINTENANCE"]
+.route-aircraft-ops-dot {
+  background: var(--route-gold);
+  box-shadow: 0 0 6px rgba(255, 179, 0, 0.55);
+}
+       
     /* ============================================================
    ACS ROUTE CENTER — DAILY MARKET Y / C / F
    ============================================================ */
@@ -3672,6 +3719,70 @@ function createDailyMarketCell(row, route) {
 
   return cell;
 }
+
+/* ============================================================
+   ACS OCC — MY ROUTES AIRCRAFT STATE
+   ------------------------------------------------------------
+   MAINTENANCE only for:
+   - C-CHECK IN_PROGRESS
+   - D-CHECK IN_PROGRESS
+   - CABIN_MAINTENANCE
+
+   A/B and overdue states are intentionally excluded.
+   ============================================================ */
+
+function resolveRouteAircraftOpsState(route) {
+
+  const aircraft =
+    route?.aircraft || {};
+
+  const operational =
+    String(
+      aircraft.operational_status || ""
+    )
+      .trim()
+      .toUpperCase();
+
+  const cCheckStatus =
+    String(
+      aircraft.c_check_status || ""
+    )
+      .trim()
+      .toUpperCase();
+
+  const dCheckStatus =
+    String(
+      aircraft.d_check_status || ""
+    )
+      .trim()
+      .toUpperCase();
+
+  const maintenanceReason =
+    String(
+      aircraft.maintenance_control_reason || ""
+    )
+      .trim()
+      .toUpperCase();
+
+  const isHeavyMaintenance =
+    operational === "CABIN_MAINTENANCE" ||
+
+    cCheckStatus === "IN_PROGRESS" ||
+
+    dCheckStatus === "IN_PROGRESS" ||
+
+    (
+      operational === "IN_MAINTENANCE" &&
+      (
+        maintenanceReason === "C_CHECK" ||
+        maintenanceReason === "D_CHECK"
+      )
+    );
+
+  return isHeavyMaintenance
+    ? "MAINTENANCE"
+    : "ACTIVE";
+}
          
 function createRouteRow(route) {
            
@@ -3700,18 +3811,81 @@ function createRouteRow(route) {
         );
 
         const aircraftCell = document.createElement("td");
-        const registrationButton = document.createElement("button");
-        registrationButton.type = "button";
-        registrationButton.className = "route-registration-btn";
-        registrationButton.textContent = textValue(route.aircraft?.registration);
-        registrationButton.dataset.routeId = String(routeId);
-        registrationButton.setAttribute("aria-label", `Open ${textValue(route.origin)} to ${textValue(route.destination)} route detail`);
 
-        const aircraftName = document.createElement("span");
-        aircraftName.className = "route-secondary";
-        aircraftName.textContent = textValue(route.aircraft?.aircraft_name);
-        aircraftCell.append(registrationButton, aircraftName);
-        row.append(aircraftCell);
+const registrationButton =
+  document.createElement("button");
+
+registrationButton.type = "button";
+
+registrationButton.className =
+  "route-registration-btn";
+
+registrationButton.textContent =
+  textValue(
+    route.aircraft?.registration
+  );
+
+registrationButton.dataset.routeId =
+  String(routeId);
+
+registrationButton.setAttribute(
+  "aria-label",
+  `Open ${textValue(route.origin)} to ` +
+  `${textValue(route.destination)} route detail`
+);
+
+const aircraftName =
+  document.createElement("span");
+
+aircraftName.className =
+  "route-secondary";
+
+aircraftName.textContent =
+  textValue(
+    route.aircraft?.aircraft_name
+  );
+
+const aircraftOpsState =
+  resolveRouteAircraftOpsState(route);
+
+const aircraftState =
+  document.createElement("span");
+
+aircraftState.className =
+  "route-aircraft-ops-state";
+
+aircraftState.dataset.state =
+  aircraftOpsState;
+
+const aircraftStateDot =
+  document.createElement("span");
+
+aircraftStateDot.className =
+  "route-aircraft-ops-dot";
+
+aircraftStateDot.setAttribute(
+  "aria-hidden",
+  "true"
+);
+
+const aircraftStateText =
+  document.createElement("span");
+
+aircraftStateText.textContent =
+  aircraftOpsState;
+
+aircraftState.append(
+  aircraftStateDot,
+  aircraftStateText
+);
+
+aircraftCell.append(
+  registrationButton,
+  aircraftName,
+  aircraftState
+);
+
+row.append(aircraftCell);
 
         const routeFrequency =
           integerValue(route.frequency_per_week);
