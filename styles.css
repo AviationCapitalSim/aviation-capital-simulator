@@ -1827,16 +1827,44 @@ color:#ffffff !important;
     animation:none;
   }
 }
-
 /* ============================================================
-   ACS CONTINENT AIRPORT PAGES — GLOBAL REPAIR
+   ACS CONTINENT AIRPORT PAGES — MY ROUTES VISUAL SYSTEM v2.0
    Applies automatically to every airport_list_*.html page
    ============================================================ */
 
-/* Keep the complete header inside the viewport */
+body:has(#airportTable) {
+  --airport-gold: #ffb300;
+  --airport-gold-soft: rgba(255, 179, 0, 0.28);
+  --airport-blue-border: rgba(91, 158, 255, 0.26);
+  --airport-table-head: rgba(11, 30, 63, 0.98);
+  --airport-text: #f5f7fa;
+  --airport-muted: #9fb3c8;
+  --airport-green: #50c878;
+
+  /*
+   * These two variables are consumed by the existing
+   * ACS GLOBAL TRANSPARENT INTERFACE section.
+   */
+  --acs-ui-table-head: var(--airport-table-head);
+  --acs-ui-border-gold: rgba(255, 179, 0, 0.20);
+
+  color: var(--airport-text);
+  background: transparent;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Segoe UI",
+    sans-serif;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
 
 body:has(#airportTable) .acs-header {
   box-sizing: border-box;
+
   width: 100%;
   max-width: 100%;
 
@@ -1844,55 +1872,9 @@ body:has(#airportTable) .acs-header {
   padding-right: 2rem;
 }
 
-/* Continent page title */
-
-body:has(#airportTable) .acs-main > h2 {
-  margin: 0 0 0.75rem;
-
-  color: var(--acs-gold, #ffb300);
-
-  background:
-    linear-gradient(
-      180deg,
-      #ffe08a 0%,
-      #ffc94a 24%,
-      #ffb300 58%,
-      #d98b00 100%
-    );
-
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-
-  font-family:
-    "Orbitron",
-    "Eurostile",
-    "Segoe UI",
-    sans-serif;
-
-  font-size: clamp(1.65rem, 2.5vw, 2.35rem);
-  font-weight: 700;
-  line-height: 1.35;
-  letter-spacing: 0.025em;
-
-  text-shadow:
-    0 0 12px rgba(255, 179, 0, 0.18);
-}
-
-/* Preserve readable subtitle */
-
-body:has(#airportTable) .acs-main > .sub {
-  font-family:
-    "Poppins",
-    "Segoe UI",
-    Arial,
-    sans-serif;
-}
-
-/* Header right area */
-
 body:has(#airportTable) .acs-right {
   box-sizing: border-box;
+
   min-width: 0;
   flex: 0 0 auto;
 
@@ -1904,8 +1886,6 @@ body:has(#airportTable) .acs-right {
   padding-right: 0;
 }
 
-/* Remove the obsolete 260px restriction from the clock wrapper */
-
 body:has(#airportTable) .acs-clock-header:has(#acs-clock) {
   box-sizing: border-box;
 
@@ -1915,15 +1895,12 @@ body:has(#airportTable) .acs-clock-header:has(#acs-clock) {
   flex: 0 0 390px;
 
   padding: 0;
-
   overflow: visible;
 
   background: transparent;
   border: 0;
   box-shadow: none;
 }
-
-/* Modern cockpit clock inside the corrected wrapper */
 
 body:has(#airportTable) #acs-clock.acs-cockpit-clock {
   box-sizing: border-box;
@@ -1936,7 +1913,775 @@ body:has(#airportTable) #acs-clock.acs-cockpit-clock {
 }
 
 /* ============================================================
-   CONTINENT PAGE — TABLET
+   PAGE FRAME
+   ============================================================ */
+
+body:has(#airportTable) .acs-main {
+  box-sizing: border-box;
+
+  width: min(96%, 1720px);
+  min-height: calc(100vh - 170px);
+
+  margin: 0 auto;
+  padding: 132px 0 3rem;
+
+  text-align: center;
+}
+
+/* ============================================================
+   CONTINENT TITLE
+   ============================================================ */
+
+body:has(#airportTable) .acs-main > h2 {
+  margin: 18px auto 0.75rem;
+
+  color: #f7f8fb;
+  background: none;
+
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  -webkit-text-fill-color: currentColor;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Segoe UI",
+    sans-serif;
+
+  font-size: clamp(1.65rem, 2.5vw, 2.2rem);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.85),
+    0 0 10px rgba(255, 255, 255, 0.20);
+}
+
+body:has(#airportTable) .acs-main > .sub {
+  margin: 0 auto 1rem;
+
+  color: var(--airport-gold);
+  opacity: 1;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Segoe UI",
+    sans-serif;
+
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+
+  text-shadow:
+    0 0 8px rgba(255, 179, 0, 0.35);
+}
+
+/* ============================================================
+   OPERATIONAL BASE
+   ============================================================ */
+
+body:has(#airportTable) .origin-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+
+  margin: 0 auto 1.35rem;
+  padding: 0;
+
+  color: var(--airport-muted);
+  background: transparent !important;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Segoe UI",
+    sans-serif;
+
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  text-shadow: none;
+}
+
+body:has(#airportTable) .origin-banner .label,
+body:has(#airportTable) .origin-banner strong {
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 700;
+}
+
+body:has(#airportTable) .origin-banner #originCity {
+  margin-left: 0;
+
+  color: var(--airport-muted);
+  opacity: 1;
+
+  font-weight: 600;
+}
+
+/* ============================================================
+   COUNTRY FILTER
+   ============================================================ */
+
+body:has(#airportTable) .country-filter {
+  display: flex;
+  justify-content: center;
+
+  margin: 0 auto 1rem;
+}
+
+body:has(#airportTable) .country-select {
+  box-sizing: border-box;
+
+  width: 180px;
+  min-height: 38px;
+
+  padding:
+    0.55rem
+    2rem
+    0.55rem
+    0.85rem;
+
+  color: #ffe7a6;
+
+  border:
+    1px solid
+    rgba(217, 155, 19, 0.82);
+
+  border-radius: 9px;
+
+  background-color:
+    rgba(11, 25, 53, 0.92);
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Segoe UI",
+    sans-serif;
+
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.045em;
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 225, 145, 0.07),
+    0 3px 8px
+      rgba(0, 0, 0, 0.22);
+}
+
+/* ============================================================
+   CONTINENT NAVIGATION — ACS GOLD
+   ============================================================ */
+
+body:has(#airportTable) .continent-access {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+
+  gap: 10px;
+
+  margin: 0 auto 1.35rem;
+}
+
+body:has(#airportTable) .continent-btn {
+  box-sizing: border-box;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 38px;
+
+  padding:
+    0.55rem
+    0.85rem;
+
+  color: #ffe7a6;
+
+  border:
+    1px solid
+    rgba(217, 155, 19, 0.82);
+
+  border-radius: 9px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(45, 35, 18, 0.82) 0%,
+      rgba(25, 23, 21, 0.88) 100%
+    );
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Segoe UI",
+    sans-serif;
+
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+  text-decoration: none;
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 225, 145, 0.07),
+    0 3px 8px
+      rgba(0, 0, 0, 0.22);
+
+  transition:
+    color 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease,
+    transform 160ms ease;
+}
+
+body:has(#airportTable) .continent-btn:hover {
+  color: #fff3ce;
+
+  border-color:
+    var(--airport-gold);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(62, 45, 18, 0.98) 0%,
+      rgba(31, 27, 20, 1) 100%
+    );
+
+  transform:
+    translateY(-1px);
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 231, 165, 0.10),
+    0 0 10px
+      rgba(255, 179, 0, 0.24);
+}
+
+/* ============================================================
+   AIRPORT TABLE — MY ROUTES STRUCTURE
+   ============================================================ */
+
+body:has(#airportTable) #airportTable {
+  box-sizing: border-box;
+
+  width: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+
+  color: #ffffff;
+
+  border:
+    1px solid
+    var(--airport-blue-border);
+
+  border-radius: 10px;
+  border-collapse: separate;
+  border-spacing: 0;
+
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Segoe UI",
+    sans-serif;
+
+  font-size: 0.78rem;
+}
+
+body:has(#airportTable) #airportTable thead,
+body:has(#airportTable) #airportTable thead tr {
+  background: transparent !important;
+  box-shadow: none;
+}
+
+body:has(#airportTable) #airportTable thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+
+  padding:
+    0.78rem
+    0.65rem;
+
+  color:
+    var(--airport-gold);
+
+  border: 0;
+
+  border-bottom:
+    1px solid
+    rgba(255, 255, 255, 0.14);
+
+  background:
+    var(--airport-table-head) !important;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Segoe UI",
+    sans-serif;
+
+  font-size: 0.70rem;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: 0.07em;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+
+  text-shadow: none;
+}
+
+body:has(#airportTable) #airportTable th:hover {
+  color: #ffe7a6;
+
+  text-shadow:
+    0 0 7px
+    rgba(255, 179, 0, 0.42);
+}
+
+body:has(#airportTable) #airportTable th::after {
+  content: "⇅";
+
+  margin-left: 7px;
+
+  color:
+    rgba(138, 180, 255, 0.62);
+
+  font-size: 0.68rem;
+  opacity: 0.65;
+}
+
+body:has(#airportTable) #airportTable th:last-child::after {
+  content: none;
+}
+
+body:has(#airportTable) #airportTable th.sort-asc,
+body:has(#airportTable) #airportTable th.sort-desc {
+  color: #ffe7a6;
+}
+
+body:has(#airportTable) #airportTable th.sort-asc::after {
+  content: "▲";
+  color: var(--airport-gold);
+  opacity: 1;
+}
+
+body:has(#airportTable) #airportTable th.sort-desc::after {
+  content: "▼";
+  color: var(--airport-gold);
+  opacity: 1;
+}
+
+body:has(#airportTable) #airportTable tbody tr {
+  background: transparent !important;
+  box-shadow: none;
+
+  transition:
+    background
+    180ms ease;
+}
+
+body:has(#airportTable) #airportTable tbody tr:nth-child(even) {
+  background:
+    rgba(255, 255, 255, 0.018) !important;
+}
+
+body:has(#airportTable) #airportTable tbody tr:hover {
+  background:
+    rgba(255, 255, 255, 0.045) !important;
+
+  box-shadow: none;
+}
+
+body:has(#airportTable) #airportTable td {
+  padding:
+    0.82rem
+    0.65rem;
+
+  color: #ffffff;
+
+  border: 0;
+
+  border-bottom:
+    1px solid
+    rgba(255, 255, 255, 0.07);
+
+  background:
+    transparent !important;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Segoe UI",
+    sans-serif;
+
+  font-size: 0.74rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.35;
+
+  text-align: center;
+  vertical-align: middle;
+}
+
+body:has(#airportTable) #airportTable tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+body:has(#airportTable) #airportTable td:first-child strong {
+  color: #ffffff;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Segoe UI",
+    sans-serif;
+
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.045em;
+}
+
+/* ============================================================
+   DEMAND AND SLOT METERS
+   ============================================================ */
+
+body:has(#airportTable) .demand-bar,
+body:has(#airportTable) .slot-bar {
+  width: 100%;
+  height: 5px;
+
+  margin-top: 6px;
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  background:
+    rgba(255, 255, 255, 0.09) !important;
+
+  box-shadow: none !important;
+}
+
+body:has(#airportTable) .demand-bar {
+  background:
+    linear-gradient(
+      to right,
+      #4da3ff var(--eco),
+      #ffb300 var(--eco) var(--biz),
+      #c86bff var(--biz) 100%
+    ) !important;
+
+  box-shadow:
+    0 0 7px
+    rgba(77, 163, 255, 0.18) !important;
+}
+
+body:has(#airportTable) .slot-bar-fill {
+  height: 100%;
+
+  border-radius: inherit;
+
+  background: #00ff80;
+
+  box-shadow:
+    0 0 7px
+    rgba(0, 255, 128, 0.45);
+}
+
+/* ============================================================
+   ACTION BUTTONS
+   Info = ACS gold
+   Create Route = ACS green glass
+   ============================================================ */
+
+body:has(#airportTable) .acs-btn-info,
+body:has(#airportTable) .acs-btn {
+  box-sizing: border-box;
+
+  min-height: 38px;
+
+  padding:
+    0.55rem
+    0.85rem;
+
+  border-radius: 9px;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Segoe UI",
+    sans-serif;
+
+  font-size: 0.66rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+
+  cursor: pointer;
+
+  transition:
+    color 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease,
+    transform 160ms ease;
+}
+
+/* Info — ACS gold */
+
+body:has(#airportTable) .acs-btn-info {
+  color: #ffe7a6;
+
+  border:
+    1px solid
+    rgba(217, 155, 19, 0.82);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(45, 35, 18, 0.96) 0%,
+      rgba(25, 23, 21, 0.98) 100%
+    );
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 225, 145, 0.07),
+    0 3px 8px
+      rgba(0, 0, 0, 0.22);
+}
+
+body:has(#airportTable) .acs-btn-info:hover {
+  color: #fff3ce;
+
+  border-color:
+    var(--airport-gold);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(62, 45, 18, 1) 0%,
+      rgba(31, 27, 20, 1) 100%
+    );
+
+  transform:
+    translateY(-1px);
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 231, 165, 0.10),
+    0 0 10px
+      rgba(255, 179, 0, 0.24);
+}
+
+/* Create Route — ACS green glass */
+
+body:has(#airportTable) .acs-btn {
+  color: #dffff0;
+
+  border:
+    1px solid
+    rgba(80, 200, 120, 0.68);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(36, 107, 70, 0.50) 0%,
+      rgba(11, 51, 38, 0.62) 100%
+    );
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(221, 255, 237, 0.09),
+    0 0 10px
+      rgba(80, 200, 120, 0.12);
+}
+
+body:has(#airportTable) .acs-btn:hover {
+  color: #ffffff;
+
+  border-color:
+    rgba(80, 200, 120, 0.96);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(43, 132, 85, 0.64) 0%,
+      rgba(13, 66, 47, 0.78) 100%
+    );
+
+  transform:
+    translateY(-1px);
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(235, 255, 244, 0.14),
+    0 0 13px
+      rgba(80, 200, 120, 0.30);
+}
+
+/* ============================================================
+   BACK BUTTON
+   ============================================================ */
+
+body:has(#airportTable) .back-btn {
+  min-height: 38px;
+
+  margin: 2rem auto 0;
+
+  padding:
+    0.55rem
+    1rem;
+
+  color: #dce8fb;
+
+  border:
+    1px solid
+    rgba(92, 140, 204, 0.68);
+
+  border-radius: 9px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(20, 40, 75, 0.96) 0%,
+      rgba(10, 25, 53, 0.98) 100%
+    );
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Segoe UI",
+    sans-serif;
+
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.065em;
+  text-transform: uppercase;
+}
+
+body:has(#airportTable) .back-btn:hover {
+  color: #ffffff;
+
+  border-color:
+    rgba(107, 171, 255, 0.95);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(25, 53, 98, 0.98) 0%,
+      rgba(12, 32, 67, 1) 100%
+    );
+}
+
+/* ============================================================
+   EXISTING AIRPORT MODALS
+   ============================================================ */
+
+body:has(#airportTable) .acs-modal {
+  background:
+    rgba(1, 8, 22, 0.72);
+
+  backdrop-filter:
+    blur(7px);
+}
+
+body:has(#airportTable) .acs-modal-box {
+  color: #eaf2ff;
+
+  border:
+    1px solid
+    rgba(255, 179, 0, 0.58);
+
+  border-radius: 14px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(12, 31, 65, 0.99),
+      rgba(5, 15, 34, 0.99)
+    );
+
+  box-shadow:
+    0 24px 70px
+      rgba(0, 0, 0, 0.72),
+    0 0 22px
+      rgba(255, 179, 0, 0.12);
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Segoe UI",
+    sans-serif;
+}
+
+body:has(#airportTable) .acs-modal-box h3 {
+  color:
+    var(--airport-gold);
+
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+}
+
+body:has(#airportTable) .acs-modal-close {
+  min-height: 36px;
+
+  padding:
+    0.5rem
+    0.85rem;
+
+  color: #ffe7a6;
+
+  border:
+    1px solid
+    rgba(217, 155, 19, 0.82);
+
+  border-radius: 9px;
+
+  background:
+    rgba(255, 179, 0, 0.06);
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Segoe UI",
+    sans-serif;
+
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+body:has(#airportTable) .acs-modal-close:hover {
+  color: #081530;
+  background: var(--airport-gold);
+}
+
+/* ============================================================
+   TABLET
    ============================================================ */
 
 @media (max-width: 1200px) {
@@ -1958,10 +2703,14 @@ body:has(#airportTable) #acs-clock.acs-cockpit-clock {
     min-width: 350px;
     max-width: 350px;
   }
+
+  body:has(#airportTable) #airportTable {
+    min-width: 920px;
+  }
 }
 
 /* ============================================================
-   CONTINENT PAGE — MOBILE
+   MOBILE
    ============================================================ */
 
 @media (max-width: 768px) {
@@ -1972,6 +2721,7 @@ body:has(#airportTable) #acs-clock.acs-cockpit-clock {
 
   body:has(#airportTable) .acs-right {
     width: 100%;
+
     flex-wrap: wrap;
     justify-content: center;
   }
@@ -1984,8 +2734,47 @@ body:has(#airportTable) #acs-clock.acs-cockpit-clock {
     flex-basis: 100%;
   }
 
+  body:has(#airportTable) .acs-main {
+    width: 100%;
+
+    padding:
+      152px
+      12px
+      2.5rem;
+  }
+
   body:has(#airportTable) .acs-main > h2 {
-    font-size: clamp(1.3rem, 6vw, 1.75rem);
+    font-size:
+      clamp(
+        1.25rem,
+        6vw,
+        1.7rem
+      );
+
+    letter-spacing: 0.10em;
+  }
+
+  body:has(#airportTable) .acs-main > .sub {
+    font-size: 0.62rem;
+    letter-spacing: 0.10em;
+  }
+
+  body:has(#airportTable) .continent-access {
+    gap: 8px;
+  }
+
+  body:has(#airportTable) .continent-btn {
+    min-height: 36px;
+
+    padding:
+      0.5rem
+      0.7rem;
+
+    font-size: 0.61rem;
+  }
+
+  body:has(#airportTable) #airportTable {
+    min-width: 900px;
   }
 }
 
