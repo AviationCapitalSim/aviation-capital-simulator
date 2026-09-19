@@ -1092,7 +1092,7 @@ function ACS_renderCountrySelector(airports) {
   const selector = document.getElementById("countrySelect");
   if (!selector) return;
 
-  selector.innerHTML = `<option value="ALL">🌍 All Countries</option>`;
+  selector.innerHTML = `<option value="ALL">All Countries</option>`;
 
   const countries =
     [...new Set(airports.map(a => a.region).filter(Boolean))]
