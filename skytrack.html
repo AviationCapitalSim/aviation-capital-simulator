@@ -2222,13 +2222,14 @@ function ACS_ST_resolveOperationalTelemetry(item) {
   );
 
   const routeDistanceNm = Number(
-    item.distance_nm ??
-    item.distanceNm ??
-    item.route_distance_nm ??
-    item.routeDistanceNm ??
-    0
-  );
-
+  item.distanceNM ??
+  item.distance_nm ??
+  item.distanceNm ??
+  item.route_distance_nm ??
+  item.routeDistanceNm ??
+  0
+);
+   
   /* ------------------------------------------------------------
      OPERATIONAL CRUISE ALTITUDE BAND
      Based on aircraft performance, not technical ceiling.
