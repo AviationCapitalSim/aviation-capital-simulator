@@ -2038,81 +2038,138 @@ body:has(#airportTable) .acs-continent-title-tagline {
 }
 
 /* ============================================================
-   CONTINENT TITLE — RESPONSIVE
+   CONTINENT TITLE — EXACT ROUTE CENTER STYLE
+   Uses the existing h2 and .sub from all seven HTML pages
    ============================================================ */
 
-@media (max-width: 760px) {
-  body:has(#airportTable) .acs-continent-title {
-    margin: 10px auto 24px;
-    padding: 14px 12px 8px;
-  }
+body:has(#airportTable) main.acs-main > h2 {
+  box-sizing: border-box;
 
-  body:has(#airportTable) .acs-continent-title-main {
-    font-size: clamp(1.35rem, 6vw, 1.9rem);
-    line-height: 1.15;
-    letter-spacing: 0.18em;
-  }
+  width: 100%;
+  max-width: 820px;
+  margin: 18px auto 0;
+  padding: 18px 28px 0;
 
-  body:has(#airportTable) .acs-continent-title-sub {
-    gap: 10px;
+  color: transparent;
+  background: none;
 
-    font-size: 0.72rem;
-    letter-spacing: 0.22em;
-  }
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  -webkit-text-fill-color: transparent;
 
-  body:has(#airportTable) .acs-continent-title-sub::before,
-  body:has(#airportTable) .acs-continent-title-sub::after {
-    width: 34px;
-    flex-basis: 34px;
-  }
+  font-size: 0;
+  line-height: 0;
+  letter-spacing: 0;
 
-  body:has(#airportTable) .acs-continent-title-tagline {
-    margin-top: 11px;
-
-    font-size: 0.67rem;
-    line-height: 1.7;
-    letter-spacing: 0.1em;
-  }
+  text-align: center;
+  text-shadow: none;
 }
 
-body:has(#airportTable) .acs-continent-title-sub {
-  position: relative;
+/* Main continent title */
 
-  display: inline-block;
+body:has(#airportTable) main.acs-main > h2::before {
+  content: "AIRPORTS";
 
-  margin-top: 11px;
+  display: block;
 
-  color:
-    var(--airport-gold);
+  color: #f7f8fb;
+  -webkit-text-fill-color: #f7f8fb;
 
   font-family:
     "Orbitron",
     "Eurostile",
-    "Segoe UI",
+    "Exo 2",
     sans-serif;
 
-  font-size: 15px;
+  font-size: 32px;
   font-weight: 700;
   line-height: 1;
-  letter-spacing: 0.42em;
+  letter-spacing: 0.34em;
   text-transform: uppercase;
 
   text-shadow:
-    0 0 8px
-    rgba(255, 179, 0, 0.35);
+    0 1px 0 rgba(0, 0, 0, 0.85),
+    0 0 10px rgba(255, 255, 255, 0.20);
 }
 
-body:has(#airportTable) .acs-continent-title-sub::before,
-body:has(#airportTable) .acs-continent-title-sub::after {
-  content: "";
+/* Detect the current continent from its missing navigation button */
 
-  position: absolute;
-  top: 50%;
+body:has(#airportTable):not(
+  :has(.continent-access a[href$="airport_list_southamerica.html"])
+) main.acs-main > h2::before {
+  content: "SOUTH AMERICA";
+}
 
-  width: 82px;
-  height: 2px;
+body:has(#airportTable):not(
+  :has(.continent-access a[href$="airport_list_europe.html"])
+) main.acs-main > h2::before {
+  content: "EUROPE";
+}
 
-  opacity: 0.80;
+body:has(#airportTable):not(
+  :has(.continent-access a[href$="airport_list_asia.html"])
+) main.acs-main > h2::before {
+  content: "ASIA";
+}
+
+body:has(#airportTable):not(
+  :has(.continent-access a[href$="airport_list_africa.html"])
+) main.acs-main > h2::before {
+  content: "AFRICA";
+}
+
+body:has(#airportTable):not(
+  :has(.continent-access a[href$="airport_list_northamerica.html"])
+) main.acs-main > h2::before {
+  content: "NORTH AMERICA";
+}
+
+body:has(#airportTable):not(
+  :has(.continent-access a[href$="airport_list_oceania.html"])
+) main.acs-main > h2::before {
+  content: "OCEANIA";
+}
+
+body:has(#airportTable):not(
+  :has(.continent-access a[href$="airport_list_middleeast.html"])
+) main.acs-main > h2::before {
+  content: "MIDDLE EAST";
+}
+
+/* Existing subtitle becomes the Route Center subtitle container */
+
+body:has(#airportTable) main.acs-main > .sub {
+  box-sizing: border-box;
+
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto 42px;
+  padding: 0 28px 20px;
+
+  color: transparent;
+  opacity: 1;
+
+  font-size: 0;
+  line-height: 0;
+  letter-spacing: 0;
+
+  text-align: center;
+  text-shadow: none;
+}
+
+/* Gold AIRPORT CENTER line */
+
+body:has(#airportTable) main.acs-main > .sub::before {
+  content: "AIRPORT CENTER";
+
+  display: table;
+  box-sizing: content-box;
+
+  margin: 11px auto 0;
+  padding: 0 100px;
+
+  color: var(--airport-gold);
+  -webkit-text-fill-color: var(--airport-gold);
 
   background:
     linear-gradient(
@@ -2120,17 +2177,87 @@ body:has(#airportTable) .acs-continent-title-sub::after {
       transparent,
       var(--airport-gold),
       transparent
-    );
+    ) left center / 82px 2px no-repeat,
+
+    linear-gradient(
+      to right,
+      transparent,
+      var(--airport-gold),
+      transparent
+    ) right center / 82px 2px no-repeat;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 15px;
+  font-weight: 700;
+  line-height: normal;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+
+  text-shadow:
+    0 0 8px rgba(255, 179, 0, 0.35);
 }
 
-body:has(#airportTable) .acs-continent-title-sub::before {
-  right: 100%;
-  margin-right: 18px;
+/* Gray description */
+
+body:has(#airportTable) main.acs-main > .sub::after {
+  content: "Demand, airport capacity and route planning across the continent.";
+
+  display: block;
+
+  margin-top: 10px;
+
+  color: rgba(220, 226, 238, 0.82);
+  -webkit-text-fill-color: rgba(220, 226, 238, 0.82);
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Exo 2",
+    sans-serif;
+
+  font-size: 13px;
+  font-weight: 500;
+  line-height: normal;
+  letter-spacing: 0.18em;
+
+  text-shadow: none;
 }
 
-body:has(#airportTable) .acs-continent-title-sub::after {
-  left: 100%;
-  margin-left: 18px;
+/* Exact Route Center responsive values */
+
+@media (max-width: 620px) {
+  body:has(#airportTable) main.acs-main > h2 {
+    padding-inline: 8px;
+  }
+
+  body:has(#airportTable) main.acs-main > h2::before {
+    font-size: 22px;
+    letter-spacing: 0.18em;
+  }
+
+  body:has(#airportTable) main.acs-main > .sub {
+    margin-bottom: 28px;
+    padding-inline: 8px;
+  }
+
+  body:has(#airportTable) main.acs-main > .sub::before {
+    padding: 0;
+
+    background: none;
+
+    font-size: 11px;
+    letter-spacing: 0.22em;
+  }
+
+  body:has(#airportTable) main.acs-main > .sub::after {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+  }
 }
 
 /* ============================================================
