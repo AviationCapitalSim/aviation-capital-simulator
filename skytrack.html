@@ -2170,6 +2170,204 @@ function apLatLng(icao) {
 
   return null;
 }
+
+/* ============================================================
+   ACS OCC — SKYTRACK OPERATIONAL TELEMETRY
+   ------------------------------------------------------------
+   Visual telemetry only.
+
+   ALT:
+   - Simulated operational altitude.
+   - Derived from aircraft performance + route distance + progress.
+   - Does NOT represent service ceiling.
+
+   GS:
+   - Derived from aircraft operational speed reference.
+   - Adjusted by flight phase.
+   - Below 10,000 ft: never exceeds 250 KT.
+   ============================================================ */
+
+function ACS_ST_resolveOperationalTelemetry(item) {
+
+  if (!item || item.state !== "EN_ROUTE") {
+    return {
+      altitudeFt: 0,
+      groundSpeedKt: 0,
+      phase: "GROUND"
+    };
+  }
+
+  const speedRef = Number(
+    item.speed_kts ??
+    item.speedKts ??
+    item.aircraft_speed_kts ??
+    item.aircraftSpeedKts ??
+    0
+  );
+
+  if (!Number.isFinite(speedRef) || speedRef <= 0) {
+    return {
+      altitudeFt: null,
+      groundSpeedKt: null,
+      phase: "UNKNOWN"
+    };
+  }
+
+  const progress = Math.max(
+    0,
+    Math.min(
+      1,
+      Number(item.position?.progress ?? 0)
+    )
+  );
+
+  const routeDistanceNm = Number(
+    item.distance_nm ??
+    item.distanceNm ??
+    item.route_distance_nm ??
+    item.routeDistanceNm ??
+    0
+  );
+
+  /* ------------------------------------------------------------
+     OPERATIONAL CRUISE ALTITUDE BAND
+     Based on aircraft performance, not technical ceiling.
+     ------------------------------------------------------------ */
+
+  let cruiseAltFt;
+
+  if (speedRef < 170) {
+    cruiseAltFt = 10000;
+  } else if (speedRef < 220) {
+    cruiseAltFt = 15000;
+  } else if (speedRef < 300) {
+    cruiseAltFt = 24000;
+  } else if (speedRef < 400) {
+    cruiseAltFt = 30000;
+  } else if (speedRef < 500) {
+    cruiseAltFt = 39000;
+  } else {
+    cruiseAltFt = 35000;
+  }
+
+  /* ------------------------------------------------------------
+     ROUTE DISTANCE LIMIT
+     Short flights should not climb unrealistically high.
+     ------------------------------------------------------------ */
+
+  if (Number.isFinite(routeDistanceNm) && routeDistanceNm > 0) {
+
+    let distanceAltLimitFt;
+
+    if (routeDistanceNm < 150) {
+      distanceAltLimitFt = 10000;
+    } else if (routeDistanceNm < 300) {
+      distanceAltLimitFt = 18000;
+    } else if (routeDistanceNm < 600) {
+      distanceAltLimitFt = 26000;
+    } else if (routeDistanceNm < 1200) {
+      distanceAltLimitFt = 32000;
+    } else {
+      distanceAltLimitFt = cruiseAltFt;
+    }
+
+    cruiseAltFt = Math.min(
+      cruiseAltFt,
+      distanceAltLimitFt
+    );
+  }
+
+  /* ------------------------------------------------------------
+     FLIGHT PHASE
+     ------------------------------------------------------------ */
+
+  let altitudeFt = 0;
+  let gsKt = 0;
+  let phase = "CRUISE";
+
+  if (progress < 0.12) {
+
+    phase = "CLIMB";
+
+    const climbProgress =
+      Math.max(0, Math.min(1, progress / 0.12));
+
+    altitudeFt =
+      cruiseAltFt * climbProgress;
+
+    const climbFactor =
+      0.68 + (0.17 * climbProgress);
+
+    gsKt =
+      speedRef * climbFactor;
+
+  } else if (progress <= 0.78) {
+
+    phase = "CRUISE";
+
+    altitudeFt =
+      cruiseAltFt;
+
+    const cruiseProgress =
+      (progress - 0.12) / 0.66;
+
+    const cruiseFactor =
+      0.88 + (0.05 * Math.sin(cruiseProgress * Math.PI));
+
+    gsKt =
+      speedRef * cruiseFactor;
+
+  } else {
+
+    phase = "DESCENT";
+
+    const descentProgress =
+      Math.max(
+        0,
+        Math.min(
+          1,
+          (progress - 0.78) / 0.22
+        )
+      );
+
+    altitudeFt =
+      cruiseAltFt *
+      (1 - descentProgress);
+
+    const descentFactor =
+      0.80 - (0.25 * descentProgress);
+
+    gsKt =
+      speedRef * descentFactor;
+  }
+
+  /* ------------------------------------------------------------
+     BELOW 10,000 FT RULE
+     250 KT is a CAP, never a target.
+     ------------------------------------------------------------ */
+
+  if (altitudeFt < 10000) {
+    gsKt = Math.min(gsKt, 250);
+  }
+
+  altitudeFt =
+    Math.max(
+      0,
+      Math.round(altitudeFt / 100) * 100
+    );
+
+  gsKt =
+    Math.max(
+      0,
+      Math.round(gsKt)
+    );
+
+  return {
+    altitudeFt,
+    groundSpeedKt: gsKt,
+    phase
+  };
+}
      
     function buildATCContent(item) {
        
@@ -2186,6 +2384,9 @@ function apLatLng(icao) {
         item.model ||
         item.modelKey ||
        "";
+
+      const telemetry =
+        ACS_ST_resolveOperationalTelemetry(item);
        
       let extra = "";
       const now = window.ACS_TIME?.absMin;
@@ -2214,8 +2415,22 @@ function apLatLng(icao) {
     <strong>${model} ${reg}</strong><br>
     <strong>${item.flightNumber || "—"}</strong>${item.airlineCallsign ? " · " + item.airlineCallsign : ""}<br>
     ${item.originICAO || "—"} → ${item.destinationICAO || "—"}<br>
-    <strong>${item.state || "—"}</strong>
-    ${extra}
+    <strong>${item.state || "—"}</strong><br>
+
+${
+  telemetry.altitudeFt != null
+    ? `<strong>ALT</strong> ${telemetry.altitudeFt.toLocaleString()} FT`
+    : `<strong>ALT</strong> —`
+}
+<br>
+
+${
+  telemetry.groundSpeedKt != null
+    ? `<strong>GS</strong> ${telemetry.groundSpeedKt} KT`
+    : `<strong>GS</strong> —`
+}
+
+${extra}
   </div>
 `;
     }
