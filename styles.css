@@ -1937,15 +1937,25 @@ body:has(#airportTable) .acs-main {
    CONTINENT TITLE
    ============================================================ */
 
-body:has(#airportTable) .acs-main > h2 {
-  margin: 18px auto 0.75rem;
+body:has(#airportTable) .acs-continent-title {
+  width: 100%;
+  max-width: 820px;
 
+  margin:
+    18px
+    auto
+    24px;
+
+  padding:
+    8px
+    28px
+    0;
+
+  text-align: center;
+}
+
+body:has(#airportTable) .acs-continent-title-main {
   color: #f7f8fb;
-  background: none;
-
-  -webkit-background-clip: initial;
-  background-clip: initial;
-  -webkit-text-fill-color: currentColor;
 
   font-family:
     "Orbitron",
@@ -1953,10 +1963,10 @@ body:has(#airportTable) .acs-main > h2 {
     "Segoe UI",
     sans-serif;
 
-  font-size: clamp(1.65rem, 2.5vw, 2.2rem);
+  font-size: 32px;
   font-weight: 700;
-  line-height: 1.25;
-  letter-spacing: 0.18em;
+  line-height: 1;
+  letter-spacing: 0.34em;
   text-transform: uppercase;
 
   text-shadow:
@@ -1964,11 +1974,15 @@ body:has(#airportTable) .acs-main > h2 {
     0 0 10px rgba(255, 255, 255, 0.20);
 }
 
-body:has(#airportTable) .acs-main > .sub {
-  margin: 0 auto 1rem;
+body:has(#airportTable) .acs-continent-title-sub {
+  position: relative;
 
-  color: var(--airport-gold);
-  opacity: 1;
+  display: inline-block;
+
+  margin-top: 11px;
+
+  color:
+    var(--airport-gold);
 
   font-family:
     "Orbitron",
@@ -1976,14 +1990,46 @@ body:has(#airportTable) .acs-main > .sub {
     "Segoe UI",
     sans-serif;
 
-  font-size: 0.72rem;
+  font-size: 15px;
   font-weight: 700;
-  line-height: 1.5;
-  letter-spacing: 0.16em;
+  line-height: 1;
+  letter-spacing: 0.42em;
   text-transform: uppercase;
 
   text-shadow:
-    0 0 8px rgba(255, 179, 0, 0.35);
+    0 0 8px
+    rgba(255, 179, 0, 0.35);
+}
+
+body:has(#airportTable) .acs-continent-title-sub::before,
+body:has(#airportTable) .acs-continent-title-sub::after {
+  content: "";
+
+  position: absolute;
+  top: 50%;
+
+  width: 82px;
+  height: 2px;
+
+  opacity: 0.80;
+
+  background:
+    linear-gradient(
+      to right,
+      transparent,
+      var(--airport-gold),
+      transparent
+    );
+}
+
+body:has(#airportTable) .acs-continent-title-sub::before {
+  right: 100%;
+  margin-right: 18px;
+}
+
+body:has(#airportTable) .acs-continent-title-sub::after {
+  left: 100%;
+  margin-left: 18px;
 }
 
 /* ============================================================
