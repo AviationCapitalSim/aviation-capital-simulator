@@ -1936,25 +1936,22 @@ body:has(#airportTable) .acs-main {
 /* ============================================================
    CONTINENT TITLE
    ============================================================ */
+/* ============================================================
+   CONTINENT TITLE — ACS ROUTES CENTER STYLE
+   ============================================================ */
 
 body:has(#airportTable) .acs-continent-title {
   width: 100%;
-  max-width: 820px;
-
-  margin:
-    18px
-    auto
-    24px;
-
-  padding:
-    8px
-    28px
-    0;
+  max-width: 920px;
+  margin: 18px auto 32px;
+  padding: 18px 28px 12px;
 
   text-align: center;
 }
 
 body:has(#airportTable) .acs-continent-title-main {
+  margin: 0;
+
   color: #f7f8fb;
 
   font-family:
@@ -1970,8 +1967,112 @@ body:has(#airportTable) .acs-continent-title-main {
   text-transform: uppercase;
 
   text-shadow:
-    0 1px 0 rgba(0, 0, 0, 0.85),
-    0 0 10px rgba(255, 255, 255, 0.20);
+    0 2px 0 rgba(0, 0, 0, 0.85),
+    0 0 12px rgba(255, 255, 255, 0.22);
+}
+
+body:has(#airportTable) .acs-continent-title-sub {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+
+  width: 100%;
+  margin-top: 14px;
+
+  color: #ffb300;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Segoe UI",
+    sans-serif;
+
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+
+  text-shadow:
+    0 0 10px rgba(255, 179, 0, 0.35);
+}
+
+body:has(#airportTable) .acs-continent-title-sub::before,
+body:has(#airportTable) .acs-continent-title-sub::after {
+  content: "";
+
+  width: 82px;
+  height: 2px;
+  flex: 0 0 82px;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 179, 0, 0.95),
+    transparent
+  );
+
+  box-shadow:
+    0 0 8px rgba(255, 179, 0, 0.28);
+}
+
+body:has(#airportTable) .acs-continent-title-tagline {
+  margin: 13px 0 0;
+
+  color: rgba(220, 226, 238, 0.88);
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Segoe UI",
+    sans-serif;
+
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.6;
+  letter-spacing: 0.18em;
+
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.85);
+}
+
+/* ============================================================
+   CONTINENT TITLE — RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 760px) {
+  body:has(#airportTable) .acs-continent-title {
+    margin: 10px auto 24px;
+    padding: 14px 12px 8px;
+  }
+
+  body:has(#airportTable) .acs-continent-title-main {
+    font-size: clamp(1.35rem, 6vw, 1.9rem);
+    line-height: 1.15;
+    letter-spacing: 0.18em;
+  }
+
+  body:has(#airportTable) .acs-continent-title-sub {
+    gap: 10px;
+
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+  }
+
+  body:has(#airportTable) .acs-continent-title-sub::before,
+  body:has(#airportTable) .acs-continent-title-sub::after {
+    width: 34px;
+    flex-basis: 34px;
+  }
+
+  body:has(#airportTable) .acs-continent-title-tagline {
+    margin-top: 11px;
+
+    font-size: 0.67rem;
+    line-height: 1.7;
+    letter-spacing: 0.1em;
+  }
 }
 
 body:has(#airportTable) .acs-continent-title-sub {
