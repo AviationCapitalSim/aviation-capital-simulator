@@ -1849,7 +1849,12 @@ body:has(#airportTable) {
   --acs-ui-border-gold: rgba(255, 179, 0, 0.20);
 
   color: var(--airport-text);
-  background: transparent;
+
+  /*
+   * Required dark foundation behind the global background image.
+   * This matches the visual depth used by My Routes.
+   */
+  background: #071427;
 
   font-family:
     "Orbitron",
