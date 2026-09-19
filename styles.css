@@ -2268,9 +2268,9 @@ body:has(#airportTable) .origin-banner {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.45rem;
+  gap: 0.55rem;
 
-  margin: 0 auto 1.35rem;
+  margin: -0.9rem auto 1.2rem;
   padding: 0;
 
   color: var(--airport-muted);
@@ -2282,12 +2282,23 @@ body:has(#airportTable) .origin-banner {
     "Segoe UI",
     sans-serif;
 
-  font-size: 0.68rem;
+  font-size: 0.80rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  line-height: 1.2;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
 
   text-shadow: none;
+}
+
+body:has(#airportTable) .origin-banner .icon,
+body:has(#airportTable) .origin-banner #originFlag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 1.12rem;
+  line-height: 1;
 }
 
 body:has(#airportTable) .origin-banner .label,
@@ -2297,6 +2308,7 @@ body:has(#airportTable) .origin-banner strong {
   font-family: inherit;
   font-size: inherit;
   font-weight: 700;
+  line-height: inherit;
 }
 
 body:has(#airportTable) .origin-banner #originCity {
@@ -2305,7 +2317,10 @@ body:has(#airportTable) .origin-banner #originCity {
   color: var(--airport-muted);
   opacity: 1;
 
+  font-family: inherit;
+  font-size: inherit;
   font-weight: 600;
+  line-height: inherit;
 }
 
 /* ============================================================
