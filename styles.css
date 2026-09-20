@@ -2976,6 +2976,87 @@ body:has(#airportTable) .acs-modal-close:hover {
 }
 
 /* ============================================================
+   ACS ROUTE OPERATORS — LARGE NETWORK SCROLL SYSTEM
+   Supports very large airline networks without growing modal
+   ============================================================ */
+
+body:has(#airportTable) .acs-route-operators-panel {
+  box-sizing: border-box;
+
+  max-height: 62vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  padding-right: 12px;
+
+  scrollbar-width: thin;
+  scrollbar-color:
+    rgba(80, 200, 120, 0.62)
+    rgba(7, 20, 39, 0.38);
+
+  overscroll-behavior: contain;
+}
+
+
+/* ============================================================
+   ROUTE OPERATORS TITLE — REMAINS VISIBLE WHILE SCROLLING
+   ============================================================ */
+
+body:has(#airportTable)
+.acs-route-operators-panel
+> .acs-section-title:first-child {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+
+  margin-top: 0;
+  padding: 8px 0 12px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(8, 18, 40, 1) 0%,
+      rgba(8, 18, 40, 0.98) 78%,
+      rgba(8, 18, 40, 0.88) 100%
+    );
+
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+
+/* ============================================================
+   WEBKIT SCROLLBAR — SAFARI / CHROME
+   ============================================================ */
+
+body:has(#airportTable)
+.acs-route-operators-panel::-webkit-scrollbar {
+  width: 7px;
+}
+
+body:has(#airportTable)
+.acs-route-operators-panel::-webkit-scrollbar-track {
+  background:
+    rgba(7, 20, 39, 0.38);
+
+  border-radius: 10px;
+}
+
+body:has(#airportTable)
+.acs-route-operators-panel::-webkit-scrollbar-thumb {
+  background:
+    rgba(80, 200, 120, 0.62);
+
+  border-radius: 10px;
+}
+
+body:has(#airportTable)
+.acs-route-operators-panel::-webkit-scrollbar-thumb:hover {
+  background:
+    rgba(80, 200, 120, 0.88);
+}
+
+/* ============================================================
    TABLET
    ============================================================ */
 
