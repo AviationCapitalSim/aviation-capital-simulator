@@ -670,11 +670,12 @@ tr:hover {
           <th onclick="sortTable(2)">Distance (NM)</th>
           <th onclick="sortTable(3)">Demand (Y/C/F)</th>
           <th onclick="sortTable(4)">Slots</th>
+          <th class="acs-airlines-column">Airlines</th>
           <th>Action</th>
         </tr>
       </thead>
       <tbody id="airportTableBody">
-        <tr><td colspan="6">Loading backend airport catalog...</td></tr>
+        <tr><td colspan="7">Loading backend airport catalog...</td></tr>
       </tbody>
     </table>
 
@@ -811,6 +812,11 @@ function ACS_adaptAirport(row) {
     reserved_slots: ACS_num(row.reserved_slots, 0),
     available_slots: ACS_num(row.available_slots, ACS_num(row.slot_capacity, 0)),
     slot_utilization_pct: ACS_num(row.slot_utilization_pct, 0),
+
+    active_airlines: ACS_num(row.active_airlines, 0),
+    route_operators: Array.isArray(row.route_operators)
+      ? row.route_operators
+      : [],
 
     demand: {
       Y: ACS_num(row.demand_y ?? row.demand?.Y, 0),
@@ -1135,6 +1141,58 @@ function ACS_sortedAirports(source) {
     });
 }
 
+function ACS_openRouteOperatorsModal(icao) {
+  const ap = ACS_findAirport(icao);
+  if (!ap) return;
+
+  const operators = Array.isArray(ap.route_operators)
+    ? ap.route_operators
+    : [];
+
+  const content = document.getElementById("modalContent");
+  const modal = document.getElementById("airportInfoModal");
+
+  content.innerHTML = "";
+
+  const panel = document.createElement("div");
+  panel.className = "acs-ops-panel acs-route-operators-panel";
+
+  const title = document.createElement("div");
+  title.className = "acs-section-title";
+  title.style.textAlign = "center";
+  title.style.marginTop = "0";
+  title.textContent = "ROUTE OPERATORS";
+
+  panel.appendChild(title);
+
+  operators.forEach(operator => {
+    const row = document.createElement("div");
+
+    row.style.display = "flex";
+    row.style.alignItems = "center";
+    row.style.justifyContent = "space-between";
+    row.style.gap = "18px";
+    row.style.padding = "10px 0";
+    row.style.borderBottom = "1px solid rgba(255,255,255,0.08)";
+
+    const name = document.createElement("span");
+    name.textContent = ACS_text(operator?.airline_name, "Unknown Airline");
+
+    const status = document.createElement("span");
+    status.className = "acs-status-chip";
+    status.style.color = "#00ff80";
+    status.style.border = "1px solid #00ff80";
+    status.textContent = "ACTIVE";
+
+    row.appendChild(name);
+    row.appendChild(status);
+    panel.appendChild(row);
+  });
+
+  content.appendChild(panel);
+  modal.classList.add("is-open");
+}
+
 function ACS_renderRows(source) {
   const tableBody = document.getElementById("airportTableBody");
   tableBody.innerHTML = "";
@@ -1142,7 +1200,7 @@ function ACS_renderRows(source) {
   const airports = ACS_sortedAirports(source);
 
   if (airports.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="6">No airports available from backend catalog.</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="7">No airports available from backend catalog.</td></tr>`;
     return;
   }
 
@@ -1152,6 +1210,15 @@ function ACS_renderRows(source) {
     const total = d.Y + d.C + d.F || 1;
     const ecoPct = (d.Y / total) * 100;
     const bizPct = ((d.Y + d.C) / total) * 100;
+
+    const operators = Array.isArray(ap.route_operators)
+      ? ap.route_operators
+      : [];
+
+    const airlinesCell =
+      operators.length === 0
+        ? "—"
+        : `<button type="button" class="acs-status-chip" style="color:#00ff80; border:1px solid #00ff80; cursor:pointer;" onclick="ACS_openRouteOperatorsModal('${ap.icao}')">${operators.length} ACTIVE</button>`;
 
     const row = document.createElement("tr");
     row.innerHTML = `
@@ -1163,6 +1230,7 @@ function ACS_renderRows(source) {
         <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
       </td>
       <td>${ACS_buildSlotCell(ap.icao)}</td>
+      <td class="acs-airlines-cell" data-destination-icao="${ap.icao}">${airlinesCell}</td>
       <td style="display:flex; gap:10px; justify-content:center;">
         <button class="acs-btn-info" onclick="openAirportInfo('${ap.icao}')">Info</button>
         <button class="acs-btn" onclick="ACS_openRouteSchedule('${ap.icao}')">Create Route</button>
