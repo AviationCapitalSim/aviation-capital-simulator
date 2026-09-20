@@ -814,12 +814,17 @@ function ACS_adaptAirport(row) {
 
     aircraft_limit: ACS_text(row.aircraft_limit, "Not specified"),
 
-        slot_capacity: ACS_num(row.slot_capacity, 0),
-    reserved_slots: ACS_num(row.reserved_slots, 0),
-    available_slots: ACS_num(row.available_slots, ACS_num(row.slot_capacity, 0)),
-    slot_utilization_pct: ACS_num(row.slot_utilization_pct, 0),
+    slot_capacity: ACS_num(row.slot_capacity, 0),
+reserved_slots: ACS_num(row.reserved_slots, 0),
+available_slots: ACS_num(row.available_slots, ACS_num(row.slot_capacity, 0)),
+slot_utilization_pct: ACS_num(row.slot_utilization_pct, 0),
 
-    demand: {
+active_airlines: ACS_num(row.active_airlines, 0),
+route_operators: Array.isArray(row.route_operators)
+  ? row.route_operators
+  : [],
+
+demand: {
       Y: ACS_num(row.demand_y ?? row.demand?.Y, 0),
       C: ACS_num(row.demand_c ?? row.demand?.C, 0),
       F: ACS_num(row.demand_f ?? row.demand?.F, 0)
