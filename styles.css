@@ -3276,6 +3276,55 @@ html body :is(
   -webkit-backdrop-filter: none !important;
 }
 
+
+/* ============================================================
+   ACS CONTINENT AIRPORT PAGES — AIRLINES ACTIVE LINK
+   Discreet operator status inside AIRLINES column
+   ============================================================ */
+
+body:has(#airportTable) .acs-airlines-cell .acs-status-chip {
+  margin: 0 !important;
+  padding: 2px 3px !important;
+
+  border: 0 !important;
+  border-radius: 0 !important;
+
+  background: transparent !important;
+  background-image: none !important;
+
+  color: #21f58b !important;
+
+  font-family:
+    "Orbitron",
+    "Eurostile",
+    "Segoe UI",
+    sans-serif;
+
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.035em;
+
+  box-shadow: none !important;
+  text-shadow:
+    0 0 6px rgba(33, 245, 139, 0.28);
+
+  cursor: pointer;
+
+  transition:
+    color 180ms ease,
+    text-shadow 180ms ease,
+    opacity 180ms ease;
+}
+
+body:has(#airportTable) .acs-airlines-cell .acs-status-chip:hover {
+  color: #63ffad !important;
+
+  text-shadow:
+    0 0 8px rgba(33, 245, 139, 0.52);
+
+  opacity: 0.95;
+}
+
 /* ============================================================
    GLOBAL CAPACITY AND PROGRESS TRACKS
    ============================================================ */
