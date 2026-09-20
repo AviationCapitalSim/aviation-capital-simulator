@@ -1147,6 +1147,61 @@ function ACS_sortedAirports(source) {
       return bd - ad;
     });
 }
+function ACS_openRouteOperatorsModal(icao) {
+  const ap = ACS_findAirport(icao);
+  if (!ap) return;
+
+  const operators = Array.isArray(ap.route_operators)
+    ? ap.route_operators
+    : [];
+
+  const content = document.getElementById("modalContent");
+  const modal = document.getElementById("airportInfoModal");
+
+  content.innerHTML = "";
+
+  const panel = document.createElement("div");
+  panel.className = "acs-ops-panel";
+
+  const title = document.createElement("div");
+  title.className = "acs-section-title";
+  title.style.textAlign = "center";
+  title.style.marginTop = "0";
+  title.textContent = "ROUTE OPERATORS";
+
+  panel.appendChild(title);
+
+  operators.forEach(operator => {
+    const row = document.createElement("div");
+
+    row.style.display = "flex";
+    row.style.alignItems = "center";
+    row.style.justifyContent = "space-between";
+    row.style.gap = "18px";
+    row.style.padding = "10px 0";
+    row.style.borderBottom = "1px solid rgba(255,255,255,0.08)";
+
+    const name = document.createElement("span");
+    name.textContent =
+      ACS_text(
+        operator?.airline_name,
+        "Unknown Airline"
+      );
+
+    const status = document.createElement("span");
+    status.className = "acs-status-chip";
+    status.style.color = "#00ff80";
+    status.style.border = "1px solid #00ff80";
+    status.textContent = "ACTIVE";
+
+    row.appendChild(name);
+    row.appendChild(status);
+    panel.appendChild(row);
+  });
+
+  content.appendChild(panel);
+  modal.classList.add("is-open");
+}
 
 function ACS_renderRows(source) {
   const tableBody = document.getElementById("airportTableBody");
@@ -1155,25 +1210,53 @@ function ACS_renderRows(source) {
   const airports = ACS_sortedAirports(source);
 
   if (airports.length === 0) {
-  tableBody.innerHTML = `
-    <tr>
-      <td colspan="7">
-        No airports available from backend catalog.
-      </td>
-    </tr>
-  `;
-
-  return;
-}
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="7">
+          No airports available from backend catalog.
+        </td>
+      </tr>
+    `;
+    return;
+  }
 
   airports.forEach(ap => {
     const dist = ACS_distanceFromBase(ap);
     const d = adjustPassengerClasses(ap.demand);
+
     const total = d.Y + d.C + d.F || 1;
-    const ecoPct = (d.Y / total) * 100;
-    const bizPct = ((d.Y + d.C) / total) * 100;
+
+    const ecoPct =
+      (d.Y / total) * 100;
+
+    const bizPct =
+      ((d.Y + d.C) / total) * 100;
+
+    const operators =
+      Array.isArray(ap.route_operators)
+        ? ap.route_operators
+        : [];
+
+    const airlinesCell =
+      operators.length === 0
+        ? "—"
+        : `
+          <button
+            type="button"
+            class="acs-status-chip"
+            style="
+              color:#00ff80;
+              border:1px solid #00ff80;
+              cursor:pointer;
+            "
+            onclick="ACS_openRouteOperatorsModal('${ap.icao}')"
+          >
+            ${operators.length} ACTIVE
+          </button>
+        `;
 
     const row = document.createElement("tr");
+
     row.innerHTML = `
   <td>
     <strong>${ap.city}</strong> (${ap.icao})
@@ -1207,7 +1290,7 @@ function ACS_renderRows(source) {
     class="acs-airlines-cell"
     data-destination-icao="${ap.icao}"
   >
-    —
+    ${airlinesCell}
   </td>
 
   <td
@@ -1232,6 +1315,7 @@ function ACS_renderRows(source) {
     </button>
   </td>
 `;
+
     tableBody.appendChild(row);
   });
 }
