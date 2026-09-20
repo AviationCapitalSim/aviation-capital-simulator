@@ -636,11 +636,11 @@ tr:hover {
   </header>
 
   <main class="acs-main">
-    <h2>🌍 Asian Airports</h2>
+    <h2>Asian Airports</h2>
     <p class="sub">Sort by demand, cost, or runway length. Click “Create Route” to plan flights.</p>
 
     <div class="origin-banner">
-      <span class="icon">🛫</span>
+      <span class="icon"></span>
       <span class="label">Base:</span>
       <span id="originFlag">🏳️</span>
       <strong id="originIcao">---</strong>
@@ -649,7 +649,7 @@ tr:hover {
 
     <div class="country-filter">
       <select id="countrySelect" class="country-select" onchange="filterByCountry()">
-        <option value="ALL">🌍 All Countries</option>
+        <option value="ALL">All Countries</option>
       </select>
     </div>
 
@@ -1090,7 +1090,7 @@ function ACS_renderCountrySelector(airports) {
   const selector = document.getElementById("countrySelect");
   if (!selector) return;
 
-  selector.innerHTML = `<option value="ALL">🌍 All Countries</option>`;
+  selector.innerHTML = `<option value="ALL">All Countries</option>`;
 
   const countries =
     [...new Set(airports.map(a => a.region).filter(Boolean))]
