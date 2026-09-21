@@ -8919,8 +8919,8 @@ const bCheckInProgress =
       : null;
 
   const modalScheduledStartDate =
-    scheduledStartAt
-      ? new Date(scheduledStartAt)
+    cycle.valid && cycle.dueDate
+      ? new Date(cycle.dueDate)
       : null;
 
   let cyclePercent =
