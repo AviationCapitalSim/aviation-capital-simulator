@@ -68,6 +68,7 @@ const RP_API_BASE =
   airports: [],
 
   aircraftCatalog: [],
+  myAircraftModels: [],
   selectedAircraft: null,
 
   passengers: 0,
@@ -1928,7 +1929,66 @@ function RP_AI_updateControls() {
   return aircraft;
 }
 
+async function RP_loadMyAircraftModels() {
+  const select = RP_get("rpMyAircraftSelect");
+  RP_resetSelect(select, "Loading my aircraft...", true);
 
+  try {
+    const data = await RP_fetchJson(
+      `${RP_API_BASE}/v1/aircraft/fleet`
+    );
+
+    if (data?.ok !== true || !Array.isArray(data.fleet)) {
+      throw new Error("MY_AIRCRAFT_FLEET_INVALID");
+    }
+
+    const models = new Map();
+
+    for (const row of data.fleet) {
+      const key = String(row.model_key || "").trim();
+      if (!key || models.has(key)) continue;
+
+      models.set(key, {
+        ...row,
+        model_key: key,
+        manufacturer: row.catalog_manufacturer || row.manufacturer,
+        model: row.catalog_model || row.aircraft_name || key,
+        aircraft_name: row.catalog_aircraft_name || row.aircraft_name,
+        rpOwnedModel: true
+      });
+    }
+
+    RP_STATE.myAircraftModels = [...models.values()].sort(
+      (a, b) => String(a.aircraft_name || a.model).localeCompare(
+        String(b.aircraft_name || b.model)
+      )
+    );
+
+    RP_resetSelect(
+      select,
+      RP_STATE.myAircraftModels.length
+        ? "Select my aircraft"
+        : "No aircraft in my fleet",
+      RP_STATE.myAircraftModels.length === 0
+    );
+
+    for (const aircraft of RP_STATE.myAircraftModels) {
+      const manufacturer = String(aircraft.manufacturer || "").trim();
+      const model = String(aircraft.model || aircraft.model_key).trim();
+      const label = manufacturer &&
+        !model.toUpperCase().startsWith(manufacturer.toUpperCase())
+          ? `${manufacturer} ${model}`
+          : model;
+
+      RP_appendOption(select, aircraft.model_key, label);
+    }
+  } catch (error) {
+    RP_STATE.myAircraftModels = [];
+    RP_resetSelect(select, "My Aircraft unavailable", true);
+    console.error("ROUTE_PLANNING_MY_AIRCRAFT_FAILED", error);
+  }
+}
+   
 /* ============================================================
    AIRCRAFT MANUFACTURER FILTER
    ============================================================ */
@@ -2089,12 +2149,12 @@ function RP_renderAircraftCatalog() {
     );
 
 
-  const selectedModelKey =
-    String(
-      RP_STATE.selectedAircraft
-        ?.model_key ||
-      ""
-    ).trim();
+    const selectedModelKey =
+    RP_STATE.selectedAircraft?.rpOwnedModel
+      ? ""
+      : String(
+          RP_STATE.selectedAircraft?.model_key || ""
+        ).trim();
 
 
   RP_resetSelect(
@@ -2227,9 +2287,12 @@ function RP_handleAircraftChange() {
   const select =
     RP_get("rpAircraftSelect");
 
-  if (!select) {
+    if (!select) {
     return;
   }
+
+  const myAircraftSelect = RP_get("rpMyAircraftSelect");
+  if (myAircraftSelect) myAircraftSelect.value = "";
 
   const modelKey =
     String(select.value || "").trim();
@@ -2316,7 +2379,41 @@ function RP_handleAircraftChange() {
   RP_calculateRouteStudy();
 }
 
+function RP_handleMyAircraftChange() {
+  const select = RP_get("rpMyAircraftSelect");
+  const modelKey = String(select?.value || "").trim();
+  const catalogSelect = RP_get("rpAircraftSelect");
 
+  if (catalogSelect) catalogSelect.value = "";
+
+  const aircraft = RP_STATE.myAircraftModels.find(
+    ac => ac.model_key === modelKey
+  );
+
+  if (!aircraft) {
+    RP_handleAircraftChange();
+    return;
+  }
+
+  RP_STATE.selectedAircraft = aircraft;
+
+  const manufacturer = String(aircraft.manufacturer || "").trim();
+  const model = String(aircraft.model || aircraft.model_key).trim();
+  const label = manufacturer &&
+    !model.toUpperCase().startsWith(manufacturer.toUpperCase())
+      ? `${manufacturer} ${model}`
+      : model;
+
+  RP_setText("rpRouteAircraft", label);
+
+  const seats = Number(aircraft.seats);
+  RP_STATE.passengers = Number.isFinite(seats) && seats > 0
+    ? Math.round(seats)
+    : 0;
+
+  RP_calculateRouteStudy();
+}
+   
 /* ============================================================
    AIRCRAFT LOAD SCENARIO
    ============================================================ */
@@ -3640,8 +3737,11 @@ function RP_calculateRouteStudy() {
    
 function RP_bindEvents() {
    
-  const aircraftSelect =
+    const aircraftSelect =
   RP_get("rpAircraftSelect");
+
+  const myAircraftSelect =
+  RP_get("rpMyAircraftSelect");
 
 const aircraftSearch =
   RP_get("rpAircraftSearch");
@@ -3677,7 +3777,13 @@ const continentSelect =
   );
 }
 
-
+if (myAircraftSelect) {
+  myAircraftSelect.addEventListener(
+    "change",
+    RP_handleMyAircraftChange
+  );
+}
+   
 if (aircraftSearch) {
   aircraftSearch.addEventListener(
     "input",
@@ -3762,6 +3868,7 @@ if (airportIntelligenceDestination) {
 
   async function RP_initialize() {
     try {
+       
       console.log(
         "🟦 ACS OCC ROUTE PLANNING INITIALIZING"
       );
@@ -3804,6 +3911,7 @@ if (airportIntelligenceDestination) {
       RP_centerMapOnOrigin();
 
       await RP_loadAircraftCatalog();
+      await RP_loadMyAircraftModels();
 
 console.log(
   "🟦 ROUTE PLANNING AIRCRAFT CATALOG:",
