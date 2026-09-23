@@ -852,6 +852,7 @@ footer {
   height: 72px;
 
   object-fit: contain;
+  content: url("acs_logo.jpg");
 
   background: transparent;
   filter: none;
