@@ -3493,22 +3493,24 @@ const dCheckStatus =
       ? aircraft.maintenance_estimate?.c_check
       : null;
 
+    const hasMaintenanceCost =
+    Number(requiredMaintenanceCost) > 0;
+
   ACS_setUsedInfoText(
     "usedInfoMaintenanceCost",
-    Number(requiredMaintenanceCost) > 0
-      ? Number(requiredMaintenanceCost).toLocaleString(
-          "en-US",
-          {
-            style: "currency",
-            currency: "USD",
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-          }
-        )
+    hasMaintenanceCost
+      ? ACS_formatUSD(Number(requiredMaintenanceCost))
       : dRequired || cRequired
         ? "ESTIMATE UNAVAILABLE"
         : "—"
   );
+
+  document
+    .getElementById("usedInfoMaintenanceCost")
+    ?.classList.toggle(
+      "used-acp-status-danger",
+      hasMaintenanceCost
+    );
 
   ACS_setUsedInfoText(
     "usedInfoCurrency",
