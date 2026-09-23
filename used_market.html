@@ -3472,11 +3472,42 @@ const dCheckStatus =
       : "—"
   );
 
-  ACS_setUsedInfoText(
+    ACS_setUsedInfoText(
     "usedInfoFactoryReference",
     ACS_getUsedInfoFactoryReference(
       aircraft
     )
+  );
+
+  const dRequired =
+    /OVERDUE|REQUIRED/.test(dCheckStatus) &&
+    !/NOT (DUE|REQUIRED)/.test(dCheckStatus);
+
+  const cRequired =
+    /OVERDUE|REQUIRED/.test(cCheckStatus) &&
+    !/NOT (DUE|REQUIRED)/.test(cCheckStatus);
+
+  const requiredMaintenanceCost = dRequired
+    ? aircraft.maintenance_estimate?.d_check
+    : cRequired
+      ? aircraft.maintenance_estimate?.c_check
+      : null;
+
+  ACS_setUsedInfoText(
+    "usedInfoMaintenanceCost",
+    Number(requiredMaintenanceCost) > 0
+      ? Number(requiredMaintenanceCost).toLocaleString(
+          "en-US",
+          {
+            style: "currency",
+            currency: "USD",
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          }
+        )
+      : dRequired || cRequired
+        ? "ESTIMATE UNAVAILABLE"
+        : "—"
   );
 
   ACS_setUsedInfoText(
