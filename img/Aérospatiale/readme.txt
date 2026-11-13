@@ -1,1 +1,1 @@
-Aérospatiale placeholder
+Aerospatiale placeholder
