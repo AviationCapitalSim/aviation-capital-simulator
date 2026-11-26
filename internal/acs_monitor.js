@@ -27,7 +27,8 @@
     refreshTimer: null,
     preview: null,
     previewTimer: null,
-    actionBusy: false
+    actionBusy: false,
+    worldControlBusy: false
   };
 
   const byId = (id) =>
@@ -134,7 +135,15 @@
       "El número de detalles financieros eliminados no coincidió con la propuesta. Guardian revirtió toda la operación.",
 
     GUARDIAN_EXECUTION_RATE_LIMIT:
-      "Se alcanzó el límite de intentos. Espera 15 minutos."
+      "Se alcanzó el límite de intentos. Espera 15 minutos.",
+    WORLD_CONTROL_ACTION_INVALID:
+      "La acción de pausa no es válida.",
+    WORLD_CONTROL_FAILED:
+      "No se pudo cambiar el estado de ACS.",
+    WORLD_STATUS_INVALID:
+      "El estado solicitado para ACS no es válido.",
+    ACS_WORLD_STATUS_INVALID:
+      "ACS devuelve un estado del mundo no reconocido."
   };
 
   function text(
@@ -1427,6 +1436,8 @@
         []
       );
 
+      await refreshWorldControl();
+
       text(
         "lastUpdate",
         `Actualizado ${
@@ -1442,6 +1453,105 @@
       byId(
         "refreshButton"
       ).disabled = false;
+    }
+  }
+
+  function renderWorldControl(world, message = "") {
+    const status = String(world?.status || "")
+      .trim()
+      .toUpperCase();
+    const active = status === "ON";
+    const paused = status === "OFF";
+    const statusNode = byId("worldControlStatus");
+
+    statusNode.textContent = active
+      ? "ACS ACTIVO"
+      : paused
+        ? "ACS EN PAUSA"
+        : "ESTADO DESCONOCIDO";
+    statusNode.className = `pill ${active ? "STABLE" : paused ? "WARNING" : "CRITICAL"}`;
+
+    text(
+      "worldControlTime",
+      `Hora simulada: ${formatDate(world?.current_sim_time)}`
+    );
+
+    byId("pauseWorldButton").disabled =
+      !active || state.worldControlBusy;
+    byId("resumeWorldButton").disabled =
+      !paused || state.worldControlBusy;
+
+    if (message) {
+      text("worldControlMessage", message);
+    }
+  }
+
+  async function refreshWorldControl() {
+    try {
+      const payload = await api("/world");
+
+      if (!payload.world) {
+        throw new Error("ACS_WORLD_INVALID_RESPONSE");
+      }
+
+      renderWorldControl(payload.world);
+    } catch (error) {
+      const statusNode = byId("worldControlStatus");
+      statusNode.textContent = "ESTADO NO DISPONIBLE";
+      statusNode.className = "pill CRITICAL";
+      text("worldControlTime", "Hora simulada: no disponible");
+      text("worldControlMessage", `No se pudo leer el estado: ${error.message}`);
+      byId("pauseWorldButton").disabled = true;
+      byId("resumeWorldButton").disabled = true;
+    }
+  }
+
+  async function setWorldControl(action) {
+    if (state.worldControlBusy) return;
+
+    const isPausing = action === "pause";
+    const confirmation = isPausing
+      ? "¿Pausar el mundo global de ACS? El reloj y los procesos ligados al tiempo simulado se detendrán para todas las aerolíneas. Los datos se conservarán."
+      : "¿Reanudar el mundo global de ACS? El reloj continuará desde la fecha en la que se pausó.";
+
+    if (!window.confirm(confirmation)) return;
+
+    state.worldControlBusy = true;
+    byId("pauseWorldButton").disabled = true;
+    byId("resumeWorldButton").disabled = true;
+    text("worldControlMessage", isPausing ? "Pausando ACS…" : "Reanudando ACS…");
+
+    try {
+      const payload = await api(
+        "/world/control",
+        {
+          method: "POST",
+          body: { action },
+          protectedRoute: true
+        }
+      );
+
+      renderWorldControl(
+        payload.world,
+        payload.changed
+          ? isPausing
+            ? "ACS quedó pausado."
+            : "ACS quedó reanudado."
+          : isPausing
+            ? "ACS ya estaba pausado."
+            : "ACS ya estaba activo."
+      );
+    } catch (error) {
+      text("worldControlMessage", `No se cambió el estado: ${error.message}`);
+
+      if (error.status === 401) {
+        handleSessionError(error);
+      } else {
+        await refreshWorldControl();
+      }
+    } finally {
+      state.worldControlBusy = false;
+      await refreshWorldControl();
     }
   }
 
@@ -2097,6 +2207,16 @@
       refresh().catch(
         handleSessionError
       )
+  );
+
+  byId("pauseWorldButton").addEventListener(
+    "click",
+    () => setWorldControl("pause")
+  );
+
+  byId("resumeWorldButton").addEventListener(
+    "click",
+    () => setWorldControl("resume")
   );
 
   byId(
