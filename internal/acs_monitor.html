@@ -1,3 +1,8 @@
+
+
+
+
+
 <!-- ============================================================
      🛡️ ACS OCC — SYSTEM GUARDIAN
      PRIVATE OPERATIONS CONTROL CENTER
@@ -205,6 +210,34 @@
       background: var(--gold);
       border-color: var(--gold);
       color: #161007;
+    }
+
+    .world-control-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .world-control-status {
+      margin: 0 0 14px;
+      color: var(--muted);
+    }
+
+    .world-control-message {
+      min-height: 1.4em;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .pause-world {
+      border-color: var(--red);
+      background: #3a2028;
+    }
+
+    .resume-world {
+      border-color: var(--green);
+      background: #17382b;
     }
 
     .metrics {
@@ -1002,6 +1035,66 @@
       id="dashboard"
       class="hidden"
     >
+      <section
+        class="panel"
+        id="worldControlPanel"
+        aria-labelledby="worldControlHeading"
+      >
+        <div class="head">
+          <div>
+            <h2 id="worldControlHeading">
+              Pausa global de ACS
+            </h2>
+
+            <p class="sub">
+              Detiene el reloj y los procesos ligados al tiempo simulado para todas las aerolíneas. Conserva los datos.
+            </p>
+          </div>
+
+          <span
+            class="pill WARNING"
+            id="worldControlStatus"
+            aria-live="polite"
+          >
+            Leyendo estado…
+          </span>
+        </div>
+
+        <p
+          class="world-control-status"
+          id="worldControlTime"
+        >
+          Hora simulada: —
+        </p>
+
+        <div class="world-control-actions">
+          <button
+            type="button"
+            class="pause-world"
+            id="pauseWorldButton"
+            disabled
+          >
+            Pausar ACS
+          </button>
+
+          <button
+            type="button"
+            class="resume-world"
+            id="resumeWorldButton"
+            disabled
+          >
+            Reanudar ACS
+          </button>
+
+          <span
+            class="world-control-message"
+            id="worldControlMessage"
+            role="status"
+            aria-live="polite"
+          ></span>
+        </div>
+      </section>
+
       <div class="metrics">
         <article class="metric">
           <small>
@@ -1571,3 +1664,6 @@
      
 </body>
 </html>
+
+
+
